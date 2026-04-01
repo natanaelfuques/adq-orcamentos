@@ -494,15 +494,11 @@ header {
 }
 
 .item-extra-tag {
-  font-size: 0.6rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--montar);
-  border: 1px solid var(--montar);
-  border-radius: 3px;
-  padding: 1px 5px;
-  letter-spacing: 0.06em;
   flex-shrink: 0;
-  opacity: 0.8;
+  line-height: 1;
 }
 
 .btn-add-item {
@@ -1112,9 +1108,9 @@ function buildCard(ev, past, col) {
       var done = ev.itens_ok && ev.itens_ok[i];
       var removido = removidos[i];
       return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '">' +
-        '<div class="item-check' + (done ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '"></div>' +
+        '<div class="item-check' + (done && !removido ? ' checked' : '') + (removido ? '' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
-        (!removido ? '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' : '') +
+        '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="margin-left:auto;background:none;border:none;color:' + (removido ? 'var(--concluido)' : 'var(--muted)') + ';cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
         '</div>';
     }).join('');
     var extrasHtml = (ev.itens_extras || []).map(function(s, i) {
