@@ -551,26 +551,7 @@ header {
   .group-separator:first-child { margin-top: 0; }
 
   /* ── ANTERIORES ── */
-  .anteriores-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 4px;
-    cursor: pointer;
-    color: var(--muted);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border-top: 1px solid var(--border);
-    margin-top: 8px;
-    user-select: none;
-  }
-  .anteriores-toggle svg { transition: transform 0.2s; }
-  .anteriores-toggle.open svg { transform: rotate(180deg); }
-  .anteriores-body { display: none; }
-  .anteriores-body.open { display: block; }
+
   .evento-card.passado { opacity: 0.6; }
 
 
@@ -808,7 +789,7 @@ function renderBoard() {
     futuros = sortByDate(futuros);
     passados = sortByDate(passados);
 
-    count.textContent = futuros.length + (passados.length ? '+' + passados.length : '');
+    count.textContent = futuros.length + passados.length;
 
     if (futuros.length === 0 && passados.length === 0) {
       body.innerHTML = '<div class="empty-col">Nenhum evento</div>';
@@ -831,15 +812,8 @@ function renderBoard() {
       grupos[label].forEach(function(ev) { html += buildCard(ev, false, col); });
     });
 
-    // Anteriores
-    if (passados.length > 0) {
-      html += '<div class="anteriores-toggle" id="ant-toggle-' + col + '" onclick="toggleAnteriores(\'' + col + '\')">' +
-        '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1,3 5,7 9,3"/></svg>' +
-        'Anteriores (' + passados.length + ')</div>';
-      html += '<div class="anteriores-body" id="ant-body-' + col + '">';
-      passados.forEach(function(ev) { html += buildCard(ev, true, col); });
-      html += '</div>';
-    }
+    // Passados — exibidos diretamente sem separação
+    passados.forEach(function(ev) { html += buildCard(ev, true, col); });
 
     body.innerHTML = html;
 
@@ -1136,13 +1110,6 @@ function getWeekLabel(ev) {
   if (evDate >= nextStart && evDate <= nextEnd) return 'Proxima semana';
   var meses = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   return meses[evDate.getMonth()] + ' ' + evDate.getFullYear();
-}
-
-function toggleAnteriores(col) {
-  var toggle = document.getElementById('ant-toggle-' + col);
-  var body = document.getElementById('ant-body-' + col);
-  if (toggle) toggle.classList.toggle('open');
-  if (body) body.classList.toggle('open');
 }
 
 // Snap board to column on finger scroll
