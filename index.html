@@ -473,6 +473,7 @@
     /* Header */
     header { padding: 8px 14px; }
     .hd-title { font-size: 1.1rem; }
+    .hd-date { display: none; }
 
     /* Nav tabs */
     #main-nav { padding: 0; }
@@ -2639,90 +2640,6 @@ function buildDocHTML({ nome, evento, local, dataFmt, dataEvento, incCliente, in
     body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   }
 
-#gerador-login-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #111;
-  padding: 24px;
-  box-sizing: border-box;
-}
-.gerador-login-box {
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-top: 3px solid #C8A94A;
-  border-radius: 8px;
-  padding: 40px 36px;
-  width: 100%;
-  max-width: 380px;
-}
-.gerador-login-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #C8A94A;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-align: center;
-}
-.gerador-login-sub {
-  font-size: 0.72rem;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-top: 4px;
-  text-align: center;
-  margin-bottom: 28px;
-}
-.gerador-login-field { margin-bottom: 16px; }
-.gerador-login-field label {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
-}
-.gerador-login-field input {
-  width: 100%;
-  background: #111;
-  border: 1px solid #333;
-  color: #eee;
-  font-family: 'Barlow', sans-serif;
-  font-size: 0.95rem;
-  padding: 11px 14px;
-  border-radius: 4px;
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-.gerador-login-field input:focus { border-color: #C8A94A; }
-.gerador-btn-login {
-  width: 100%;
-  padding: 13px;
-  background: #C8A94A;
-  color: #111;
-  border: none;
-  border-radius: 4px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: opacity 0.2s;
-}
-.gerador-btn-login:hover { opacity: 0.85; }
-.gerador-login-error {
-  color: #e05c5c;
-  font-size: 0.78rem;
-  margin-top: 10px;
-  text-align: center;
-  display: none;
-}
 /* ── HEADER COMPARTILHADO ── */
 .hd-row1 {
   display: flex;
@@ -3500,90 +3417,6 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
   .doc-footer strong { color:#C8A94A; }
 
 
-#gerador-login-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #111;
-  padding: 24px;
-  box-sizing: border-box;
-}
-.gerador-login-box {
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-top: 3px solid #C8A94A;
-  border-radius: 8px;
-  padding: 40px 36px;
-  width: 100%;
-  max-width: 380px;
-}
-.gerador-login-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #C8A94A;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-align: center;
-}
-.gerador-login-sub {
-  font-size: 0.72rem;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-top: 4px;
-  text-align: center;
-  margin-bottom: 28px;
-}
-.gerador-login-field { margin-bottom: 16px; }
-.gerador-login-field label {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
-}
-.gerador-login-field input {
-  width: 100%;
-  background: #111;
-  border: 1px solid #333;
-  color: #eee;
-  font-family: 'Barlow', sans-serif;
-  font-size: 0.95rem;
-  padding: 11px 14px;
-  border-radius: 4px;
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-.gerador-login-field input:focus { border-color: #C8A94A; }
-.gerador-btn-login {
-  width: 100%;
-  padding: 13px;
-  background: #C8A94A;
-  color: #111;
-  border: none;
-  border-radius: 4px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: opacity 0.2s;
-}
-.gerador-btn-login:hover { opacity: 0.85; }
-.gerador-login-error {
-  color: #e05c5c;
-  font-size: 0.78rem;
-  margin-top: 10px;
-  text-align: center;
-  display: none;
-}
 </style>
 </head>
 <body>

@@ -151,49 +151,15 @@ header {
   z-index: 100;
 }
 
-.header-left .app-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--gold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
 
-.header-left .app-sub {
-  font-size: 0.65rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 
-.user-badge {
-  font-size: 0.72rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
 
-.btn-sair {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.15s;
-}
+
+
+
+
+
 
 .btn-sair:hover { border-color: #e55; color: #e55; }
 
@@ -248,16 +214,16 @@ header {
   border-radius: 10px;
 }
 
-.col-eventos .col-title { color: var(--montar); }
-.col-eventos .col-count { background: var(--montar-dim); color: var(--montar); }
+.col-eventos 
+.col-eventos 
 .col-eventos { border-top: 3px solid var(--montar); }
 
-.col-andamento .col-title { color: var(--andamento); }
-.col-andamento .col-count { background: var(--andamento-dim); color: var(--andamento); }
+.col-andamento 
+.col-andamento 
 .col-andamento { border-top: 3px solid var(--andamento); }
 
-.col-concluido .col-title { color: var(--concluido); }
-.col-concluido .col-count { background: var(--concluido-dim); color: var(--concluido); }
+.col-concluido 
+.col-concluido 
 .col-concluido { border-top: 3px solid var(--concluido); }
 
 .column-body {
@@ -338,9 +304,7 @@ header {
   transition: transform 0.2s;
 }
 
-.evento-card.expanded .card-expand-icon {
-  transform: rotate(180deg);
-}
+.evento-card.expanded 
 
 /* Expandable body */
 .card-body {
@@ -350,10 +314,7 @@ header {
   opacity: 0;
 }
 
-.evento-card.expanded .card-body {
-  max-height: 800px;
-  opacity: 1;
-}
+.evento-card.expanded 
 
 .card-body-inner {
   padding-top: 12px;
@@ -367,26 +328,9 @@ header {
   margin-bottom: 10px;
 }
 
-.card-evento {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.03em;
-  line-height: 1.2;
-}
 
-.card-data-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--gold);
-  background: var(--gold-dim);
-  padding: 3px 7px;
-  border-radius: 3px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  letter-spacing: 0.06em;
-}
+
+
 
 .card-local {
   font-size: 0.78rem;
@@ -484,11 +428,7 @@ header {
   /* checklist marcado: sem risco, só caixinha verde */
 }
 
-.card-item.item-removido .item-text {
-  text-decoration: line-through;
-  color: var(--muted);
-  opacity: 0.5;
-}
+.card-item.item-removido 
 
 .item-extra-tag {
   font-size: 0.85rem;
@@ -620,10 +560,8 @@ header {
 
 /* ── MOBILE ── */
 @media (max-width: 700px) {
-  .board-container { padding: 12px; }
-  .column { width: calc(100vw - 24px); }
-  .board { gap: 12px; }
-  header { padding: 12px 16px; }
+  header { padding: 8px 14px; }
+  .hd-date { display: none; }
 }
 
   /* ── FILTROS DE PERIODO ── */
@@ -681,19 +619,9 @@ header {
     letter-spacing: 0.02em;
   }
 
-  .btn-refresh {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 4px;
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-  .btn-refresh:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-refresh.spinning svg { animation: spin 0.7s linear infinite; }
+  
+  
+  
   .btn-acessos { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 5px 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: 'Barlow', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
   .btn-acessos:hover { border-color: var(--gold); color: var(--gold); }
   .acessos-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: flex-start; justify-content: flex-end; padding: 60px 16px 16px; }
