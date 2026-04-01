@@ -304,7 +304,7 @@ header {
   transition: transform 0.2s;
 }
 
-.evento-card.expanded 
+.evento-card.expanded .card-expand-icon { transform: rotate(180deg); }
 
 /* Expandable body */
 .card-body {
@@ -314,7 +314,7 @@ header {
   opacity: 0;
 }
 
-.evento-card.expanded 
+.evento-card.expanded .card-body { max-height: 2000px; opacity: 1; }
 
 .card-body-inner {
   padding-top: 12px;
@@ -428,12 +428,12 @@ header {
   /* checklist marcado: sem risco, só caixinha verde */
 }
 
-.card-item.item-removido 
+.card-item.item-removido .item-text { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
 
 .item-extra-tag {
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--montar);
+  color: #4A90C8;
   flex-shrink: 0;
   line-height: 1;
 }
@@ -1114,7 +1114,7 @@ function buildCard(ev, past, col) {
       return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '">' +
         '<div class="item-check' + (done && !removido ? ' checked' : '') + (removido ? '' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
-        '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="margin-left:auto;background:none;border:none;color:' + (removido ? 'var(--concluido)' : 'var(--muted)') + ';cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+        '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="margin-left:auto;background:none;border:none;color:' + (removido ? '#4AC87A' : '#555') + ';cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
         '</div>';
     }).join('');
     var extrasHtml = (ev.itens_extras || []).map(function(s, i) {
