@@ -29,29 +29,10 @@
   header {
     background: var(--dark);
     border-bottom: 2px solid var(--gold);
-    padding: 18px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  header img { height: 52px; mix-blend-mode: screen; }
-
-  header .title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--gold);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  header .subtitle {
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
 
   .container {
@@ -490,9 +471,8 @@
 
   @media (max-width: 640px) {
     /* Header */
-    header { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 4px; }
-    #header-date { display: none; }
-    .title { font-size: 1.1rem !important; }
+    header { padding: 8px 14px; }
+    .hd-title { font-size: 1.1rem; }
 
     /* Nav tabs */
     #main-nav { padding: 0; }
@@ -2744,15 +2724,6 @@ function buildDocHTML({ nome, evento, local, dataFmt, dataEvento, incCliente, in
   display: none;
 }
 /* ── HEADER COMPARTILHADO ── */
-header {
-  background: var(--dark);
-  border-bottom: 2px solid var(--gold);
-  padding: 10px 20px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
 .hd-row1 {
   display: flex;
   align-items: center;
