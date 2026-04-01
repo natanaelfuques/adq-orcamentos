@@ -1186,11 +1186,11 @@ function sincronizarPainel() {
       var batch = db.batch();
       var mudou = false;
 
-      // Remove eventos cujo contrato não existe ou não está assinado
+      // Remove eventos cujo contrato não existe, não está assinado, ou não tem contrato_id
       eventosSnap.forEach(function(doc) {
         var cid = doc.data().contrato_id;
-        if (cid && !assinados[cid]) {
-          console.log('[Painel] Removendo evento orfao:', doc.id);
+        if (!cid || !assinados[cid]) {
+          console.log('[Painel] Removendo evento orfao:', doc.id, '| contrato_id:', cid || 'ausente');
           batch.delete(doc.ref);
           mudou = true;
         }
