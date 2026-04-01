@@ -633,6 +633,7 @@ header {
     <div class="header-left">
       <div class="app-title">Painel de Eventos</div>
       <div class="app-sub">Áudio de Qualidade</div>
+      <div id="header-date" style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px"></div>
     </div>
     <div class="header-right">
       <span class="user-badge" id="user-name"></span>
@@ -653,8 +654,7 @@ header {
   </header>
 
   <div class="periodo-bar">
-    <button class="periodo-btn active" id="periodo-semana" onclick="setPeriodo('semana')">Esta semana</button>
-    <button class="periodo-btn" id="periodo-mes" onclick="setPeriodo('mes')">Este mes</button>
+    <button class="periodo-btn active" id="periodo-30dias" onclick="setPeriodo('30dias')">30 dias</button>
     <button class="periodo-btn" id="periodo-ano" onclick="setPeriodo('ano')">Este ano</button>
     <button class="periodo-btn" id="periodo-todos" onclick="setPeriodo('todos')">Todos</button>
     <button class="periodo-btn" id="periodo-realizados" onclick="setPeriodo('realizados')">Realizados</button>
@@ -1041,7 +1041,7 @@ function toggleItem(evId, idx) {
 })();
 
 // ═══ FILTRO DE PERIODO ═══
-var _periodo = 'semana';
+var _periodo = '30dias';
 
 function setPeriodo(p) {
   _periodo = p;
@@ -1073,6 +1073,11 @@ function matchesPeriodo(ev, periodo) {
   if (periodo === 'semana') {
     var range = getWeekRange();
     return evDate >= range.start && evDate <= range.end;
+  }
+  if (periodo === '30dias') {
+    var hoje = new Date(); hoje.setHours(0,0,0,0);
+    var fim30 = new Date(hoje); fim30.setDate(hoje.getDate() + 30);
+    return evDate >= hoje && evDate <= fim30;
   }
   if (periodo === 'mes') {
     return evDate.getMonth() === now.getMonth() && evDate.getFullYear() === now.getFullYear();
@@ -1114,6 +1119,15 @@ function toggleAnteriores(col) {
 
 // Snap board to column on finger scroll
 document.addEventListener('DOMContentLoaded', function() {
+  // Data de hoje no cabeçalho
+  var hd = document.getElementById('header-date');
+  if (hd) {
+    var now = new Date();
+    var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+    var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    hd.textContent = dias[now.getDay()] + ', ' + now.getDate() + ' de ' + meses[now.getMonth()] + ' de ' + now.getFullYear();
+  }
+
   var board = document.querySelector('.board-container');
   if (!board) return;
   var snapTimeout = null;
