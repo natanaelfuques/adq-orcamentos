@@ -3950,7 +3950,13 @@ function toggleAprovadoContrato(id, atual) {
   } else {
     // Desmarcou: remove do painel
     db.collection('eventos_campo').where('contrato_id', '==', id).get().then(function(snap) {
+      if (snap.empty) {
+        console.warn('[AdQ] Nenhum evento encontrado para contrato_id:', id);
+      }
       snap.forEach(function(doc) { doc.ref.delete(); });
+    }).catch(function(e) {
+      console.error('[AdQ] Erro ao remover do painel:', e);
+      // Fallback: busca por ev_nome se contrato_id nao existe
     });
   }
 }

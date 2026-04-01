@@ -205,7 +205,6 @@ header {
   padding: 24px;
   overflow-x: auto;
   min-height: calc(100vh - 60px);
-  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -227,8 +226,6 @@ header {
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
 }
 
 .column-header {
@@ -822,7 +819,11 @@ function renderBoard() {
     // Events
     body.querySelectorAll('.evento-card').forEach(function(card) {
       card.addEventListener('dragstart', function(e) { onDragStart(e, card.dataset.id); });
-      card.addEventListener('dragend', function() { card.classList.remove('dragging'); });
+      card.addEventListener('dragend', function() {
+          card.classList.remove('dragging');
+          document.removeEventListener('dragover', onDragScroll);
+          snapBoardToColumn();
+        });
     });
     body.querySelectorAll('.card-summary').forEach(function(summary) {
       summary.addEventListener('click', function(e) {
@@ -895,6 +896,8 @@ function esc(s) {
 }
 
 // ── Drag & Drop ──
+var _dragScrollInterval = null;
+
 function onDragStart(e, id) {
   _draggingId = id;
   setTimeout(function() {
@@ -902,6 +905,30 @@ function onDragStart(e, id) {
     if (card) card.classList.add('dragging');
   }, 0);
   e.dataTransfer.effectAllowed = 'move';
+  // Enable edge scroll during drag
+  document.addEventListener('dragover', onDragScroll);
+}
+
+function onDragScroll(e) {
+  var board = document.querySelector('.board-container');
+  if (!board) return;
+  var rect = board.getBoundingClientRect();
+  var edge = 80;
+  var x = e.clientX - rect.left;
+  if (x < edge) {
+    board.scrollLeft -= Math.max(2, (edge - x) / 4);
+  } else if (x > rect.width - edge) {
+    board.scrollLeft += Math.max(2, (x - (rect.width - edge)) / 4);
+  }
+}
+
+function snapBoardToColumn() {
+  var board = document.querySelector('.board-container');
+  var col = document.querySelector('.column');
+  if (!board || !col) return;
+  var colW = col.offsetWidth + 20; // width + gap
+  var nearest = Math.round(board.scrollLeft / colW) * colW;
+  board.scrollTo({ left: nearest, behavior: 'smooth' });
 }
 
 function onDragOver(e, col) {
@@ -1054,6 +1081,19 @@ function toggleAnteriores(col) {
   if (toggle) toggle.classList.toggle('open');
   if (body) body.classList.toggle('open');
 }
+
+// Snap board to column on finger scroll
+document.addEventListener('DOMContentLoaded', function() {
+  var board = document.querySelector('.board-container');
+  if (!board) return;
+  var snapTimeout = null;
+  board.addEventListener('scroll', function() {
+    // Only snap when not dragging a card
+    if (_draggingId) return;
+    clearTimeout(snapTimeout);
+    snapTimeout = setTimeout(snapBoardToColumn, 80);
+  }, {passive: true});
+});
 </script>
 </body>
 </html>
