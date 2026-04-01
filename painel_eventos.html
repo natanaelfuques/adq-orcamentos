@@ -955,8 +955,8 @@ function snapBoardToColumn() {
   if (!board || !col) return;
   var colW = col.offsetWidth + 20;
   var current = board.scrollLeft / colW;
-  // Snap to nearest column — requires passing 40% of column to advance
-  var nearest = Math.floor(current + 0.4);
+  // Snap to nearest column — requires passing 20% of column to advance
+  var nearest = Math.floor(current + 0.2);
   nearest = Math.max(0, Math.min(2, nearest));
   board.scrollTo({ left: nearest * colW, behavior: 'smooth' });
 }
@@ -1176,7 +1176,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var currentIdx = Math.round(current);
       var target = Math.abs(scrollVelocity) > 8
         ? (scrollVelocity > 0 ? currentIdx + 1 : currentIdx - 1)
-        : Math.floor(current + 0.4);
+        : Math.floor(current + 0.2);
       target = Math.max(0, Math.min(2, target));
       board.scrollTo({ left: target * colW, behavior: 'smooth' });
     }, 60);
