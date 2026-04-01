@@ -484,8 +484,69 @@ header {
 }
 
 .card-item.item-done .item-text {
+  /* checklist marcado: sem risco, só caixinha verde */
+}
+
+.card-item.item-removido .item-text {
   text-decoration: line-through;
   color: var(--muted);
+  opacity: 0.5;
+}
+
+.item-extra-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--montar);
+  border: 1px solid var(--montar);
+  border-radius: 3px;
+  padding: 1px 5px;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.btn-add-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.72rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.15s;
+}
+.btn-add-item:hover { border-color: var(--gold); color: var(--gold); }
+
+.add-item-form { display: flex; gap: 6px; margin-top: 8px; }
+.add-item-input {
+  flex: 1;
+  background: #2a2a2a;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem;
+  padding: 5px 8px;
+  outline: none;
+}
+.add-item-input:focus { border-color: var(--gold); }
+.btn-add-item-ok {
+  background: var(--gold);
+  color: #111;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: 'Barlow', sans-serif;
 }
 
 /* ── EMPTY STATE ── */
@@ -945,7 +1006,43 @@ function renderBoard() {
     body.querySelectorAll('.item-check').forEach(function(chk) {
       chk.addEventListener('click', function(e) {
         e.stopPropagation();
-        toggleItem(chk.dataset.evid, parseInt(chk.dataset.idx));
+        var idx = chk.dataset.idx;
+        toggleItem(chk.dataset.evid, isNaN(idx) ? idx : parseInt(idx));
+      });
+    });
+
+    body.querySelectorAll('.item-rem-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        removerItemOriginal(btn.dataset.evid, parseInt(btn.dataset.idx));
+      });
+    });
+
+    body.querySelectorAll('.item-rem-extra-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        removerItemExtra(btn.dataset.evid, parseInt(btn.dataset.idx));
+      });
+    });
+
+    body.querySelectorAll('.btn-add-item').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var evid = btn.dataset.evid;
+        var form = document.getElementById('add-form-' + evid);
+        if (form) { form.style.display = form.style.display === 'none' ? 'flex' : 'none'; }
+        btn.style.display = 'none';
+      });
+    });
+
+    body.querySelectorAll('.btn-add-item-ok').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var evid = btn.dataset.evid;
+        var form = document.getElementById('add-form-' + evid);
+        var input = form ? form.querySelector('.add-item-input') : null;
+        var val = input ? input.value.trim() : '';
+        if (val) adicionarItemExtra(evid, val);
       });
     });
   });
@@ -1009,15 +1106,38 @@ function buildCard(ev, past, col) {
   }
   var resp = ev.ev_resp ? '<div class="card-resp">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '';
   var itens = '';
-  if (ev.servicos && ev.servicos.length) {
-    var itensHtml = ev.servicos.map(function(s, i) {
+  if ((ev.servicos && ev.servicos.length) || (ev.itens_extras && ev.itens_extras.length)) {
+    var removidos = ev.itens_removidos || {};
+    var itensHtml = (ev.servicos || []).map(function(s, i) {
       var done = ev.itens_ok && ev.itens_ok[i];
-      return '<div class="card-item' + (done ? ' item-done' : '') + '">' +
+      var removido = removidos[i];
+      return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '">' +
         '<div class="item-check' + (done ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
+        (!removido ? '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' : '') +
         '</div>';
     }).join('');
-    itens = '<div class="card-itens"><div class="card-itens-title">Itens</div>' + itensHtml + '</div>';
+    var extrasHtml = (ev.itens_extras || []).map(function(s, i) {
+      var done = ev.itens_ok && ev.itens_ok['extra_' + i];
+      return '<div class="card-item' + (done ? ' item-done' : '') + '">' +
+        '<div class="item-check' + (done ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '"></div>' +
+        '<span class="item-text">' + esc(s) + '</span>' +
+        '<span class="item-extra-tag">+</span>' +
+        '<button class="item-rem-extra-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+        '</div>';
+    }).join('');
+    itens = '<div class="card-itens">' +
+      '<div class="card-itens-title">Itens</div>' +
+      itensHtml + extrasHtml +
+      '<div id="add-form-' + esc(ev.id) + '" style="display:none" class="add-item-form">' +
+        '<input class="add-item-input" placeholder="Descrição do item..." />' +
+        '<button class="btn-add-item-ok" data-evid="' + esc(ev.id) + '">OK</button>' +
+      '</div>' +
+      '<button class="btn-add-item" data-evid="' + esc(ev.id) + '">' +
+        '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>' +
+        'Adicionar item' +
+      '</button>' +
+      '</div>';
   }
 
   return '<div class="evento-card' + (past ? ' passado' : '') + '" draggable="true" data-id="' + esc(ev.id) + '">' +
@@ -1118,6 +1238,45 @@ function toggleItem(evId, idx) {
   var itensOk = Object.assign({}, ev.itens_ok || {});
   itensOk[idx] = !itensOk[idx];
   db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
+}
+
+function removerItemOriginal(evId, idx) {
+  var ev = _todosEventos.find(function(e) { return e.id === evId; });
+  if (!ev) return;
+  var removidos = Object.assign({}, ev.itens_removidos || {});
+  removidos[idx] = !removidos[idx];
+  db.collection('eventos_campo').doc(evId).update({ itens_removidos: removidos });
+  registrarAlteracao(evId, removidos[idx] ? 'removeu' : 'restaurou', ev.servicos[idx]);
+}
+
+function adicionarItemExtra(evId, texto) {
+  var ev = _todosEventos.find(function(e) { return e.id === evId; });
+  if (!ev) return;
+  var extras = (ev.itens_extras || []).concat([texto]);
+  db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+  registrarAlteracao(evId, 'adicionou', texto);
+}
+
+function removerItemExtra(evId, idx) {
+  var ev = _todosEventos.find(function(e) { return e.id === evId; });
+  if (!ev) return;
+  var extras = (ev.itens_extras || []).filter(function(_, i) { return i !== idx; });
+  db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+  registrarAlteracao(evId, 'removeu extra', (ev.itens_extras || [])[idx] || '');
+}
+
+function registrarAlteracao(evId, acao, item) {
+  if (!db || !auth.currentUser) return;
+  db.collection('acessos_painel').add({
+    email:    auth.currentUser.email,
+    usuario:  auth.currentUser.email.split('@')[0],
+    uid:      auth.currentUser.uid,
+    tipo:     'alteracao_item',
+    acao:     acao,
+    item:     item,
+    evento_id: evId,
+    data:     firebase.firestore.FieldValue.serverTimestamp()
+  });
 }
 </script>
 
