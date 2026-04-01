@@ -750,7 +750,7 @@
         <div class="section-title" style="margin:0;white-space:nowrap">Carregar</div>
         <button class="btn-preset" onclick="document.getElementById('orc_carregar_input').click();event.stopPropagation()" style="padding:6px 10px;font-size:0.72rem;white-space:nowrap">📂 Orçamento / Contrato</button>
       </div>
-      <button onclick="resetFormularioOrcamento()" class="btn-preset btn-limpar" style="padding:6px 10px;font-size:0.72rem;color:var(--muted);white-space:nowrap;margin-left:auto" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕ Limpar formulário</button>
+      <button onclick="resetFormularioOrcamento()" class="btn-preset btn-limpar" style="padding:6px 10px;font-size:0.72rem;color:var(--muted);white-space:nowrap;margin-left:auto" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">X Limpar formulário</button>
     </div>
     <div class="collapse-body open" style="padding:0">
       <div id="orc_carregar_wrap" style="display:none;padding:0 20px 20px;margin-top:0">
@@ -1250,7 +1250,7 @@ Revestimento</textarea>
         <div class="section-title" style="margin:0;white-space:nowrap">Carregar</div>
         <button class="btn-preset" onclick="document.getElementById('orc_json_input').click();event.stopPropagation()" style="padding:6px 10px;font-size:0.72rem;white-space:nowrap">📂 Orçamento / Contrato</button>
       </div>
-      <button onclick="resetFormularioContrato()" class="btn-preset btn-limpar" style="padding:6px 10px;font-size:0.72rem;color:var(--muted);white-space:nowrap;margin-left:auto" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕ Limpar formulário</button>
+      <button onclick="resetFormularioContrato()" class="btn-preset btn-limpar" style="padding:6px 10px;font-size:0.72rem;color:var(--muted);white-space:nowrap;margin-left:auto" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">X Limpar formulário</button>
     </div>
     <div class="collapse-body open" style="padding:0">
       <div id="orc_opcoes_wrap" style="display:none;padding:0 20px 20px;margin-top:0">
@@ -3266,8 +3266,8 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
 
 
 // ═══════════════════════════════════════════════
-// FIREBASE + ORÇAMENTOS SALVOS
-// ═══════════════════════════════════════════════
+// FIREBASE + OR&#199;AMENTOS SALVOS
+// &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
 
 const firebaseConfig = {
   apiKey: "AIzaSyBX7qH0fY990F73VWlL7aTbSyG-OKsqkoY",
@@ -3308,10 +3308,10 @@ function iniciarListenerSalvos() {
       const docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
       renderSalvos(docs);
-      if (statusEl) statusEl.textContent = docs.length + ' orçamento' + (docs.length !== 1 ? 's' : '');
+      if (statusEl) statusEl.textContent = docs.length + ' or&#231;amento' + (docs.length !== 1 ? 's' : '');
     }, function(err) {
       console.warn('[AdQ] Listener erro:', err);
-      if (statusEl) statusEl.textContent = 'Erro de sincronização';
+      if (statusEl) statusEl.textContent = 'Erro de sincroniza&#231;&#227;o';
     });
 }
 
@@ -3357,7 +3357,7 @@ function coletarDadosOrcamento() {
       if (document.getElementById('inc_op'+i) && document.getElementById('inc_op'+i).checked) {
         opcoes.push({
           tipo: 'pacote', idx: i,
-          titulo: ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
+          titulo: ['Essencial','Mais Escolhido','Experi&#234;ncia Completa'][i-1],
           desc:  document.getElementById('desc'+i) ? document.getElementById('desc'+i).value.trim() : '',
           valor: formatBRL(parseBRL(document.getElementById('valor'+i) ? document.getElementById('valor'+i).value : '0'))
         });
@@ -3367,13 +3367,13 @@ function coletarDadosOrcamento() {
   if (base.inc_detalhado) {
     var itens = base.detItens.filter(function(it){ return it.inc; });
     if (itens.length) opcoes.push({
-      tipo: 'detalhado', titulo: 'Orçamento Detalhado',
+      tipo: 'detalhado', titulo: 'Or&#231;amento Detalhado',
       itens: itens.map(function(it){ return {titulo: it.titulo, desc: it.desc, valor: it.val}; }),
       valor: document.getElementById('det_valor') ? document.getElementById('det_valor').value.trim() : ''
     });
   }
 
-  // Calcular valor total para exibição na lista
+  // Calcular valor total para exibi&#231;&#227;o na lista
   var valorTotal = '';
   if (base.inc_opcoes) {
     var vals = [1,2,3].filter(function(i){ return base['inc_op'+i]; })
@@ -3396,26 +3396,26 @@ function coletarDadosOrcamento() {
 
 function salvarNaNuvem() {
   if (!db) {
-    alert('Banco de dados não conectado. Verifique a configuração do Firebase.');
+    alert('Banco de dados n&#227;o conectado. Verifique a configura&#231;&#227;o do Firebase.');
     return;
   }
   const btn = document.getElementById('btn-salvar-nuvem');
-  if (btn) { btn.textContent = '☁ Salvando...'; btn.disabled = true; }
+  if (btn) { btn.textContent = '&#9729; Salvando...'; btn.disabled = true; }
 
   const dados = coletarDadosOrcamento();
   dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
 
   db.collection('orcamentos').add(dados)
     .then(function() {
-      if (btn) { btn.textContent = '✓ Salvo!'; }
+      if (btn) { btn.textContent = 'Salvo!'; }
       setTimeout(function() {
-        if (btn) { btn.textContent = '☁ Salvar Orçamento'; btn.disabled = false; }
+        if (btn) { btn.textContent = '&#9729; Salvar Or&#231;amento'; btn.disabled = false; }
       }, 2000);
     })
     .catch(function(e) {
       console.error('[AdQ] Salvar erro:', e);
       alert('Erro ao salvar: ' + e.message);
-      if (btn) { btn.textContent = '☁ Salvar Orçamento'; btn.disabled = false; }
+      if (btn) { btn.textContent = '&#9729; Salvar Or&#231;amento'; btn.disabled = false; }
     });
 }
 
@@ -3423,14 +3423,14 @@ function renderSalvos(docs) {
   var lista = document.getElementById('salvos-lista');
   if (!lista) return;
   if (docs.length === 0) {
-    lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum orçamento salvo ainda.</div>';
+    lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum or&#231;amento salvo ainda.</div>';
     return;
   }
   lista.innerHTML = docs.map(function(doc) {
-    var nome    = doc.nome_cliente || doc.nome || '—';
+    var nome    = doc.nome_cliente || doc.nome || '&#8212;';
     var evento  = doc.tipo_evento  || doc.evento || '';
     var data    = doc.data_evento  || doc.dataEvt || '';
-    var dataFmt = data ? data.split('-').reverse().join('/') : '—';
+    var dataFmt = data ? data.split('-').reverse().join('/') : '&#8212;';
     var valor   = doc.valorTotal ? 'R$ ' + doc.valorTotal : '';
     var aprovado = doc.aprovado ? true : false;
     return [
@@ -3438,18 +3438,18 @@ function renderSalvos(docs) {
       '  <div class="salvo-card-top">',
       '    <div>',
       '      <div class="salvo-card-nome">' + escHtml(nome) + '</div>',
-      '      <div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' \u00b7 ' : '') + dataFmt + '</div>',
+      '      <div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div>',
       '    </div>',
       '    <div class="salvo-card-valor">' + escHtml(valor) + '</div>',
       '  </div>',
       '  <div class="salvo-card-actions">',
-      '    <button class="btn-salvo primary" onclick="abrirSalvo('' + doc.id + '')">✎ Abrir</button>',
-      '    <button class="btn-salvo" onclick="duplicarSalvo('' + doc.id + '')">⧉ Duplicar</button>',
-      '    <button class="btn-salvo" onclick="gerarContratoSalvo('' + doc.id + '')">📄 Contrato</button>',
-      '    <button class="btn-salvo danger" onclick="excluirSalvo('' + doc.id + '', '' + escHtml(nome) + '')">✕</button>',
+      '    <button class="btn-salvo primary" onclick="abrirSalvo('' + doc.id + '')">Abrir</button>',
+      '    <button class="btn-salvo" onclick="duplicarSalvo('' + doc.id + '')">Duplicar</button>',
+      '    <button class="btn-salvo" onclick="gerarContratoSalvo('' + doc.id + '')">Contrato</button>',
+      '    <button class="btn-salvo danger" onclick="excluirSalvo('' + doc.id + '', '' + escHtml(nome) + '')">X</button>',
       '  </div>',
       '  <button class="salvo-status ' + (aprovado ? 'aprovado' : '') + '" onclick="toggleAprovado('' + doc.id + '',' + aprovado + ')">',
-      '    ' + (aprovado ? '✓ Aprovado' : '○ Pendente'),
+      '    ' + (aprovado ? 'Aprovado' : 'Pendente'),
       '  </button>',
       '</div>'
     ].join('\n');
@@ -3463,7 +3463,7 @@ function escHtml(s) {
 function abrirSalvo(id) {
   if (!db) return;
   db.collection('orcamentos').doc(id).get().then(function(doc) {
-    if (!doc.exists) { alert('Orçamento não encontrado.'); return; }
+    if (!doc.exists) { alert('Or&#231;amento n&#227;o encontrado.'); return; }
     var d = doc.data();
     if (d._tipo === 'orcamento_completo' || d._tipo === 'orcamento') {
       carregarOrcamentoEditavel._processar(d);
@@ -3478,11 +3478,11 @@ function duplicarSalvo(id) {
     if (!doc.exists) return;
     var d = Object.assign({}, doc.data());
     d.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
-    d.nome_cliente = (d.nome_cliente || '') + ' (cópia)';
+    d.nome_cliente = (d.nome_cliente || '') + ' (c&#243;pia)';
     d.nome = d.nome_cliente;
     d.aprovado = false;
     db.collection('orcamentos').add(d).then(function() {
-      alert('Orçamento duplicado!');
+      alert('Or&#231;amento duplicado!');
     });
   });
 }
@@ -3500,7 +3500,7 @@ function gerarContratoSalvo(id) {
       set('ev_nome',   d.tipo_evento  || d.evento || '');
       set('ev_local',  d.local_evento || d.local  || '');
       set('ev_data',   d.data_evento  || d.dataEvt || '');
-      // Preenche serviços
+      // Preenche servi&#231;os
       var lista = document.getElementById('lista-servicos');
       if (lista && d.opcoes && d.opcoes.length) {
         lista.innerHTML = '';
@@ -3515,7 +3515,7 @@ function gerarContratoSalvo(id) {
         servicos.forEach(function(s) {
           var div = document.createElement('div');
           div.className = 'servico-item';
-          div.innerHTML = '<input type="text" value="' + escHtml(s) + '"><button class="btn-rem" onclick="remServico(this)">×</button>';
+          div.innerHTML = '<input type="text" value="' + escHtml(s) + '"><button class="btn-rem" onclick="remServico(this)">&#215;</button>';
           lista.appendChild(div);
         });
         if (lista.children.length === 0) addServico();
@@ -3530,7 +3530,7 @@ function gerarContratoSalvo(id) {
 }
 
 function excluirSalvo(id, nome) {
-  if (!confirm('Excluir orçamento de "' + nome + '"?')) return;
+  if (!confirm('Excluir or&#231;amento de "' + nome + '"?')) return;
   if (!db) return;
   db.collection('orcamentos').doc(id).delete()
     .catch(function(e){ alert('Erro ao excluir: ' + e.message); });
