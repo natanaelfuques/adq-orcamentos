@@ -582,6 +582,20 @@ header {
   }
   .btn-refresh:hover { border-color: var(--gold); color: var(--gold); }
   .btn-refresh.spinning svg { animation: spin 0.7s linear infinite; }
+  .btn-acessos { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 5px 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: 'Barlow', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .btn-acessos:hover { border-color: var(--gold); color: var(--gold); }
+  .acessos-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: flex-start; justify-content: flex-end; padding: 60px 16px 16px; }
+  .acessos-overlay.open { display: flex; }
+  .acessos-modal { background: #1e1e1e; border: 1px solid var(--border); border-radius: 8px; width: 100%; max-width: 340px; max-height: 70vh; overflow-y: auto; }
+  .acessos-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .acessos-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase; }
+  .acessos-close { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 0 4px; }
+  .acessos-close:hover { color: var(--text); }
+  .acesso-item { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .acesso-item:last-child { border-bottom: none; }
+  .acesso-user { font-size: 0.8rem; font-weight: 700; color: var(--text); }
+  .acesso-meta { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .acessos-empty { padding: 20px 16px; text-align: center; color: var(--muted); font-size: 0.8rem; }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 
@@ -625,6 +639,14 @@ header {
     </div>
     <div class="header-right">
       <span class="user-badge" id="user-name"></span>
+      <button class="btn-acessos" id="btn-acessos" onclick="toggleAcessos()" title="Histórico de acessos" style="display:none">
+        <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="4.5" cy="3" r="2.2"/>
+          <circle cx="9.5" cy="3" r="2.2"/>
+          <path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/>
+          <path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/>
+        </svg>
+      </button>
       <button class="btn-refresh" onclick="onRefresh()" title="Sincronizar">
         <svg id="refresh-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="1,4 1,1 4,1"/>
@@ -636,6 +658,17 @@ header {
       <button class="btn-sair" onclick="sair()">Sair</button>
     </div>
   
+  <!-- Modal de acessos -->
+  <div class="acessos-overlay" id="acessos-overlay" onclick="fecharAcessosOverlay(event)">
+    <div class="acessos-modal">
+      <div class="acessos-header">
+        <span class="acessos-title">Histórico de Acessos</span>
+        <button class="acessos-close" onclick="toggleAcessos()">✕</button>
+      </div>
+      <div id="acessos-lista"><div class="acessos-empty">Carregando...</div></div>
+    </div>
+  </div>
+
   <button id="pwa-install-btn" onclick="adqInstall()" style="display:none;align-items:center;gap:6px;background:#C8A94A;color:#111;border:none;border-radius:4px;padding:6px 14px;font-family:'Barlow',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;">
     Instalar
   </button>
@@ -710,6 +743,11 @@ auth.onAuthStateChanged(function(user) {
     document.getElementById('app-screen').style.display = 'block';
     var name = user.email.split('@')[0];
     document.getElementById('user-name').textContent = name;
+    if (user.email === 'natanael.fuques@gmail.com') {
+      var btnAcessos = document.getElementById('btn-acessos');
+      if (btnAcessos) btnAcessos.style.display = 'flex';
+    }
+    registrarAcesso(user);
     iniciarBoard();
   } else {
     document.getElementById('login-screen').style.display = 'flex';
@@ -742,6 +780,56 @@ function mostrarErro(msg) {
 
 function sair() {
   auth.signOut();
+}
+
+function registrarAcesso(user) {
+  if (!db || !user) return;
+  db.collection('acessos_painel').add({
+    email:    user.email,
+    usuario:  user.email.split('@')[0],
+    uid:      user.uid,
+    data:     firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+function toggleAcessos() {
+  var overlay = document.getElementById('acessos-overlay');
+  var isOpen = overlay.classList.contains('open');
+  if (isOpen) {
+    overlay.classList.remove('open');
+  } else {
+    overlay.classList.add('open');
+    carregarAcessos();
+  }
+}
+
+function fecharAcessosOverlay(e) {
+  if (e.target === document.getElementById('acessos-overlay')) toggleAcessos();
+}
+
+function carregarAcessos() {
+  if (!db) return;
+  var lista = document.getElementById('acessos-lista');
+  lista.innerHTML = '<div class="acessos-empty">Carregando...</div>';
+  db.collection('acessos_painel')
+    .orderBy('data', 'desc')
+    .limit(30)
+    .get().then(function(snap) {
+      if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum acesso registrado.</div>'; return; }
+      var html = '';
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        var ts = d.data && d.data.toDate ? d.data.toDate() : null;
+        var dataFmt = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : '—';
+        html += '<div class="acesso-item">' +
+          '<div class="acesso-user">' + escHtml(d.usuario || d.email) + '</div>' +
+          '<div class="acesso-meta">' + escHtml(d.email) + ' · ' + dataFmt + '</div>' +
+          '</div>';
+      });
+      lista.innerHTML = html;
+    }).catch(function() {
+      lista.innerHTML = '<div class="acessos-empty">Erro ao carregar.</div>';
+    });
 }
 
 // ── Board ──
