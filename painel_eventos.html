@@ -400,6 +400,13 @@ header {
   gap: 6px;
 }
 
+.card-horario-block {
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
 .card-horario-inline {
   font-size: 0.78rem;
   color: var(--text);
@@ -923,8 +930,8 @@ function buildCard(ev, past, col) {
     '</div>' +
     '<div class="card-body">' +
       '<div class="card-body-inner">' +
+        (horario ? '<div class="card-horario-block">' + esc(horario) + '</div>' : '') +
         '<div class="card-local">' +
-          (horario ? '<span class="card-horario-inline">' + esc(horario) + '</span><span class="card-local-sep">·</span>' : '') +
           '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg> ' +
           esc(ev.ev_local || '') +
         '</div>' +
