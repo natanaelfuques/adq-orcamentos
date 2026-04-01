@@ -3474,7 +3474,6 @@ function handleSalvosClick(e) {
   var nome = btn.getAttribute('data-nome') || '';
   if (action === 'abrir') abrirSalvo(id);
   else if (action === 'duplicar') duplicarSalvo(id);
-  else if (action === 'contrato') gerarContratoSalvo(id);
   else if (action === 'excluir') excluirSalvo(id, nome);
   else if (action === 'status') {
     var ap = btn.getAttribute('data-aprovado') === 'true';
@@ -3645,7 +3644,6 @@ function renderSalvos(docs) {
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Abrir</button>';
     card += '<button class="btn-salvo" data-action="duplicar" data-id="' + id + '">Duplicar</button>';
-    card += '<button class="btn-salvo" data-action="contrato" data-id="' + id + '">Contrato</button>';
     card += '<button class="btn-salvo" data-action="json-orc" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
@@ -3709,8 +3707,22 @@ function excluirSalvo(id, nome) {
 
 function toggleAprovado(id, atual) {
   if (!db) return;
-  db.collection('orcamentos').doc(id).update({ aprovado: !atual })
+  var novoStatus = !atual;
+  db.collection('orcamentos').doc(id).update({ aprovado: novoStatus })
     .catch(function(e){ console.warn('[AdQ] Toggle aprovado erro:', e); });
+  // Se marcou como aprovado, carrega para edicao do contrato
+  if (novoStatus) {
+    db.collection('orcamentos').doc(id).get().then(function(doc) {
+      if (!doc.exists) return;
+      var d = doc.data();
+      switchMain('contrato');
+      setTimeout(function() {
+        if (d._tipo === 'orcamento' || d._tipo === 'orcamento_completo') {
+          carregarOrcamentoJSON._processar(d);
+        }
+      }, 150);
+    });
+  }
 }
 
 
@@ -3794,22 +3806,6 @@ function salvarContratoNaNuvem() {
   dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
   db.collection('contratos').add(dados)
     .then(function(docRef) {
-      // Auto-add to painel de eventos
-      var evento = {
-        ev_nome:   dados.ev_nome   || '',
-        ev_local:  dados.ev_local  || '',
-        ev_data:   dados.ev_data   || '',
-        ev_inicio: dados.ev_inicio || '',
-        ev_fim:    dados.ev_fim    || '',
-        ev_resp:   dados.ev_resp   || '',
-        cli_nome:  dados.cli_nome  || '',
-        servicos:  dados.servicos  || [],
-        itens_ok:  {},
-        etapa:     'montar',
-        contrato_id: docRef.id,
-        criadoEm:  firebase.firestore.FieldValue.serverTimestamp()
-      };
-      db.collection('eventos_campo').add(evento);
       if (btn) { btn.textContent = 'Salvo!'; }
       setTimeout(function() {
         if (btn) { btn.textContent = 'Salvar Contrato'; btn.disabled = false; }
@@ -3928,7 +3924,37 @@ function excluirContrato(id, nome) {
 
 function toggleAprovadoContrato(id, atual) {
   if (!db) return;
-  db.collection('contratos').doc(id).update({ aprovado: !atual });
+  var novoStatus = !atual;
+  db.collection('contratos').doc(id).update({ aprovado: novoStatus });
+  if (novoStatus) {
+    // Marcou como assinado: adiciona ao painel se ainda nao existe
+    db.collection('contratos').doc(id).get().then(function(doc) {
+      if (!doc.exists) return;
+      var d = doc.data();
+      db.collection('eventos_campo').where('contrato_id', '==', id).get().then(function(snap) {
+        if (!snap.empty) return;
+        db.collection('eventos_campo').add({
+          ev_nome:     d.ev_nome   || '',
+          ev_local:    d.ev_local  || '',
+          ev_data:     d.ev_data   || '',
+          ev_inicio:   d.ev_inicio || '',
+          ev_fim:      d.ev_fim    || '',
+          ev_resp:     d.ev_resp   || '',
+          cli_nome:    d.cli_nome  || '',
+          servicos:    d.servicos  || [],
+          itens_ok:    {},
+          etapa:       'montar',
+          contrato_id: id,
+          criadoEm:    firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+    });
+  } else {
+    // Desmarcou: remove do painel
+    db.collection('eventos_campo').where('contrato_id', '==', id).get().then(function(snap) {
+      snap.forEach(function(doc) { doc.ref.delete(); });
+    });
+  }
 }
 
 
