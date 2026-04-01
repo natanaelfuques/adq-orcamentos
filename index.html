@@ -29,10 +29,29 @@
   header {
     background: var(--dark);
     border-bottom: 2px solid var(--gold);
-    padding: 10px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  header img { height: 52px; mix-blend-mode: screen; }
+
+  header .title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  header .subtitle {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
   .container {
@@ -471,9 +490,9 @@
 
   @media (max-width: 640px) {
     /* Header */
-    header { padding: 8px 14px; }
-    .hd-title { font-size: 1.1rem; }
-    .hd-date { display: none; }
+    header { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 4px; }
+    #header-date { display: none; }
+    .title { font-size: 1.1rem !important; }
 
     /* Nav tabs */
     #main-nav { padding: 0; }
@@ -684,13 +703,6 @@
     margin-top: 8px;
   }
   .salvo-status.aprovado { border-color: #4caf50; color: #4caf50; }
-  .salvo-montagem-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-  .salvo-montagem-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 0.75rem; padding: 2px 4px; width: 90px; outline: none; }
-  .salvo-montagem-input:focus { border-bottom-color: var(--gold); color: var(--text); }
-  .salvo-montagem-input::placeholder { color: var(--muted); opacity: 0.6; }
-  .hide-when-assinado { display: none; }
-  .btn-calendar { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; background: transparent; border: 1px solid #4A90C8; color: #4A90C8; border-radius: 4px; padding: 4px 10px; font-family: 'Barlow', sans-serif; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; cursor: pointer; text-decoration: none; }
-  .btn-calendar:hover { background: rgba(74,144,200,0.1); }
   .salvo-status:hover { opacity: 0.8; }
 
 
@@ -813,90 +825,51 @@
   }
 
 
-#gerador-login-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #111;
-  padding: 24px;
-  box-sizing: border-box;
-}
-.gerador-login-box {
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-top: 3px solid #C8A94A;
-  border-radius: 8px;
-  padding: 40px 36px;
-  width: 100%;
-  max-width: 380px;
-  box-sizing: border-box;
-}
-.gerador-login-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #C8A94A;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  text-align: center;
-}
-.gerador-login-sub {
-  font-size: 0.72rem;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-top: 4px;
-  text-align: center;
-  margin-bottom: 28px;
-}
-.gerador-login-field { margin-bottom: 16px; }
-.gerador-login-field label {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
-}
-.gerador-login-field input {
-  width: 100%;
-  background: #111;
-  border: 1px solid #333;
-  color: #eee;
-  font-family: 'Barlow', sans-serif;
-  font-size: 0.95rem;
-  padding: 11px 14px;
-  border-radius: 4px;
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-.gerador-login-field input:focus { border-color: #C8A94A; }
-.gerador-btn-login {
-  width: 100%;
-  padding: 13px;
-  background: #C8A94A;
-  color: #111;
-  border: none;
-  border-radius: 4px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: opacity 0.2s;
-}
-.gerador-btn-login:hover { opacity: 0.85; }
-.gerador-login-error {
-  color: #e05c5c;
-  font-size: 0.78rem;
-  margin-top: 10px;
-  text-align: center;
-  display: none;
+/* ── LOGIN ── */
+#gerador-login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#111; padding:24px; box-sizing:border-box; }
+.gerador-login-box { background:#1e1e1e; border:1px solid #333; border-top:3px solid #C8A94A; border-radius:8px; padding:40px 36px; width:100%; max-width:380px; box-sizing:border-box; }
+.gerador-login-title { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:800; color:#C8A94A; letter-spacing:0.06em; text-transform:uppercase; text-align:center; }
+.gerador-login-sub { font-size:0.72rem; color:#888; text-transform:uppercase; letter-spacing:0.1em; margin-top:4px; text-align:center; margin-bottom:28px; }
+.gerador-login-field { margin-bottom:16px; }
+.gerador-login-field label { display:block; font-size:0.7rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; }
+.gerador-login-field input { width:100%; background:#111; border:1px solid #333; color:#eee; font-family:'Barlow',sans-serif; font-size:0.95rem; padding:11px 14px; border-radius:4px; outline:none; box-sizing:border-box; transition:border-color 0.2s; }
+.gerador-login-field input:focus { border-color:#C8A94A; }
+.gerador-btn-login { width:100%; padding:13px; background:#C8A94A; color:#111; border:none; border-radius:4px; font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; margin-top:8px; transition:opacity 0.2s; }
+.gerador-btn-login:hover { opacity:0.85; }
+.gerador-login-error { color:#e05c5c; font-size:0.78rem; margin-top:10px; text-align:center; display:none; }
+
+/* ── HEADER ── */
+header { background:var(--dark); border-bottom:2px solid var(--gold); padding:10px 20px; position:sticky; top:0; z-index:100; }
+.hd-row1 { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; }
+.hd-title { font-family:'Barlow Condensed',sans-serif; font-size:1.3rem; font-weight:800; color:var(--gold); letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex-shrink:1; }
+.hd-row2 { display:flex; align-items:center; justify-content:space-between; margin-top:2px; gap:8px; }
+.hd-sub { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.09em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hd-date { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; white-space:nowrap; text-align:right; flex-shrink:0; }
+.hd-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.hd-user { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; }
+
+/* ── ACESSOS ── */
+.btn-acessos { background:transparent; border:1px solid #444; color:#aaa; border-radius:4px; padding:4px 8px; cursor:pointer; display:none; align-items:center; gap:5px; font-family:'Barlow',sans-serif; font-size:0.7rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; }
+.btn-acessos:hover { border-color:var(--gold); color:var(--gold); }
+.acessos-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; align-items:flex-start; justify-content:flex-end; padding:60px 16px 16px; }
+.acessos-overlay.open { display:flex; }
+.acessos-modal { background:#1e1e1e; border:1px solid #333; border-radius:8px; width:100%; max-width:340px; max-height:70vh; overflow-y:auto; }
+.acessos-header { padding:14px 16px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; }
+.acessos-title { font-family:'Barlow Condensed',sans-serif; font-size:0.8rem; font-weight:700; color:var(--gold); letter-spacing:0.1em; text-transform:uppercase; }
+.acessos-close { background:none; border:none; color:#888; font-size:1.1rem; cursor:pointer; padding:0 4px; }
+.acessos-close:hover { color:#eee; }
+.acesso-item { padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.05); }
+.acesso-item:last-child { border-bottom:none; }
+.acesso-user { font-size:0.8rem; font-weight:700; color:#eee; }
+.acesso-meta { font-size:0.72rem; color:#888; margin-top:2px; }
+.acessos-empty { padding:20px 16px; text-align:center; color:#888; font-size:0.8rem; }
+
+@media (max-width:640px) {
+  header { padding:8px 12px; }
+  .hd-title { font-size:1rem; }
+  .hd-date { display:none; }
+  .hd-user { display:none; }
+  .hd-actions { gap:5px; }
 }
 </style>
 
@@ -919,14 +892,8 @@
   <div class="gerador-login-box">
     <div class="gerador-login-title">Áudio de Qualidade</div>
     <div class="gerador-login-sub">Gerador de Orçamento e Contrato</div>
-    <div class="gerador-login-field">
-      <label>E-mail</label>
-      <input type="email" id="gerador-login-email" placeholder="seu@email.com" />
-    </div>
-    <div class="gerador-login-field">
-      <label>Senha</label>
-      <input type="password" id="gerador-login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')geradorFazerLogin()" />
-    </div>
+    <div class="gerador-login-field"><label>E-mail</label><input type="email" id="gerador-login-email" placeholder="seu@email.com" /></div>
+    <div class="gerador-login-field"><label>Senha</label><input type="password" id="gerador-login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')geradorFazerLogin()" /></div>
     <button class="gerador-btn-login" id="gerador-btn-login" onclick="geradorFazerLogin()">Entrar</button>
     <div class="gerador-login-error" id="gerador-login-error"></div>
   </div>
@@ -939,13 +906,8 @@
     <div class="hd-title">Gerador de Orçamento e Contrato</div>
     <div class="hd-actions">
       <span class="hd-user" id="header-user"></span>
-      <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico de acessos">
-        <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="4.5" cy="3" r="2.2"/>
-          <circle cx="9.5" cy="3" r="2.2"/>
-          <path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/>
-          <path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/>
-        </svg>
+      <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico">
+        <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="3" r="2.2"/><circle cx="9.5" cy="3" r="2.2"/><path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/><path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/></svg>
       </button>
       <button id="btn-gerador-sair" onclick="geradorSair()" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 10px;font-family:'Barlow',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;">Sair</button>
       <button id="pwa-install-btn" onclick="adqInstall()" style="display:none;align-items:center;gap:6px;background:#C8A94A;color:#111;border:none;border-radius:4px;padding:5px 12px;font-family:'Barlow',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;">&#8659; Instalar</button>
@@ -957,13 +919,9 @@
   </div>
 </header>
 
-<!-- Modal de acessos gerador -->
 <div class="acessos-overlay" id="acessos-overlay-gerador" onclick="fecharAcessosGerador(event)">
   <div class="acessos-modal">
-    <div class="acessos-header">
-      <span class="acessos-title">Histórico de Acessos</span>
-      <button class="acessos-close" onclick="toggleAcessosGerador()">✕</button>
-    </div>
+    <div class="acessos-header"><span class="acessos-title">Histórico de Acessos</span><button class="acessos-close" onclick="toggleAcessosGerador()">✕</button></div>
     <div id="acessos-lista-gerador"><div class="acessos-empty">Carregando...</div></div>
   </div>
 </div>
@@ -2639,82 +2597,6 @@ function buildDocHTML({ nome, evento, local, dataFmt, dataEvento, incCliente, in
     .page { margin: 0; padding: 0; }
     body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   }
-
-/* ── HEADER COMPARTILHADO ── */
-.hd-row1 {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.hd-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: var(--gold);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.hd-row2 {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 2px;
-  gap: 8px;
-}
-
-.hd-sub {
-  font-size: 0.62rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  white-space: nowrap;
-}
-
-.hd-date {
-  font-size: 0.62rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  white-space: nowrap;
-  text-align: right;
-}
-
-.hd-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.hd-user {
-  font-size: 0.7rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-}
-
-/* ── LOGS DE ACESSO ── */
-.btn-acessos { background: transparent; border: 1px solid #444; color: #aaa; border-radius: 4px; padding: 4px 8px; cursor: pointer; display: none; align-items: center; gap: 5px; font-family: 'Barlow', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
-.btn-acessos:hover { border-color: var(--gold); color: var(--gold); }
-.acessos-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: flex-start; justify-content: flex-end; padding: 60px 16px 16px; }
-.acessos-overlay.open { display: flex; }
-.acessos-modal { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; width: 100%; max-width: 340px; max-height: 70vh; overflow-y: auto; }
-.acessos-header { padding: 14px 16px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-.acessos-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase; }
-.acessos-close { background: none; border: none; color: #888; font-size: 1.1rem; cursor: pointer; padding: 0 4px; }
-.acessos-close:hover { color: #eee; }
-.acesso-item { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.acesso-item:last-child { border-bottom: none; }
-.acesso-user { font-size: 0.8rem; font-weight: 700; color: #eee; }
-.acesso-meta { font-size: 0.72rem; color: #888; margin-top: 2px; }
-.acesso-acao { font-size: 0.68rem; color: #4A90C8; margin-top: 2px; }
-.acessos-empty { padding: 20px 16px; text-align: center; color: #888; font-size: 0.8rem; }
-
 </style>
 </head>
 <body>
@@ -3113,16 +2995,23 @@ function formatDoc(val) {
 function formatHora(val) {
   if (!val) return '';
   const v = val.trim();
+  // Extract digits only
   const digits = v.replace(/\D/g, '');
-  if (!digits) return v; // texto puro — retorna como está
   let h, min;
-  if (digits.length <= 2) { h = digits; min = '00'; }
-  else if (digits.length === 3) { h = digits.slice(0, 1); min = digits.slice(1); }
-  else { h = digits.slice(0, 2); min = digits.slice(2, 4); }
-  const horaFmt = h.padStart(2, '0') + ':' + (min || '00').padStart(2, '0');
-  // Se tinha texto junto (ex: "segunda 14h") — mantém texto + hora formatada
-  const semNumeros = v.replace(/[\d:hH]/g, '').trim().replace(/[-–]/g, '').trim();
-  return semNumeros ? semNumeros + ' ' + horaFmt : horaFmt;
+  if (digits.length <= 2) {
+    // "13" or "9" → 13h00
+    h = digits;
+    min = '00';
+  } else if (digits.length === 3) {
+    // "930" → 09h30
+    h = digits.slice(0, 1);
+    min = digits.slice(1);
+  } else {
+    // "1330" or "1300" → 13h30
+    h = digits.slice(0, 2);
+    min = digits.slice(2, 4);
+  }
+  return h.padStart(2, '0') + ':' + (min || '00').padStart(2, '0');
 }
 
 function validarEntrada(input) {
@@ -3416,7 +3305,6 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
   .doc-footer { background:#1a1a1a; color:#888; text-align:center; font-size:7.5pt; padding:10px 22px; margin-top:auto; }
   .doc-footer strong { color:#C8A94A; }
 
-
 </style>
 </head>
 <body>
@@ -3646,9 +3534,7 @@ function initFirebase(config) {
     db = firebase.firestore();
     var auth = firebase.auth();
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
     var ALLOWED = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
-
     auth.onAuthStateChanged(function(user) {
       if (user && ALLOWED.indexOf(user.email) !== -1) {
         document.getElementById('gerador-login-screen').style.display = 'none';
@@ -3676,31 +3562,37 @@ function initFirebase(config) {
   }
 }
 
-function geradorSair() {
-  firebase.auth().signOut();
+function geradorSair() { registrarLogGerador('saida'); firebase.auth().signOut(); }
+
+function geradorFazerLogin() {
+  var email = document.getElementById('gerador-login-email').value.trim();
+  var senha = document.getElementById('gerador-login-senha').value;
+  var btn = document.getElementById('gerador-btn-login');
+  var err = document.getElementById('gerador-login-error');
+  if (!email || !senha) { err.textContent = 'Preencha e-mail e senha.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Entrando...'; err.style.display = 'none';
+  firebase.auth().signInWithEmailAndPassword(email, senha).catch(function() {
+    err.textContent = 'E-mail ou senha incorretos.'; err.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Entrar';
+  });
+}
+
+function registrarLogGerador(tipo, detalhe) {
+  if (!db || !firebase.auth().currentUser) return;
+  var user = firebase.auth().currentUser;
+  db.collection('logs_gerador').add({ email: user.email, usuario: user.email.split('@')[0], tipo: tipo, detalhe: detalhe || '', data: firebase.firestore.FieldValue.serverTimestamp() });
 }
 
 function registrarAcessoGerador(user) {
   if (!db || !user) return;
-  db.collection('acessos_painel').add({
-    email:    user.email,
-    usuario:  user.email.split('@')[0],
-    uid:      user.uid,
-    tipo:     'gerador',
-    data:     firebase.firestore.FieldValue.serverTimestamp()
-  });
+  db.collection('logs_gerador').add({ email: user.email, usuario: user.email.split('@')[0], tipo: 'entrada', detalhe: '', data: firebase.firestore.FieldValue.serverTimestamp() });
 }
 
 function toggleAcessosGerador() {
   var overlay = document.getElementById('acessos-overlay-gerador');
   if (!overlay) return;
   var isOpen = overlay.classList.contains('open');
-  if (isOpen) {
-    overlay.classList.remove('open');
-  } else {
-    overlay.classList.add('open');
-    carregarAcessosGerador();
-  }
+  if (isOpen) { overlay.classList.remove('open'); } else { overlay.classList.add('open'); carregarAcessosGerador(); }
 }
 
 function fecharAcessosGerador(e) {
@@ -3712,50 +3604,21 @@ function carregarAcessosGerador() {
   var lista = document.getElementById('acessos-lista-gerador');
   if (!lista) return;
   lista.innerHTML = '<div class="acessos-empty">Carregando...</div>';
-  db.collection('acessos_painel')
-    .limit(50)
-    .get().then(function(snap) {
-      if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum acesso registrado.</div>'; return; }
-      var docs = [];
-      snap.forEach(function(doc) { docs.push(doc.data()); });
-      docs.sort(function(a, b) {
-        var ta = a.data && a.data.toDate ? a.data.toDate().getTime() : 0;
-        var tb = b.data && b.data.toDate ? b.data.toDate().getTime() : 0;
-        return tb - ta;
-      });
-      var html = '';
-      docs.slice(0, 30).forEach(function(d) {
-        var ts = d.data && d.data.toDate ? d.data.toDate() : null;
-        var dataFmt = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '—';
-        var origem = d.tipo === 'gerador' ? ' · Gerador' : d.tipo === 'alteracao_item' ? ' · Alteração' : ' · Painel';
-        var acaoHtml = d.acao ? '<div class="acesso-acao">' + escHtml(d.acao) + (d.item ? ': ' + escHtml(d.item) : '') + '</div>' : '';
-        html += '<div class="acesso-item">' +
-          '<div class="acesso-user">' + escHtml(d.usuario || d.email) + '</div>' +
-          '<div class="acesso-meta">' + escHtml(d.email) + ' · ' + dataFmt + origem + '</div>' +
-          acaoHtml +
-          '</div>';
-      });
-      lista.innerHTML = html;
-    }).catch(function(e) {
-      console.error('[Acessos Gerador]', e);
-      lista.innerHTML = '<div class="acessos-empty">Erro ao carregar.</div>';
+  db.collection('logs_gerador').limit(60).get().then(function(snap) {
+    if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum registro ainda.</div>'; return; }
+    var docs = [];
+    snap.forEach(function(doc) { docs.push(doc.data()); });
+    docs.sort(function(a, b) { return (b.data&&b.data.toDate?b.data.toDate().getTime():0)-(a.data&&a.data.toDate?a.data.toDate().getTime():0); });
+    var labels = { entrada:{label:'→ Entrada',color:'#4AC87A'}, saida:{label:'← Saída',color:'#888'}, 'salvar-orcamento':{label:'💾 Orçamento salvo',color:'#C8A94A'}, 'salvar-contrato':{label:'💾 Contrato salvo',color:'#C8A94A'}, 'excluir-orcamento':{label:'🗑 Orçamento excluído',color:'#e05c5c'}, 'excluir-contrato':{label:'🗑 Contrato excluído',color:'#e05c5c'} };
+    var html = '';
+    docs.slice(0,40).forEach(function(d) {
+      var ts = d.data&&d.data.toDate?d.data.toDate():null;
+      var fmt = ts?ts.toLocaleDateString('pt-BR')+' '+ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
+      var t = labels[d.tipo]||{label:d.tipo,color:'#888'};
+      html += '<div class="acesso-item"><div style="display:flex;justify-content:space-between"><span style="font-size:0.8rem;font-weight:700;color:'+t.color+'">'+t.label+'</span><span style="font-size:0.7rem;color:#888">'+fmt+'</span></div><div style="font-size:0.72rem;color:#aaa">'+( d.usuario||d.email)+'</div>'+(d.detalhe?'<div style="font-size:0.68rem;color:#888">'+d.detalhe+'</div>':'')+'</div>';
     });
-}
-
-function geradorFazerLogin() {
-  var email = document.getElementById('gerador-login-email').value.trim();
-  var senha = document.getElementById('gerador-login-senha').value;
-  var btn = document.getElementById('gerador-btn-login');
-  var err = document.getElementById('gerador-login-error');
-  if (!email || !senha) { err.textContent = 'Preencha e-mail e senha.'; err.style.display = 'block'; return; }
-  btn.disabled = true; btn.textContent = 'Entrando...';
-  err.style.display = 'none';
-  firebase.auth().signInWithEmailAndPassword(email, senha)
-    .catch(function() {
-      err.textContent = 'E-mail ou senha incorretos.';
-      err.style.display = 'block';
-      btn.disabled = false; btn.textContent = 'Entrar';
-    });
+    lista.innerHTML = html;
+  }).catch(function() { lista.innerHTML = '<div class="acessos-empty">Erro ao carregar.</div>'; });
 }
 
 function handleSalvosClick(e) {
@@ -3780,31 +3643,13 @@ function handleSalvosClick(e) {
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
   else if (action === 'json-con') baixarContratoJSON(id);
-  else if (action === 'calendar') { e.preventDefault(); gerarLinkCalendar(id); }
 }
 
 function iniciarListenerSalvos() {
   var lista = document.getElementById('salvos-lista');
   if (lista) lista.addEventListener('click', handleSalvosClick);
   var listaC = document.getElementById('contratos-lista');
-  if (listaC) {
-    listaC.addEventListener('click', handleSalvosClick);
-    listaC.addEventListener('change', function(e) {
-      var inp = e.target.closest('.salvo-montagem-input');
-      if (!inp) return;
-      var id = inp.getAttribute('data-id');
-      var field = inp.getAttribute('data-field');
-      var val = inp.value.trim();
-      if (!id || !field || !db) return;
-      var update = {};
-      update[field] = val;
-      db.collection('contratos').doc(id).update(update);
-      // Atualizar também no eventos_campo
-      var evUpdate = {};
-      evUpdate['ev_' + field] = val;
-      db.collection('eventos_campo').doc(id).update(evUpdate).catch(function(){});
-    });
-  }
+  if (listaC) listaC.addEventListener('click', handleSalvosClick);
   iniciarListenerContratos();
   if (!db) return;
   const statusEl = document.getElementById('salvos-sync-status');
@@ -3916,6 +3761,7 @@ function salvarNaNuvem() {
 
   db.collection('orcamentos').add(dados)
     .then(function() {
+      registrarLogGerador('salvar-orcamento', dados.cli_nome||'');
       if (btn) { btn.textContent = 'Salvo!'; }
       setTimeout(function() {
         if (btn) { btn.textContent = 'Salvar Orçamento'; btn.disabled = false; }
@@ -4012,6 +3858,7 @@ function excluirSalvo(id, nome) {
   if (!confirm('Excluir: "' + nome + '"?')) return;
   if (!db) return;
   db.collection('orcamentos').doc(id).delete()
+    .then(function(){ registrarLogGerador('excluir-orcamento', nome); })
     .catch(function(e){ alert('Erro ao excluir: ' + e.message); });
 }
 
@@ -4116,6 +3963,7 @@ function salvarContratoNaNuvem() {
   dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
   db.collection('contratos').add(dados)
     .then(function(docRef) {
+      registrarLogGerador('salvar-contrato', dados.cli_nome||'');
       if (btn) { btn.textContent = 'Salvo!'; }
       setTimeout(function() {
         if (btn) { btn.textContent = 'Salvar Contrato'; btn.disabled = false; }
@@ -4171,75 +4019,11 @@ function renderContratos(docs) {
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
-    card += '<div class="salvo-montagem-wrap" style="' + (aprovado ? '' : 'display:none') + '">';
-    card += '<button class="salvo-status aprovado" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
-    card += 'Assinado';
-    card += '</button>';
-    card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
-    card += '<input class="salvo-montagem-input" type="text" placeholder="Desmontagem" data-field="desmontagem" data-id="' + id + '" value="' + escHtml(doc.desmontagem || '') + '">';
-    card += '<a class="btn-calendar" data-action="calendar" data-id="' + id + '" href="#">' +
-      '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="2" width="10" height="9" rx="1"/><line x1="4" y1="1" x2="4" y2="3"/><line x1="8" y1="1" x2="8" y2="3"/><line x1="1" y1="5" x2="11" y2="5"/></svg>' +
-      'Google Calendar</a>';
-    card += '</div>';
-    card += '<button class="salvo-status' + (aprovado ? ' hide-when-assinado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
-    card += 'Pendente';
+    card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
+    card += aprovado ? 'Assinado' : 'Pendente';
     card += '</button></div>';
     return card;
   }).join('');
-}
-
-function gerarLinkCalendar(id) {
-  if (!db) return;
-  db.collection('contratos').doc(id).get().then(function(doc) {
-    if (!doc.exists) return;
-    var d = doc.data();
-    // Data no formato YYYYMMDD
-    var dataStr = (d.ev_data || '').replace(/-/g, '');
-    if (!dataStr) { alert('Data do evento não preenchida.'); return; }
-    // Dia seguinte para evento dia inteiro
-    var dt = new Date(d.ev_data + 'T12:00:00');
-    dt.setDate(dt.getDate() + 1);
-    var fim = dt.toISOString().slice(0,10).replace(/-/g,'');
-    // Título
-    var titulo = encodeURIComponent((d.ev_nome || 'Evento') + ' – ' + (d.cli_nome || ''));
-    // Local
-    var local = encodeURIComponent(d.ev_local || '');
-    // Descrição
-    var desc = '';
-    if (d.ev_inicio || d.ev_fim) desc += 'Horário: ' + (d.ev_inicio||'') + (d.ev_fim ? ' \u2013 ' + d.ev_fim : '') + '\n';
-    if (d.montagem) desc += 'Montagem: ' + d.montagem + '\n';
-    if (d.desmontagem) desc += 'Desmontagem: ' + d.desmontagem + '\n';
-    if (d.ev_resp) desc += 'Responsável: ' + d.ev_resp + '\n';
-    if (d.servicos && d.servicos.length) {
-      desc += '\nEstrutura:\n';
-      d.servicos.forEach(function(s) { desc += '\u2022 ' + s + '\n'; });
-    }
-    // Pagamento
-    var pgtoDesc = '';
-    var total = parseFloat((d.val_total || '0').replace(/\./g,'').replace(',','.')) || 0;
-    var fmtVal = function(v) { return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2}); };
-    var sel = d.pgto_sel || 'vista';
-    if (sel === 'vista') {
-      pgtoDesc = 'À vista na assinatura' + (total > 0 ? ' – ' + fmtVal(total) : '');
-    } else if (sel === 'metade') {
-      pgtoDesc = '50% na assinatura' + (total > 0 ? ' (' + fmtVal(total*0.5) + ')' : '') + ' + 50% até 5 dias antes' + (total > 0 ? ' (' + fmtVal(total*0.5) + ')' : '');
-    } else if (sel === 'entrada') {
-      pgtoDesc = '20% reserva' + (total > 0 ? ' (' + fmtVal(total*0.2) + ')' : '') + ' + saldo até 5 dias antes' + (total > 0 ? ' (' + fmtVal(total*0.8) + ')' : '');
-    } else if (sel === 'parcelado') {
-      var parc = parseInt(d.nparcelas) || 0;
-      pgtoDesc = '20% reserva' + (total > 0 ? ' (' + fmtVal(total*0.2) + ')' : '') + ' + saldo em ' + (parc || '?') + 'x' + (total > 0 && parc > 0 ? ' (' + fmtVal((total*0.8)/parc) + '/parcela)' : '');
-    } else {
-      pgtoDesc = d.pgto_custom || 'Personalizado';
-    }
-    if (pgtoDesc) desc += '\nPagamento: ' + pgtoDesc;
-    if (d.val_total) desc += '\nValor total: R$ ' + d.val_total;
-    var link = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
-      '&text=' + titulo +
-      '&dates=' + dataStr + '/' + fim +
-      (local ? '&location=' + local : '') +
-      '&details=' + encodeURIComponent(desc);
-    window.open(link, '_blank');
-  });
 }
 
 function abrirContrato(id) {
@@ -4293,7 +4077,7 @@ function duplicarContrato(id) {
 function excluirContrato(id, nome) {
   if (!confirm('Excluir contrato de "' + nome + '"?')) return;
   db.collection('contratos').doc(id).delete()
-    .then(function() { removerDoPainel(id); })
+    .then(function() { registrarLogGerador('excluir-contrato', nome); removerDoPainel(id); })
     .catch(function(e) { alert('Erro ao excluir: ' + e.message); });
 }
 
@@ -4541,10 +4325,8 @@ function buildEventoFromContrato(d, contratoId) {
     ev_nome:     d.ev_nome   || '',
     ev_local:    d.ev_local  || '',
     ev_data:     d.ev_data   || '',
-    ev_inicio:      d.ev_inicio      || '',
-    ev_fim:         d.ev_fim         || '',
-    ev_montagem:    d.montagem       || '',
-    ev_desmontagem: d.desmontagem    || '',
+    ev_inicio:   d.ev_inicio || '',
+    ev_fim:      d.ev_fim    || '',
     ev_resp:     d.ev_resp   || '',
     cli_nome:    d.cli_nome  || '',
     servicos:    d.servicos  || [],

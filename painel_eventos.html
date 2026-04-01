@@ -487,7 +487,8 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .hd-title {
@@ -498,6 +499,10 @@ header {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .hd-row2 {
@@ -514,6 +519,8 @@ header {
   text-transform: uppercase;
   letter-spacing: 0.09em;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hd-date {
@@ -523,12 +530,13 @@ header {
   letter-spacing: 0.07em;
   white-space: nowrap;
   text-align: right;
+  flex-shrink: 0;
 }
 
 .hd-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -560,8 +568,11 @@ header {
 
 /* ── MOBILE ── */
 @media (max-width: 700px) {
-  header { padding: 8px 14px; }
+  header { padding: 8px 12px; }
   .hd-date { display: none; }
+  .hd-user { display: none; }
+  .hd-title { font-size: 1.1rem; }
+  .hd-actions { gap: 5px; }
 }
 
   /* ── FILTROS DE PERIODO ── */
