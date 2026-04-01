@@ -813,6 +813,7 @@
     width: 300%;
     transition: none;
     will-change: transform;
+    align-items: flex-start;
   }
   #swipe-track.animating {
     transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -821,7 +822,6 @@
     width: calc(100% / 3);
     flex-shrink: 0;
     display: block !important;
-    min-height: calc(100vh - 90px);
   }
 
 </style>
@@ -2680,12 +2680,10 @@ function calcEntrada() {
 }
 
 function switchMain(name, direction) {
-  // Handled by swipe navigation - fallback for non-swipe clicks
   var tabs = ['orcamento', 'contrato', 'salvos'];
   var idx = tabs.indexOf(name);
   var track = document.getElementById('swipe-track');
   if (track && idx >= 0) {
-    var currentIdx = tabs.indexOf(window._currentTab || 'orcamento');
     window._currentTab = name;
     track.classList.add('animating');
     track.style.transform = 'translateX(' + (-idx * window.innerWidth) + 'px)';

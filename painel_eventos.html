@@ -205,7 +205,11 @@ header {
   padding: 24px;
   overflow-x: auto;
   min-height: calc(100vh - 60px);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.board-container::-webkit-scrollbar { display: none; }
 
 .board {
   display: flex;
@@ -214,13 +218,17 @@ header {
   align-items: flex-start;
 }
 
+
+
 .column {
-  width: 320px;
+  width: min(320px, calc(100vw - 48px));
   flex-shrink: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .column-header {
@@ -392,13 +400,17 @@ header {
   gap: 6px;
 }
 
-.card-horario {
-  font-size: 0.75rem;
-  color: var(--muted);
-  margin-bottom: 10px;
+.card-horario-inline {
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.card-horario span { color: var(--text); font-weight: 600; }
+.card-local-sep {
+  color: var(--border);
+  margin: 0 4px;
+}
 
 .card-resp {
   font-size: 0.72rem;
@@ -490,7 +502,7 @@ header {
 /* ── MOBILE ── */
 @media (max-width: 700px) {
   .board-container { padding: 12px; }
-  .column { width: 280px; }
+  .column { width: calc(100vw - 24px); }
   .board { gap: 12px; }
   header { padding: 12px 16px; }
 }
@@ -622,6 +634,7 @@ header {
     <button class="periodo-btn" id="periodo-mes" onclick="setPeriodo('mes')">Este mes</button>
     <button class="periodo-btn" id="periodo-ano" onclick="setPeriodo('ano')">Este ano</button>
     <button class="periodo-btn" id="periodo-todos" onclick="setPeriodo('todos')">Todos</button>
+    <button class="periodo-btn" id="periodo-realizados" onclick="setPeriodo('realizados')">Realizados</button>
   </div>
   <div class="board-container">
     <div class="board">
@@ -732,7 +745,15 @@ function iniciarBoard() {
       snap.forEach(function(doc) {
         _todosEventos.push(Object.assign({ id: doc.id }, doc.data()));
       });
+      // Save expanded card before re-render
+      var expandedCard = document.querySelector('.evento-card.expanded');
+      var expandedId = expandedCard ? expandedCard.dataset.id : null;
       renderBoard();
+      // Restore expanded state
+      if (expandedId) {
+        var card = document.querySelector('.evento-card[data-id="' + expandedId + '"]');
+        if (card) card.classList.add('expanded');
+      }
     });
 }
 
@@ -748,10 +769,11 @@ function renderBoard() {
     var count = document.getElementById('count-' + col);
 
     // Split: past vs future/current, filtered by period
-    var futuros = colunas[col].filter(function(ev) {
-      return !isPast(ev) && matchesPeriodo(ev, _periodo);
-    });
-    var passados = colunas[col].filter(function(ev) { return isPast(ev); });
+    var isRealizados = _periodo === 'realizados';
+    var futuros = isRealizados
+      ? colunas[col].filter(function(ev) { return isPast(ev); })
+      : colunas[col].filter(function(ev) { return !isPast(ev) && matchesPeriodo(ev, _periodo); });
+    var passados = isRealizados ? [] : colunas[col].filter(function(ev) { return isPast(ev); });
 
     // Sort by date ascending
     function sortByDate(arr) {
@@ -829,11 +851,7 @@ function buildCard(ev, past) {
   var dataFmt = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
   var horario = '';
   if (ev.ev_inicio || ev.ev_fim) {
-    horario = '<div class="card-horario">' +
-      (ev.ev_inicio ? '<span>' + esc(ev.ev_inicio) + '</span>' : '') +
-      (ev.ev_inicio && ev.ev_fim ? ' &#8212; ' : '') +
-      (ev.ev_fim ? '<span>' + esc(ev.ev_fim) + '</span>' : '') +
-      '</div>';
+    horario = (ev.ev_inicio || '') + (ev.ev_fim ? ' - ' + ev.ev_fim : '');
   }
   var resp = ev.ev_resp ? '<div class="card-resp">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '';
   var itens = '';
@@ -861,8 +879,12 @@ function buildCard(ev, past) {
     '</div>' +
     '<div class="card-body">' +
       '<div class="card-body-inner">' +
-        '<div class="card-local"><svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg> ' + esc(ev.ev_local || '') + '</div>' +
-        horario + resp + itens +
+        '<div class="card-local">' +
+          (horario ? '<span class="card-horario-inline">' + esc(horario) + '</span><span class="card-local-sep">·</span>' : '') +
+          '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg> ' +
+          esc(ev.ev_local || '') +
+        '</div>' +
+        resp + itens +
       '</div>' +
     '</div>' +
     '</div>';
@@ -886,17 +908,7 @@ function onDragOver(e, col) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
   document.getElementById('body-' + col).classList.add('drag-over');
-  // Auto-scroll board horizontally when near edges
-  var board = document.querySelector('.board-container');
-  if (!board) return;
-  var rect = board.getBoundingClientRect();
-  var edgeSize = 80;
-  var x = e.clientX - rect.left;
-  if (x < edgeSize) {
-    board.scrollLeft -= 8;
-  } else if (x > rect.width - edgeSize) {
-    board.scrollLeft += 8;
-  }
+
 }
 
 function onDragLeave(e) {
@@ -996,7 +1008,8 @@ function getWeekRange() {
 
 function matchesPeriodo(ev, periodo) {
   if (periodo === 'todos') return true;
-  if (!ev.ev_data) return periodo === 'todos';
+  if (periodo === 'realizados') return isPast(ev);
+  if (!ev.ev_data) return false;
   var parts = ev.ev_data.split('-');
   var evDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
   var now = new Date();
