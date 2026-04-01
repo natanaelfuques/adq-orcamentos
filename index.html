@@ -3526,11 +3526,12 @@ function gerarContratoSalvo(id) {
   db.collection('orcamentos').doc(id).get().then(function(doc) {
     if (!doc.exists) return;
     var d = doc.data();
-    // Usa o mesmo fluxo normal - passa pelo "qual opcao o cliente escolheu"
     switchMain('contrato');
     setTimeout(function() {
-      identificarECarregar._processar(d);
-    }, 100);
+      if (d._tipo === 'orcamento' || d._tipo === 'orcamento_completo') {
+        carregarOrcamentoJSON._processar(d);
+      }
+    }, 150);
   });
 }
 
@@ -3554,26 +3555,36 @@ function toggleAprovado(id, atual) {
 
 var _salvosTab = 'orcamentos';
 
+function atualizarContadorSalvos() {
+  var statusEl = document.getElementById('salvos-sync-status');
+  if (!statusEl) return;
+  if (_salvosTab === 'orcamentos') {
+    var n = window._countOrcamentos || 0;
+    statusEl.textContent = n + ' orcamento' + (n !== 1 ? 's' : '');
+  } else {
+    var n = window._countContratos || 0;
+    statusEl.textContent = n + ' contrato' + (n !== 1 ? 's' : '');
+  }
+}
+
 function switchSalvosTab(tab) {
   _salvosTab = tab;
   var orc = document.getElementById('salvos-lista');
   var con = document.getElementById('contratos-lista');
   var btnOrc = document.getElementById('salvos-tab-orc');
   var btnCon = document.getElementById('salvos-tab-con');
-  var statusEl = document.getElementById('salvos-sync-status');
-  var gold = 'var(--gold)', muted = 'var(--muted)';
-  var borderGold = '3px solid var(--gold)', borderNone = '3px solid transparent';
   if (tab === 'orcamentos') {
     if (orc) orc.style.display = 'block';
     if (con) con.style.display = 'none';
-    if (btnOrc) { btnOrc.style.color = gold; btnOrc.style.borderBottom = borderGold; }
-    if (btnCon) { btnCon.style.color = muted; btnCon.style.borderBottom = borderNone; }
+    if (btnOrc) { btnOrc.classList.add('active-sub-tab'); }
+    if (btnCon) { btnCon.classList.remove('active-sub-tab'); }
   } else {
     if (orc) orc.style.display = 'none';
     if (con) con.style.display = 'block';
-    if (btnOrc) { btnOrc.style.color = muted; btnOrc.style.borderBottom = borderNone; }
-    if (btnCon) { btnCon.style.color = gold; btnCon.style.borderBottom = borderGold; }
+    if (btnOrc) { btnOrc.classList.remove('active-sub-tab'); }
+    if (btnCon) { btnCon.classList.add('active-sub-tab'); }
   }
+  atualizarContadorSalvos();
 }
 
 function coletarDadosContrato() {
@@ -3636,6 +3647,8 @@ function iniciarListenerContratos() {
       var docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
       renderContratos(docs);
+      window._countContratos = docs.length;
+      atualizarContadorSalvos();
     }, function(err) {
       console.warn('[AdQ] Contratos listener erro:', err);
     });
