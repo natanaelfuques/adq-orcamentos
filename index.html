@@ -729,6 +729,63 @@
   .active-sub-tab:hover { color: var(--gold) !important; }
   #btn-salvar-nuvem:hover, #btn-salvar-contrato:hover { background: var(--gold); color: var(--dark) !important; }
 
+
+  /* ── BUSCA SALVOS ── */
+  .salvos-search-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 4px;
+    width: 32px; height: 32px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .salvos-search-toggle:hover, .salvos-search-toggle.active { border-color: var(--gold); color: var(--gold); }
+  .salvos-search-area {
+    display: none;
+    background: var(--darker);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .salvos-search-area.open { display: block; }
+  .salvos-search-area.tab-active { display: none; }
+  .salvos-search-area.tab-active.open { display: block; }
+  .salvos-search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.95rem;
+    padding: 9px 13px;
+    border-radius: 4px;
+    outline: none;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+  .salvos-search-input:focus { border-color: var(--gold); }
+  .salvos-filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .salvos-filter-btn {
+    padding: 5px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .salvos-filter-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .salvos-filter-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(200,169,74,0.1); }
+
 </style>
 
   <!-- PWA -->
@@ -1450,7 +1507,33 @@ Revestimento</textarea>
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div class="section-title" style="margin:0;border:none;padding:0">Salvos</div>
-      <div id="salvos-sync-status" style="font-size:0.72rem;color:var(--muted);letter-spacing:0.06em;text-align:right"></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="salvos-sync-status" style="font-size:0.72rem;color:var(--muted);letter-spacing:0.06em;text-align:right"></div>
+        <button class="salvos-search-toggle" id="salvos-search-btn" onclick="toggleBuscaSalvos()" title="Buscar">
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="6.5" cy="6.5" r="4.5"/>
+    <line x1="10" y1="10" x2="14" y2="14"/>
+  </svg>
+</button>
+      </div>
+    </div>
+    <!-- Área de busca orçamentos -->
+    <div class="salvos-search-area" id="busca-orc-area">
+      <input class="salvos-search-input" id="busca-orc-input" placeholder="Buscar por nome ou data (dd/mm/aaaa)..." oninput="filtrarSalvos()" />
+      <div class="salvos-filter-btns">
+        <button class="salvos-filter-btn" id="filtro-orc-todos" onclick="setFiltroOrc('todos')">Todos</button>
+        <button class="salvos-filter-btn" id="filtro-orc-aprovado" onclick="setFiltroOrc('aprovado')">Aprovados</button>
+        <button class="salvos-filter-btn" id="filtro-orc-pendente" onclick="setFiltroOrc('pendente')">Pendentes</button>
+      </div>
+    </div>
+    <!-- Área de busca contratos -->
+    <div class="salvos-search-area" id="busca-con-area">
+      <input class="salvos-search-input" id="busca-con-input" placeholder="Buscar por nome ou data (dd/mm/aaaa)..." oninput="filtrarContratos()" />
+      <div class="salvos-filter-btns">
+        <button class="salvos-filter-btn" id="filtro-con-todos" onclick="setFiltroConStatus('todos')">Todos</button>
+        <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
+        <button class="salvos-filter-btn" id="filtro-con-pendente" onclick="setFiltroConStatus('pendente')">Pendentes</button>
+      </div>
     </div>
     <!-- Sub-abas -->
     <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px">
@@ -3369,7 +3452,8 @@ function iniciarListenerSalvos() {
     .onSnapshot(function(snap) {
       const docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
-      renderSalvos(docs);
+      _todosOrcamentos = docs;
+      filtrarSalvos();
       window._countOrcamentos = docs.length;
       if (_salvosTab !== 'contratos') atualizarContadorSalvos();
     }, function(err) {
@@ -3612,6 +3696,7 @@ function switchSalvosTab(tab) {
     if (btnCon) { btnCon.classList.add('active-sub-tab'); }
   }
   atualizarContadorSalvos();
+  atualizarAreaBusca();
 }
 
 function coletarDadosContrato() {
@@ -3673,7 +3758,8 @@ function iniciarListenerContratos() {
     .onSnapshot(function(snap) {
       var docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
-      renderContratos(docs);
+      _todosContratos = docs;
+      filtrarContratos();
       window._countContratos = docs.length;
       if (_salvosTab === 'contratos') atualizarContadorSalvos();
     }, function(err) {
@@ -3815,6 +3901,82 @@ function baixarContratoJSON(id) {
     a.click();
     setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
   });
+}
+
+
+// ═══ BUSCA E FILTROS ═══
+
+var _buscaAberta = false;
+var _filtroOrc = 'todos';
+var _filtroConStatus = 'todos';
+var _todosOrcamentos = [];
+var _todosContratos = [];
+
+function toggleBuscaSalvos() {
+  _buscaAberta = !_buscaAberta;
+  var btn = document.getElementById('salvos-search-btn');
+  if (btn) btn.classList.toggle('active', _buscaAberta);
+  atualizarAreaBusca();
+}
+
+function atualizarAreaBusca() {
+  var orcArea = document.getElementById('busca-orc-area');
+  var conArea = document.getElementById('busca-con-area');
+  // Reset all
+  if (orcArea) { orcArea.classList.remove('open', 'tab-active'); orcArea.style.display = ''; }
+  if (conArea) { conArea.classList.remove('open', 'tab-active'); conArea.style.display = ''; }
+  // Mark active tab area
+  if (_salvosTab === 'orcamentos') {
+    if (orcArea) { orcArea.classList.add('tab-active'); if (_buscaAberta) orcArea.classList.add('open'); }
+  } else {
+    if (conArea) { conArea.classList.add('tab-active'); if (_buscaAberta) conArea.classList.add('open'); }
+  }
+}
+
+function setFiltroOrc(f) {
+  _filtroOrc = f;
+  document.querySelectorAll('[id^="filtro-orc-"]').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('filtro-orc-' + f);
+  if (btn) btn.classList.add('active');
+  filtrarSalvos();
+}
+
+function setFiltroConStatus(f) {
+  _filtroConStatus = f;
+  document.querySelectorAll('[id^="filtro-con-"]').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('filtro-con-' + f);
+  if (btn) btn.classList.add('active');
+  filtrarContratos();
+}
+
+function filtrarSalvos() {
+  var termo = (document.getElementById('busca-orc-input') ? document.getElementById('busca-orc-input').value.toLowerCase() : '');
+  var filtrados = _todosOrcamentos.filter(function(doc) {
+    var nome = (doc.nome_cliente || doc.nome || '').toLowerCase();
+    var dataEvt = (doc.data_evento || doc.dataEvt || '').split('-').reverse().join('/');
+    var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0;
+    var aprovado = doc.aprovado ? true : false;
+    var matchStatus = _filtroOrc === 'todos' ||
+      (_filtroOrc === 'aprovado' && aprovado) ||
+      (_filtroOrc === 'pendente' && !aprovado);
+    return matchTexto && matchStatus;
+  });
+  renderSalvos(filtrados);
+}
+
+function filtrarContratos() {
+  var termo = (document.getElementById('busca-con-input') ? document.getElementById('busca-con-input').value.toLowerCase() : '');
+  var filtrados = _todosContratos.filter(function(doc) {
+    var nome = (doc.cli_nome || '').toLowerCase();
+    var dataEvt = (doc.ev_data || '').split('-').reverse().join('/'); // dd/mm/aaaa
+    var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0;
+    var aprovado = doc.aprovado ? true : false;
+    var matchStatus = _filtroConStatus === 'todos' ||
+      (_filtroConStatus === 'assinado' && aprovado) ||
+      (_filtroConStatus === 'pendente' && !aprovado);
+    return matchTexto && matchStatus;
+  });
+  renderContratos(filtrados);
 }
 
 </script>
