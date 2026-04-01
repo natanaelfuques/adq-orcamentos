@@ -706,6 +706,29 @@
   .salvo-status.aprovado { border-color: #4caf50; color: #4caf50; }
   .salvo-status:hover { opacity: 0.8; }
 
+
+  /* ── SALVOS SUB-TABS ── */
+  .salvos-sub-tab {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .salvos-sub-tab:hover { color: var(--text) !important; }
+  .active-sub-tab { color: var(--gold) !important; border-bottom: 3px solid var(--gold) !important; }
+  .active-sub-tab:hover { color: var(--gold) !important; }
+  #btn-salvar-nuvem:hover, #btn-salvar-contrato:hover { background: var(--gold); color: var(--dark) !important; }
+
 </style>
 
   <!-- PWA -->
@@ -3328,6 +3351,8 @@ function handleSalvosClick(e) {
     var ap2 = btn.getAttribute('data-aprovado') === 'true';
     toggleAprovadoContrato(id, ap2);
   }
+  else if (action === 'json-orc') baixarOrcamentoJSON(id);
+  else if (action === 'json-con') baixarContratoJSON(id);
 }
 
 function iniciarListenerSalvos() {
@@ -3483,6 +3508,7 @@ function renderSalvos(docs) {
     card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Abrir</button>';
     card += '<button class="btn-salvo" data-action="duplicar" data-id="' + id + '">Duplicar</button>';
     card += '<button class="btn-salvo" data-action="contrato" data-id="' + id + '">Contrato</button>';
+    card += '<button class="btn-salvo" data-action="json-orc" data-id="' + id + '">JSON</button>';
     card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status" data-id="' + id + '" data-aprovado="' + aprovado + '">';
@@ -3680,6 +3706,7 @@ function renderContratos(docs) {
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo primary" data-action="abrir-contrato" data-id="' + id + '">Abrir</button>';
     card += '<button class="btn-salvo" data-action="duplicar-contrato" data-id="' + id + '">Duplicar</button>';
+    card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">JSON</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
@@ -3748,6 +3775,47 @@ function toggleAprovadoContrato(id, atual) {
   db.collection('contratos').doc(id).update({ aprovado: !atual });
 }
 
+
+
+// ═══ DOWNLOAD JSON DOS SALVOS ═══
+
+function baixarOrcamentoJSON(id) {
+  if (!db) return;
+  db.collection('orcamentos').doc(id).get().then(function(doc) {
+    if (!doc.exists) return;
+    var d = doc.data();
+    var nome = d.nome_cliente || d.nome || 'Cliente';
+    var local = d.local_evento || d.local || '';
+    var data = (d.data_evento || d.dataEvt || '').split('-').reverse().join('-');
+    var slug = function(s) { return (s||'').replace(/\s+/g,'-').replace(/[/\\]/g,'-'); };
+    var blob = new Blob([JSON.stringify(d, null, 2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'Orcamento-' + slug(nome) + '-' + slug(local) + '-' + data + '.json';
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  });
+}
+
+function baixarContratoJSON(id) {
+  if (!db) return;
+  db.collection('contratos').doc(id).get().then(function(doc) {
+    if (!doc.exists) return;
+    var d = doc.data();
+    var nome = d.cli_nome || '';
+    var local = d.ev_local || '';
+    var data = (d.ev_data || '').split('-').reverse().join('-');
+    var slug = function(s) { return (s||'').replace(/\s+/g,'-').replace(/[/\\]/g,'-'); };
+    var blob = new Blob([JSON.stringify(d, null, 2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'Contrato-' + slug(nome) + '-' + slug(local) + '-' + data + '.json';
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  });
+}
 
 </script>
 </body>
