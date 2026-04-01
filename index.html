@@ -2925,23 +2925,16 @@ function formatDoc(val) {
 function formatHora(val) {
   if (!val) return '';
   const v = val.trim();
-  // Extract digits only
   const digits = v.replace(/\D/g, '');
+  if (!digits) return v; // texto puro — retorna como está
   let h, min;
-  if (digits.length <= 2) {
-    // "13" or "9" → 13h00
-    h = digits;
-    min = '00';
-  } else if (digits.length === 3) {
-    // "930" → 09h30
-    h = digits.slice(0, 1);
-    min = digits.slice(1);
-  } else {
-    // "1330" or "1300" → 13h30
-    h = digits.slice(0, 2);
-    min = digits.slice(2, 4);
-  }
-  return h.padStart(2, '0') + ':' + (min || '00').padStart(2, '0');
+  if (digits.length <= 2) { h = digits; min = '00'; }
+  else if (digits.length === 3) { h = digits.slice(0, 1); min = digits.slice(1); }
+  else { h = digits.slice(0, 2); min = digits.slice(2, 4); }
+  const horaFmt = h.padStart(2, '0') + ':' + (min || '00').padStart(2, '0');
+  // Se tinha texto junto (ex: "segunda 14h") — mantém texto + hora formatada
+  const semNumeros = v.replace(/[\d:hH]/g, '').trim().replace(/[-–]/g, '').trim();
+  return semNumeros ? semNumeros + ' ' + horaFmt : horaFmt;
 }
 
 function validarEntrada(input) {

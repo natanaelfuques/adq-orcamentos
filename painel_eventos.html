@@ -888,12 +888,17 @@ function buildCard(ev, past, col) {
   var badgeStyle = badgeColor ? ' style="color:' + badgeColor + ';background:' + badgeBg + '"' : '';
   function fmtHora(val) {
     if (!val) return '';
-    var digits = val.trim().replace(/\D/g, '');
+    var v = val.trim();
+    var digits = v.replace(/\D/g, '');
+    if (!digits) return v; // texto puro — retorna como está
     var h, m;
     if (digits.length <= 2) { h = digits; m = '00'; }
     else if (digits.length === 3) { h = digits.slice(0,1); m = digits.slice(1); }
     else { h = digits.slice(0,2); m = digits.slice(2,4); }
-    return h.padStart(2,'0') + ':' + (m||'00').padStart(2,'0');
+    // Se tinha texto junto com números (ex: "segunda 14h") — mantém o texto + hora formatada
+    var horaFmt = h.padStart(2,'0') + ':' + (m||'00').padStart(2,'0');
+    var semNumeros = v.replace(/[\d:hH]/g, '').trim().replace(/[-–]/g, '').trim();
+    return semNumeros ? semNumeros + ' ' + horaFmt : horaFmt;
   }
   var horarioBlock = ''; // montagem e desmontagem — linha separada
   var horarioInline = ''; // início e fim — ao lado do local
