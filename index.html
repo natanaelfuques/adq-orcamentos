@@ -1431,8 +1431,8 @@ Revestimento</textarea>
     </div>
     <!-- Sub-abas -->
     <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px">
-      <button id="salvos-tab-orc" onclick="switchSalvosTab('orcamentos')" style="flex:1;padding:10px;background:transparent;border:none;border-bottom:3px solid var(--gold);margin-bottom:-2px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Orcamentos</button>
-      <button id="salvos-tab-con" onclick="switchSalvosTab('contratos')" style="flex:1;padding:10px;background:transparent;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Contratos</button>
+      <button id="salvos-tab-orc" onclick="switchSalvosTab('orcamentos')" class="salvos-sub-tab active-sub-tab">Orçamentos</button>
+      <button id="salvos-tab-con" onclick="switchSalvosTab('contratos')" class="salvos-sub-tab">Contratos</button>
     </div>
     <div id="salvos-lista">
       <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
@@ -3683,7 +3683,7 @@ function renderContratos(docs) {
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
-    card += aprovado ? 'Aprovado' : 'Pendente';
+    card += aprovado ? 'Assinado' : 'Pendente';
     card += '</button></div>';
     return card;
   }).join('');
