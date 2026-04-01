@@ -708,6 +708,8 @@
   .salvo-montagem-input:focus { border-bottom-color: var(--gold); color: var(--text); }
   .salvo-montagem-input::placeholder { color: var(--muted); opacity: 0.6; }
   .hide-when-assinado { display: none; }
+  .btn-calendar { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; background: transparent; border: 1px solid #4A90C8; color: #4A90C8; border-radius: 4px; padding: 4px 10px; font-family: 'Barlow', sans-serif; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; cursor: pointer; text-decoration: none; }
+  .btn-calendar:hover { background: rgba(74,144,200,0.1); }
   .salvo-status:hover { opacity: 0.8; }
 
 
@@ -3484,6 +3486,7 @@ function handleSalvosClick(e) {
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
   else if (action === 'json-con') baixarContratoJSON(id);
+  else if (action === 'calendar') { e.preventDefault(); gerarLinkCalendar(id); }
 }
 
 function iniciarListenerSalvos() {
@@ -3880,12 +3883,62 @@ function renderContratos(docs) {
     card += '</button>';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Desmontagem" data-field="desmontagem" data-id="' + id + '" value="' + escHtml(doc.desmontagem || '') + '">';
+    card += '<a class="btn-calendar" data-action="calendar" data-id="' + id + '" href="#">' +
+      '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="2" width="10" height="9" rx="1"/><line x1="4" y1="1" x2="4" y2="3"/><line x1="8" y1="1" x2="8" y2="3"/><line x1="1" y1="5" x2="11" y2="5"/></svg>' +
+      'Google Calendar</a>';
     card += '</div>';
     card += '<button class="salvo-status' + (aprovado ? ' hide-when-assinado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
     card += 'Pendente';
     card += '</button></div>';
     return card;
   }).join('');
+}
+
+function gerarLinkCalendar(id) {
+  if (!db) return;
+  db.collection('contratos').doc(id).get().then(function(doc) {
+    if (!doc.exists) return;
+    var d = doc.data();
+    // Data no formato YYYYMMDD
+    var dataStr = (d.ev_data || '').replace(/-/g, '');
+    if (!dataStr) { alert('Data do evento não preenchida.'); return; }
+    // Dia seguinte para evento dia inteiro
+    var dt = new Date(d.ev_data + 'T12:00:00');
+    dt.setDate(dt.getDate() + 1);
+    var fim = dt.toISOString().slice(0,10).replace(/-/g,'');
+    // Título
+    var titulo = encodeURIComponent((d.ev_nome || 'Evento') + ' – ' + (d.cli_nome || ''));
+    // Local
+    var local = encodeURIComponent(d.ev_local || '');
+    // Descrição
+    var desc = '';
+    if (d.ev_inicio || d.ev_fim) desc += 'Horário: ' + (d.ev_inicio||'') + (d.ev_fim ? ' – ' + d.ev_fim : '') + '
+';
+    if (d.montagem) desc += 'Montagem: ' + d.montagem + '
+';
+    if (d.desmontagem) desc += 'Desmontagem: ' + d.desmontagem + '
+';
+    if (d.ev_resp) desc += 'Responsável: ' + d.ev_resp + '
+';
+    if (d.servicos && d.servicos.length) {
+      desc += '
+Estrutura:
+';
+      d.servicos.forEach(function(s) { desc += '• ' + s + '
+'; });
+    }
+    if (d.val_total) {
+      var pgtoMap = { vista: 'À vista', metade: '50% + 50%', entrada: 'Entrada + saldo', parcelado: 'Parcelado', custom: 'Personalizado' };
+      desc += '
+Pagamento: ' + (pgtoMap[d.pgto_sel] || d.pgto_sel || '') + ' – R$ ' + (d.val_total || '');
+    }
+    var link = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + titulo +
+      '&dates=' + dataStr + '/' + fim +
+      (local ? '&location=' + local : '') +
+      '&details=' + encodeURIComponent(desc);
+    window.open(link, '_blank');
+  });
 }
 
 function abrirContrato(id) {
