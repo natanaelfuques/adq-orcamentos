@@ -804,8 +804,16 @@ function renderBoard() {
     });
     body.querySelectorAll('.card-summary').forEach(function(summary) {
       summary.addEventListener('click', function(e) {
+        if (e.target.closest('.item-check')) return;
         var card = summary.closest('.evento-card');
-        if (card) card.classList.toggle('expanded');
+        if (!card) return;
+        var wasExpanded = card.classList.contains('expanded');
+        // Collapse all cards
+        document.querySelectorAll('.evento-card.expanded').forEach(function(c) {
+          c.classList.remove('expanded');
+        });
+        // Expand this one if it was collapsed
+        if (!wasExpanded) card.classList.add('expanded');
       });
     });
     body.querySelectorAll('.item-check').forEach(function(chk) {

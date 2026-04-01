@@ -375,8 +375,7 @@
   }
   .main-tab-btn:hover { color: var(--text); background: #1e1e1e; }
   .main-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); background: var(--surface); }
-  .main-panel { display: none; }
-  .main-panel.active { display: block; }
+  .main-panel { display: block; }
 
   /* ── SERVIÇOS CONTRATO ── */
   .servico-item {
@@ -786,6 +785,45 @@
   .salvos-filter-btn:hover { border-color: var(--gold); color: var(--gold); }
   .salvos-filter-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(200,169,74,0.1); }
 
+
+  .salvo-card-tipo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 3px 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+
+  /* ── SWIPE NAVIGATION ── */
+  #swipe-container {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+  }
+  #swipe-track {
+    display: flex;
+    width: 300%;
+    transition: none;
+    will-change: transform;
+  }
+  #swipe-track.animating {
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  #swipe-track .main-panel {
+    width: calc(100% / 3);
+    flex-shrink: 0;
+    display: block !important;
+    min-height: calc(100vh - 90px);
+  }
+
 </style>
 
   <!-- PWA -->
@@ -820,7 +858,7 @@
   <button class="main-tab-btn" id="main-btn-salvos" onclick="switchMain('salvos')">Salvos</button>
 </div>
 
-<div id="panel-orcamento" class="main-panel active">
+<div id="swipe-container"><div id="swipe-track"><div id="panel-orcamento" class="main-panel active">
 <div class="container">
 
   <!-- CARREGAR ORÇAMENTO -->
@@ -1549,6 +1587,8 @@ Revestimento</textarea>
   </div>
 </div>
 </div>
+</div><!-- /swipe-track -->
+</div><!-- /swipe-container -->
 
 
 <!-- Logo data (base64 stored in DOM to avoid JS string size issues) -->
@@ -2639,11 +2679,24 @@ function calcEntrada() {
   }
 }
 
-function switchMain(name) {
-  document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.main-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('main-btn-' + name).classList.add('active');
-  document.getElementById('panel-' + name).classList.add('active');
+function switchMain(name, direction) {
+  // Handled by swipe navigation - fallback for non-swipe clicks
+  var tabs = ['orcamento', 'contrato', 'salvos'];
+  var idx = tabs.indexOf(name);
+  var track = document.getElementById('swipe-track');
+  if (track && idx >= 0) {
+    var currentIdx = tabs.indexOf(window._currentTab || 'orcamento');
+    window._currentTab = name;
+    track.classList.add('animating');
+    track.style.transform = 'translateX(' + (-idx * window.innerWidth) + 'px)';
+    document.querySelectorAll('.main-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    var btn = document.getElementById('main-btn-' + name);
+    if (btn) btn.classList.add('active');
+    if (name === 'salvos' && typeof atualizarContadorSalvos === 'function') {
+      atualizarContadorSalvos();
+      if (typeof atualizarAreaBusca === 'function') atualizarAreaBusca();
+    }
+  }
 }
 
 // ── CONTRATO JS ──
@@ -3436,7 +3489,6 @@ function handleSalvosClick(e) {
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
   else if (action === 'json-con') baixarContratoJSON(id);
-  else if (action === 'painel') enviarParaPainel(id);
 }
 
 function iniciarListenerSalvos() {
@@ -3579,7 +3631,8 @@ function renderSalvos(docs) {
     var evento  = doc.tipo_evento  || doc.evento || '';
     var data    = doc.data_evento  || doc.dataEvt || '';
     var dataFmt = data ? data.split('-').reverse().join('/') : '';
-    var valor   = doc.valorTotal ? 'R$ ' + doc.valorTotal : '';
+    var tipo = doc.inc_detalhado ? 'Detalhado' : 'Pacotes';
+    var valor = tipo;
     var aprovado = doc.aprovado ? true : false;
     var id = doc.id;
     var nomeEsc = escHtml(nome);
@@ -3587,7 +3640,7 @@ function renderSalvos(docs) {
     card += '<div class="salvo-card-top">';
     card += '<div><div class="salvo-card-nome">' + nomeEsc + '</div>';
     card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div></div>';
-    card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
+    card += '<div class="salvo-card-tipo">' + escHtml(valor) + '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Abrir</button>';
@@ -3740,7 +3793,23 @@ function salvarContratoNaNuvem() {
   var dados = coletarDadosContrato();
   dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
   db.collection('contratos').add(dados)
-    .then(function() {
+    .then(function(docRef) {
+      // Auto-add to painel de eventos
+      var evento = {
+        ev_nome:   dados.ev_nome   || '',
+        ev_local:  dados.ev_local  || '',
+        ev_data:   dados.ev_data   || '',
+        ev_inicio: dados.ev_inicio || '',
+        ev_fim:    dados.ev_fim    || '',
+        ev_resp:   dados.ev_resp   || '',
+        cli_nome:  dados.cli_nome  || '',
+        servicos:  dados.servicos  || [],
+        itens_ok:  {},
+        etapa:     'montar',
+        contrato_id: docRef.id,
+        criadoEm:  firebase.firestore.FieldValue.serverTimestamp()
+      };
+      db.collection('eventos_campo').add(evento);
       if (btn) { btn.textContent = 'Salvo!'; }
       setTimeout(function() {
         if (btn) { btn.textContent = 'Salvar Contrato'; btn.disabled = false; }
@@ -3793,7 +3862,6 @@ function renderContratos(docs) {
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo primary" data-action="abrir-contrato" data-id="' + id + '">Abrir</button>';
     card += '<button class="btn-salvo" data-action="duplicar-contrato" data-id="' + id + '">Duplicar</button>';
-    card += '<button class="btn-salvo" data-action="painel" data-id="' + id + '">+ Painel</button>';
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
@@ -4008,6 +4076,108 @@ function enviarParaPainel(id) {
     });
   });
 }
+
+// ═══ SWIPE NAVIGATION (Instagram style) ═══
+(function(){
+  var tabs = ['orcamento', 'contrato', 'salvos'];
+  var currentIdx = 0;
+  var track = null;
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var currentTranslate = 0;
+  var isDragging = false;
+  var isHorizontal = null;
+
+  function getTrackWidth() {
+    return window.innerWidth;
+  }
+
+  function setTranslate(x, animate) {
+    if (!track) return;
+    if (animate) {
+      track.classList.add('animating');
+    } else {
+      track.classList.remove('animating');
+    }
+    track.style.transform = 'translateX(' + x + 'px)';
+  }
+
+  function goToTab(idx, animate) {
+    if (idx < 0 || idx >= tabs.length) return;
+    currentIdx = idx;
+    currentTranslate = -idx * getTrackWidth();
+    setTranslate(currentTranslate, animate);
+    // Update nav
+    document.querySelectorAll('.main-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    var btn = document.getElementById('main-btn-' + tabs[idx]);
+    if (btn) btn.classList.add('active');
+    window._currentTab = tabs[idx];
+    // Update salvos if needed
+    if (tabs[idx] === 'salvos' && typeof atualizarContadorSalvos === 'function') {
+      atualizarContadorSalvos();
+      if (typeof atualizarAreaBusca === 'function') atualizarAreaBusca();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    track = document.getElementById('swipe-track');
+    goToTab(0, false);
+
+    track.addEventListener('touchstart', function(e) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isDragging = true;
+      isHorizontal = null;
+      track.classList.remove('animating');
+    }, {passive: true});
+
+    track.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      var dx = e.touches[0].clientX - touchStartX;
+      var dy = e.touches[0].clientY - touchStartY;
+
+      // Determine direction on first significant move
+      if (isHorizontal === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+        isHorizontal = Math.abs(dx) > Math.abs(dy);
+      }
+
+      if (!isHorizontal) return;
+
+      e.preventDefault();
+
+      // Resistance at edges
+      var newX = currentTranslate + dx;
+      var minX = -(tabs.length - 1) * getTrackWidth();
+      if (newX > 0) newX = dx * 0.2;
+      if (newX < minX) newX = minX + (newX - minX) * 0.2;
+
+      setTranslate(newX, false);
+    }, {passive: false});
+
+    track.addEventListener('touchend', function(e) {
+      if (!isDragging || !isHorizontal) { isDragging = false; return; }
+      isDragging = false;
+      var dx = e.changedTouches[0].clientX - touchStartX;
+      var threshold = getTrackWidth() * 0.3;
+      var velocity = dx; // simplified
+
+      if (dx < -threshold && currentIdx < tabs.length - 1) {
+        goToTab(currentIdx + 1, true);
+      } else if (dx > threshold && currentIdx > 0) {
+        goToTab(currentIdx - 1, true);
+      } else {
+        goToTab(currentIdx, true); // snap back
+      }
+    }, {passive: true});
+  });
+
+  // Override switchMain to use track
+  window._switchMainOriginal = window.switchMain;
+  window.switchMain = function(name, direction) {
+    var idx = tabs.indexOf(name);
+    if (idx >= 0) goToTab(idx, true);
+  };
+})();
 </script>
 </body>
 </html>`;
