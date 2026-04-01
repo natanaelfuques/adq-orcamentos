@@ -879,10 +879,24 @@ function buildCard(ev, past, col) {
     }
   }
   var badgeStyle = badgeColor ? ' style="color:' + badgeColor + ';background:' + badgeBg + '"' : '';
-  var horario = '';
-  if (ev.ev_inicio || ev.ev_fim) {
-    horario = (ev.ev_inicio || '') + (ev.ev_fim ? ' - ' + ev.ev_fim : '');
+  function fmtHora(val) {
+    if (!val) return '';
+    var digits = val.trim().replace(/\D/g, '');
+    var h, m;
+    if (digits.length <= 2) { h = digits; m = '00'; }
+    else if (digits.length === 3) { h = digits.slice(0,1); m = digits.slice(1); }
+    else { h = digits.slice(0,2); m = digits.slice(2,4); }
+    return h.padStart(2,'0') + ':' + (m||'00').padStart(2,'0');
   }
+  var horario = '';
+  var partes = [];
+  var temHorario = ev.ev_montagem || ev.ev_inicio || ev.ev_fim || ev.ev_desmontagem;
+  if (temHorario) {
+    if (ev.ev_montagem) partes.push('Mont. ' + fmtHora(ev.ev_montagem));
+    if (ev.ev_inicio || ev.ev_fim) partes.push((ev.ev_inicio ? fmtHora(ev.ev_inicio) : '') + (ev.ev_fim ? ' – ' + fmtHora(ev.ev_fim) : ''));
+    partes.push(ev.ev_desmontagem ? 'Desm. ' + fmtHora(ev.ev_desmontagem) : 'Desm. ao término');
+  }
+  horario = partes.join(' · ');
   var resp = ev.ev_resp ? '<div class="card-resp">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '';
   var itens = '';
   if (ev.servicos && ev.servicos.length) {
@@ -1247,8 +1261,10 @@ function sincronizarPainel() {
             ev_nome:     d.ev_nome   || '',
             ev_local:    d.ev_local  || '',
             ev_data:     d.ev_data   || '',
-            ev_inicio:   d.ev_inicio || '',
-            ev_fim:      d.ev_fim    || '',
+            ev_inicio:      d.ev_inicio      || '',
+            ev_fim:         d.ev_fim         || '',
+            ev_montagem:    d.montagem       || '',
+            ev_desmontagem: d.desmontagem    || '',
             ev_resp:     d.ev_resp   || '',
             cli_nome:    d.cli_nome  || '',
             servicos:    d.servicos  || [],

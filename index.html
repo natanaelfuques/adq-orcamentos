@@ -703,6 +703,11 @@
     margin-top: 8px;
   }
   .salvo-status.aprovado { border-color: #4caf50; color: #4caf50; }
+  .salvo-montagem-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .salvo-montagem-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 0.75rem; padding: 2px 4px; width: 90px; outline: none; }
+  .salvo-montagem-input:focus { border-bottom-color: var(--gold); color: var(--text); }
+  .salvo-montagem-input::placeholder { color: var(--muted); opacity: 0.6; }
+  .hide-when-assinado { display: none; }
   .salvo-status:hover { opacity: 0.8; }
 
 
@@ -3492,7 +3497,24 @@ function iniciarListenerSalvos() {
   var lista = document.getElementById('salvos-lista');
   if (lista) lista.addEventListener('click', handleSalvosClick);
   var listaC = document.getElementById('contratos-lista');
-  if (listaC) listaC.addEventListener('click', handleSalvosClick);
+  if (listaC) {
+    listaC.addEventListener('click', handleSalvosClick);
+    listaC.addEventListener('change', function(e) {
+      var inp = e.target.closest('.salvo-montagem-input');
+      if (!inp) return;
+      var id = inp.getAttribute('data-id');
+      var field = inp.getAttribute('data-field');
+      var val = inp.value.trim();
+      if (!id || !field || !db) return;
+      var update = {};
+      update[field] = val;
+      db.collection('contratos').doc(id).update(update);
+      // Atualizar também no eventos_campo
+      var evUpdate = {};
+      evUpdate['ev_' + field] = val;
+      db.collection('eventos_campo').doc(id).update(evUpdate).catch(function(){});
+    });
+  }
   iniciarListenerContratos();
   if (!db) return;
   const statusEl = document.getElementById('salvos-sync-status');
@@ -3859,8 +3881,15 @@ function renderContratos(docs) {
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
-    card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
-    card += aprovado ? 'Assinado' : 'Pendente';
+    card += '<div class="salvo-montagem-wrap" style="' + (aprovado ? '' : 'display:none') + '">';
+    card += '<button class="salvo-status aprovado" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
+    card += 'Assinado';
+    card += '</button>';
+    card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
+    card += '<input class="salvo-montagem-input" type="text" placeholder="Desmontagem" data-field="desmontagem" data-id="' + id + '" value="' + escHtml(doc.desmontagem || '') + '">';
+    card += '</div>';
+    card += '<button class="salvo-status' + (aprovado ? ' hide-when-assinado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
+    card += 'Pendente';
     card += '</button></div>';
     return card;
   }).join('');
@@ -4165,8 +4194,10 @@ function buildEventoFromContrato(d, contratoId) {
     ev_nome:     d.ev_nome   || '',
     ev_local:    d.ev_local  || '',
     ev_data:     d.ev_data   || '',
-    ev_inicio:   d.ev_inicio || '',
-    ev_fim:      d.ev_fim    || '',
+    ev_inicio:      d.ev_inicio      || '',
+    ev_fim:         d.ev_fim         || '',
+    ev_montagem:    d.montagem       || '',
+    ev_desmontagem: d.desmontagem    || '',
     ev_resp:     d.ev_resp   || '',
     cli_nome:    d.cli_nome  || '',
     servicos:    d.servicos  || [],
