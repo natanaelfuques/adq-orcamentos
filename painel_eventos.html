@@ -895,15 +895,18 @@ function buildCard(ev, past, col) {
     else { h = digits.slice(0,2); m = digits.slice(2,4); }
     return h.padStart(2,'0') + ':' + (m||'00').padStart(2,'0');
   }
-  var horario = '';
-  var partes = [];
+  var horarioBlock = ''; // montagem e desmontagem — linha separada
+  var horarioInline = ''; // início e fim — ao lado do local
   var temHorario = ev.ev_montagem || ev.ev_inicio || ev.ev_fim || ev.ev_desmontagem;
   if (temHorario) {
-    if (ev.ev_montagem) partes.push('Mont. ' + fmtHora(ev.ev_montagem));
-    if (ev.ev_inicio || ev.ev_fim) partes.push((ev.ev_inicio ? fmtHora(ev.ev_inicio) : '') + (ev.ev_fim ? ' – ' + fmtHora(ev.ev_fim) : ''));
-    partes.push(ev.ev_desmontagem ? 'Desm. ' + fmtHora(ev.ev_desmontagem) : 'Desm. ao término');
+    var blockPartes = [];
+    if (ev.ev_montagem) blockPartes.push('Mont. ' + fmtHora(ev.ev_montagem));
+    blockPartes.push(ev.ev_desmontagem ? 'Desm. ' + fmtHora(ev.ev_desmontagem) : 'Desm. ao término');
+    horarioBlock = blockPartes.join(' · ');
+    if (ev.ev_inicio || ev.ev_fim) {
+      horarioInline = (ev.ev_inicio ? fmtHora(ev.ev_inicio) : '') + (ev.ev_fim ? ' – ' + fmtHora(ev.ev_fim) : '');
+    }
   }
-  horario = partes.join(' · ');
   var resp = ev.ev_resp ? '<div class="card-resp">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '';
   var itens = '';
   if (ev.servicos && ev.servicos.length) {
@@ -930,10 +933,11 @@ function buildCard(ev, past, col) {
     '</div>' +
     '<div class="card-body">' +
       '<div class="card-body-inner">' +
-        (horario ? '<div class="card-horario-block">' + esc(horario) + '</div>' : '') +
+        (horarioBlock ? '<div class="card-horario-block">' + esc(horarioBlock) + '</div>' : '') +
         '<div class="card-local">' +
           '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg> ' +
           esc(ev.ev_local || '') +
+          (horarioInline ? '<span class="card-local-sep">·</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;opacity:0.5"><circle cx="6" cy="6" r="5"/><polyline points="6,3 6,6 8,7.5"/></svg><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
         '</div>' +
         resp + itens +
       '</div>' +
