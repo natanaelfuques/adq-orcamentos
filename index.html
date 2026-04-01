@@ -3917,53 +3917,19 @@ function duplicarContrato(id) {
 function excluirContrato(id, nome) {
   if (!confirm('Excluir contrato de "' + nome + '"?')) return;
   db.collection('contratos').doc(id).delete()
-    .then(function() {
-      // Remove do painel tambem
-      db.collection('eventos_campo').where('contrato_id', '==', id).get().then(function(snap) {
-        snap.forEach(function(doc) { doc.ref.delete(); });
-      });
-    })
+    .then(function() { removerDoPainel(id); })
     .catch(function(e) { alert('Erro ao excluir: ' + e.message); });
 }
 
 function toggleAprovadoContrato(id, atual) {
   if (!db) return;
   var novoStatus = !atual;
-  db.collection('contratos').doc(id).update({ aprovado: novoStatus });
+  db.collection('contratos').doc(id).update({ aprovado: novoStatus })
+    .catch(function(e) { console.error('[AdQ] Erro ao atualizar status:', e); });
   if (novoStatus) {
-    // Marcou como assinado: adiciona ao painel se ainda nao existe
-    db.collection('contratos').doc(id).get().then(function(doc) {
-      if (!doc.exists) return;
-      var d = doc.data();
-      db.collection('eventos_campo').where('contrato_id', '==', id).get().then(function(snap) {
-        if (!snap.empty) return;
-        db.collection('eventos_campo').add({
-          ev_nome:     d.ev_nome   || '',
-          ev_local:    d.ev_local  || '',
-          ev_data:     d.ev_data   || '',
-          ev_inicio:   d.ev_inicio || '',
-          ev_fim:      d.ev_fim    || '',
-          ev_resp:     d.ev_resp   || '',
-          cli_nome:    d.cli_nome  || '',
-          servicos:    d.servicos  || [],
-          itens_ok:    {},
-          etapa:       'montar',
-          contrato_id: id,
-          criadoEm:    firebase.firestore.FieldValue.serverTimestamp()
-        });
-      });
-    });
+    adicionarAoPainel(id);
   } else {
-    // Desmarcou: remove do painel
-    db.collection('eventos_campo').where('contrato_id', '==', id).get().then(function(snap) {
-      if (snap.empty) {
-        console.warn('[AdQ] Nenhum evento encontrado para contrato_id:', id);
-      }
-      snap.forEach(function(doc) { doc.ref.delete(); });
-    }).catch(function(e) {
-      console.error('[AdQ] Erro ao remover do painel:', e);
-      // Fallback: busca por ev_nome se contrato_id nao existe
-    });
+    removerDoPainel(id);
   }
 }
 
@@ -4087,31 +4053,7 @@ function filtrarContratos() {
 
 
 // ═══ ENVIAR PARA PAINEL DE CAMPO ═══
-function enviarParaPainel(id) {
-  if (!db) return;
-  db.collection('contratos').doc(id).get().then(function(doc) {
-    if (!doc.exists) return;
-    var d = doc.data();
-    var evento = {
-      ev_nome:   d.ev_nome   || '',
-      ev_local:  d.ev_local  || '',
-      ev_data:   d.ev_data   || '',
-      ev_inicio: d.ev_inicio || '',
-      ev_fim:    d.ev_fim    || '',
-      ev_resp:   d.ev_resp   || '',
-      cli_nome:  d.cli_nome  || '',
-      servicos:  d.servicos  || [],
-      itens_ok:  {},
-      etapa:     'montar',
-      criadoEm:  firebase.firestore.FieldValue.serverTimestamp()
-    };
-    db.collection('eventos_campo').add(evento).then(function() {
-      alert('Evento enviado para o Painel de Campo!');
-    }).catch(function(e) {
-      alert('Erro: ' + e.message);
-    });
-  });
-}
+
 
 // ═══ SWIPE NAVIGATION (Instagram style) ═══
 (function(){
@@ -4214,6 +4156,59 @@ function enviarParaPainel(id) {
     if (idx >= 0) goToTab(idx, true);
   };
 })();
+
+// ═══ SINCRONIZAÇÃO PAINEL ═══
+
+function buildEventoFromContrato(d, contratoId) {
+  return {
+    ev_nome:     d.ev_nome   || '',
+    ev_local:    d.ev_local  || '',
+    ev_data:     d.ev_data   || '',
+    ev_inicio:   d.ev_inicio || '',
+    ev_fim:      d.ev_fim    || '',
+    ev_resp:     d.ev_resp   || '',
+    cli_nome:    d.cli_nome  || '',
+    servicos:    d.servicos  || [],
+    contrato_id: contratoId,
+    criadoEm:    firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+
+function adicionarAoPainel(contratoId) {
+  if (!db) return;
+  var ref = db.collection('eventos_campo').doc(contratoId);
+  ref.get().then(function(doc) {
+    if (doc.exists) {
+      // Ja existe - apenas reativar se foi removido (preserva etapa e itens_ok)
+      console.log('[AdQ] Evento ja existe no painel:', contratoId);
+      return;
+    }
+    // Buscar dados do contrato
+    db.collection('contratos').doc(contratoId).get().then(function(cDoc) {
+      if (!cDoc.exists) { console.warn('[AdQ] Contrato nao encontrado:', contratoId); return; }
+      var d = cDoc.data();
+      var evento = buildEventoFromContrato(d, contratoId);
+      evento.etapa = 'eventos';
+      evento.itens_ok = {};
+      ref.set(evento).then(function() {
+        console.log('[AdQ] Evento adicionado ao painel:', d.ev_nome);
+      }).catch(function(e) {
+        console.error('[AdQ] Erro ao adicionar ao painel:', e);
+      });
+    });
+  });
+}
+
+function removerDoPainel(contratoId) {
+  if (!db) return;
+  db.collection('eventos_campo').doc(contratoId).delete()
+    .then(function() {
+      console.log('[AdQ] Evento removido do painel:', contratoId);
+    })
+    .catch(function(e) {
+      console.warn('[AdQ] Erro ao remover do painel (pode nao existir):', e.message);
+    });
+}
 </script>
 </body>
 </html>`;
