@@ -251,9 +251,9 @@ header {
   border-radius: 10px;
 }
 
-.col-montar .col-title { color: var(--montar); }
-.col-montar .col-count { background: var(--montar-dim); color: var(--montar); }
-.col-montar { border-top: 3px solid var(--montar); }
+.col-eventos .col-title { color: var(--montar); }
+.col-eventos .col-count { background: var(--montar-dim); color: var(--montar); }
+.col-eventos { border-top: 3px solid var(--montar); }
 
 .col-andamento .col-title { color: var(--andamento); }
 .col-andamento .col-count { background: var(--andamento-dim); color: var(--andamento); }
@@ -281,6 +281,9 @@ header {
   cursor: grab;
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .evento-card:hover {
@@ -635,13 +638,13 @@ header {
   </div>
   <div class="board-container">
     <div class="board">
-      <!-- MONTAR -->
-      <div class="column col-montar" id="col-montar" ondragover="onDragOver(event,'montar')" ondrop="onDrop(event,'montar')" ondragleave="onDragLeave(event)">
+      <!-- EVENTOS -->
+      <div class="column col-eventos" id="col-eventos" ondragover="onDragOver(event,'eventos')" ondrop="onDrop(event,'eventos')" ondragleave="onDragLeave(event)">
         <div class="column-header">
-          <span class="col-title">Montar</span>
-          <span class="col-count" id="count-montar">0</span>
+          <span class="col-title">Eventos</span>
+          <span class="col-count" id="count-eventos">0</span>
         </div>
-        <div class="column-body" id="body-montar">
+        <div class="column-body" id="body-eventos">
           <div class="loading-screen">Carregando...</div>
         </div>
       </div>
@@ -755,13 +758,13 @@ function iniciarBoard() {
 }
 
 function renderBoard() {
-  var colunas = { montar: [], andamento: [], concluido: [] };
+  var colunas = { eventos: [], andamento: [], concluido: [] };
   _todosEventos.forEach(function(ev) {
-    var col = ev.etapa || 'montar';
+    var col = ev.etapa || 'eventos';
     if (colunas[col]) colunas[col].push(ev);
   });
 
-  ['montar', 'andamento', 'concluido'].forEach(function(col) {
+  ['eventos', 'andamento', 'concluido'].forEach(function(col) {
     var body = document.getElementById('body-' + col);
     var count = document.getElementById('count-' + col);
 
@@ -926,9 +929,12 @@ function snapBoardToColumn() {
   var board = document.querySelector('.board-container');
   var col = document.querySelector('.column');
   if (!board || !col) return;
-  var colW = col.offsetWidth + 20; // width + gap
-  var nearest = Math.round(board.scrollLeft / colW) * colW;
-  board.scrollTo({ left: nearest, behavior: 'smooth' });
+  var colW = col.offsetWidth + 20;
+  var current = board.scrollLeft / colW;
+  // Snap to nearest column — requires passing 40% of column to advance
+  var nearest = Math.floor(current + 0.4);
+  nearest = Math.max(0, Math.min(2, nearest));
+  board.scrollTo({ left: nearest * colW, behavior: 'smooth' });
 }
 
 function onDragOver(e, col) {
@@ -939,7 +945,7 @@ function onDragOver(e, col) {
 }
 
 function onDragLeave(e) {
-  ['montar','andamento','concluido'].forEach(function(col) {
+  ['eventos','andamento','concluido'].forEach(function(col) {
     var body = document.getElementById('body-' + col);
     if (body) body.classList.remove('drag-over');
   });
@@ -1087,11 +1093,55 @@ document.addEventListener('DOMContentLoaded', function() {
   var board = document.querySelector('.board-container');
   if (!board) return;
   var snapTimeout = null;
-  board.addEventListener('scroll', function() {
-    // Only snap when not dragging a card
+  var lastScrollLeft = 0;
+  var scrollVelocity = 0;
+  var magnetInterval = null;
+
+  function startMagnet() {
+    if (magnetInterval) return;
+    magnetInterval = setInterval(function() {
+      var col = document.querySelector('.column');
+      if (!col || !board) return;
+      var colW = col.offsetWidth + 20;
+      var current = board.scrollLeft / colW;
+      var nearest = Math.round(current);
+      var target = nearest * colW;
+      var diff = target - board.scrollLeft;
+      // Only attract if within 60% of column width
+      if (Math.abs(diff) < colW * 0.6 && Math.abs(diff) > 2) {
+        board.scrollLeft += diff * 0.08; // gentle pull
+      }
+    }, 16);
+  }
+
+  function stopMagnet() {
+    if (magnetInterval) { clearInterval(magnetInterval); magnetInterval = null; }
+  }
+
+  board.addEventListener('touchstart', function() { stopMagnet(); }, {passive: true});
+  board.addEventListener('touchend', function() {
     if (_draggingId) return;
+    setTimeout(startMagnet, 80);
+  }, {passive: true});
+
+  board.addEventListener('scroll', function() {
+    if (_draggingId) return;
+    scrollVelocity = board.scrollLeft - lastScrollLeft;
+    lastScrollLeft = board.scrollLeft;
     clearTimeout(snapTimeout);
-    snapTimeout = setTimeout(snapBoardToColumn, 80);
+    snapTimeout = setTimeout(function() {
+      stopMagnet();
+      var col = document.querySelector('.column');
+      if (!col) return;
+      var colW = col.offsetWidth + 20;
+      var current = board.scrollLeft / colW;
+      var currentIdx = Math.round(current);
+      var target = Math.abs(scrollVelocity) > 8
+        ? (scrollVelocity > 0 ? currentIdx + 1 : currentIdx - 1)
+        : Math.floor(current + 0.4);
+      target = Math.max(0, Math.min(2, target));
+      board.scrollTo({ left: target * colW, behavior: 'smooth' });
+    }, 60);
   }, {passive: true});
 });
 </script>

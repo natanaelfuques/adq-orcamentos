@@ -3917,6 +3917,12 @@ function duplicarContrato(id) {
 function excluirContrato(id, nome) {
   if (!confirm('Excluir contrato de "' + nome + '"?')) return;
   db.collection('contratos').doc(id).delete()
+    .then(function() {
+      // Remove do painel tambem
+      db.collection('eventos_campo').where('contrato_id', '==', id).get().then(function(snap) {
+        snap.forEach(function(doc) { doc.ref.delete(); });
+      });
+    })
     .catch(function(e) { alert('Erro ao excluir: ' + e.message); });
 }
 
