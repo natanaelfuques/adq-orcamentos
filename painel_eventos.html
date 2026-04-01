@@ -1017,7 +1017,11 @@ function renderBoard() {
     body.querySelectorAll('.item-rem-extra-btn').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        removerItemExtra(btn.dataset.evid, parseInt(btn.dataset.idx));
+        var ev = _todosEventos.find(function(ev) { return ev.id === btn.dataset.evid; });
+        var texto = ev && ev.itens_extras ? ev.itens_extras[parseInt(btn.dataset.idx)] : 'este item';
+        if (confirm('Excluir "' + texto + '"?')) {
+          removerItemExtra(btn.dataset.evid, parseInt(btn.dataset.idx));
+        }
       });
     });
 
@@ -1115,18 +1119,19 @@ function buildCard(ev, past, col) {
     }).join('');
     var extrasHtml = (ev.itens_extras || []).map(function(s, i) {
       var done = ev.itens_ok && ev.itens_ok['extra_' + i];
-      return '<div class="card-item' + (done ? ' item-done' : '') + '">' +
-        '<div class="item-check' + (done ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '"></div>' +
-        '<span class="item-text">' + esc(s) + '</span>' +
+      var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
+      return '<div class="card-item' + (done && !isObs ? ' item-done' : '') + '" style="' + (isObs ? 'align-items:flex-start' : '') + '">' +
+        (!isObs ? '<div class="item-check' + (done ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '"></div>' : '') +
+        '<span class="item-text" style="' + (isObs ? 'color:var(--gold);flex:1' : '') + '">' + esc(s) + '</span>' +
         '<span class="item-extra-tag">+</span>' +
-        '<button class="item-rem-extra-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+        '<button class="item-rem-extra-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="background:none;border:none;color:#e05c5c;cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
         '</div>';
     }).join('');
     itens = '<div class="card-itens">' +
       '<div class="card-itens-title">Itens</div>' +
       itensHtml + extrasHtml +
       '<div id="add-form-' + esc(ev.id) + '" style="display:none" class="add-item-form">' +
-        '<input class="add-item-input" placeholder="Descrição do item..." />' +
+        '<input class="add-item-input" placeholder="Item ou obs: observação..." />' +
         '<button class="btn-add-item-ok" data-evid="' + esc(ev.id) + '">OK</button>' +
       '</div>' +
       '<button class="btn-add-item" data-evid="' + esc(ev.id) + '">' +
