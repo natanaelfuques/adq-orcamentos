@@ -271,8 +271,8 @@ header {
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: 6px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
   cursor: grab;
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
   user-select: none;
@@ -281,12 +281,77 @@ header {
 .evento-card:hover {
   border-color: #444;
   box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  transform: translateY(-1px);
 }
 
 .evento-card.dragging {
   opacity: 0.4;
   cursor: grabbing;
+}
+
+/* Collapsed summary row */
+.card-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.card-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.card-evento {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-data-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--gold);
+  background: var(--gold-dim);
+  padding: 3px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.06em;
+}
+
+.card-expand-icon {
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.evento-card.expanded .card-expand-icon {
+  transform: rotate(180deg);
+}
+
+/* Expandable body */
+.card-body {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease, opacity 0.2s;
+  opacity: 0;
+}
+
+.evento-card.expanded .card-body {
+  max-height: 800px;
+  opacity: 1;
+}
+
+.card-body-inner {
+  padding-top: 12px;
 }
 
 .card-header {
@@ -324,7 +389,7 @@ header {
   margin-bottom: 8px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .card-horario {
@@ -429,6 +494,73 @@ header {
   .board { gap: 12px; }
   header { padding: 12px 16px; }
 }
+
+  /* ── FILTROS DE PERIODO ── */
+  .periodo-bar {
+    display: flex;
+    gap: 8px;
+    padding: 14px 24px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .periodo-bar::-webkit-scrollbar { display: none; }
+  .periodo-btn {
+    padding: 6px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .periodo-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .periodo-btn.active { border-color: var(--gold); color: var(--dark); background: var(--gold); }
+
+  /* ── SEPARADORES DE GRUPO ── */
+  .group-separator {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 4px 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+  .group-separator:first-child { margin-top: 0; }
+
+  /* ── ANTERIORES ── */
+  .anteriores-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px;
+    cursor: pointer;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+    user-select: none;
+  }
+  .anteriores-toggle svg { transition: transform 0.2s; }
+  .anteriores-toggle.open svg { transform: rotate(180deg); }
+  .anteriores-body { display: none; }
+  .anteriores-body.open { display: block; }
+  .evento-card.passado { opacity: 0.6; }
+
 </style>
 
   <!-- PWA -->
@@ -478,6 +610,12 @@ header {
   </button>
   </header>
 
+  <div class="periodo-bar">
+    <button class="periodo-btn active" id="periodo-semana" onclick="setPeriodo('semana')">Esta semana</button>
+    <button class="periodo-btn" id="periodo-mes" onclick="setPeriodo('mes')">Este mes</button>
+    <button class="periodo-btn" id="periodo-ano" onclick="setPeriodo('ano')">Este ano</button>
+    <button class="periodo-btn" id="periodo-todos" onclick="setPeriodo('todos')">Todos</button>
+  </div>
   <div class="board-container">
     <div class="board">
       <!-- MONTAR -->
@@ -601,34 +739,84 @@ function renderBoard() {
   ['montar', 'andamento', 'concluido'].forEach(function(col) {
     var body = document.getElementById('body-' + col);
     var count = document.getElementById('count-' + col);
-    count.textContent = colunas[col].length;
-    if (colunas[col].length === 0) {
-      body.innerHTML = '<div class="empty-col">Nenhum evento</div>';
-    } else {
-      body.innerHTML = colunas[col].map(function(ev) { return buildCard(ev); }).join('');
-      // Add drag events
-      body.querySelectorAll('.evento-card').forEach(function(card) {
-        card.addEventListener('dragstart', function(e) { onDragStart(e, card.dataset.id); });
-        card.addEventListener('dragend', function() { card.classList.remove('dragging'); });
-      });
-      // Add item check events
-      body.querySelectorAll('.item-check').forEach(function(chk) {
-        chk.addEventListener('click', function(e) {
-          e.stopPropagation();
-          toggleItem(chk.dataset.evid, parseInt(chk.dataset.idx));
-        });
+
+    // Split: past vs future/current, filtered by period
+    var futuros = colunas[col].filter(function(ev) {
+      return !isPast(ev) && matchesPeriodo(ev, _periodo);
+    });
+    var passados = colunas[col].filter(function(ev) { return isPast(ev); });
+
+    // Sort by date ascending
+    function sortByDate(arr) {
+      return arr.slice().sort(function(a, b) {
+        return (a.ev_data || '') > (b.ev_data || '') ? 1 : -1;
       });
     }
+    futuros = sortByDate(futuros);
+    passados = sortByDate(passados);
+
+    count.textContent = futuros.length + (passados.length ? '+' + passados.length : '');
+
+    if (futuros.length === 0 && passados.length === 0) {
+      body.innerHTML = '<div class="empty-col">Nenhum evento</div>';
+      return;
+    }
+
+    var html = '';
+
+    // Group futuros by week/month label
+    var grupos = {};
+    var grupoOrder = [];
+    futuros.forEach(function(ev) {
+      var label = getWeekLabel(ev);
+      if (!grupos[label]) { grupos[label] = []; grupoOrder.push(label); }
+      grupos[label].push(ev);
+    });
+
+    grupoOrder.forEach(function(label) {
+      html += '<div class="group-separator">' + label + '</div>';
+      grupos[label].forEach(function(ev) { html += buildCard(ev); });
+    });
+
+    // Anteriores
+    if (passados.length > 0) {
+      html += '<div class="anteriores-toggle" id="ant-toggle-' + col + '" onclick="toggleAnteriores(\'' + col + '\')">' +
+        '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1,3 5,7 9,3"/></svg>' +
+        'Anteriores (' + passados.length + ')</div>';
+      html += '<div class="anteriores-body" id="ant-body-' + col + '">';
+      passados.forEach(function(ev) { html += buildCard(ev, true); });
+      html += '</div>';
+    }
+
+    body.innerHTML = html;
+
+    // Events
+    body.querySelectorAll('.evento-card').forEach(function(card) {
+      card.addEventListener('dragstart', function(e) { onDragStart(e, card.dataset.id); });
+      card.addEventListener('dragend', function() { card.classList.remove('dragging'); });
+    });
+    body.querySelectorAll('.card-summary').forEach(function(summary) {
+      summary.addEventListener('click', function(e) {
+        var card = summary.closest('.evento-card');
+        if (card) card.classList.toggle('expanded');
+      });
+    });
+    body.querySelectorAll('.item-check').forEach(function(chk) {
+      chk.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleItem(chk.dataset.evid, parseInt(chk.dataset.idx));
+      });
+    });
   });
 }
 
-function buildCard(ev) {
+function buildCard(ev, past) {
   var dataFmt = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
   var horario = '';
   if (ev.ev_inicio || ev.ev_fim) {
     horario = '<div class="card-horario">' +
       (ev.ev_inicio ? '<span>' + esc(ev.ev_inicio) + '</span>' : '') +
-      (ev.ev_inicio && ev.ev_fim ? ' — ' : '') +
+      (ev.ev_inicio && ev.ev_fim ? ' &#8212; ' : '') +
       (ev.ev_fim ? '<span>' + esc(ev.ev_fim) + '</span>' : '') +
       '</div>';
   }
@@ -645,13 +833,20 @@ function buildCard(ev) {
     itens = '<div class="card-itens"><div class="card-itens-title">Itens</div>' + itensHtml + '</div>';
   }
 
-  return '<div class="evento-card" draggable="true" data-id="' + esc(ev.id) + '">' +
-    '<div class="card-header">' +
-    '<div class="card-evento">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
-    (dataFmt ? '<div class="card-data-badge">' + dataFmt + '</div>' : '') +
+  return '<div class="evento-card' + (past ? ' passado' : '') + '" draggable="true" data-id="' + esc(ev.id) + '">' +
+    '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
+      '<div class="card-summary-left">' +
+        (dataFmt ? '<div class="card-data-badge">' + dataFmt + '</div>' : '') +
+        '<div class="card-evento">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+      '</div>' +
+      '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
     '</div>' +
-    '<div class="card-local">&#128205; ' + esc(ev.ev_local || '') + '</div>' +
-    horario + resp + itens +
+    '<div class="card-body">' +
+      '<div class="card-body-inner">' +
+        '<div class="card-local"><svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg> ' + esc(ev.ev_local || '') + '</div>' +
+        horario + resp + itens +
+      '</div>' +
+    '</div>' +
     '</div>';
 }
 
@@ -673,6 +868,17 @@ function onDragOver(e, col) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
   document.getElementById('body-' + col).classList.add('drag-over');
+  // Auto-scroll board horizontally when near edges
+  var board = document.querySelector('.board-container');
+  if (!board) return;
+  var rect = board.getBoundingClientRect();
+  var edgeSize = 80;
+  var x = e.clientX - rect.left;
+  if (x < edgeSize) {
+    board.scrollLeft -= 8;
+  } else if (x > rect.width - edgeSize) {
+    board.scrollLeft += 8;
+  }
 }
 
 function onDragLeave(e) {
@@ -746,6 +952,77 @@ function toggleItem(evId, idx) {
     });
   };
 })();
+
+// ═══ FILTRO DE PERIODO ═══
+var _periodo = 'semana';
+
+function setPeriodo(p) {
+  _periodo = p;
+  document.querySelectorAll('.periodo-btn').forEach(function(b) { b.classList.remove('active'); });
+  var btn = document.getElementById('periodo-' + p);
+  if (btn) btn.classList.add('active');
+  renderBoard();
+}
+
+function getWeekRange() {
+  var now = new Date();
+  var day = now.getDay(); // 0=sun
+  var monday = new Date(now);
+  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+  monday.setHours(0,0,0,0);
+  var sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23,59,59,999);
+  return { start: monday, end: sunday };
+}
+
+function matchesPeriodo(ev, periodo) {
+  if (periodo === 'todos') return true;
+  if (!ev.ev_data) return periodo === 'todos';
+  var parts = ev.ev_data.split('-');
+  var evDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  var now = new Date();
+  if (periodo === 'semana') {
+    var range = getWeekRange();
+    return evDate >= range.start && evDate <= range.end;
+  }
+  if (periodo === 'mes') {
+    return evDate.getMonth() === now.getMonth() && evDate.getFullYear() === now.getFullYear();
+  }
+  if (periodo === 'ano') {
+    return evDate.getFullYear() === now.getFullYear();
+  }
+  return true;
+}
+
+function isPast(ev) {
+  if (!ev.ev_data) return false;
+  var parts = ev.ev_data.split('-');
+  var evDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  evDate.setHours(23,59,59,999);
+  return evDate < new Date();
+}
+
+function getWeekLabel(ev) {
+  if (!ev.ev_data) return 'Sem data';
+  var parts = ev.ev_data.split('-');
+  var evDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  var now = new Date();
+  var range = getWeekRange();
+  if (evDate >= range.start && evDate <= range.end) return 'Esta semana';
+  var nextStart = new Date(range.start); nextStart.setDate(range.start.getDate() + 7);
+  var nextEnd = new Date(range.end); nextEnd.setDate(range.end.getDate() + 7);
+  if (evDate >= nextStart && evDate <= nextEnd) return 'Proxima semana';
+  var meses = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  return meses[evDate.getMonth()] + ' ' + evDate.getFullYear();
+}
+
+function toggleAnteriores(col) {
+  var toggle = document.getElementById('ant-toggle-' + col);
+  var body = document.getElementById('ant-body-' + col);
+  if (toggle) toggle.classList.toggle('open');
+  if (body) body.classList.toggle('open');
+}
 </script>
 </body>
 </html>
