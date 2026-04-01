@@ -1232,7 +1232,7 @@ Revestimento</textarea>
     </div>
     <iframe id="pdf-frame"></iframe>
     <button class="btn-download" onclick="imprimirPDF()">Imprimir / Baixar PDF</button>
-    <button class="btn-download" onclick="salvarNaNuvem()" style="margin-top:8px;border-color:var(--gold);color:var(--gold)" id="btn-salvar-nuvem">☁ Salvar Orçamento</button>
+    <button class="btn-download" onclick="salvarNaNuvem()" style="margin-top:8px;border-color:var(--gold);color:var(--gold)" id="btn-salvar-nuvem">Salvar Orçamento</button>
   </div>
 
 </div><!-- /container orcamento -->
@@ -1413,7 +1413,7 @@ Revestimento</textarea>
     </div>
     <iframe id="pdf-frame-contrato" style="width:100%;height:820px;border:1px solid var(--border);border-radius:4px"></iframe>
     <button class="btn-download" onclick="imprimirContrato()">Imprimir / Baixar PDF</button>
-    <button class="btn-download" onclick="baixarDadosContrato()" style="margin-top:8px;border-color:var(--muted);color:var(--muted)">⬇ Salvar contrato (.json)</button>
+    <button class="btn-download" onclick="salvarContratoNaNuvem()" style="margin-top:8px;border-color:var(--gold);color:var(--gold)" id="btn-salvar-contrato">Salvar Contrato</button>
   </div>
 
 </div>
@@ -1424,12 +1424,20 @@ Revestimento</textarea>
 <div id="panel-salvos" class="main-panel">
 <div class="container">
   <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div class="section-title" style="margin:0;border:none;padding:0">Orçamentos Salvos</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="section-title" style="margin:0;border:none;padding:0">Salvos</div>
       <div id="salvos-sync-status" style="font-size:0.72rem;color:var(--muted);letter-spacing:0.06em;text-align:right"></div>
     </div>
+    <!-- Sub-abas -->
+    <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px">
+      <button id="salvos-tab-orc" onclick="switchSalvosTab('orcamentos')" style="flex:1;padding:10px;background:transparent;border:none;border-bottom:3px solid var(--gold);margin-bottom:-2px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Orcamentos</button>
+      <button id="salvos-tab-con" onclick="switchSalvosTab('contratos')" style="flex:1;padding:10px;background:transparent;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Contratos</button>
+    </div>
     <div id="salvos-lista">
-      <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando à nuvem...</div>
+      <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
+    </div>
+    <div id="contratos-lista" style="display:none">
+      <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
     </div>
   </div>
 </div>
@@ -3312,11 +3320,21 @@ function handleSalvosClick(e) {
     var ap = btn.getAttribute('data-aprovado') === 'true';
     toggleAprovado(id, ap);
   }
+  else if (action === 'abrir-contrato') abrirContrato(id);
+  else if (action === 'duplicar-contrato') duplicarContrato(id);
+  else if (action === 'excluir-contrato') excluirContrato(id, nome);
+  else if (action === 'status-contrato') {
+    var ap2 = btn.getAttribute('data-aprovado') === 'true';
+    toggleAprovadoContrato(id, ap2);
+  }
 }
 
 function iniciarListenerSalvos() {
   var lista = document.getElementById('salvos-lista');
   if (lista) lista.addEventListener('click', handleSalvosClick);
+  var listaC = document.getElementById('contratos-lista');
+  if (listaC) listaC.addEventListener('click', handleSalvosClick);
+  iniciarListenerContratos();
   if (!db) return;
   const statusEl = document.getElementById('salvos-sync-status');
   if (statusEl) statusEl.textContent = 'Sincronizando...';
@@ -3326,7 +3344,7 @@ function iniciarListenerSalvos() {
       const docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
       renderSalvos(docs);
-      if (statusEl) statusEl.textContent = docs.length + ' or&#231;amento' + (docs.length !== 1 ? 's' : '');
+      if (statusEl) statusEl.textContent = docs.length + ' salvo' + (docs.length !== 1 ? 's' : '');
     }, function(err) {
       console.warn('[AdQ] Listener erro:', err);
       if (statusEl) statusEl.textContent = 'Erro de sincroniza&#231;&#227;o';
@@ -3418,7 +3436,7 @@ function salvarNaNuvem() {
     return;
   }
   const btn = document.getElementById('btn-salvar-nuvem');
-  if (btn) { btn.textContent = '&#9729; Salvando...'; btn.disabled = true; }
+  if (btn) { btn.textContent = 'Salvando...'; btn.disabled = true; }
 
   const dados = coletarDadosOrcamento();
   dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
@@ -3427,13 +3445,13 @@ function salvarNaNuvem() {
     .then(function() {
       if (btn) { btn.textContent = 'Salvo!'; }
       setTimeout(function() {
-        if (btn) { btn.textContent = '&#9729; Salvar Or&#231;amento'; btn.disabled = false; }
+        if (btn) { btn.textContent = 'Salvar Orçamento'; btn.disabled = false; }
       }, 2000);
     })
     .catch(function(e) {
       console.error('[AdQ] Salvar erro:', e);
       alert('Erro ao salvar: ' + e.message);
-      if (btn) { btn.textContent = '&#9729; Salvar Or&#231;amento'; btn.disabled = false; }
+      if (btn) { btn.textContent = 'Salvar Orçamento'; btn.disabled = false; }
     });
 }
 
@@ -3463,7 +3481,7 @@ function renderSalvos(docs) {
     card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Abrir</button>';
     card += '<button class="btn-salvo" data-action="duplicar" data-id="' + id + '">Duplicar</button>';
     card += '<button class="btn-salvo" data-action="contrato" data-id="' + id + '">Contrato</button>';
-    card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">X</button>';
+    card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status" data-id="' + id + '" data-aprovado="' + aprovado + '">';
     card += aprovado ? 'Aprovado' : 'Pendente';
@@ -3508,42 +3526,14 @@ function gerarContratoSalvo(id) {
   db.collection('orcamentos').doc(id).get().then(function(doc) {
     if (!doc.exists) return;
     var d = doc.data();
-    // Preenche contrato automaticamente
+    // Usa o mesmo fluxo normal - passa pelo "qual opcao o cliente escolheu"
     switchMain('contrato');
     setTimeout(function() {
-      var set = function(elId, val) { var el = document.getElementById(elId); if (el && val !== undefined) el.value = val; };
-      set('cli_nome',  d.nome_cliente || d.nome || '');
-      set('ev_nome',   d.tipo_evento  || d.evento || '');
-      set('ev_local',  d.local_evento || d.local  || '');
-      set('ev_data',   d.data_evento  || d.dataEvt || '');
-      // Preenche servi&#231;os
-      var lista = document.getElementById('lista-servicos');
-      if (lista && d.opcoes && d.opcoes.length) {
-        lista.innerHTML = '';
-        var servicos = [];
-        d.opcoes.forEach(function(op) {
-          if (op.tipo === 'pacote') {
-            op.desc.split('\n').forEach(function(l){ if(l.trim()) servicos.push(l.trim()); });
-          } else if (op.tipo === 'detalhado' && op.itens) {
-            op.itens.forEach(function(it){ if(it.titulo) servicos.push(it.titulo + (it.desc ? ': ' + it.desc.split('\n')[0] : '')); });
-          }
-        });
-        servicos.forEach(function(s) {
-          var div = document.createElement('div');
-          div.className = 'servico-item';
-          div.innerHTML = '<input type="text" value="' + escHtml(s) + '"><button class="btn-rem" onclick="remServico(this)">&#215;</button>';
-          lista.appendChild(div);
-        });
-        if (lista.children.length === 0) addServico();
-      }
-      // Valor total
-      if (d.valorTotal) {
-        var vt = document.getElementById('val_total');
-        if (vt) { vt.value = d.valorTotal; calcEntrada(); }
-      }
+      identificarECarregar._processar(d);
     }, 100);
   });
 }
+
 
 function excluirSalvo(id, nome) {
   if (!confirm('Excluir or&#231;amento de "' + nome + '"?')) return;
@@ -3556,6 +3546,192 @@ function toggleAprovado(id, atual) {
   if (!db) return;
   db.collection('orcamentos').doc(id).update({ aprovado: !atual })
     .catch(function(e){ console.warn('[AdQ] Toggle aprovado erro:', e); });
+}
+
+
+
+// ═══ CONTRATOS NA NUVEM ═══
+
+var _salvosTab = 'orcamentos';
+
+function switchSalvosTab(tab) {
+  _salvosTab = tab;
+  var orc = document.getElementById('salvos-lista');
+  var con = document.getElementById('contratos-lista');
+  var btnOrc = document.getElementById('salvos-tab-orc');
+  var btnCon = document.getElementById('salvos-tab-con');
+  var statusEl = document.getElementById('salvos-sync-status');
+  var gold = 'var(--gold)', muted = 'var(--muted)';
+  var borderGold = '3px solid var(--gold)', borderNone = '3px solid transparent';
+  if (tab === 'orcamentos') {
+    if (orc) orc.style.display = 'block';
+    if (con) con.style.display = 'none';
+    if (btnOrc) { btnOrc.style.color = gold; btnOrc.style.borderBottom = borderGold; }
+    if (btnCon) { btnCon.style.color = muted; btnCon.style.borderBottom = borderNone; }
+  } else {
+    if (orc) orc.style.display = 'none';
+    if (con) con.style.display = 'block';
+    if (btnOrc) { btnOrc.style.color = muted; btnOrc.style.borderBottom = borderNone; }
+    if (btnCon) { btnCon.style.color = gold; btnCon.style.borderBottom = borderGold; }
+  }
+}
+
+function coletarDadosContrato() {
+  var get = function(id) { var el = document.getElementById(id); return el ? el.value : ''; };
+  var servicos = [];
+  var lista = document.getElementById('lista-servicos');
+  if (lista) {
+    lista.querySelectorAll('input[type=text]').forEach(function(inp) {
+      if (inp.value.trim()) servicos.push(inp.value.trim());
+    });
+  }
+  var pgtoRadio = document.querySelector('input[name="pgto"]:checked');
+  return {
+    _tipo: 'contrato',
+    cli_nome:  get('cli_nome'),
+    cli_doc:   get('cli_doc'),
+    cli_end:   get('cli_end'),
+    cli_cep:   get('cli_cep'),
+    cli_email: get('cli_email'),
+    cli_fone:  get('cli_fone'),
+    ev_nome:   get('ev_nome'),
+    ev_resp:   get('ev_resp'),
+    ev_local:  get('ev_local'),
+    ev_data:   get('ev_data'),
+    ev_inicio: get('ev_inicio'),
+    ev_fim:    get('ev_fim'),
+    val_total: get('val_total'),
+    pgto_tipo: pgtoRadio ? pgtoRadio.value : 'vista',
+    pgto_custom: get('pgto_custom'),
+    data_entrada: get('data_entrada'),
+    servicos:  servicos,
+    aprovado:  false
+  };
+}
+
+function salvarContratoNaNuvem() {
+  if (!db) { alert('Banco de dados nao conectado.'); return; }
+  var btn = document.getElementById('btn-salvar-contrato');
+  if (btn) { btn.textContent = 'Salvando...'; btn.disabled = true; }
+  var dados = coletarDadosContrato();
+  dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
+  db.collection('contratos').add(dados)
+    .then(function() {
+      if (btn) { btn.textContent = 'Salvo!'; }
+      setTimeout(function() {
+        if (btn) { btn.textContent = 'Salvar Contrato'; btn.disabled = false; }
+      }, 2000);
+    })
+    .catch(function(e) {
+      alert('Erro ao salvar: ' + e.message);
+      if (btn) { btn.textContent = 'Salvar Contrato'; btn.disabled = false; }
+    });
+}
+
+function iniciarListenerContratos() {
+  if (!db) return;
+  db.collection('contratos')
+    .orderBy('criadoEm', 'desc')
+    .onSnapshot(function(snap) {
+      var docs = [];
+      snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
+      renderContratos(docs);
+    }, function(err) {
+      console.warn('[AdQ] Contratos listener erro:', err);
+    });
+}
+
+function renderContratos(docs) {
+  var lista = document.getElementById('contratos-lista');
+  if (!lista) return;
+  if (docs.length === 0) {
+    lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum contrato salvo ainda.</div>';
+    return;
+  }
+  lista.innerHTML = docs.map(function(doc) {
+    var nome    = doc.cli_nome || '';
+    var evento  = doc.ev_nome  || '';
+    var data    = doc.ev_data  || '';
+    var dataFmt = data ? data.split('-').reverse().join('/') : '';
+    var valor   = doc.val_total ? 'R$ ' + doc.val_total : '';
+    var aprovado = doc.aprovado ? true : false;
+    var id = doc.id;
+    var nomeEsc = escHtml(nome);
+    var card = '<div class="salvo-card">';
+    card += '<div class="salvo-card-top">';
+    card += '<div><div class="salvo-card-nome">' + nomeEsc + '</div>';
+    card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div></div>';
+    card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
+    card += '</div>';
+    card += '<div class="salvo-card-actions">';
+    card += '<button class="btn-salvo primary" data-action="abrir-contrato" data-id="' + id + '">Abrir</button>';
+    card += '<button class="btn-salvo" data-action="duplicar-contrato" data-id="' + id + '">Duplicar</button>';
+    card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
+    card += '</div>';
+    card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
+    card += aprovado ? 'Aprovado' : 'Pendente';
+    card += '</button></div>';
+    return card;
+  }).join('');
+}
+
+function abrirContrato(id) {
+  if (!db) return;
+  db.collection('contratos').doc(id).get().then(function(doc) {
+    if (!doc.exists) return;
+    var d = doc.data();
+    var set = function(elId, val) { var el = document.getElementById(elId); if (el && val !== undefined) el.value = val; };
+    set('cli_nome',  d.cli_nome  || '');
+    set('cli_doc',   d.cli_doc   || '');
+    set('cli_end',   d.cli_end   || '');
+    set('cli_cep',   d.cli_cep   || '');
+    set('cli_email', d.cli_email || '');
+    set('cli_fone',  d.cli_fone  || '');
+    set('ev_nome',   d.ev_nome   || '');
+    set('ev_resp',   d.ev_resp   || '');
+    set('ev_local',  d.ev_local  || '');
+    set('ev_data',   d.ev_data   || '');
+    set('ev_inicio', d.ev_inicio || '');
+    set('ev_fim',    d.ev_fim    || '');
+    set('val_total', d.val_total || '');
+    if (d.servicos && d.servicos.length) {
+      var lista = document.getElementById('lista-servicos');
+      if (lista) {
+        lista.innerHTML = '';
+        d.servicos.forEach(function(s) {
+          var div = document.createElement('div');
+          div.className = 'servico-item';
+          div.innerHTML = '<input type="text" value="' + escHtml(s) + '"><button class="btn-rem" onclick="remServico(this)">x</button>';
+          lista.appendChild(div);
+        });
+      }
+    }
+    if (d.val_total) calcEntrada();
+    switchMain('contrato');
+  });
+}
+
+function duplicarContrato(id) {
+  if (!db) return;
+  db.collection('contratos').doc(id).get().then(function(doc) {
+    if (!doc.exists) return;
+    var d = Object.assign({}, doc.data());
+    d.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
+    d.cli_nome = (d.cli_nome || '') + ' (copia)';
+    d.aprovado = false;
+    db.collection('contratos').add(d).then(function() { alert('Contrato duplicado!'); });
+  });
+}
+
+function excluirContrato(id, nome) {
+  if (!confirm('Excluir contrato de "' + nome + '"?')) return;
+  db.collection('contratos').doc(id).delete()
+    .catch(function(e) { alert('Erro ao excluir: ' + e.message); });
+}
+
+function toggleAprovadoContrato(id, atual) {
+  if (!db) return;
+  db.collection('contratos').doc(id).update({ aprovado: !atual });
 }
 
 
