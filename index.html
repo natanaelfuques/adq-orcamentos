@@ -954,16 +954,38 @@
 <div id="gerador-app" style="display:none">
 
 <header>
-  <div>
-    <div class="title">Gerador de Orçamento e Contrato</div>
-    <div class="subtitle">NF Soluções para Eventos · Áudio de Qualidade</div>
+  <div class="hd-row1">
+    <div class="hd-title">Gerador de Orçamento e Contrato</div>
+    <div class="hd-actions">
+      <span class="hd-user" id="header-user"></span>
+      <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico de acessos">
+        <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="4.5" cy="3" r="2.2"/>
+          <circle cx="9.5" cy="3" r="2.2"/>
+          <path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/>
+          <path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/>
+        </svg>
+      </button>
+      <button id="btn-gerador-sair" onclick="geradorSair()" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 10px;font-family:'Barlow',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;">Sair</button>
+      <button id="pwa-install-btn" onclick="adqInstall()" style="display:none;align-items:center;gap:6px;background:#C8A94A;color:#111;border:none;border-radius:4px;padding:5px 12px;font-family:'Barlow',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;">&#8659; Instalar</button>
+    </div>
   </div>
-  <div id="header-date" style="font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;text-align:right"></div>
+  <div class="hd-row2">
+    <div class="hd-sub">NF Soluções para Eventos · Áudio de Qualidade</div>
+    <div class="hd-date" id="header-date"></div>
+  </div>
+</header>
 
-  <button id="pwa-install-btn" onclick="adqInstall()" style="display:none;align-items:center;gap:8px;background:#C8A94A;color:#111;border:none;border-radius:4px;padding:8px 16px;font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;">
-    &#8659; Instalar App
-  </button>
-  </header>
+<!-- Modal de acessos gerador -->
+<div class="acessos-overlay" id="acessos-overlay-gerador" onclick="fecharAcessosGerador(event)">
+  <div class="acessos-modal">
+    <div class="acessos-header">
+      <span class="acessos-title">Histórico de Acessos</span>
+      <button class="acessos-close" onclick="toggleAcessosGerador()">✕</button>
+    </div>
+    <div id="acessos-lista-gerador"><div class="acessos-empty">Carregando...</div></div>
+  </div>
+</div>
 
 <div id="main-nav">
   <button class="main-tab-btn active" id="main-btn-orcamento" onclick="switchMain('orcamento')">Orçamento</button>
@@ -2721,6 +2743,90 @@ function buildDocHTML({ nome, evento, local, dataFmt, dataEvento, incCliente, in
   text-align: center;
   display: none;
 }
+/* ── HEADER COMPARTILHADO ── */
+header {
+  background: var(--dark);
+  border-bottom: 2px solid var(--gold);
+  padding: 10px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.hd-row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hd-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hd-row2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+  gap: 8px;
+}
+
+.hd-sub {
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
+}
+
+.hd-date {
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.hd-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hd-user {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* ── LOGS DE ACESSO ── */
+.btn-acessos { background: transparent; border: 1px solid #444; color: #aaa; border-radius: 4px; padding: 4px 8px; cursor: pointer; display: none; align-items: center; gap: 5px; font-family: 'Barlow', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.btn-acessos:hover { border-color: var(--gold); color: var(--gold); }
+.acessos-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: flex-start; justify-content: flex-end; padding: 60px 16px 16px; }
+.acessos-overlay.open { display: flex; }
+.acessos-modal { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; width: 100%; max-width: 340px; max-height: 70vh; overflow-y: auto; }
+.acessos-header { padding: 14px 16px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+.acessos-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase; }
+.acessos-close { background: none; border: none; color: #888; font-size: 1.1rem; cursor: pointer; padding: 0 4px; }
+.acessos-close:hover { color: #eee; }
+.acesso-item { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.acesso-item:last-child { border-bottom: none; }
+.acesso-user { font-size: 0.8rem; font-weight: 700; color: #eee; }
+.acesso-meta { font-size: 0.72rem; color: #888; margin-top: 2px; }
+.acesso-acao { font-size: 0.68rem; color: #4A90C8; margin-top: 2px; }
+.acessos-empty { padding: 20px 16px; text-align: center; color: #888; font-size: 0.8rem; }
+
 </style>
 </head>
 <body>
@@ -3743,6 +3849,15 @@ function initFirebase(config) {
       if (user && ALLOWED.indexOf(user.email) !== -1) {
         document.getElementById('gerador-login-screen').style.display = 'none';
         document.getElementById('gerador-app').style.display = 'block';
+        var hu = document.getElementById('header-user');
+        if (hu) hu.textContent = user.email.split('@')[0];
+        var bs = document.getElementById('btn-gerador-sair');
+        if (bs) bs.style.display = 'inline-block';
+        if (user.email === 'natanael.fuques@gmail.com') {
+          var ba = document.getElementById('btn-gerador-acessos');
+          if (ba) ba.style.display = 'inline-flex';
+        }
+        registrarAcessoGerador(user);
         iniciarListenerSalvos();
       } else {
         if (user) auth.signOut();
@@ -3755,6 +3870,72 @@ function initFirebase(config) {
     var el = document.getElementById('salvos-sync-status');
     if (el) el.textContent = 'Erro ao conectar';
   }
+}
+
+function geradorSair() {
+  firebase.auth().signOut();
+}
+
+function registrarAcessoGerador(user) {
+  if (!db || !user) return;
+  db.collection('acessos_painel').add({
+    email:    user.email,
+    usuario:  user.email.split('@')[0],
+    uid:      user.uid,
+    tipo:     'gerador',
+    data:     firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
+
+function toggleAcessosGerador() {
+  var overlay = document.getElementById('acessos-overlay-gerador');
+  if (!overlay) return;
+  var isOpen = overlay.classList.contains('open');
+  if (isOpen) {
+    overlay.classList.remove('open');
+  } else {
+    overlay.classList.add('open');
+    carregarAcessosGerador();
+  }
+}
+
+function fecharAcessosGerador(e) {
+  if (e.target === document.getElementById('acessos-overlay-gerador')) toggleAcessosGerador();
+}
+
+function carregarAcessosGerador() {
+  if (!db) return;
+  var lista = document.getElementById('acessos-lista-gerador');
+  if (!lista) return;
+  lista.innerHTML = '<div class="acessos-empty">Carregando...</div>';
+  db.collection('acessos_painel')
+    .limit(50)
+    .get().then(function(snap) {
+      if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum acesso registrado.</div>'; return; }
+      var docs = [];
+      snap.forEach(function(doc) { docs.push(doc.data()); });
+      docs.sort(function(a, b) {
+        var ta = a.data && a.data.toDate ? a.data.toDate().getTime() : 0;
+        var tb = b.data && b.data.toDate ? b.data.toDate().getTime() : 0;
+        return tb - ta;
+      });
+      var html = '';
+      docs.slice(0, 30).forEach(function(d) {
+        var ts = d.data && d.data.toDate ? d.data.toDate() : null;
+        var dataFmt = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '—';
+        var origem = d.tipo === 'gerador' ? ' · Gerador' : d.tipo === 'alteracao_item' ? ' · Alteração' : ' · Painel';
+        var acaoHtml = d.acao ? '<div class="acesso-acao">' + escHtml(d.acao) + (d.item ? ': ' + escHtml(d.item) : '') + '</div>' : '';
+        html += '<div class="acesso-item">' +
+          '<div class="acesso-user">' + escHtml(d.usuario || d.email) + '</div>' +
+          '<div class="acesso-meta">' + escHtml(d.email) + ' · ' + dataFmt + origem + '</div>' +
+          acaoHtml +
+          '</div>';
+      });
+      lista.innerHTML = html;
+    }).catch(function(e) {
+      console.error('[Acessos Gerador]', e);
+      lista.innerHTML = '<div class="acessos-empty">Erro ao carregar.</div>';
+    });
 }
 
 function geradorFazerLogin() {
