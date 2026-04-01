@@ -561,6 +561,13 @@ header {
   .anteriores-body.open { display: block; }
   .evento-card.passado { opacity: 0.6; }
 
+
+  .card-cliente {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 2px;
+    letter-spacing: 0.02em;
+  }
 </style>
 
   <!-- PWA -->
@@ -837,7 +844,10 @@ function buildCard(ev, past) {
     '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
       '<div class="card-summary-left">' +
         (dataFmt ? '<div class="card-data-badge">' + dataFmt + '</div>' : '') +
-        '<div class="card-evento">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+        '<div>' +
+          '<div class="card-evento">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+          (ev.cli_nome ? '<div class="card-cliente">' + esc(ev.cli_nome) + '</div>' : '') +
+        '</div>' +
       '</div>' +
       '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
     '</div>' +
