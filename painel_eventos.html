@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Eventos — Áudio de Qualidade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<style>
+:root {
+  --gold: #C8A94A;
+  --gold-dim: rgba(200,169,74,0.15);
+  --dark: #1a1a1a;
+  --darker: #111111;
+  --surface: #242424;
+  --surface2: #2c2c2c;
+  --border: #333;
+  --border2: #3a3a3a;
+  --text: #e8e8e8;
+  --muted: #777;
+  --montar: #4A90C8;
+  --montar-dim: rgba(74,144,200,0.12);
+  --andamento: #C8A94A;
+  --andamento-dim: rgba(200,169,74,0.12);
+  --concluido: #4AC87A;
+  --concluido-dim: rgba(74,200,122,0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--darker);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── LOGIN ── */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--darker);
+  padding: 24px;
+}
+
+.login-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--gold);
+  border-radius: 8px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.login-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.login-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+
+.login-field { margin-bottom: 16px; }
+
+.login-field label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.login-field input {
+  width: 100%;
+  background: var(--darker);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.95rem;
+  padding: 11px 14px;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-field input:focus { border-color: var(--gold); }
+
+.btn-login {
+  width: 100%;
+  padding: 13px;
+  background: var(--gold);
+  color: var(--dark);
+  border: none;
+  border-radius: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+
+.btn-login:hover { opacity: 0.9; }
+.btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.login-error {
+  color: #e55;
+  font-size: 0.8rem;
+  margin-top: 10px;
+  text-align: center;
+  display: none;
+}
+
+/* ── APP ── */
+#app-screen { display: none; }
+
+header {
+  background: var(--dark);
+  border-bottom: 2px solid var(--gold);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left .app-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.header-left .app-sub {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-badge {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.btn-sair {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-sair:hover { border-color: #e55; color: #e55; }
+
+/* ── KANBAN BOARD ── */
+.board-container {
+  padding: 24px;
+  overflow-x: auto;
+  min-height: calc(100vh - 60px);
+}
+
+.board {
+  display: flex;
+  gap: 20px;
+  min-width: fit-content;
+  align-items: flex-start;
+}
+
+.column {
+  width: 320px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.column-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.column-header .col-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.column-header .col-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.col-montar .col-title { color: var(--montar); }
+.col-montar .col-count { background: var(--montar-dim); color: var(--montar); }
+.col-montar { border-top: 3px solid var(--montar); }
+
+.col-andamento .col-title { color: var(--andamento); }
+.col-andamento .col-count { background: var(--andamento-dim); color: var(--andamento); }
+.col-andamento { border-top: 3px solid var(--andamento); }
+
+.col-concluido .col-title { color: var(--concluido); }
+.col-concluido .col-count { background: var(--concluido-dim); color: var(--concluido); }
+.col-concluido { border-top: 3px solid var(--concluido); }
+
+.column-body {
+  padding: 12px;
+  min-height: 200px;
+  transition: background 0.15s;
+}
+
+.column-body.drag-over { background: rgba(200,169,74,0.05); }
+
+/* ── CARDS ── */
+.evento-card {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: grab;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  user-select: none;
+}
+
+.evento-card:hover {
+  border-color: #444;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+.evento-card.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.card-evento {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.card-data-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--gold);
+  background: var(--gold-dim);
+  padding: 3px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.06em;
+}
+
+.card-local {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.card-horario {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.card-horario span { color: var(--text); font-weight: 600; }
+
+.card-resp {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.card-resp span { color: var(--text); }
+
+.card-itens {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: 4px;
+}
+
+.card-itens-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.card-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.card-item:last-child { border-bottom: none; }
+
+.item-check {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border: 1.5px solid var(--border2);
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.item-check.checked {
+  background: var(--concluido);
+  border-color: var(--concluido);
+}
+
+.item-check.checked::after {
+  content: '';
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid #111;
+  border-bottom: 2px solid #111;
+  transform: rotate(-45deg) translateY(-1px);
+  display: block;
+}
+
+.card-item.item-done .item-text {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+/* ── EMPTY STATE ── */
+.empty-col {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* ── LOADING ── */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 700px) {
+  .board-container { padding: 12px; }
+  .column { width: 280px; }
+  .board { gap: 12px; }
+  header { padding: 12px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-title">Áudio de Qualidade</div>
+      <div class="login-sub">Painel de Eventos</div>
+    </div>
+    <div class="login-field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com" />
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()" />
+    </div>
+    <button class="btn-login" id="btn-login" onclick="fazerLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <header>
+    <div class="header-left">
+      <div class="app-title">Painel de Eventos</div>
+      <div class="app-sub">Áudio de Qualidade</div>
+    </div>
+    <div class="header-right">
+      <span class="user-badge" id="user-name"></span>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </header>
+
+  <div class="board-container">
+    <div class="board">
+      <!-- MONTAR -->
+      <div class="column col-montar" id="col-montar" ondragover="onDragOver(event,'montar')" ondrop="onDrop(event,'montar')" ondragleave="onDragLeave(event)">
+        <div class="column-header">
+          <span class="col-title">Montar</span>
+          <span class="col-count" id="count-montar">0</span>
+        </div>
+        <div class="column-body" id="body-montar">
+          <div class="loading-screen">Carregando...</div>
+        </div>
+      </div>
+
+      <!-- EM ANDAMENTO -->
+      <div class="column col-andamento" id="col-andamento" ondragover="onDragOver(event,'andamento')" ondrop="onDrop(event,'andamento')" ondragleave="onDragLeave(event)">
+        <div class="column-header">
+          <span class="col-title">Em Andamento</span>
+          <span class="col-count" id="count-andamento">0</span>
+        </div>
+        <div class="column-body" id="body-andamento">
+          <div class="loading-screen">Carregando...</div>
+        </div>
+      </div>
+
+      <!-- CONCLUÍDO -->
+      <div class="column col-concluido" id="col-concluido" ondragover="onDragOver(event,'concluido')" ondrop="onDrop(event,'concluido')" ondragleave="onDragLeave(event)">
+        <div class="column-header">
+          <span class="col-title">Concluído</span>
+          <span class="col-count" id="count-concluido">0</span>
+        </div>
+        <div class="column-body" id="body-concluido">
+          <div class="loading-screen">Carregando...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Firebase Config ──
+const firebaseConfig = {
+  apiKey: "AIzaSyBX7qH0fY990F73VWlL7aTbSyG-OKsqkoY",
+  authDomain: "adq-orcamentos.firebaseapp.com",
+  projectId: "adq-orcamentos",
+  storageBucket: "adq-orcamentos.firebasestorage.app",
+  messagingSenderId: "3618259495",
+  appId: "1:3618259495:web:4b749f1c9124f9c243c402"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Persist login
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// ── Auth ──
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    var name = user.email.split('@')[0];
+    document.getElementById('user-name').textContent = name;
+    iniciarBoard();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
+  }
+});
+
+function fazerLogin() {
+  var email = document.getElementById('login-email').value.trim();
+  var senha = document.getElementById('login-senha').value;
+  var btn = document.getElementById('btn-login');
+  var err = document.getElementById('login-error');
+  if (!email || !senha) { mostrarErro('Preencha e-mail e senha.'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  err.style.display = 'none';
+  auth.signInWithEmailAndPassword(email, senha)
+    .catch(function(e) {
+      mostrarErro('E-mail ou senha incorretos.');
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+    });
+}
+
+function mostrarErro(msg) {
+  var err = document.getElementById('login-error');
+  err.textContent = msg;
+  err.style.display = 'block';
+}
+
+function sair() {
+  auth.signOut();
+}
+
+// ── Board ──
+var _draggingId = null;
+var _todosEventos = [];
+
+function iniciarBoard() {
+  db.collection('eventos_campo')
+    .orderBy('criadoEm', 'desc')
+    .onSnapshot(function(snap) {
+      _todosEventos = [];
+      snap.forEach(function(doc) {
+        _todosEventos.push(Object.assign({ id: doc.id }, doc.data()));
+      });
+      renderBoard();
+    });
+}
+
+function renderBoard() {
+  var colunas = { montar: [], andamento: [], concluido: [] };
+  _todosEventos.forEach(function(ev) {
+    var col = ev.etapa || 'montar';
+    if (colunas[col]) colunas[col].push(ev);
+  });
+
+  ['montar', 'andamento', 'concluido'].forEach(function(col) {
+    var body = document.getElementById('body-' + col);
+    var count = document.getElementById('count-' + col);
+    count.textContent = colunas[col].length;
+    if (colunas[col].length === 0) {
+      body.innerHTML = '<div class="empty-col">Nenhum evento</div>';
+    } else {
+      body.innerHTML = colunas[col].map(function(ev) { return buildCard(ev); }).join('');
+      // Add drag events
+      body.querySelectorAll('.evento-card').forEach(function(card) {
+        card.addEventListener('dragstart', function(e) { onDragStart(e, card.dataset.id); });
+        card.addEventListener('dragend', function() { card.classList.remove('dragging'); });
+      });
+      // Add item check events
+      body.querySelectorAll('.item-check').forEach(function(chk) {
+        chk.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleItem(chk.dataset.evid, parseInt(chk.dataset.idx));
+        });
+      });
+    }
+  });
+}
+
+function buildCard(ev) {
+  var dataFmt = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
+  var horario = '';
+  if (ev.ev_inicio || ev.ev_fim) {
+    horario = '<div class="card-horario">' +
+      (ev.ev_inicio ? '<span>' + esc(ev.ev_inicio) + '</span>' : '') +
+      (ev.ev_inicio && ev.ev_fim ? ' — ' : '') +
+      (ev.ev_fim ? '<span>' + esc(ev.ev_fim) + '</span>' : '') +
+      '</div>';
+  }
+  var resp = ev.ev_resp ? '<div class="card-resp">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '';
+  var itens = '';
+  if (ev.servicos && ev.servicos.length) {
+    var itensHtml = ev.servicos.map(function(s, i) {
+      var done = ev.itens_ok && ev.itens_ok[i];
+      return '<div class="card-item' + (done ? ' item-done' : '') + '">' +
+        '<div class="item-check' + (done ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '"></div>' +
+        '<span class="item-text">' + esc(s) + '</span>' +
+        '</div>';
+    }).join('');
+    itens = '<div class="card-itens"><div class="card-itens-title">Itens</div>' + itensHtml + '</div>';
+  }
+
+  return '<div class="evento-card" draggable="true" data-id="' + esc(ev.id) + '">' +
+    '<div class="card-header">' +
+    '<div class="card-evento">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+    (dataFmt ? '<div class="card-data-badge">' + dataFmt + '</div>' : '') +
+    '</div>' +
+    '<div class="card-local">&#128205; ' + esc(ev.ev_local || '') + '</div>' +
+    horario + resp + itens +
+    '</div>';
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Drag & Drop ──
+function onDragStart(e, id) {
+  _draggingId = id;
+  setTimeout(function() {
+    var card = document.querySelector('[data-id="' + id + '"]');
+    if (card) card.classList.add('dragging');
+  }, 0);
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onDragOver(e, col) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.getElementById('body-' + col).classList.add('drag-over');
+}
+
+function onDragLeave(e) {
+  ['montar','andamento','concluido'].forEach(function(col) {
+    var body = document.getElementById('body-' + col);
+    if (body) body.classList.remove('drag-over');
+  });
+}
+
+function onDrop(e, col) {
+  e.preventDefault();
+  onDragLeave(e);
+  if (!_draggingId) return;
+  db.collection('eventos_campo').doc(_draggingId).update({ etapa: col })
+    .catch(function(err) { console.error('Erro ao mover card:', err); });
+  _draggingId = null;
+}
+
+// ── Item check ──
+function toggleItem(evId, idx) {
+  var ev = _todosEventos.find(function(e) { return e.id === evId; });
+  if (!ev) return;
+  var itensOk = Object.assign({}, ev.itens_ok || {});
+  itensOk[idx] = !itensOk[idx];
+  db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
+}
+</script>
+</body>
+</html>

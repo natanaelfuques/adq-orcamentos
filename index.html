@@ -3436,6 +3436,7 @@ function handleSalvosClick(e) {
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
   else if (action === 'json-con') baixarContratoJSON(id);
+  else if (action === 'painel') enviarParaPainel(id);
 }
 
 function iniciarListenerSalvos() {
@@ -3792,6 +3793,7 @@ function renderContratos(docs) {
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo primary" data-action="abrir-contrato" data-id="' + id + '">Abrir</button>';
     card += '<button class="btn-salvo" data-action="duplicar-contrato" data-id="' + id + '">Duplicar</button>';
+    card += '<button class="btn-salvo" data-action="painel" data-id="' + id + '">+ Painel</button>';
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
@@ -3979,6 +3981,33 @@ function filtrarContratos() {
   renderContratos(filtrados);
 }
 
+
+// ═══ ENVIAR PARA PAINEL DE CAMPO ═══
+function enviarParaPainel(id) {
+  if (!db) return;
+  db.collection('contratos').doc(id).get().then(function(doc) {
+    if (!doc.exists) return;
+    var d = doc.data();
+    var evento = {
+      ev_nome:   d.ev_nome   || '',
+      ev_local:  d.ev_local  || '',
+      ev_data:   d.ev_data   || '',
+      ev_inicio: d.ev_inicio || '',
+      ev_fim:    d.ev_fim    || '',
+      ev_resp:   d.ev_resp   || '',
+      cli_nome:  d.cli_nome  || '',
+      servicos:  d.servicos  || [],
+      itens_ok:  {},
+      etapa:     'montar',
+      criadoEm:  firebase.firestore.FieldValue.serverTimestamp()
+    };
+    db.collection('eventos_campo').add(evento).then(function() {
+      alert('Evento enviado para o Painel de Campo!');
+    }).catch(function(e) {
+      alert('Erro: ' + e.message);
+    });
+  });
+}
 </script>
 </body>
 </html>`;
