@@ -3298,7 +3298,25 @@ function initFirebase(config) {
   }
 }
 
+function handleSalvosClick(e) {
+  var btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  var action = btn.getAttribute('data-action');
+  var id = btn.getAttribute('data-id');
+  var nome = btn.getAttribute('data-nome') || '';
+  if (action === 'abrir') abrirSalvo(id);
+  else if (action === 'duplicar') duplicarSalvo(id);
+  else if (action === 'contrato') gerarContratoSalvo(id);
+  else if (action === 'excluir') excluirSalvo(id, nome);
+  else if (action === 'status') {
+    var ap = btn.getAttribute('data-aprovado') === 'true';
+    toggleAprovado(id, ap);
+  }
+}
+
 function iniciarListenerSalvos() {
+  var lista = document.getElementById('salvos-lista');
+  if (lista) lista.addEventListener('click', handleSalvosClick);
   if (!db) return;
   const statusEl = document.getElementById('salvos-sync-status');
   if (statusEl) statusEl.textContent = 'Sincronizando...';
@@ -3427,33 +3445,31 @@ function renderSalvos(docs) {
     return;
   }
   lista.innerHTML = docs.map(function(doc) {
-    var nome    = doc.nome_cliente || doc.nome || '&#8212;';
+    var nome    = doc.nome_cliente || doc.nome || '';
     var evento  = doc.tipo_evento  || doc.evento || '';
     var data    = doc.data_evento  || doc.dataEvt || '';
-    var dataFmt = data ? data.split('-').reverse().join('/') : '&#8212;';
+    var dataFmt = data ? data.split('-').reverse().join('/') : '';
     var valor   = doc.valorTotal ? 'R$ ' + doc.valorTotal : '';
     var aprovado = doc.aprovado ? true : false;
-    return [
-      '<div class="salvo-card" id="card-' + doc.id + '">',
-      '  <div class="salvo-card-top">',
-      '    <div>',
-      '      <div class="salvo-card-nome">' + escHtml(nome) + '</div>',
-      '      <div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div>',
-      '    </div>',
-      '    <div class="salvo-card-valor">' + escHtml(valor) + '</div>',
-      '  </div>',
-      '  <div class="salvo-card-actions">',
-      '    <button class="btn-salvo primary" onclick="abrirSalvo('' + doc.id + '')">Abrir</button>',
-      '    <button class="btn-salvo" onclick="duplicarSalvo('' + doc.id + '')">Duplicar</button>',
-      '    <button class="btn-salvo" onclick="gerarContratoSalvo('' + doc.id + '')">Contrato</button>',
-      '    <button class="btn-salvo danger" onclick="excluirSalvo('' + doc.id + '', '' + escHtml(nome) + '')">X</button>',
-      '  </div>',
-      '  <button class="salvo-status ' + (aprovado ? 'aprovado' : '') + '" onclick="toggleAprovado('' + doc.id + '',' + aprovado + ')">',
-      '    ' + (aprovado ? 'Aprovado' : 'Pendente'),
-      '  </button>',
-      '</div>'
-    ].join('\n');
-  }).join('\n');
+    var id = doc.id;
+    var nomeEsc = escHtml(nome);
+    var card = '<div class="salvo-card">';
+    card += '<div class="salvo-card-top">';
+    card += '<div><div class="salvo-card-nome">' + nomeEsc + '</div>';
+    card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div></div>';
+    card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
+    card += '</div>';
+    card += '<div class="salvo-card-actions">';
+    card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Abrir</button>';
+    card += '<button class="btn-salvo" data-action="duplicar" data-id="' + id + '">Duplicar</button>';
+    card += '<button class="btn-salvo" data-action="contrato" data-id="' + id + '">Contrato</button>';
+    card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">X</button>';
+    card += '</div>';
+    card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status" data-id="' + id + '" data-aprovado="' + aprovado + '">';
+    card += aprovado ? 'Aprovado' : 'Pendente';
+    card += '</button></div>';
+    return card;
+  }).join('')
 }
 
 function escHtml(s) {
