@@ -831,6 +831,92 @@
     display: block !important;
   }
 
+
+#gerador-login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.gerador-login-box {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-top: 3px solid #C8A94A;
+  border-radius: 8px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+  box-sizing: border-box;
+}
+.gerador-login-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #C8A94A;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.gerador-login-sub {
+  font-size: 0.72rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+  text-align: center;
+  margin-bottom: 28px;
+}
+.gerador-login-field { margin-bottom: 16px; }
+.gerador-login-field label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.gerador-login-field input {
+  width: 100%;
+  background: #111;
+  border: 1px solid #333;
+  color: #eee;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.95rem;
+  padding: 11px 14px;
+  border-radius: 4px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.gerador-login-field input:focus { border-color: #C8A94A; }
+.gerador-btn-login {
+  width: 100%;
+  padding: 13px;
+  background: #C8A94A;
+  color: #111;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+.gerador-btn-login:hover { opacity: 0.85; }
+.gerador-login-error {
+  color: #e05c5c;
+  font-size: 0.78rem;
+  margin-top: 10px;
+  text-align: center;
+  display: none;
+}
 </style>
 
   <!-- PWA -->
@@ -843,9 +929,29 @@
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+
+<div id="gerador-login-screen">
+  <div class="gerador-login-box">
+    <div class="gerador-login-title">Áudio de Qualidade</div>
+    <div class="gerador-login-sub">Gerador de Orçamento e Contrato</div>
+    <div class="gerador-login-field">
+      <label>E-mail</label>
+      <input type="email" id="gerador-login-email" placeholder="seu@email.com" />
+    </div>
+    <div class="gerador-login-field">
+      <label>Senha</label>
+      <input type="password" id="gerador-login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')geradorFazerLogin()" />
+    </div>
+    <button class="gerador-btn-login" id="gerador-btn-login" onclick="geradorFazerLogin()">Entrar</button>
+    <div class="gerador-login-error" id="gerador-login-error"></div>
+  </div>
+</div>
+
+<div id="gerador-app" style="display:none">
 
 <header>
   <div>
@@ -2530,6 +2636,91 @@ function buildDocHTML({ nome, evento, local, dataFmt, dataEvento, incCliente, in
     .page { margin: 0; padding: 0; }
     body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   }
+
+#gerador-login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.gerador-login-box {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-top: 3px solid #C8A94A;
+  border-radius: 8px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+}
+.gerador-login-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #C8A94A;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.gerador-login-sub {
+  font-size: 0.72rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+  text-align: center;
+  margin-bottom: 28px;
+}
+.gerador-login-field { margin-bottom: 16px; }
+.gerador-login-field label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.gerador-login-field input {
+  width: 100%;
+  background: #111;
+  border: 1px solid #333;
+  color: #eee;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.95rem;
+  padding: 11px 14px;
+  border-radius: 4px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.gerador-login-field input:focus { border-color: #C8A94A; }
+.gerador-btn-login {
+  width: 100%;
+  padding: 13px;
+  background: #C8A94A;
+  color: #111;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+.gerador-btn-login:hover { opacity: 0.85; }
+.gerador-login-error {
+  color: #e05c5c;
+  font-size: 0.78rem;
+  margin-top: 10px;
+  text-align: center;
+  display: none;
+}
 </style>
 </head>
 <body>
@@ -2616,6 +2807,7 @@ function buildDocHTML({ nome, evento, local, dataFmt, dataEvento, incCliente, in
     <strong>(47) 99153-6771</strong> &nbsp;•&nbsp; @audiodequalidade &nbsp;•&nbsp; Facebook.com/audiodequalidade &nbsp;•&nbsp; Este orçamento é válido por 7 dias.
   </div>
 
+</div>
 </div>
 </body>
 </html>`;
@@ -3230,6 +3422,91 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
   .doc-footer { background:#1a1a1a; color:#888; text-align:center; font-size:7.5pt; padding:10px 22px; margin-top:auto; }
   .doc-footer strong { color:#C8A94A; }
 
+
+#gerador-login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.gerador-login-box {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-top: 3px solid #C8A94A;
+  border-radius: 8px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+}
+.gerador-login-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #C8A94A;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.gerador-login-sub {
+  font-size: 0.72rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+  text-align: center;
+  margin-bottom: 28px;
+}
+.gerador-login-field { margin-bottom: 16px; }
+.gerador-login-field label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.gerador-login-field input {
+  width: 100%;
+  background: #111;
+  border: 1px solid #333;
+  color: #eee;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.95rem;
+  padding: 11px 14px;
+  border-radius: 4px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.gerador-login-field input:focus { border-color: #C8A94A; }
+.gerador-btn-login {
+  width: 100%;
+  padding: 13px;
+  background: #C8A94A;
+  color: #111;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+.gerador-btn-login:hover { opacity: 0.85; }
+.gerador-login-error {
+  color: #e05c5c;
+  font-size: 0.78rem;
+  margin-top: 10px;
+  text-align: center;
+  display: none;
+}
 </style>
 </head>
 <body>
@@ -3373,6 +3650,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
     <strong>(47) 99153-6771</strong> &nbsp;•&nbsp; @audiodequalidade &nbsp;•&nbsp; Facebook.com/audiodequalidade &nbsp;•&nbsp; CNPJ 49.276.147/0001-06
   </div>
 </div>
+</div>
 </body>
 </html>`;
 }
@@ -3456,12 +3734,43 @@ function initFirebase(config) {
   try {
     if (!firebase.apps.length) firebase.initializeApp(config);
     db = firebase.firestore();
-    iniciarListenerSalvos();
-    console.log('[AdQ] Firebase conectado');
+    var auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    var ALLOWED = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
+
+    auth.onAuthStateChanged(function(user) {
+      if (user && ALLOWED.indexOf(user.email) !== -1) {
+        document.getElementById('gerador-login-screen').style.display = 'none';
+        document.getElementById('gerador-app').style.display = 'block';
+        iniciarListenerSalvos();
+      } else {
+        if (user) auth.signOut();
+        document.getElementById('gerador-login-screen').style.display = 'flex';
+        document.getElementById('gerador-app').style.display = 'none';
+      }
+    });
   } catch(e) {
     console.warn('[AdQ] Firebase erro:', e);
-    document.getElementById('salvos-sync-status').textContent = 'Erro ao conectar';
+    var el = document.getElementById('salvos-sync-status');
+    if (el) el.textContent = 'Erro ao conectar';
   }
+}
+
+function geradorFazerLogin() {
+  var email = document.getElementById('gerador-login-email').value.trim();
+  var senha = document.getElementById('gerador-login-senha').value;
+  var btn = document.getElementById('gerador-btn-login');
+  var err = document.getElementById('gerador-login-error');
+  if (!email || !senha) { err.textContent = 'Preencha e-mail e senha.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  err.style.display = 'none';
+  firebase.auth().signInWithEmailAndPassword(email, senha)
+    .catch(function() {
+      err.textContent = 'E-mail ou senha incorretos.';
+      err.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Entrar';
+    });
 }
 
 function handleSalvosClick(e) {
@@ -4295,5 +4604,6 @@ function removerDoPainel(contratoId) {
     });
 }
 </script>
+</div>
 </body>
 </html>`;

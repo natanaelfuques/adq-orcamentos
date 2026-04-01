@@ -1030,7 +1030,11 @@ function renderBoard() {
         e.stopPropagation();
         var evid = btn.dataset.evid;
         var form = document.getElementById('add-form-' + evid);
-        if (form) { form.style.display = form.style.display === 'none' ? 'flex' : 'none'; }
+        if (form) {
+          form.style.display = 'flex';
+          var inp = form.querySelector('.add-item-input');
+          if (inp) setTimeout(function(){ inp.focus(); }, 50);
+        }
         btn.style.display = 'none';
       });
     });
