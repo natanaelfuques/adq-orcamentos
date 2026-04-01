@@ -580,6 +580,21 @@ header {
     margin-top: 2px;
     letter-spacing: 0.02em;
   }
+
+  .btn-refresh {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 4px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-refresh:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-refresh.spinning svg { animation: spin 0.7s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 
   <!-- PWA -->
@@ -621,6 +636,14 @@ header {
     </div>
     <div class="header-right">
       <span class="user-badge" id="user-name"></span>
+      <button class="btn-refresh" onclick="onRefresh()" title="Sincronizar">
+        <svg id="refresh-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1,4 1,1 4,1"/>
+          <polyline points="13,10 13,13 10,13"/>
+          <path d="M1,1 C3,0 10,0 12,5"/>
+          <path d="M13,13 C11,14 4,14 2,9"/>
+        </svg>
+      </button>
       <button class="btn-sair" onclick="sair()">Sair</button>
     </div>
   
@@ -738,6 +761,7 @@ var _draggingId = null;
 var _todosEventos = [];
 
 function iniciarBoard() {
+  sincronizarPainel();
   db.collection('eventos_campo')
     .orderBy('criadoEm', 'desc')
     .onSnapshot(function(snap) {
@@ -1144,6 +1168,85 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 60);
   }, {passive: true});
 });
+
+// ═══ SINCRONIZAÇÃO DO PAINEL ═══
+function sincronizarPainel() {
+  if (!db) return;
+  console.log('[Painel] Sincronizando...');
+
+  // 1. Busca todos os contratos assinados
+  db.collection('contratos').get().then(function(contratosSnap) {
+    var assinados = {};
+    contratosSnap.forEach(function(doc) {
+      if (doc.data().aprovado) assinados[doc.id] = doc.data();
+    });
+
+    // 2. Busca todos os eventos do painel
+    db.collection('eventos_campo').get().then(function(eventosSnap) {
+      var batch = db.batch();
+      var mudou = false;
+
+      // Remove eventos cujo contrato não existe ou não está assinado
+      eventosSnap.forEach(function(doc) {
+        var cid = doc.data().contrato_id;
+        if (cid && !assinados[cid]) {
+          console.log('[Painel] Removendo evento orfao:', doc.id);
+          batch.delete(doc.ref);
+          mudou = true;
+        }
+      });
+
+      // Adiciona contratos assinados que ainda não estão no painel
+      var eventosExistentes = {};
+      eventosSnap.forEach(function(doc) {
+        var cid = doc.data().contrato_id;
+        if (cid) eventosExistentes[cid] = true;
+      });
+
+      Object.keys(assinados).forEach(function(cid) {
+        if (!eventosExistentes[cid]) {
+          console.log('[Painel] Adicionando contrato assinado ausente:', cid);
+          var d = assinados[cid];
+          var ref = db.collection('eventos_campo').doc(cid);
+          batch.set(ref, {
+            ev_nome:     d.ev_nome   || '',
+            ev_local:    d.ev_local  || '',
+            ev_data:     d.ev_data   || '',
+            ev_inicio:   d.ev_inicio || '',
+            ev_fim:      d.ev_fim    || '',
+            ev_resp:     d.ev_resp   || '',
+            cli_nome:    d.cli_nome  || '',
+            servicos:    d.servicos  || [],
+            itens_ok:    {},
+            etapa:       'eventos',
+            contrato_id: cid,
+            criadoEm:    firebase.firestore.FieldValue.serverTimestamp()
+          });
+          mudou = true;
+        }
+      });
+
+      if (mudou) {
+        batch.commit().then(function() {
+          console.log('[Painel] Sincronizacao concluida.');
+        });
+      } else {
+        console.log('[Painel] Tudo em dia, nada a sincronizar.');
+      }
+    });
+  }).catch(function(e) {
+    console.error('[Painel] Erro na sincronizacao:', e);
+  });
+}
+
+function onRefresh() {
+  var btn = document.querySelector('.btn-refresh');
+  if (btn) btn.classList.add('spinning');
+  sincronizarPainel();
+  setTimeout(function() {
+    if (btn) btn.classList.remove('spinning');
+  }, 1000);
+}
 </script>
 </body>
 </html>
