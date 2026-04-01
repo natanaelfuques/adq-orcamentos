@@ -3920,10 +3920,25 @@ function gerarLinkCalendar(id) {
       desc += '\nEstrutura:\n';
       d.servicos.forEach(function(s) { desc += '\u2022 ' + s + '\n'; });
     }
-    if (d.val_total) {
-      var pgtoMap = { vista: 'À vista', metade: '50% + 50%', entrada: 'Entrada + saldo', parcelado: 'Parcelado', custom: 'Personalizado' };
-      desc += '\nPagamento: ' + (pgtoMap[d.pgto_sel] || d.pgto_sel || '') + ' \u2013 R$ ' + (d.val_total || '');
+    // Pagamento
+    var pgtoDesc = '';
+    var total = parseFloat((d.val_total || '0').replace(/\./g,'').replace(',','.')) || 0;
+    var fmtVal = function(v) { return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits:2}); };
+    var sel = d.pgto_sel || 'vista';
+    if (sel === 'vista') {
+      pgtoDesc = 'À vista na assinatura' + (total > 0 ? ' – ' + fmtVal(total) : '');
+    } else if (sel === 'metade') {
+      pgtoDesc = '50% na assinatura' + (total > 0 ? ' (' + fmtVal(total*0.5) + ')' : '') + ' + 50% até 5 dias antes' + (total > 0 ? ' (' + fmtVal(total*0.5) + ')' : '');
+    } else if (sel === 'entrada') {
+      pgtoDesc = '20% reserva' + (total > 0 ? ' (' + fmtVal(total*0.2) + ')' : '') + ' + saldo até 5 dias antes' + (total > 0 ? ' (' + fmtVal(total*0.8) + ')' : '');
+    } else if (sel === 'parcelado') {
+      var parc = parseInt(d.nparcelas) || 0;
+      pgtoDesc = '20% reserva' + (total > 0 ? ' (' + fmtVal(total*0.2) + ')' : '') + ' + saldo em ' + (parc || '?') + 'x' + (total > 0 && parc > 0 ? ' (' + fmtVal((total*0.8)/parc) + '/parcela)' : '');
+    } else {
+      pgtoDesc = d.pgto_custom || 'Personalizado';
     }
+    if (pgtoDesc) desc += '\nPagamento: ' + pgtoDesc;
+    if (d.val_total) desc += '\nValor total: R$ ' + d.val_total;
     var link = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
       '&text=' + titulo +
       '&dates=' + dataStr + '/' + fim +
