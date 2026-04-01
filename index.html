@@ -3912,25 +3912,17 @@ function gerarLinkCalendar(id) {
     var local = encodeURIComponent(d.ev_local || '');
     // Descrição
     var desc = '';
-    if (d.ev_inicio || d.ev_fim) desc += 'Horário: ' + (d.ev_inicio||'') + (d.ev_fim ? ' – ' + d.ev_fim : '') + '
-';
-    if (d.montagem) desc += 'Montagem: ' + d.montagem + '
-';
-    if (d.desmontagem) desc += 'Desmontagem: ' + d.desmontagem + '
-';
-    if (d.ev_resp) desc += 'Responsável: ' + d.ev_resp + '
-';
+    if (d.ev_inicio || d.ev_fim) desc += 'Horário: ' + (d.ev_inicio||'') + (d.ev_fim ? ' \u2013 ' + d.ev_fim : '') + '\n';
+    if (d.montagem) desc += 'Montagem: ' + d.montagem + '\n';
+    if (d.desmontagem) desc += 'Desmontagem: ' + d.desmontagem + '\n';
+    if (d.ev_resp) desc += 'Responsável: ' + d.ev_resp + '\n';
     if (d.servicos && d.servicos.length) {
-      desc += '
-Estrutura:
-';
-      d.servicos.forEach(function(s) { desc += '• ' + s + '
-'; });
+      desc += '\nEstrutura:\n';
+      d.servicos.forEach(function(s) { desc += '\u2022 ' + s + '\n'; });
     }
     if (d.val_total) {
       var pgtoMap = { vista: 'À vista', metade: '50% + 50%', entrada: 'Entrada + saldo', parcelado: 'Parcelado', custom: 'Personalizado' };
-      desc += '
-Pagamento: ' + (pgtoMap[d.pgto_sel] || d.pgto_sel || '') + ' – R$ ' + (d.val_total || '');
+      desc += '\nPagamento: ' + (pgtoMap[d.pgto_sel] || d.pgto_sel || '') + ' \u2013 R$ ' + (d.val_total || '');
     }
     var link = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
       '&text=' + titulo +
