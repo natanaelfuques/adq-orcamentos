@@ -489,8 +489,7 @@
   @media (max-width: 600px) { .pay-edit-grid { grid-template-columns: 1fr; } }
 
   @media (max-width: 640px) {
-    /* Header */
-    header { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 4px; }
+    /* Header — gerenciado pelo CSS do header abaixo */
     #header-date { display: none; }
     .title { font-size: 1.1rem !important; }
 
@@ -876,14 +875,50 @@
 .gerador-login-error { color:#e05c5c; font-size:0.78rem; margin-top:10px; text-align:center; display:none; }
 
 /* ── HEADER ── */
-header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12px 24px; position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.hd-left { display:flex; flex-direction:column; justify-content:center; min-width:0; }
-.hd-title { font-family:'Barlow Condensed',sans-serif; font-size:1.35rem; font-weight:800; color:var(--gold); letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.15; }
-.hd-sub { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-top:2px; white-space:nowrap; }
-.hd-right { display:flex; flex-direction:row; align-items:center; gap:6px; flex-shrink:0; }
-.hd-actions { display:flex; align-items:center; gap:6px; }
-.hd-user { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; }
-.hd-date { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; white-space:nowrap; }
+header {
+  background: var(--dark);
+  border-bottom: 2px solid var(--gold);
+  padding: 10px 24px;
+  position: sticky; top: 0; z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hd-left {
+  display: flex; flex-direction: column;
+  justify-content: center; min-width: 0;
+}
+.hd-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.35rem; font-weight: 800;
+  color: var(--gold); letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.15;
+}
+.hd-sub {
+  font-size: 0.62rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-top: 2px; white-space: nowrap;
+}
+.hd-right {
+  display: flex; flex-direction: column;
+  align-items: flex-end; gap: 4px; flex-shrink: 0;
+}
+.hd-actions {
+  display: flex; align-items: center; gap: 6px;
+}
+.hd-date {
+  font-size: 0.6rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  white-space: nowrap;
+}
+.hd-user {
+  font-size: 0.7rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  white-space: nowrap;
+}
 
 /* ── STATUS ONLINE/OFFLINE ── */
 #conn-indicator {
@@ -961,7 +996,10 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
 
 @media (max-width:640px) {
   header { padding:8px 14px; }
-  .hd-title { font-size:1rem; }
+  .hd-title { font-size:1.05rem; }
+  .hd-sub { font-size:0.58rem; }
+  /* No mobile: hd-right numa linha só ao lado do título */
+  .hd-right { flex-direction:row; align-items:center; gap:5px; }
   .hd-date { display:none; }
   .hd-user { display:none; }
   .hd-actions { gap:5px; }
@@ -1018,6 +1056,7 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
       <button id="btn-gerador-sair" onclick="geradorSair()" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 10px;font-family:'Barlow',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;">Sair</button>
       <button id="pwa-install-btn" onclick="adqInstall()" style="display:none;align-items:center;gap:6px;background:#C8A94A;color:#111;border:none;border-radius:4px;padding:5px 12px;font-family:'Barlow',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;">&#8659; Instalar</button>
     </div>
+    <div class="hd-date" id="header-date"></div>
   </div>
 </header>
 
