@@ -704,7 +704,7 @@
   }
   .salvo-status.aprovado   { border-color: #4A90C8; color: #4A90C8; }
   .salvo-status.andamento  { border-color: var(--gold); color: var(--gold); cursor: default; }
-  .salvo-status.concluido  { border-color: #4AC87A; color: #4AC87A; cursor: default; }
+  .salvo-status.concluido  { border-color: #25D366; color: #25D366; cursor: default; }
   .salvo-status.cancelado  { border-color: #e05c5c; color: #e05c5c; }
   .salvo-status-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
   .salvo-montagem-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
@@ -4019,6 +4019,41 @@ function iniciarListenerContratos() {
     }, function(err) {
       console.warn('[AdQ] Contratos listener erro:', err);
     });
+
+  // Listener em tempo real para atualizar status dos botões conforme mudança de coluna no painel
+  db.collection('eventos_campo').onSnapshot(function(snap) {
+    snap.docChanges().forEach(function(change) {
+      var id = change.doc.id;
+      var etapa = change.type === 'removed' ? '' : (change.doc.data().etapa || 'eventos');
+      var btn = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + id + '"]');
+      if (!btn) return;
+      var aprovado = btn.getAttribute('data-aprovado') === 'true';
+      var statusClass, statusLabel, clickable;
+      if (!aprovado && etapa !== '') {
+        // foi re-adicionado ao painel sem aprovado — improvável, ignorar
+        return;
+      }
+      if (etapa === 'andamento') {
+        statusClass = 'andamento'; statusLabel = 'Em andamento'; clickable = false;
+      } else if (etapa === 'concluido') {
+        statusClass = 'concluido'; statusLabel = 'Concluído'; clickable = false;
+      } else if (etapa === 'eventos' && aprovado) {
+        statusClass = 'aprovado'; statusLabel = 'Assinado'; clickable = true;
+      } else {
+        statusClass = ''; statusLabel = 'Pendente'; clickable = true;
+      }
+      btn.className = 'salvo-status' + (statusClass ? ' ' + statusClass : '');
+      btn.textContent = statusLabel;
+      btn.style.pointerEvents = clickable ? '' : 'none';
+      btn.setAttribute('data-etapa', etapa);
+      // Montagem/desmontagem
+      var cardEl = btn.closest('.salvo-card');
+      if (cardEl) {
+        var monRow = cardEl.querySelector('.salvo-montagem-row');
+        if (monRow) monRow.style.display = (aprovado && etapa !== 'concluido') ? '' : 'none';
+      }
+    });
+  });
 }
 
 function renderContratos(docs) {
@@ -4085,7 +4120,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button class="salvo-status btn-calendar" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
     card += '<button class="salvo-status' + statusClass + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '"' + (statusClickable ? '' : ' style="pointer-events:none"') + '>' + statusLabel + '</button>';
     card += '</div>';
-    card += '<div class="salvo-montagem-row" style="' + (aprovado ? '' : 'display:none') + '">';
+    card += '<div class="salvo-montagem-row" style="' + (aprovado && etapa !== 'concluido' ? '' : 'display:none') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Desmontagem" data-field="desmontagem" data-id="' + id + '" value="' + escHtml(doc.desmontagem || '') + '">';
     card += '</div>';
