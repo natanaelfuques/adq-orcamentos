@@ -830,10 +830,16 @@
   }
   #salvos-lista,
   #contratos-lista {
-    max-height: calc(100vh - 280px);
+    max-height: calc(100vh - 300px);
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
+  }
+  @media (min-width: 600px) {
+    #salvos-lista,
+    #contratos-lista {
+      max-height: calc(100vh - 220px);
+    }
   }
   #swipe-track {
     display: flex;
