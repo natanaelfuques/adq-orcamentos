@@ -718,6 +718,9 @@
   .btn-whatsapp { border-color: #25D366; color: #25D366; }
   .btn-whatsapp:hover { background: #25D366; color: #fff; }
   .btn-whatsapp:focus, .btn-calendar:focus { outline: none; }
+  .btn-whatsapp:active, .btn-calendar:active { opacity: 0.7; }
+  .btn-whatsapp:not(:active), .btn-calendar:not(:active) { -webkit-tap-highlight-color: transparent; }
+  .salvo-status { -webkit-tap-highlight-color: transparent; }
   .salvo-status:hover { opacity: 0.8; }
 
 
@@ -2758,12 +2761,11 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnOrcTodos) btnOrcTodos.classList.add('active');
   var btnConTodos = document.getElementById('filtro-con-todos');
   if (btnConTodos) btnConTodos.classList.add('active');
-
   // Auto-resize on input
   document.querySelectorAll('textarea').forEach(function(ta) {
     ta.addEventListener('input', function() { autoResize(this); });
   });
-  // Resize apos render completo (paineis ocultos retornam scrollHeight=0 antes)
+  // Resize apos render completo
   requestAnimationFrame(function() {
     requestAnimationFrame(function() {
       document.querySelectorAll('textarea').forEach(function(ta) { autoResize(ta); });
@@ -4393,7 +4395,6 @@ function filtrarContratos() {
 
 // ═══ SWIPE NAVIGATION (Instagram style) ═══
 // Fluxo virtual: 0=orcamento | 1=salvos(orcamentos) | 2=salvos(contratos) | 3=contrato
-// Posicoes 1 e 2 apontam para o mesmo painel fisico — sem animacao entre elas.
 (function(){
   var VIRTUAL = [
     { phys: 0, salvosTab: null         },
@@ -4439,13 +4440,10 @@ function filtrarContratos() {
     if (map.salvosTab && typeof switchSalvosTab === 'function') {
       switchSalvosTab(map.salvosTab);
     }
-
     if (physIdx === 1 && typeof atualizarContadorSalvos === 'function') {
       atualizarContadorSalvos();
       if (typeof atualizarAreaBusca === 'function') atualizarAreaBusca();
     }
-
-    // Re-resize textareas ao voltar para orcamento
     if (physIdx === 0) {
       requestAnimationFrame(function() {
         document.querySelectorAll('#panel-orcamento textarea').forEach(function(ta) { autoResize(ta); });
@@ -4469,14 +4467,12 @@ function filtrarContratos() {
       if (!isDragging) return;
       var dx = e.touches[0].clientX - touchStartX;
       var dy = e.touches[0].clientY - touchStartY;
-
       if (isHorizontal === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
         isHorizontal = Math.abs(dx) > Math.abs(dy);
       }
       if (!isHorizontal) return;
       e.preventDefault();
 
-      // Se o gesto vai para um virtual do mesmo painel fisico, nao arrastar o track
       var physIdx = VIRTUAL[currentIdx].phys;
       var nextVirtLeft  = currentIdx - 1;
       var nextVirtRight = currentIdx + 1;
@@ -4484,9 +4480,7 @@ function filtrarContratos() {
       var nextPhysRight = nextVirtRight < TOTAL_VIRTUAL ? VIRTUAL[nextVirtRight].phys : -1;
       var movingLeft    = dx > 0;
       var targetPhys    = movingLeft ? nextPhysLeft : nextPhysRight;
-      var samePhysMove  = (targetPhys === physIdx);
-
-      if (samePhysMove) return;
+      if (targetPhys === physIdx) return;
 
       var baseX = -physIdx * getTrackWidth();
       var newX = baseX + dx;
@@ -4501,7 +4495,6 @@ function filtrarContratos() {
       isDragging = false;
       var dx = e.changedTouches[0].clientX - touchStartX;
       var threshold = getTrackWidth() * 0.3;
-
       if (dx < -threshold && currentIdx < TOTAL_VIRTUAL - 1) {
         goToVirtual(currentIdx + 1, true);
       } else if (dx > threshold && currentIdx > 0) {
@@ -4521,7 +4514,6 @@ function filtrarContratos() {
     }
     else if (name === 'contrato') { goToVirtual(3, true); }
   };
-
   window._goToVirtual = goToVirtual;
 })();
 
