@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gerador de Orçamento – Áudio de Qualidade</title>
+<title>Orçamento e Contrato – Áudio de Qualidade</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
 
@@ -880,7 +880,7 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
 .hd-left { display:flex; flex-direction:column; justify-content:center; min-width:0; }
 .hd-title { font-family:'Barlow Condensed',sans-serif; font-size:1.35rem; font-weight:800; color:var(--gold); letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.15; }
 .hd-sub { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-top:2px; white-space:nowrap; }
-.hd-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+.hd-right { display:flex; flex-direction:row; align-items:center; gap:6px; flex-shrink:0; }
 .hd-actions { display:flex; align-items:center; gap:6px; }
 .hd-user { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; }
 .hd-date { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; white-space:nowrap; }
@@ -965,6 +965,9 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
   .hd-date { display:none; }
   .hd-user { display:none; }
   .hd-actions { gap:5px; }
+  /* Conn: só o ponto, sem label nem borda */
+  #conn-indicator { padding:0; border-color:transparent !important; background:transparent !important; gap:0; }
+  #conn-label { display:none; }
 }
 </style>
 
@@ -987,7 +990,7 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
 <div id="gerador-login-screen">
   <div class="gerador-login-box">
     <div class="gerador-login-title">Áudio de Qualidade</div>
-    <div class="gerador-login-sub">Gerador de Orçamento e Contrato</div>
+    <div class="gerador-login-sub">Orçamento e Contrato</div>
     <div class="gerador-login-field"><label>E-mail</label><input type="email" id="gerador-login-email" placeholder="seu@email.com" /></div>
     <div class="gerador-login-field"><label>Senha</label><input type="password" id="gerador-login-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')geradorFazerLogin()" /></div>
     <button class="gerador-btn-login" id="gerador-btn-login" onclick="geradorFazerLogin()">Entrar</button>
@@ -999,7 +1002,7 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
 
 <header>
   <div class="hd-left">
-    <div class="hd-title">Gerador de Orçamento e Contrato</div>
+    <div class="hd-title">Orçamento e Contrato</div>
     <div class="hd-sub">Áudio de Qualidade</div>
   </div>
   <div class="hd-right">
@@ -1015,7 +1018,6 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
       <button id="btn-gerador-sair" onclick="geradorSair()" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 10px;font-family:'Barlow',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;">Sair</button>
       <button id="pwa-install-btn" onclick="adqInstall()" style="display:none;align-items:center;gap:6px;background:#C8A94A;color:#111;border:none;border-radius:4px;padding:5px 12px;font-family:'Barlow',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;">&#8659; Instalar</button>
     </div>
-    <div class="hd-date" id="header-date"></div>
   </div>
 </header>
 
