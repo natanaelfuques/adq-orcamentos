@@ -2755,12 +2755,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('textarea').forEach(function(ta) {
     ta.addEventListener('input', function() { autoResize(this); });
   });
-  // Auto-resize apos render completo (paineis ocultos retornam scrollHeight=0 antes)
+  // Resize apos render completo (paineis ocultos retornam scrollHeight=0 antes)
   requestAnimationFrame(function() {
     requestAnimationFrame(function() {
-      document.querySelectorAll('textarea').forEach(function(ta) {
-        autoResize(ta);
-      });
+      document.querySelectorAll('textarea').forEach(function(ta) { autoResize(ta); });
     });
   });
 });
@@ -4384,6 +4382,7 @@ function filtrarContratos() {
 
 // ═══ SWIPE NAVIGATION (Instagram style) ═══
 // Fluxo virtual: 0=orcamento | 1=salvos(orcamentos) | 2=salvos(contratos) | 3=contrato
+// Posicoes 1 e 2 apontam para o mesmo painel fisico (salvos) — sem animacao entre elas.
 (function(){
   var VIRTUAL = [
     { phys: 0, salvosTab: null         },
@@ -4412,22 +4411,29 @@ function filtrarContratos() {
 
   function goToVirtual(vIdx, animate) {
     if (vIdx < 0 || vIdx >= TOTAL_VIRTUAL) return;
+    var prevPhys = VIRTUAL[currentIdx].phys;
     currentIdx = vIdx;
     var map = VIRTUAL[vIdx];
     var physIdx = map.phys;
 
+    // Se a transicao e entre dois virtuais no mesmo painel fisico (ex: salvos 1<->2),
+    // nao animar o track — evita efeito estranho sem deslocamento real.
+    var samePhys = (physIdx === prevPhys);
     currentTranslate = -physIdx * getTrackWidth();
-    setTranslate(currentTranslate, animate);
+    setTranslate(currentTranslate, samePhys ? false : animate);
 
+    // Highlight nav principal
     document.querySelectorAll('.main-tab-btn').forEach(function(b) { b.classList.remove('active'); });
     var btn = document.getElementById('main-btn-' + PHYS_TABS[physIdx]);
     if (btn) btn.classList.add('active');
     window._currentTab = PHYS_TABS[physIdx];
 
+    // Trocar sub-aba de salvos se necessario
     if (map.salvosTab && typeof switchSalvosTab === 'function') {
       switchSalvosTab(map.salvosTab);
     }
 
+    // Atualizar contador ao entrar em salvos
     if (physIdx === 1 && typeof atualizarContadorSalvos === 'function') {
       atualizarContadorSalvos();
       if (typeof atualizarAreaBusca === 'function') atualizarAreaBusca();
@@ -4436,9 +4442,7 @@ function filtrarContratos() {
     // Re-resize textareas ao voltar para orcamento
     if (physIdx === 0) {
       requestAnimationFrame(function() {
-        document.querySelectorAll('#panel-orcamento textarea').forEach(function(ta) {
-          autoResize(ta);
-        });
+        document.querySelectorAll('#panel-orcamento textarea').forEach(function(ta) { autoResize(ta); });
       });
     }
   }
@@ -4466,7 +4470,22 @@ function filtrarContratos() {
       if (!isHorizontal) return;
       e.preventDefault();
 
+      // Se estamos numa transicao entre virtuais do mesmo painel fisico,
+      // nao arrastar o track — apenas registrar o gesto para decidir no touchend.
       var physIdx = VIRTUAL[currentIdx].phys;
+      var nextVirtLeft  = currentIdx - 1;
+      var nextVirtRight = currentIdx + 1;
+      var nextPhysLeft  = nextVirtLeft  >= 0            ? VIRTUAL[nextVirtLeft].phys  : -1;
+      var nextPhysRight = nextVirtRight < TOTAL_VIRTUAL ? VIRTUAL[nextVirtRight].phys : -1;
+      var movingLeft    = dx > 0;
+      var targetPhys    = movingLeft ? nextPhysLeft : nextPhysRight;
+      var samePhysMove  = (targetPhys === physIdx);
+
+      if (samePhysMove) {
+        // Nao mover o track — a troca sera instantanea no touchend
+        return;
+      }
+
       var baseX = -physIdx * getTrackWidth();
       var newX = baseX + dx;
       var minX = -(PHYS_TABS.length - 1) * getTrackWidth();
@@ -4491,6 +4510,7 @@ function filtrarContratos() {
     }, {passive: true});
   });
 
+  // Override switchMain
   window._switchMainOriginal = window.switchMain;
   window.switchMain = function(name) {
     if (name === 'orcamento') { goToVirtual(0, true); }
