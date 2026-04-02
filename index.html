@@ -703,6 +703,13 @@
     margin-top: 8px;
   }
   .salvo-status.aprovado { border-color: #4caf50; color: #4caf50; }
+  .salvo-status-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .salvo-montagem-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+  .salvo-montagem-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 0.75rem; padding: 2px 4px; width: 110px; outline: none; }
+  .salvo-montagem-input:focus { border-bottom-color: var(--gold); color: var(--text); }
+  .salvo-montagem-input::placeholder { color: var(--muted); opacity: 0.6; }
+  .btn-calendar { background: #4A90C8 !important; color: #fff !important; border-color: #4A90C8 !important; }
+  .btn-whatsapp { background: #25D366 !important; color: #fff !important; border-color: #25D366 !important; }
   .salvo-status:hover { opacity: 0.8; }
 
 
@@ -3637,6 +3644,14 @@ function handleSalvosClick(e) {
   else if (action === 'abrir-contrato') abrirContrato(id);
   else if (action === 'duplicar-contrato') duplicarContrato(id);
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
+  else if (action === 'calendar') gerarLinkCalendar(id);
+  else if (action === 'whatsapp') {
+    var fone = btn.getAttribute('data-fone') || '';
+    var numero = fone.replace(/\D/g, '');
+    if (!numero) { alert('Número de telefone não encontrado.'); return; }
+    if (numero.length <= 11) numero = '55' + numero;
+    window.open('https://wa.me/' + numero, '_blank');
+  }
   else if (action === 'status-contrato') {
     var ap2 = btn.getAttribute('data-aprovado') === 'true';
     toggleAprovadoContrato(id, ap2);
@@ -3649,7 +3664,21 @@ function iniciarListenerSalvos() {
   var lista = document.getElementById('salvos-lista');
   if (lista) lista.addEventListener('click', handleSalvosClick);
   var listaC = document.getElementById('contratos-lista');
-  if (listaC) listaC.addEventListener('click', handleSalvosClick);
+  if (listaC) {
+    listaC.addEventListener('click', handleSalvosClick);
+    listaC.addEventListener('change', function(e) {
+      var inp = e.target.closest('.salvo-montagem-input');
+      if (!inp) return;
+      var id = inp.getAttribute('data-id');
+      var field = inp.getAttribute('data-field');
+      var val = inp.value.trim();
+      if (!id || !field || !db) return;
+      var upd = {}; upd[field] = val;
+      db.collection('contratos').doc(id).update(upd);
+      var evUpd = {}; evUpd['ev_' + field] = val;
+      db.collection('eventos_campo').doc(id).update(evUpd).catch(function(){});
+    });
+  }
   iniciarListenerContratos();
   if (!db) return;
   const statusEl = document.getElementById('salvos-sync-status');
@@ -4019,9 +4048,16 @@ function renderContratos(docs) {
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
-    card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">';
-    card += aprovado ? 'Assinado' : 'Pendente';
-    card += '</button></div>';
+    card += '<div class="salvo-status-row">';
+    card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">' + (aprovado ? 'Assinado' : 'Pendente') + '</button>';
+    card += '<button class="btn-salvo btn-calendar" data-action="calendar" data-id="' + id + '" style="' + (aprovado ? '' : 'display:none') + '">&#128197; Google Calendar</button>';
+    card += '<button class="btn-salvo btn-whatsapp" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '" style="' + (aprovado ? '' : 'display:none') + '">&#128241; WhatsApp</button>';
+    card += '</div>';
+    card += '<div class="salvo-montagem-row" style="' + (aprovado ? '' : 'display:none') + '">';
+    card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
+    card += '<input class="salvo-montagem-input" type="text" placeholder="Desmontagem" data-field="desmontagem" data-id="' + id + '" value="' + escHtml(doc.desmontagem || '') + '">';
+    card += '</div>';
+    card += '</div>';
     return card;
   }).join('');
 }
@@ -4086,6 +4122,22 @@ function toggleAprovadoContrato(id, atual) {
   var novoStatus = !atual;
   db.collection('contratos').doc(id).update({ aprovado: novoStatus })
     .catch(function(e) { console.error('[AdQ] Erro ao atualizar status:', e); });
+  // Atualizar visual do card imediatamente
+  var card = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + id + '"]');
+  if (card) {
+    var cardEl = card.closest('.salvo-card');
+    if (cardEl) {
+      card.textContent = novoStatus ? 'Assinado' : 'Pendente';
+      card.setAttribute('data-aprovado', novoStatus);
+      if (novoStatus) card.classList.add('aprovado'); else card.classList.remove('aprovado');
+      var monRow = cardEl.querySelector('.salvo-montagem-row');
+      var calBtn = cardEl.querySelector('.btn-calendar');
+      var waBtn = cardEl.querySelector('.btn-whatsapp');
+      if (monRow) monRow.style.display = novoStatus ? '' : 'none';
+      if (calBtn) calBtn.style.display = novoStatus ? '' : 'none';
+      if (waBtn) waBtn.style.display = novoStatus ? '' : 'none';
+    }
+  }
   if (novoStatus) {
     adicionarAoPainel(id);
   } else {
@@ -4148,6 +4200,13 @@ function toggleBuscaSalvos() {
   _buscaAberta = !_buscaAberta;
   var btn = document.getElementById('salvos-search-btn');
   if (btn) btn.classList.toggle('active', _buscaAberta);
+  // Limpar busca ao fechar
+  if (!_buscaAberta) {
+    var orcInput = document.getElementById('busca-orc-input');
+    var conInput = document.getElementById('busca-con-input');
+    if (orcInput) { orcInput.value = ''; filtrarSalvos(); }
+    if (conInput) { conInput.value = ''; filtrarContratos(); }
+  }
   atualizarAreaBusca();
 }
 
@@ -4322,17 +4381,70 @@ function filtrarContratos() {
 
 function buildEventoFromContrato(d, contratoId) {
   return {
-    ev_nome:     d.ev_nome   || '',
-    ev_local:    d.ev_local  || '',
-    ev_data:     d.ev_data   || '',
-    ev_inicio:   d.ev_inicio || '',
-    ev_fim:      d.ev_fim    || '',
-    ev_resp:     d.ev_resp   || '',
-    cli_nome:    d.cli_nome  || '',
-    servicos:    d.servicos  || [],
-    contrato_id: contratoId,
-    criadoEm:    firebase.firestore.FieldValue.serverTimestamp()
+    ev_nome:        d.ev_nome        || '',
+    ev_local:       d.ev_local       || '',
+    ev_data:        d.ev_data        || '',
+    ev_inicio:      d.ev_inicio      || '',
+    ev_fim:         d.ev_fim         || '',
+    ev_resp:        d.ev_resp        || '',
+    ev_montagem:    d.montagem       || '',
+    ev_desmontagem: d.desmontagem    || '',
+    cli_nome:       d.cli_nome       || '',
+    servicos:       d.servicos       || [],
+    contrato_id:    contratoId,
+    criadoEm:       firebase.firestore.FieldValue.serverTimestamp()
   };
+}
+
+function gerarLinkCalendar(id) {
+  if (!db) return;
+  db.collection('contratos').doc(id).get().then(function(doc) {
+    if (!doc.exists) return;
+    var d = doc.data();
+    var nome = d.cli_nome || 'Cliente';
+    var evento = d.ev_nome || 'Evento';
+    var local = d.ev_local || '';
+    var data = d.ev_data || '';
+    var inicio = d.ev_inicio || '';
+    var fim = d.ev_fim || '';
+    var montagem = d.montagem || '';
+    var desmontagem = d.desmontagem || '';
+    var servicos = (d.servicos || []).join(', ');
+
+    // Formatar data para Google Calendar (YYYYMMDD)
+    var dateStr = '';
+    if (data) {
+      var parts = data.split('-');
+      if (parts.length === 3) dateStr = parts[0] + parts[1] + parts[2];
+    }
+
+    // Horários
+    var startTime = dateStr && inicio ? dateStr + 'T' + inicio.replace(':', '') + '00' : dateStr;
+    var endTime = dateStr && fim ? dateStr + 'T' + fim.replace(':', '') + '00' : (dateStr ? dateStr : '');
+
+    var title = encodeURIComponent(evento + ' — ' + nome);
+    var details = encodeURIComponent(
+      (montagem ? 'Montagem: ' + montagem + '
+' : '') +
+      (inicio ? 'Início: ' + inicio : '') +
+      (fim ? ' | Término: ' + fim : '') + '
+' +
+      (desmontagem ? 'Desmontagem: ' + desmontagem + '
+' : '') +
+      (servicos ? '
+Serviços: ' + servicos : '')
+    );
+    var loc = encodeURIComponent(local);
+
+    var dates = startTime && endTime ? startTime + '/' + endTime : (dateStr ? dateStr + '/' + dateStr : '');
+    var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+      '&text=' + title +
+      '&dates=' + dates +
+      '&details=' + details +
+      '&location=' + loc;
+
+    window.open(url, '_blank');
+  });
 }
 
 function adicionarAoPainel(contratoId) {
