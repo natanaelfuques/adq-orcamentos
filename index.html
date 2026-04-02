@@ -2811,20 +2811,14 @@ function calcEntrada() {
 }
 
 function switchMain(name, direction) {
-  var tabs = ['orcamento', 'salvos', 'contrato'];
-  var idx = tabs.indexOf(name);
-  var track = document.getElementById('swipe-track');
-  if (track && idx >= 0) {
-    window._currentTab = name;
-    track.classList.add('animating');
-    track.style.transform = 'translateX(' + (-idx * window.innerWidth) + 'px)';
-    document.querySelectorAll('.main-tab-btn').forEach(function(b) { b.classList.remove('active'); });
-    var btn = document.getElementById('main-btn-' + name);
-    if (btn) btn.classList.add('active');
-    if (name === 'salvos' && typeof atualizarContadorSalvos === 'function') {
-      atualizarContadorSalvos();
-      if (typeof atualizarAreaBusca === 'function') atualizarAreaBusca();
+  // Delegado ao sistema de swipe virtual
+  if (window._goToVirtual) {
+    if (name === 'orcamento') window._goToVirtual(0, true);
+    else if (name === 'salvos') {
+      var target = (typeof _salvosTab !== 'undefined' && _salvosTab === 'contratos') ? 2 : 1;
+      window._goToVirtual(target, true);
     }
+    else if (name === 'contrato') window._goToVirtual(3, true);
   }
 }
 
@@ -3664,73 +3658,68 @@ function carregarAcessosGerador() {
     if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum registro ainda.</div>'; return; }
     var docs = [];
     snap.forEach(function(doc) { docs.push(doc.data()); });
-    docs.sort(function(a, b) { return (b.data&&b.data.toDate?b.data.toDate().getTime():0)-(a.data&&a.data.toDate?a.data.toDate().getTime():0); });
-
-    // Mapeamento: tipo → { grupo, label, cor }
-    var META = {
-      'entrada':             { grupo:'sessao',         label:'Entrada',              cor:'#4AC87A' },
-      'saida':               { grupo:'sessao',         label:'Saida',                cor:'#888'    },
-      'abrir-orcamento':     { grupo:'orcamentos',     label:'Orcamento aberto',     cor:'#C8A94A' },
-      'salvar-orcamento':    { grupo:'orcamentos',     label:'Orcamento salvo',      cor:'#C8A94A' },
-      'duplicar-orcamento':  { grupo:'orcamentos',     label:'Orcamento duplicado',  cor:'#C8A94A' },
-      'excluir-orcamento':   { grupo:'orcamentos',     label:'Orcamento excluido',   cor:'#e05c5c' },
-      'abrir-contrato':      { grupo:'contratos',      label:'Contrato aberto',      cor:'#C8A94A' },
-      'salvar-contrato':     { grupo:'contratos',      label:'Contrato salvo',       cor:'#C8A94A' },
-      'duplicar-contrato':   { grupo:'contratos',      label:'Contrato duplicado',   cor:'#C8A94A' },
-      'excluir-contrato':    { grupo:'contratos',      label:'Contrato excluido',    cor:'#e05c5c' },
-      'status-orcamento':    { grupo:'status',         label:'Status orcamento',     cor:'#4A90C8' },
-      'status-contrato':     { grupo:'status',         label:'Status contrato',      cor:'#4A90C8' },
-      'whatsapp':            { grupo:'compartilhamento', label:'WhatsApp enviado',   cor:'#25D366' },
-      'calendar':            { grupo:'compartilhamento', label:'Google Calendar',    cor:'#4A90C8' }
+    docs.sort(function(a, b) {
+      return (b.data&&b.data.toDate?b.data.toDate().getTime():0) - (a.data&&a.data.toDate?a.data.toDate().getTime():0);
+    });
+    var LOG_META = {
+      'entrada':            { grupo:'sessao',           label:'Entrada',             cor:'#4AC87A' },
+      'saida':              { grupo:'sessao',           label:'Saida',               cor:'#888'    },
+      'abrir-orcamento':    { grupo:'orcamentos',       label:'Orcamento aberto',    cor:'#C8A94A' },
+      'salvar-orcamento':   { grupo:'orcamentos',       label:'Orcamento salvo',     cor:'#C8A94A' },
+      'duplicar-orcamento': { grupo:'orcamentos',       label:'Orcamento duplicado', cor:'#C8A94A' },
+      'excluir-orcamento':  { grupo:'orcamentos',       label:'Orcamento excluido',  cor:'#e05c5c' },
+      'abrir-contrato':     { grupo:'contratos',        label:'Contrato aberto',     cor:'#C8A94A' },
+      'salvar-contrato':    { grupo:'contratos',        label:'Contrato salvo',      cor:'#C8A94A' },
+      'duplicar-contrato':  { grupo:'contratos',        label:'Contrato duplicado',  cor:'#C8A94A' },
+      'excluir-contrato':   { grupo:'contratos',        label:'Contrato excluido',   cor:'#e05c5c' },
+      'status-orcamento':   { grupo:'status',           label:'Status orcamento',    cor:'#4A90C8' },
+      'status-contrato':    { grupo:'status',           label:'Status contrato',     cor:'#4A90C8' },
+      'whatsapp':           { grupo:'compartilhamento', label:'WhatsApp enviado',    cor:'#25D366' },
+      'calendar':           { grupo:'compartilhamento', label:'Google Calendar',     cor:'#4A90C8' }
     };
-
-    // Ordem e títulos dos grupos — Status primeiro
-    var GRUPOS = [
+    var LOG_GRUPOS = [
       { id:'status',           titulo:'Status'           },
       { id:'sessao',           titulo:'Sessao'           },
       { id:'orcamentos',       titulo:'Orcamentos'       },
       { id:'contratos',        titulo:'Contratos'        },
       { id:'compartilhamento', titulo:'Compartilhamento' }
     ];
-
-    // Agrupar docs
     var agrupados = {};
-    GRUPOS.forEach(function(g) { agrupados[g.id] = []; });
+    LOG_GRUPOS.forEach(function(g) { agrupados[g.id] = []; });
     docs.forEach(function(d) {
-      var m = META[d.tipo];
+      var m = LOG_META[d.tipo];
       var grupo = m ? m.grupo : 'sessao';
       if (!agrupados[grupo]) agrupados[grupo] = [];
       agrupados[grupo].push(d);
     });
-
     function fmtTs(d) {
-      var ts = d.data&&d.data.toDate?d.data.toDate():null;
-      return ts?ts.toLocaleDateString('pt-BR')+' '+ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
+      var ts = d.data&&d.data.toDate ? d.data.toDate() : null;
+      return ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '—';
     }
-
-    function renderItem(d) {
-      var m = META[d.tipo] || { label: d.tipo, cor:'#888' };
+    function renderLogItem(d) {
+      var m = LOG_META[d.tipo] || { label: d.tipo, cor:'#888' };
       return '<div class="acesso-item">'
-        +'<div style="display:flex;justify-content:space-between;align-items:baseline">'
-        +'<span style="font-size:0.78rem;font-weight:700;color:'+m.cor+';letter-spacing:0.04em">'+m.label+'</span>'
-        +'<span style="font-size:0.68rem;color:#666">'+fmtTs(d)+'</span>'
-        +'</div>'
-        +'<div style="font-size:0.7rem;color:#aaa;margin-top:2px">'+(d.usuario||d.email||'')+'</div>'
-        +(d.detalhe?'<div style="font-size:0.68rem;color:#666;margin-top:1px">'+d.detalhe+'</div>':'')
-        +'</div>';
+        + '<div style="display:flex;justify-content:space-between;align-items:baseline">'
+        + '<span style="font-size:0.78rem;font-weight:700;color:' + m.cor + ';letter-spacing:0.04em">' + m.label + '</span>'
+        + '<span style="font-size:0.68rem;color:#666">' + fmtTs(d) + '</span>'
+        + '</div>'
+        + '<div style="font-size:0.7rem;color:#aaa;margin-top:2px">' + (d.usuario||d.email||'') + '</div>'
+        + (d.detalhe ? '<div style="font-size:0.68rem;color:#666;margin-top:1px">' + d.detalhe + '</div>' : '')
+        + '</div>';
     }
-
     var html = '';
-    GRUPOS.forEach(function(g) {
+    LOG_GRUPOS.forEach(function(g) {
       var itens = agrupados[g.id] || [];
       if (!itens.length) return;
-      html += '<div class="log-group">';
-      html += '<div class="log-group-header" onclick="this.parentElement.classList.toggle('open')">';
-      html += '<span class="log-group-title">'+g.titulo+'</span>';
-      html += '<span class="log-group-meta"><span class="log-group-count">'+itens.length+'</span><span class="log-group-arrow">▼</span></span>';
-      html += '</div>';
-      html += '<div class="log-group-body">';
-      itens.forEach(function(d) { html += renderItem(d); });
+      html += '<div class="log-group">'
+        + '<div class="log-group-header" onclick="this.parentElement.classList.toggle(&quot;open&quot;)">'
+        + '<span class="log-group-title">' + g.titulo + '</span>'
+        + '<span class="log-group-meta">'
+        + '<span class="log-group-count">' + itens.length + '</span>'
+        + '<span class="log-group-arrow">&#9660;</span>'
+        + '</span></div>'
+        + '<div class="log-group-body">';
+      itens.forEach(function(d) { html += renderLogItem(d); });
       html += '</div></div>';
     });
     lista.innerHTML = html || '<div class="acessos-empty">Nenhum registro ainda.</div>';
@@ -3794,6 +3783,7 @@ function iniciarListenerSalvos() {
   if (!db) return;
   const statusEl = document.getElementById('salvos-sync-status');
   if (statusEl) statusEl.textContent = 'Sincronizando...';
+  if (salvosListener) { salvosListener(); salvosListener = null; }
   salvosListener = db.collection('orcamentos')
     .orderBy('criadoEm', 'desc')
     .onSnapshot(function(snap) {
@@ -4298,6 +4288,7 @@ function duplicarContrato(id) {
 }
 
 function excluirContrato(id, nome) {
+  if (!db) return;
   if (!confirm('Excluir contrato de "' + nome + '"?')) return;
   db.collection('contratos').doc(id).delete()
     .then(function() { registrarLogGerador('excluir-contrato', nome); removerDoPainel(id); })
@@ -4530,8 +4521,9 @@ function filtrarContratos() {
     }
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
+  function initSwipe() {
     track = document.getElementById('swipe-track');
+    if (!track) return;
     goToVirtual(0, false);
 
     track.addEventListener('touchstart', function(e) {
@@ -4582,7 +4574,13 @@ function filtrarContratos() {
         goToVirtual(currentIdx, true);
       }
     }, {passive: true});
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSwipe);
+  } else {
+    initSwipe();
+  }
 
   window._switchMainOriginal = window.switchMain;
   window.switchMain = function(name) {
