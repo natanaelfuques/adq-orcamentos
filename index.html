@@ -876,14 +876,14 @@
 .gerador-login-error { color:#e05c5c; font-size:0.78rem; margin-top:10px; text-align:center; display:none; }
 
 /* ── HEADER ── */
-header { background:var(--dark); border-bottom:2px solid var(--gold); padding:10px 20px; position:sticky; top:0; z-index:100; }
-.hd-row1 { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; }
-.hd-title { font-family:'Barlow Condensed',sans-serif; font-size:1.3rem; font-weight:800; color:var(--gold); letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex-shrink:1; }
-.hd-row2 { display:flex; align-items:center; justify-content:space-between; margin-top:2px; gap:8px; }
-.hd-sub { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.09em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.hd-date { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; white-space:nowrap; text-align:right; flex-shrink:0; }
-.hd-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12px 24px; position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.hd-left { display:flex; flex-direction:column; justify-content:center; min-width:0; }
+.hd-title { font-family:'Barlow Condensed',sans-serif; font-size:1.35rem; font-weight:800; color:var(--gold); letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.15; }
+.hd-sub { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-top:2px; white-space:nowrap; }
+.hd-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+.hd-actions { display:flex; align-items:center; gap:6px; }
 .hd-user { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; }
+.hd-date { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; white-space:nowrap; }
 
 /* ── ACESSOS ── */
 .btn-acessos { background:transparent; border:1px solid #444; color:#aaa; border-radius:4px; padding:4px 8px; cursor:pointer; display:none; align-items:center; gap:5px; font-family:'Barlow',sans-serif; font-size:0.7rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; }
@@ -900,20 +900,9 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:10
 .acesso-user { font-size:0.8rem; font-weight:700; color:#eee; }
 .acesso-meta { font-size:0.72rem; color:#888; margin-top:2px; }
 .acessos-empty { padding:20px 16px; text-align:center; color:#888; font-size:0.8rem; }
-.log-group { border-bottom:1px solid rgba(255,255,255,0.06); }
-.log-group:last-child { border-bottom:none; }
-.log-group-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; cursor:pointer; user-select:none; }
-.log-group-header:hover { background:rgba(255,255,255,0.03); }
-.log-group-title { font-family:'Barlow Condensed',sans-serif; font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); }
-.log-group-meta { display:flex; align-items:center; gap:8px; }
-.log-group-count { font-size:0.65rem; font-weight:700; color:#555; letter-spacing:0.06em; }
-.log-group-arrow { font-size:0.6rem; color:#555; transition:transform 0.2s; }
-.log-group.open .log-group-arrow { transform:rotate(180deg); }
-.log-group-body { display:none; }
-.log-group.open .log-group-body { display:block; }
 
 @media (max-width:640px) {
-  header { padding:8px 12px; }
+  header { padding:8px 14px; }
   .hd-title { font-size:1rem; }
   .hd-date { display:none; }
   .hd-user { display:none; }
@@ -951,8 +940,11 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:10
 <div id="gerador-app" style="display:none">
 
 <header>
-  <div class="hd-row1">
+  <div class="hd-left">
     <div class="hd-title">Gerador de Orçamento e Contrato</div>
+    <div class="hd-sub">Áudio de Qualidade</div>
+  </div>
+  <div class="hd-right">
     <div class="hd-actions">
       <span class="hd-user" id="header-user"></span>
       <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico">
@@ -961,9 +953,6 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:10
       <button id="btn-gerador-sair" onclick="geradorSair()" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 10px;font-family:'Barlow',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;">Sair</button>
       <button id="pwa-install-btn" onclick="adqInstall()" style="display:none;align-items:center;gap:6px;background:#C8A94A;color:#111;border:none;border-radius:4px;padding:5px 12px;font-family:'Barlow',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;">&#8659; Instalar</button>
     </div>
-  </div>
-  <div class="hd-row2">
-    <div class="hd-sub">Áudio de Qualidade</div>
     <div class="hd-date" id="header-date"></div>
   </div>
 </header>
@@ -2811,14 +2800,20 @@ function calcEntrada() {
 }
 
 function switchMain(name, direction) {
-  // Delegado ao sistema de swipe virtual
-  if (window._goToVirtual) {
-    if (name === 'orcamento') window._goToVirtual(0, true);
-    else if (name === 'salvos') {
-      var target = (typeof _salvosTab !== 'undefined' && _salvosTab === 'contratos') ? 2 : 1;
-      window._goToVirtual(target, true);
+  var tabs = ['orcamento', 'salvos', 'contrato'];
+  var idx = tabs.indexOf(name);
+  var track = document.getElementById('swipe-track');
+  if (track && idx >= 0) {
+    window._currentTab = name;
+    track.classList.add('animating');
+    track.style.transform = 'translateX(' + (-idx * window.innerWidth) + 'px)';
+    document.querySelectorAll('.main-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    var btn = document.getElementById('main-btn-' + name);
+    if (btn) btn.classList.add('active');
+    if (name === 'salvos' && typeof atualizarContadorSalvos === 'function') {
+      atualizarContadorSalvos();
+      if (typeof atualizarAreaBusca === 'function') atualizarAreaBusca();
     }
-    else if (name === 'contrato') window._goToVirtual(3, true);
   }
 }
 
@@ -3658,71 +3653,16 @@ function carregarAcessosGerador() {
     if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum registro ainda.</div>'; return; }
     var docs = [];
     snap.forEach(function(doc) { docs.push(doc.data()); });
-    docs.sort(function(a, b) {
-      return (b.data&&b.data.toDate?b.data.toDate().getTime():0) - (a.data&&a.data.toDate?a.data.toDate().getTime():0);
-    });
-    var LOG_META = {
-      'entrada':            { grupo:'sessao',           label:'Entrada',             cor:'#4AC87A' },
-      'saida':              { grupo:'sessao',           label:'Saida',               cor:'#888'    },
-      'abrir-orcamento':    { grupo:'orcamentos',       label:'Orcamento aberto',    cor:'#C8A94A' },
-      'salvar-orcamento':   { grupo:'orcamentos',       label:'Orcamento salvo',     cor:'#C8A94A' },
-      'duplicar-orcamento': { grupo:'orcamentos',       label:'Orcamento duplicado', cor:'#C8A94A' },
-      'excluir-orcamento':  { grupo:'orcamentos',       label:'Orcamento excluido',  cor:'#e05c5c' },
-      'abrir-contrato':     { grupo:'contratos',        label:'Contrato aberto',     cor:'#C8A94A' },
-      'salvar-contrato':    { grupo:'contratos',        label:'Contrato salvo',      cor:'#C8A94A' },
-      'duplicar-contrato':  { grupo:'contratos',        label:'Contrato duplicado',  cor:'#C8A94A' },
-      'excluir-contrato':   { grupo:'contratos',        label:'Contrato excluido',   cor:'#e05c5c' },
-      'status-orcamento':   { grupo:'status',           label:'Status orcamento',    cor:'#4A90C8' },
-      'status-contrato':    { grupo:'status',           label:'Status contrato',     cor:'#4A90C8' },
-      'whatsapp':           { grupo:'compartilhamento', label:'WhatsApp enviado',    cor:'#25D366' },
-      'calendar':           { grupo:'compartilhamento', label:'Google Calendar',     cor:'#4A90C8' }
-    };
-    var LOG_GRUPOS = [
-      { id:'status',           titulo:'Status'           },
-      { id:'sessao',           titulo:'Sessao'           },
-      { id:'orcamentos',       titulo:'Orcamentos'       },
-      { id:'contratos',        titulo:'Contratos'        },
-      { id:'compartilhamento', titulo:'Compartilhamento' }
-    ];
-    var agrupados = {};
-    LOG_GRUPOS.forEach(function(g) { agrupados[g.id] = []; });
-    docs.forEach(function(d) {
-      var m = LOG_META[d.tipo];
-      var grupo = m ? m.grupo : 'sessao';
-      if (!agrupados[grupo]) agrupados[grupo] = [];
-      agrupados[grupo].push(d);
-    });
-    function fmtTs(d) {
-      var ts = d.data&&d.data.toDate ? d.data.toDate() : null;
-      return ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '—';
-    }
-    function renderLogItem(d) {
-      var m = LOG_META[d.tipo] || { label: d.tipo, cor:'#888' };
-      return '<div class="acesso-item">'
-        + '<div style="display:flex;justify-content:space-between;align-items:baseline">'
-        + '<span style="font-size:0.78rem;font-weight:700;color:' + m.cor + ';letter-spacing:0.04em">' + m.label + '</span>'
-        + '<span style="font-size:0.68rem;color:#666">' + fmtTs(d) + '</span>'
-        + '</div>'
-        + '<div style="font-size:0.7rem;color:#aaa;margin-top:2px">' + (d.usuario||d.email||'') + '</div>'
-        + (d.detalhe ? '<div style="font-size:0.68rem;color:#666;margin-top:1px">' + d.detalhe + '</div>' : '')
-        + '</div>';
-    }
+    docs.sort(function(a, b) { return (b.data&&b.data.toDate?b.data.toDate().getTime():0)-(a.data&&a.data.toDate?a.data.toDate().getTime():0); });
+    var labels = { entrada:{label:'→ Entrada',color:'#4AC87A'}, saida:{label:'← Saída',color:'#888'}, 'salvar-orcamento':{label:'💾 Orçamento salvo',color:'#C8A94A'}, 'salvar-contrato':{label:'💾 Contrato salvo',color:'#C8A94A'}, 'excluir-orcamento':{label:'🗑 Orçamento excluído',color:'#e05c5c'}, 'excluir-contrato':{label:'🗑 Contrato excluído',color:'#e05c5c'} };
     var html = '';
-    LOG_GRUPOS.forEach(function(g) {
-      var itens = agrupados[g.id] || [];
-      if (!itens.length) return;
-      html += '<div class="log-group">'
-        + '<div class="log-group-header" onclick="this.parentElement.classList.toggle(&quot;open&quot;)">'
-        + '<span class="log-group-title">' + g.titulo + '</span>'
-        + '<span class="log-group-meta">'
-        + '<span class="log-group-count">' + itens.length + '</span>'
-        + '<span class="log-group-arrow">&#9660;</span>'
-        + '</span></div>'
-        + '<div class="log-group-body">';
-      itens.forEach(function(d) { html += renderLogItem(d); });
-      html += '</div></div>';
+    docs.slice(0,40).forEach(function(d) {
+      var ts = d.data&&d.data.toDate?d.data.toDate():null;
+      var fmt = ts?ts.toLocaleDateString('pt-BR')+' '+ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
+      var t = labels[d.tipo]||{label:d.tipo,color:'#888'};
+      html += '<div class="acesso-item"><div style="display:flex;justify-content:space-between"><span style="font-size:0.8rem;font-weight:700;color:'+t.color+'">'+t.label+'</span><span style="font-size:0.7rem;color:#888">'+fmt+'</span></div><div style="font-size:0.72rem;color:#aaa">'+( d.usuario||d.email)+'</div>'+(d.detalhe?'<div style="font-size:0.68rem;color:#888">'+d.detalhe+'</div>':'')+'</div>';
     });
-    lista.innerHTML = html || '<div class="acessos-empty">Nenhum registro ainda.</div>';
+    lista.innerHTML = html;
   }).catch(function() { lista.innerHTML = '<div class="acessos-empty">Erro ao carregar.</div>'; });
 }
 
@@ -3749,7 +3689,6 @@ function handleSalvosClick(e) {
     if (!numero) { alert('Número de telefone não encontrado.'); return; }
     if (numero.length <= 11) numero = '55' + numero;
     btn.blur();
-    registrarLogGerador('whatsapp', numero);
     window.open('https://wa.me/' + numero, '_blank');
   }
   else if (action === 'status-contrato') {
@@ -3783,7 +3722,6 @@ function iniciarListenerSalvos() {
   if (!db) return;
   const statusEl = document.getElementById('salvos-sync-status');
   if (statusEl) statusEl.textContent = 'Sincronizando...';
-  if (salvosListener) { salvosListener(); salvosListener = null; }
   salvosListener = db.collection('orcamentos')
     .orderBy('criadoEm', 'desc')
     .onSnapshot(function(snap) {
@@ -3950,7 +3888,6 @@ function abrirSalvo(id) {
     if (!doc.exists) { alert('Orçamento não encontrado.'); return; }
     var d = doc.data();
     if (d._tipo === 'orcamento_completo' || d._tipo === 'orcamento') {
-      registrarLogGerador('abrir-orcamento', d.nome_cliente||d.nome||'');
       carregarOrcamentoEditavel._processar(d);
       switchMain('orcamento');
     }
@@ -3966,8 +3903,7 @@ function duplicarSalvo(id) {
     d.nome_cliente = (d.nome_cliente || '') + ' (copia)';
     d.nome = d.nome_cliente;
     d.aprovado = false;
-    db.collection('orcamentos').add(d)
-      .then(function() { registrarLogGerador('duplicar-orcamento', d.nome_cliente||d.nome||''); });
+    db.collection('orcamentos').add(d);
   });
 }
 
@@ -3997,9 +3933,7 @@ function excluirSalvo(id, nome) {
 function toggleAprovado(id, atual) {
   if (!db) return;
   var novoStatus = !atual;
-  var labelStatus = novoStatus ? 'Aprovado' : 'Pendente';
   db.collection('orcamentos').doc(id).update({ aprovado: novoStatus })
-    .then(function() { registrarLogGerador('status-orcamento', labelStatus); })
     .catch(function(e){ console.warn('[AdQ] Toggle aprovado erro:', e); });
   // Se marcou como aprovado, carrega para edicao do contrato
   if (novoStatus) {
@@ -4269,7 +4203,6 @@ function abrirContrato(id) {
       }
     }
     if (d.val_total) calcEntrada();
-    registrarLogGerador('abrir-contrato', d.cli_nome||'');
     switchMain('contrato');
   });
 }
@@ -4282,13 +4215,11 @@ function duplicarContrato(id) {
     d.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
     d.cli_nome = (d.cli_nome || '') + ' (copia)';
     d.aprovado = false;
-    db.collection('contratos').add(d)
-      .then(function() { registrarLogGerador('duplicar-contrato', d.cli_nome||''); });
+    db.collection('contratos').add(d);
   });
 }
 
 function excluirContrato(id, nome) {
-  if (!db) return;
   if (!confirm('Excluir contrato de "' + nome + '"?')) return;
   db.collection('contratos').doc(id).delete()
     .then(function() { registrarLogGerador('excluir-contrato', nome); removerDoPainel(id); })
@@ -4310,7 +4241,6 @@ function toggleAprovadoContrato(id, atual) {
     novoAprovado = false; novoLabel = 'Cancelado'; novoClass = 'cancelado'; novoPainel = 'remove';
   }
   db.collection('contratos').doc(id).update({ aprovado: novoAprovado })
-    .then(function() { registrarLogGerador('status-contrato', novoLabel); })
     .catch(function(e) { console.error('[AdQ] Erro ao atualizar status:', e); });
   if (btn) {
     var cardEl = btn.closest('.salvo-card');
@@ -4521,9 +4451,8 @@ function filtrarContratos() {
     }
   }
 
-  function initSwipe() {
+  document.addEventListener('DOMContentLoaded', function() {
     track = document.getElementById('swipe-track');
-    if (!track) return;
     goToVirtual(0, false);
 
     track.addEventListener('touchstart', function(e) {
@@ -4574,13 +4503,7 @@ function filtrarContratos() {
         goToVirtual(currentIdx, true);
       }
     }, {passive: true});
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSwipe);
-  } else {
-    initSwipe();
-  }
+  });
 
   window._switchMainOriginal = window.switchMain;
   window.switchMain = function(name) {
@@ -4695,7 +4618,6 @@ function gerarLinkCalendar(id) {
       '&location=' + loc;
 
     window.open(url, '_blank');
-    registrarLogGerador('calendar', nome + ' — ' + evento);
     // Marcar como adicionado ao calendário
     db.collection('contratos').doc(id).update({ calendar_adicionado: true })
       .catch(function(e) { console.warn('[AdQ] Erro ao salvar calendar_adicionado:', e); });

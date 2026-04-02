@@ -1023,13 +1023,10 @@ function carregarAcessos() {
       }
 
       var html = '';
-      var primeiroAberto = true;
       categorias.forEach(function(cat) {
         var itens = grupos[cat.id] || [];
         if (itens.length === 0) return;
-        var aberto = primeiroAberto;
-        primeiroAberto = false;
-        html += '<div class="log-grupo' + (aberto ? ' aberto' : '') + '" id="log-grupo-' + cat.id + '">' +
+        html += '<div class="log-grupo" id="log-grupo-' + cat.id + '">' +
           '<div class="log-grupo-header" onclick="toggleLogGrupo(\'' + cat.id + '\')">' +
             '<span class="log-grupo-titulo">' + cat.titulo + '</span>' +
             '<span class="log-grupo-direita">' +
