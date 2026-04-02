@@ -702,7 +702,10 @@
     transition: all 0.15s;
     margin-top: 8px;
   }
-  .salvo-status.aprovado { border-color: #4A90C8; color: #4A90C8; }
+  .salvo-status.aprovado   { border-color: #4A90C8; color: #4A90C8; }
+  .salvo-status.andamento  { border-color: var(--gold); color: var(--gold); cursor: default; }
+  .salvo-status.concluido  { border-color: #4AC87A; color: #4AC87A; cursor: default; }
+  .salvo-status.cancelado  { border-color: #e05c5c; color: #e05c5c; }
   .salvo-status-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
   .salvo-montagem-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
   .salvo-montagem-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 0.75rem; padding: 2px 4px; width: 110px; outline: none; }
@@ -4025,6 +4028,24 @@ function renderContratos(docs) {
     lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum contrato salvo ainda.</div>';
     return;
   }
+  // Buscar etapas do painel para todos os contratos
+  var ids = docs.map(function(d) { return d.id; });
+  var etapaMap = {};
+  var pending = ids.length;
+  if (pending === 0) { lista.innerHTML = ''; return; }
+  ids.forEach(function(cid) {
+    db.collection('eventos_campo').doc(cid).get().then(function(snap) {
+      if (snap.exists) etapaMap[cid] = snap.data().etapa || 'eventos';
+      pending--;
+      if (pending === 0) _renderContratosComEtapa(lista, docs, etapaMap);
+    }).catch(function() {
+      pending--;
+      if (pending === 0) _renderContratosComEtapa(lista, docs, etapaMap);
+    });
+  });
+}
+
+function _renderContratosComEtapa(lista, docs, etapaMap) {
   lista.innerHTML = docs.map(function(doc) {
     var nome    = doc.cli_nome || '';
     var evento  = doc.ev_nome  || '';
@@ -4034,6 +4055,19 @@ function renderContratos(docs) {
     var aprovado = doc.aprovado ? true : false;
     var id = doc.id;
     var nomeEsc = escHtml(nome);
+    var etapa = etapaMap[id]; // 'eventos','andamento','concluido' ou undefined
+    // Determinar estado visual do botão
+    var statusClass, statusLabel, statusClickable;
+    if (!aprovado) {
+      statusClass = ''; statusLabel = 'Pendente'; statusClickable = true;
+    } else if (etapa === 'andamento') {
+      statusClass = ' andamento'; statusLabel = 'Em andamento'; statusClickable = false;
+    } else if (etapa === 'concluido') {
+      statusClass = ' concluido'; statusLabel = 'Concluído'; statusClickable = false;
+    } else {
+      // aprovado e etapa === 'eventos' (ou ausente) → Assinado
+      statusClass = ' aprovado'; statusLabel = 'Assinado'; statusClickable = true;
+    }
     var card = '<div class="salvo-card">';
     card += '<div class="salvo-card-top">';
     card += '<div><div class="salvo-card-nome">' + nomeEsc + '</div>';
@@ -4047,9 +4081,9 @@ function renderContratos(docs) {
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<div class="salvo-status-row">';
-    card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">' + (aprovado ? 'Assinado' : 'Pendente') + '</button>';
-    card += '<button class="salvo-status btn-calendar" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
     card += '<button class="salvo-status btn-whatsapp" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '">WhatsApp</button>';
+    card += '<button class="salvo-status btn-calendar" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
+    card += '<button class="salvo-status' + statusClass + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '"' + (statusClickable ? '' : ' style="pointer-events:none"') + '>' + statusLabel + '</button>';
     card += '</div>';
     card += '<div class="salvo-montagem-row" style="' + (aprovado ? '' : 'display:none') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
@@ -4117,26 +4151,34 @@ function excluirContrato(id, nome) {
 
 function toggleAprovadoContrato(id, atual) {
   if (!db) return;
-  var novoStatus = !atual;
-  db.collection('contratos').doc(id).update({ aprovado: novoStatus })
+  var btn = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + id + '"]');
+  var etapa = btn ? (btn.getAttribute('data-etapa') || '') : '';
+  // Ciclo: Pendente → Assinado → Cancelado → Pendente
+  // Em andamento e Concluído são somente leitura (vêm do painel)
+  var novoAprovado, novoLabel, novoClass, novoPainel;
+  if (!atual) {
+    // Pendente → Assinado
+    novoAprovado = true; novoLabel = 'Assinado'; novoClass = 'aprovado'; novoPainel = 'add';
+  } else {
+    // Assinado → Cancelado (remove do painel)
+    novoAprovado = false; novoLabel = 'Cancelado'; novoClass = 'cancelado'; novoPainel = 'remove';
+  }
+  db.collection('contratos').doc(id).update({ aprovado: novoAprovado })
     .catch(function(e) { console.error('[AdQ] Erro ao atualizar status:', e); });
-  // Atualizar visual do card imediatamente
-  var card = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + id + '"]');
-  if (card) {
-    var cardEl = card.closest('.salvo-card');
+  if (btn) {
+    var cardEl = btn.closest('.salvo-card');
+    btn.textContent = novoLabel;
+    btn.setAttribute('data-aprovado', novoAprovado);
+    btn.setAttribute('data-etapa', novoAprovado ? 'eventos' : '');
+    btn.className = 'salvo-status ' + novoClass;
+    btn.style.pointerEvents = '';
     if (cardEl) {
-      card.textContent = novoStatus ? 'Assinado' : 'Pendente';
-      card.setAttribute('data-aprovado', novoStatus);
-      if (novoStatus) card.classList.add('aprovado'); else card.classList.remove('aprovado');
       var monRow = cardEl.querySelector('.salvo-montagem-row');
-      if (monRow) monRow.style.display = novoStatus ? '' : 'none';
+      if (monRow) monRow.style.display = novoAprovado ? '' : 'none';
     }
   }
-  if (novoStatus) {
-    adicionarAoPainel(id);
-  } else {
-    removerDoPainel(id);
-  }
+  if (novoPainel === 'add') adicionarAoPainel(id);
+  else removerDoPainel(id);
 }
 
 
