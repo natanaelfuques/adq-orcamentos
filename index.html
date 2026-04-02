@@ -708,8 +708,10 @@
   .salvo-montagem-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 0.75rem; padding: 2px 4px; width: 110px; outline: none; }
   .salvo-montagem-input:focus { border-bottom-color: var(--gold); color: var(--text); }
   .salvo-montagem-input::placeholder { color: var(--muted); opacity: 0.6; }
-  .btn-calendar { background: #4A90C8 !important; color: #fff !important; border-color: #4A90C8 !important; }
-  .btn-whatsapp { background: #25D366 !important; color: #fff !important; border-color: #25D366 !important; }
+  .btn-calendar { border-color: #4A90C8; color: #4A90C8; }
+  .btn-calendar:hover { background: #4A90C8; color: #fff; }
+  .btn-whatsapp { border-color: #25D366; color: #25D366; }
+  .btn-whatsapp:hover { background: #25D366; color: #fff; }
   .salvo-status:hover { opacity: 0.8; }
 
 
@@ -4050,8 +4052,8 @@ function renderContratos(docs) {
     card += '</div>';
     card += '<div class="salvo-status-row">';
     card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '">' + (aprovado ? 'Assinado' : 'Pendente') + '</button>';
-    card += '<button class="btn-salvo btn-calendar" data-action="calendar" data-id="' + id + '" style="' + (aprovado ? '' : 'display:none') + '">&#128197; Google Calendar</button>';
-    card += '<button class="btn-salvo btn-whatsapp" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '" style="' + (aprovado ? '' : 'display:none') + '">&#128241; WhatsApp</button>';
+    card += '<button class="salvo-status btn-calendar" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
+    card += '<button class="salvo-status btn-whatsapp" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '">WhatsApp</button>';
     card += '</div>';
     card += '<div class="salvo-montagem-row" style="' + (aprovado ? '' : 'display:none') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
@@ -4131,11 +4133,7 @@ function toggleAprovadoContrato(id, atual) {
       card.setAttribute('data-aprovado', novoStatus);
       if (novoStatus) card.classList.add('aprovado'); else card.classList.remove('aprovado');
       var monRow = cardEl.querySelector('.salvo-montagem-row');
-      var calBtn = cardEl.querySelector('.btn-calendar');
-      var waBtn = cardEl.querySelector('.btn-whatsapp');
       if (monRow) monRow.style.display = novoStatus ? '' : 'none';
-      if (calBtn) calBtn.style.display = novoStatus ? '' : 'none';
-      if (waBtn) waBtn.style.display = novoStatus ? '' : 'none';
     }
   }
   if (novoStatus) {

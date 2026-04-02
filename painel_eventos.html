@@ -1199,13 +1199,13 @@ var _dragScrollInterval = null;
 
 function onDragStart(e, id) {
   _draggingId = id;
-  var card = document.querySelector('.evento-card[data-id="' + id + '"]');
-  if (card) {
-    // Usar o próprio card como fantasma mas com opacidade
-    e.dataTransfer.setDragImage(card, card.offsetWidth / 2, 20);
-    setTimeout(function() { card.classList.add('dragging'); }, 0);
-  }
+  // Suprimir fantasma — imagem transparente 1x1
+  var blank = document.createElement('canvas');
+  blank.width = 1; blank.height = 1;
+  e.dataTransfer.setDragImage(blank, 0, 0);
   e.dataTransfer.effectAllowed = 'move';
+  var card = document.querySelector('.evento-card[data-id="' + id + '"]');
+  if (card) card.classList.add('dragging');
   document.addEventListener('dragover', onDragScroll);
 }
 
