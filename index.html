@@ -23,7 +23,6 @@
     font-family: 'Barlow', sans-serif;
     background: var(--darker);
     color: var(--text);
-    min-height: 100vh;
   }
 
   header {
@@ -711,8 +710,10 @@
   .salvo-montagem-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 0.75rem; padding: 2px 4px; width: 110px; outline: none; }
   .salvo-montagem-input:focus { border-bottom-color: var(--gold); color: var(--text); }
   .salvo-montagem-input::placeholder { color: var(--muted); opacity: 0.6; }
-  .btn-calendar { border-color: var(--gold); color: var(--gold); }
-  .btn-calendar:hover { background: var(--gold); color: #111; }
+  .btn-calendar { border-color: var(--border); color: var(--muted); }
+  .btn-calendar:hover { background: var(--border); color: var(--text); }
+  .btn-calendar-ok { border-color: #4A90C8 !important; color: #4A90C8 !important; }
+  .btn-calendar-ok:hover { background: #4A90C8 !important; color: #fff !important; }
   .btn-whatsapp { border-color: #25D366; color: #25D366; }
   .btn-whatsapp:hover { background: #25D366; color: #fff; }
   .salvo-status:hover { opacity: 0.8; }
@@ -815,6 +816,58 @@
   }
 
   /* ── SWIPE NAVIGATION ── */
+  /* ── SALVOS: altura total da viewport com scroll interno ── */
+  #swipe-container,
+  #swipe-track {
+    height: 100%;
+  }
+  #swipe-track .main-panel {
+    height: 100%;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  header {
+    flex-shrink: 0;
+  }
+  #swipe-container {
+    flex: 1;
+    min-height: 0;
+  }
+  #panel-salvos {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #panel-salvos .container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding-bottom: 0;
+  }
+  #panel-salvos .card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  #salvos-lista,
+  #contratos-lista {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    padding-bottom: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
   #swipe-container {
     position: relative;
     overflow: hidden;
@@ -834,6 +887,12 @@
     width: calc(100% / 3);
     flex-shrink: 0;
     display: block !important;
+    height: 100%;
+    overflow-y: auto;
+  }
+  /* painel salvos gerencia o próprio scroll internamente */
+  #panel-salvos {
+    overflow-y: hidden !important;
   }
 
 
@@ -1471,9 +1530,10 @@ Revestimento</textarea>
     <div class="salvos-search-area" id="busca-con-area">
       <input class="salvos-search-input" id="busca-con-input" placeholder="Buscar por nome ou data (dd/mm/aaaa)..." oninput="filtrarContratos()" />
       <div class="salvos-filter-btns">
-        <button class="salvos-filter-btn" id="filtro-con-todos" onclick="setFiltroConStatus('todos')">Todos</button>
-        <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
         <button class="salvos-filter-btn" id="filtro-con-pendente" onclick="setFiltroConStatus('pendente')">Pendentes</button>
+        <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
+        <button class="salvos-filter-btn" id="filtro-con-andamento" onclick="setFiltroConStatus('andamento')">Em andamento</button>
+        <button class="salvos-filter-btn" id="filtro-con-concluido" onclick="setFiltroConStatus('concluido')">Concluídos</button>
       </div>
     </div>
     <!-- Sub-abas -->
@@ -4022,7 +4082,10 @@ function iniciarListenerContratos() {
 
   // Listener em tempo real para atualizar status dos botões conforme mudança de coluna no painel
   db.collection('eventos_campo').onSnapshot(function(snap) {
+    // Manter mapa global de etapas para uso nos filtros
+    snap.forEach(function(doc) { _etapaMapContratos[doc.id] = doc.data().etapa || 'eventos'; });
     snap.docChanges().forEach(function(change) {
+      if (change.type === 'removed') delete _etapaMapContratos[change.doc.id];
       var id = change.doc.id;
       var etapa = change.type === 'removed' ? '' : (change.doc.data().etapa || 'eventos');
       var btn = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + id + '"]');
@@ -4117,7 +4180,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '</div>';
     card += '<div class="salvo-status-row">';
     card += '<button class="salvo-status btn-whatsapp" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '">WhatsApp</button>';
-    card += '<button class="salvo-status btn-calendar" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
+    var calClass = doc.calendar_adicionado ? 'salvo-status btn-calendar btn-calendar-ok' : 'salvo-status btn-calendar';
+    card += '<button class="' + calClass + '" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
     card += '<button class="salvo-status' + statusClass + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '"' + (statusClickable ? '' : ' style="pointer-events:none"') + '>' + statusLabel + '</button>';
     card += '</div>';
     card += '<div class="salvo-montagem-row" style="' + (aprovado && etapa !== 'concluido' ? '' : 'display:none') + '">';
@@ -4264,6 +4328,7 @@ function baixarContratoJSON(id) {
 var _buscaAberta = false;
 var _filtroOrc = 'todos';
 var _filtroConStatus = 'todos';
+var _etapaMapContratos = {};
 var _todosOrcamentos = [];
 var _todosContratos = [];
 
@@ -4333,9 +4398,12 @@ function filtrarContratos() {
     var dataEvt = (doc.ev_data || '').split('-').reverse().join('/'); // dd/mm/aaaa
     var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0;
     var aprovado = doc.aprovado ? true : false;
+    var etapa = _etapaMapContratos[doc.id] || '';
     var matchStatus = _filtroConStatus === 'todos' ||
-      (_filtroConStatus === 'assinado' && aprovado) ||
-      (_filtroConStatus === 'pendente' && !aprovado);
+      (_filtroConStatus === 'pendente' && !aprovado) ||
+      (_filtroConStatus === 'assinado' && aprovado && etapa === 'eventos') ||
+      (_filtroConStatus === 'andamento' && etapa === 'andamento') ||
+      (_filtroConStatus === 'concluido' && etapa === 'concluido');
     return matchTexto && matchStatus;
   });
   renderContratos(filtrados);
@@ -4549,6 +4617,11 @@ function gerarLinkCalendar(id) {
       '&location=' + loc;
 
     window.open(url, '_blank');
+    // Marcar como adicionado ao calendário
+    db.collection('contratos').doc(id).update({ calendar_adicionado: true })
+      .catch(function(e) { console.warn('[AdQ] Erro ao salvar calendar_adicionado:', e); });
+    var calBtn = document.querySelector('.salvo-card [data-action="calendar"][data-id="' + id + '"]');
+    if (calBtn) calBtn.classList.add('btn-calendar-ok');
   });
 }
 
