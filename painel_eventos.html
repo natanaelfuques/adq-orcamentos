@@ -1030,7 +1030,7 @@ function carregarAcessos() {
         var aberto = primeiroAberto;
         primeiroAberto = false;
         html += '<div class="log-grupo' + (aberto ? ' aberto' : '') + '" id="log-grupo-' + cat.id + '">' +
-          '<div class="log-grupo-header" onclick="toggleLogGrupo('' + cat.id + '')">' +
+          '<div class="log-grupo-header" onclick="toggleLogGrupo(\'' + cat.id + '\')">' +
             '<span class="log-grupo-titulo">' + cat.titulo + '</span>' +
             '<span class="log-grupo-direita">' +
               '<span class="log-grupo-count">' + itens.length + '</span>' +
