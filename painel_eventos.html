@@ -1038,6 +1038,7 @@ function renderBoard() {
       card.addEventListener('dragstart', function(e) { onDragStart(e, card.dataset.id); });
       card.addEventListener('dragend', function() {
           card.classList.remove('dragging');
+          card.classList.remove('expanded');
           document.removeEventListener('dragover', onDragScroll);
           snapBoardToColumn();
         });
@@ -1314,10 +1315,14 @@ function onDropBoard(e) {
     if (dist < minDist) { minDist = dist; closest = col; }
   });
   if (closest) {
-    db.collection('eventos_campo').doc(_draggingId).update({ etapa: closest })
+    var draggedId = _draggingId;
+    _draggingId = null;
+    db.collection('eventos_campo').doc(draggedId).update({ etapa: closest })
       .catch(function(err) { console.error('[AdQ] Erro ao mover:', err); });
+    recolherCardAposDrop(draggedId);
+  } else {
+    _draggingId = null;
   }
-  _draggingId = null;
 }
 
 function onDragOver(e, col) {
@@ -1334,13 +1339,22 @@ function onDragLeave(e) {
   });
 }
 
+
+function recolherCardAposDrop(id) {
+  setTimeout(function() {
+    var card = document.querySelector('.evento-card[data-id="' + id + '"]');
+    if (card) card.classList.remove('expanded');
+  }, 100);
+}
 function onDrop(e, col) {
   e.preventDefault();
   onDragLeave(e);
   if (!_draggingId) return;
-  db.collection('eventos_campo').doc(_draggingId).update({ etapa: col })
-    .catch(function(err) { console.error('Erro ao mover card:', err); });
+  var draggedId = _draggingId;
   _draggingId = null;
+  db.collection('eventos_campo').doc(draggedId).update({ etapa: col })
+    .catch(function(err) { console.error('Erro ao mover card:', err); });
+  recolherCardAposDrop(draggedId);
 }
 
 // ── Item check ──
