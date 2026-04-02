@@ -244,15 +244,15 @@ header {
   border-radius: 10px;
 }
 
-.col-eventos { border-top: 3px solid var(--montar); }
-.col-andamento { border-top: 3px solid var(--andamento); }
-.col-concluido { border-top: 3px solid var(--concluido); }
+.col-eventos { border-top: none; }
+.col-andamento { border-top: none; }
+.col-concluido { border-top: none; }
 
 /* Barra visual de status no topo das colunas */
 .column-status-bar {
   height: 4px;
   width: 100%;
-  border-radius: 0;
+  border-radius: 8px 8px 0 0;
 }
 .col-eventos .column-status-bar {
   background: linear-gradient(90deg, var(--montar), rgba(74,144,200,0.4));
@@ -688,6 +688,29 @@ header {
   .acesso-user { font-size: 0.8rem; font-weight: 700; color: var(--text); }
   .acesso-meta { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
   .acessos-empty { padding: 20px 16px; text-align: center; color: var(--muted); font-size: 0.8rem; }
+  .log-grupo { border-bottom: 1px solid var(--border); }
+  .log-grupo:last-child { border-bottom: none; }
+  .log-grupo-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; cursor: pointer; user-select: none;
+    transition: background 0.15s;
+  }
+  .log-grupo-header:hover { background: rgba(255,255,255,0.03); }
+  .log-grupo-titulo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem; font-weight: 700;
+    color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .log-grupo-direita { display: flex; align-items: center; gap: 10px; }
+  .log-grupo-count {
+    font-size: 0.68rem; font-weight: 700;
+    color: #555; background: rgba(255,255,255,0.05);
+    padding: 1px 7px; border-radius: 10px;
+  }
+  .log-grupo-chevron { color: var(--muted); font-size: 0.6rem; transition: transform 0.2s; display: inline-block; }
+  .log-grupo.aberto .log-grupo-chevron { transform: rotate(180deg); }
+  .log-grupo-body { display: none; }
+  .log-grupo.aberto .log-grupo-body { display: block; }
 </style>
 
   <!-- PWA -->
@@ -917,7 +940,7 @@ function carregarAcessos() {
   var lista = document.getElementById('acessos-lista');
   lista.innerHTML = '<div class="acessos-empty">Carregando...</div>';
   db.collection('acessos_painel')
-    .limit(80)
+    .limit(200)
     .get().then(function(snap) {
       if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum registro ainda.</div>'; return; }
       var docs = [];
@@ -928,45 +951,106 @@ function carregarAcessos() {
         return tb - ta;
       });
 
-      // Labels por tipo — igual ao gerador
+      // Categorias e seus tipos
+      var categorias = [
+        {
+          id: 'status',
+          titulo: 'Status',
+          tipos: ['moveu_coluna', 'checklist_preencheu']
+        },
+        {
+          id: 'edicoes',
+          titulo: 'Edições',
+          tipos: ['adicionou', 'removeu', 'restaurou', 'removeu extra', 'alteracao_item']
+        },
+        {
+          id: 'sessao',
+          titulo: 'Sessão',
+          tipos: ['entrada', 'saida']
+        }
+      ];
+
+      // Labels e cores por tipo
       var tipoLabel = {
-        'entrada':         { label: '→ Entrada',          color: '#4AC87A' },
-        'saida':           { label: '← Saída',            color: '#888'    },
-        'alteracao_item':  { label: '✎ Alteração',        color: '#4A90C8' },
-        'adicionou':       { label: '+ Adicionou',        color: '#4AC87A' },
-        'removeu':         { label: '– Removeu',          color: '#e05c5c' },
-        'restaurou':       { label: '↩ Restaurou',        color: '#C8A94A' },
-        'removeu extra':   { label: '– Removeu extra',    color: '#e05c5c' }
+        'moveu_coluna':         { label: 'Moveu coluna',     cor: '#4A90C8' },
+        'checklist_preencheu':  { label: 'Preencheu checklist', cor: '#4AC87A' },
+        'adicionou':            { label: 'Adicionou',        cor: '#4AC87A' },
+        'removeu':              { label: 'Removeu',          cor: '#e05c5c' },
+        'restaurou':            { label: 'Restaurou',        cor: '#C8A94A' },
+        'removeu extra':        { label: 'Removeu extra',    cor: '#e05c5c' },
+        'alteracao_item':       { label: 'Alteração',        cor: '#4A90C8' },
+        'entrada':              { label: 'Entrada',          cor: '#4AC87A' },
+        'saida':                { label: 'Saída',            cor: '#888'    }
       };
 
-      var html = '';
-      docs.slice(0, 50).forEach(function(d) {
-        var ts = d.data && d.data.toDate ? d.data.toDate() : null;
-        var dataFmt = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '—';
-
-        // Determinar tipo/label
-        var tipoKey = d.tipo || d.acao || 'entrada';
-        if (d.tipo === 'alteracao_item' && d.acao) tipoKey = d.acao;
-        var t = tipoLabel[tipoKey] || { label: tipoKey, color: '#888' };
-
-        // Detalhe (nome do item alterado)
-        var detalhe = '';
-        if (d.item) detalhe = '<div style="font-size:0.68rem;color:#888;margin-top:1px">' + esc(d.item) + '</div>';
-
-        html += '<div class="acesso-item">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center">' +
-            '<span style="font-size:0.8rem;font-weight:700;color:' + t.color + '">' + t.label + '</span>' +
-            '<span style="font-size:0.7rem;color:#888">' + dataFmt + '</span>' +
-          '</div>' +
-          '<div style="font-size:0.72rem;color:#aaa;margin-top:1px">' + esc(d.usuario || d.email || '') + '</div>' +
-          detalhe +
-          '</div>';
+      // Índice tipo → categoria
+      var tipoParaCat = {};
+      categorias.forEach(function(cat) {
+        cat.tipos.forEach(function(t) { tipoParaCat[t] = cat.id; });
       });
-      lista.innerHTML = html;
+
+      // Agrupar
+      var grupos = {};
+      categorias.forEach(function(cat) { grupos[cat.id] = []; });
+
+      docs.forEach(function(d) {
+        var tipo = d.tipo || '';
+        var catId = tipoParaCat[tipo];
+        if (catId) grupos[catId].push(d);
+        // registros não mapeados são ignorados silenciosamente
+      });
+
+      // Renderizar item
+      function renderItem(d) {
+        var ts = d.data && d.data.toDate ? d.data.toDate() : null;
+        var dataFmt = ts
+          ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
+          : '—';
+        var tipo = d.tipo || '';
+        var tl = tipoLabel[tipo] || { label: tipo || '—', cor: '#888' };
+        var detalhe = '';
+        if (d.item) detalhe += '<span style="color:#666"> · ' + esc(d.item) + '</span>';
+        if (d.contexto) detalhe += '<span style="color:#444"> · ' + esc(d.contexto) + '</span>';
+        return '<div class="acesso-item">' +
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">' +
+            '<span style="font-size:0.75rem;font-weight:700;color:' + tl.cor + '">' + tl.label + '</span>' +
+            '<span style="font-size:0.67rem;color:#444;white-space:nowrap">' + dataFmt + '</span>' +
+          '</div>' +
+          '<div style="font-size:0.71rem;color:#777;margin-top:2px">' +
+            esc(d.usuario || d.email || '') + detalhe +
+          '</div>' +
+        '</div>';
+      }
+
+      var html = '';
+      var primeiroAberto = true;
+      categorias.forEach(function(cat) {
+        var itens = grupos[cat.id] || [];
+        if (itens.length === 0) return;
+        var aberto = primeiroAberto;
+        primeiroAberto = false;
+        html += '<div class="log-grupo' + (aberto ? ' aberto' : '') + '" id="log-grupo-' + cat.id + '">' +
+          '<div class="log-grupo-header" onclick="toggleLogGrupo('' + cat.id + '')">' +
+            '<span class="log-grupo-titulo">' + cat.titulo + '</span>' +
+            '<span class="log-grupo-direita">' +
+              '<span class="log-grupo-count">' + itens.length + '</span>' +
+              '<span class="log-grupo-chevron">▼</span>' +
+            '</span>' +
+          '</div>' +
+          '<div class="log-grupo-body">' + itens.map(renderItem).join('') + '</div>' +
+        '</div>';
+      });
+
+      lista.innerHTML = html || '<div class="acessos-empty">Nenhum registro encontrado.</div>';
     }).catch(function(e) {
       console.error('[Acessos]', e);
       lista.innerHTML = '<div class="acessos-empty">Erro ao carregar.</div>';
     });
+}
+
+function toggleLogGrupo(id) {
+  var el = document.getElementById('log-grupo-' + id);
+  if (el) el.classList.toggle('aberto');
 }
 
 // ── Board ──
@@ -1333,8 +1417,12 @@ function onDropBoard(e) {
   if (closest) {
     var draggedId = _draggingId;
     _draggingId = null;
+    var colLabels = { eventos: 'Eventos', andamento: 'Em Andamento', concluido: 'Concluído' };
+    var evBoard = _todosEventos.find(function(x) { return x.id === draggedId; });
+    var nomeBoard = evBoard ? (evBoard.ev_nome || draggedId) : draggedId;
     db.collection('eventos_campo').doc(draggedId).update({ etapa: closest })
       .catch(function(err) { console.error('[AdQ] Erro ao mover:', err); });
+    registrarLog('moveu_coluna', colLabels[closest] || closest, nomeBoard);
     recolherCardAposDrop(draggedId);
   } else {
     _draggingId = null;
@@ -1368,8 +1456,12 @@ function onDrop(e, col) {
   if (!_draggingId) return;
   var draggedId = _draggingId;
   _draggingId = null;
+  var colLabels = { eventos: 'Eventos', andamento: 'Em Andamento', concluido: 'Concluído' };
+  var ev = _todosEventos.find(function(x) { return x.id === draggedId; });
+  var nomeEvento = ev ? (ev.ev_nome || draggedId) : draggedId;
   db.collection('eventos_campo').doc(draggedId).update({ etapa: col })
     .catch(function(err) { console.error('Erro ao mover card:', err); });
+  registrarLog('moveu_coluna', colLabels[col] || col, nomeEvento);
   recolherCardAposDrop(draggedId);
 }
 
@@ -1380,6 +1472,7 @@ function toggleItem(evId, idx) {
   var itensOk = Object.assign({}, ev.itens_ok || {});
   itensOk[idx] = !itensOk[idx];
   db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
+  registrarLog('checklist_preencheu', '', ev.ev_nome || evId);
 }
 
 function removerItemOriginal(evId, idx) {
@@ -1408,16 +1501,19 @@ function removerItemExtra(evId, idx) {
 }
 
 function registrarAlteracao(evId, acao, item) {
+  registrarLog(acao, item, evId);
+}
+
+function registrarLog(tipo, item, contexto) {
   if (!db || !auth.currentUser) return;
   db.collection('acessos_painel').add({
-    email:    auth.currentUser.email,
-    usuario:  auth.currentUser.email.split('@')[0],
-    uid:      auth.currentUser.uid,
-    tipo:     'alteracao_item',
-    acao:     acao,
-    item:     item,
-    evento_id: evId,
-    data:     firebase.firestore.FieldValue.serverTimestamp()
+    email:     auth.currentUser.email,
+    usuario:   auth.currentUser.email.split('@')[0],
+    uid:       auth.currentUser.uid,
+    tipo:      tipo,
+    item:      item || '',
+    contexto:  contexto || '',
+    data:      firebase.firestore.FieldValue.serverTimestamp()
   });
 }
 </script>
