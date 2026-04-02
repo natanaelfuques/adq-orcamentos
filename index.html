@@ -901,6 +901,36 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
 .acesso-meta { font-size:0.72rem; color:#888; margin-top:2px; }
 .acessos-empty { padding:20px 16px; text-align:center; color:#888; font-size:0.8rem; }
 
+/* ── ACESSOS: GRUPOS COLAPSÁVEIS ── */
+.acesso-grupo { border-bottom:1px solid rgba(255,255,255,0.06); }
+.acesso-grupo:last-child { border-bottom:none; }
+.acesso-grupo-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 16px; cursor:pointer; user-select:none;
+  transition:background 0.15s;
+}
+.acesso-grupo-header:hover { background:rgba(255,255,255,0.04); }
+.acesso-grupo-title {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.72rem; font-weight:700; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--gold);
+}
+.acesso-grupo-right { display:flex; align-items:center; gap:8px; }
+.acesso-grupo-count {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.7rem; font-weight:700; letter-spacing:0.06em;
+  color:#555; background:rgba(255,255,255,0.05);
+  border:1px solid #333; border-radius:3px;
+  padding:1px 7px;
+}
+.acesso-grupo-arrow {
+  color:var(--gold); font-size:0.65rem;
+  transition:transform 0.2s; line-height:1;
+}
+.acesso-grupo-arrow.open { transform:rotate(180deg); }
+.acesso-grupo-body { display:none; }
+.acesso-grupo-body.open { display:block; }
+
 @media (max-width:640px) {
   header { padding:8px 14px; }
   .hd-title { font-size:1rem; }
@@ -3649,21 +3679,86 @@ function carregarAcessosGerador() {
   var lista = document.getElementById('acessos-lista-gerador');
   if (!lista) return;
   lista.innerHTML = '<div class="acessos-empty">Carregando...</div>';
-  db.collection('logs_gerador').limit(60).get().then(function(snap) {
+  db.collection('logs_gerador').limit(80).get().then(function(snap) {
     if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum registro ainda.</div>'; return; }
     var docs = [];
     snap.forEach(function(doc) { docs.push(doc.data()); });
     docs.sort(function(a, b) { return (b.data&&b.data.toDate?b.data.toDate().getTime():0)-(a.data&&a.data.toDate?a.data.toDate().getTime():0); });
-    var labels = { entrada:{label:'→ Entrada',color:'#4AC87A'}, saida:{label:'← Saída',color:'#888'}, 'salvar-orcamento':{label:'💾 Orçamento salvo',color:'#C8A94A'}, 'salvar-contrato':{label:'💾 Contrato salvo',color:'#C8A94A'}, 'excluir-orcamento':{label:'🗑 Orçamento excluído',color:'#e05c5c'}, 'excluir-contrato':{label:'🗑 Contrato excluído',color:'#e05c5c'} };
-    var html = '';
-    docs.slice(0,40).forEach(function(d) {
-      var ts = d.data&&d.data.toDate?d.data.toDate():null;
-      var fmt = ts?ts.toLocaleDateString('pt-BR')+' '+ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
-      var t = labels[d.tipo]||{label:d.tipo,color:'#888'};
-      html += '<div class="acesso-item"><div style="display:flex;justify-content:space-between"><span style="font-size:0.8rem;font-weight:700;color:'+t.color+'">'+t.label+'</span><span style="font-size:0.7rem;color:#888">'+fmt+'</span></div><div style="font-size:0.72rem;color:#aaa">'+( d.usuario||d.email)+'</div>'+(d.detalhe?'<div style="font-size:0.68rem;color:#888">'+d.detalhe+'</div>':'')+'</div>';
+
+    // Mapeamento tipo → grupo
+    var GRUPOS = [
+      { id:'status',         label:'Status',         tipos:['status-orcamento','status-contrato'] },
+      { id:'sessao',         label:'Sessão',          tipos:['entrada','saida'] },
+      { id:'orcamentos',     label:'Orçamentos',      tipos:['abrir-orcamento','salvar-orcamento','duplicar-orcamento','excluir-orcamento'] },
+      { id:'contratos',      label:'Contratos',       tipos:['abrir-contrato','salvar-contrato','duplicar-contrato','excluir-contrato'] },
+      { id:'compartilhamento', label:'Compartilhamento', tipos:['whatsapp','calendar'] }
+    ];
+
+    var labelMap = {
+      'entrada':             { label:'Entrada',              color:'#4AC87A' },
+      'saida':               { label:'Saída',                color:'#888' },
+      'status-orcamento':    { label:'Status orçamento',     color:'#C8A94A' },
+      'status-contrato':     { label:'Status contrato',      color:'#C8A94A' },
+      'abrir-orcamento':     { label:'Abrir orçamento',      color:'#aaa' },
+      'salvar-orcamento':    { label:'Salvar orçamento',     color:'#C8A94A' },
+      'duplicar-orcamento':  { label:'Duplicar orçamento',   color:'#aaa' },
+      'excluir-orcamento':   { label:'Excluir orçamento',    color:'#e05c5c' },
+      'abrir-contrato':      { label:'Abrir contrato',       color:'#aaa' },
+      'salvar-contrato':     { label:'Salvar contrato',      color:'#C8A94A' },
+      'duplicar-contrato':   { label:'Duplicar contrato',    color:'#aaa' },
+      'excluir-contrato':    { label:'Excluir contrato',     color:'#e05c5c' },
+      'whatsapp':            { label:'WhatsApp',             color:'#25D366' },
+      'calendar':            { label:'Google Calendar',      color:'#4A90C8' }
+    };
+
+    // Agrupar docs
+    var grupoMap = {};
+    GRUPOS.forEach(function(g) { grupoMap[g.id] = []; });
+
+    docs.forEach(function(d) {
+      GRUPOS.forEach(function(g) {
+        if (g.tipos.indexOf(d.tipo) !== -1) grupoMap[g.id].push(d);
+      });
     });
+
+    function fmtTs(d) {
+      var ts = d.data&&d.data.toDate?d.data.toDate():null;
+      return ts?ts.toLocaleDateString('pt-BR')+' '+ts.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
+    }
+
+    function renderItem(d) {
+      var t = labelMap[d.tipo]||{label:d.tipo,color:'#888'};
+      return '<div class="acesso-item"><div style="display:flex;justify-content:space-between"><span style="font-size:0.8rem;font-weight:700;color:'+t.color+'">'+t.label+'</span><span style="font-size:0.7rem;color:#888">'+fmtTs(d)+'</span></div><div style="font-size:0.72rem;color:#aaa">'+(d.usuario||d.email)+'</div>'+(d.detalhe?'<div style="font-size:0.68rem;color:#888">'+d.detalhe+'</div>':'')+'</div>';
+    }
+
+    var html = '';
+    var anyGroup = false;
+    GRUPOS.forEach(function(g) {
+      var items = grupoMap[g.id];
+      if (!items.length) return; // ocultar grupos sem registros
+      anyGroup = true;
+      html += '<div class="acesso-grupo">';
+      html += '<div class="acesso-grupo-header" onclick="toggleAcessoGrupo(this)">';
+      html += '<span class="acesso-grupo-title">'+g.label+'</span>';
+      html += '<span class="acesso-grupo-right"><span class="acesso-grupo-count">'+items.length+'</span><span class="acesso-grupo-arrow">▼</span></span>';
+      html += '</div>';
+      html += '<div class="acesso-grupo-body">';
+      items.forEach(function(d) { html += renderItem(d); });
+      html += '</div></div>';
+    });
+
+    if (!anyGroup) { lista.innerHTML = '<div class="acessos-empty">Nenhum registro ainda.</div>'; return; }
     lista.innerHTML = html;
   }).catch(function() { lista.innerHTML = '<div class="acessos-empty">Erro ao carregar.</div>'; });
+}
+
+function toggleAcessoGrupo(header) {
+  var arrow = header.querySelector('.acesso-grupo-arrow');
+  var body = header.parentElement.querySelector('.acesso-grupo-body');
+  if (!body) return;
+  var isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (arrow) arrow.classList.toggle('open', !isOpen);
 }
 
 function handleSalvosClick(e) {
@@ -3672,27 +3767,30 @@ function handleSalvosClick(e) {
   var action = btn.getAttribute('data-action');
   var id = btn.getAttribute('data-id');
   var nome = btn.getAttribute('data-nome') || '';
-  if (action === 'abrir') abrirSalvo(id);
-  else if (action === 'duplicar') duplicarSalvo(id);
+  if (action === 'abrir') { registrarLogGerador('abrir-orcamento', nome); abrirSalvo(id); }
+  else if (action === 'duplicar') { registrarLogGerador('duplicar-orcamento', nome); duplicarSalvo(id); }
   else if (action === 'excluir') excluirSalvo(id, nome);
   else if (action === 'status') {
     var ap = btn.getAttribute('data-aprovado') === 'true';
+    registrarLogGerador('status-orcamento', nome);
     toggleAprovado(id, ap);
   }
-  else if (action === 'abrir-contrato') abrirContrato(id);
-  else if (action === 'duplicar-contrato') duplicarContrato(id);
+  else if (action === 'abrir-contrato') { registrarLogGerador('abrir-contrato', nome); abrirContrato(id); }
+  else if (action === 'duplicar-contrato') { registrarLogGerador('duplicar-contrato', nome); duplicarContrato(id); }
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
-  else if (action === 'calendar') { btn.blur(); gerarLinkCalendar(id); }
+  else if (action === 'calendar') { btn.blur(); registrarLogGerador('calendar', nome); gerarLinkCalendar(id); }
   else if (action === 'whatsapp') {
     var fone = btn.getAttribute('data-fone') || '';
     var numero = fone.replace(/\D/g, '');
     if (!numero) { alert('Número de telefone não encontrado.'); return; }
     if (numero.length <= 11) numero = '55' + numero;
     btn.blur();
+    registrarLogGerador('whatsapp', nome);
     window.open('https://wa.me/' + numero, '_blank');
   }
   else if (action === 'status-contrato') {
     var ap2 = btn.getAttribute('data-aprovado') === 'true';
+    registrarLogGerador('status-contrato', nome);
     toggleAprovadoContrato(id, ap2);
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
