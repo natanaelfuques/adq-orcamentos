@@ -161,6 +161,31 @@ header {
 
 
 
+.btn-refresh {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 5px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh:hover { border-color: var(--gold); color: var(--gold); }
+.btn-sair {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
 .btn-sair:hover { border-color: #e55; color: #e55; }
 
 /* ── KANBAN BOARD ── */
@@ -729,11 +754,10 @@ header {
 
   <div class="periodo-bar">
     <button class="periodo-btn active" id="periodo-30dias" onclick="setPeriodo('30dias')">30 dias</button>
-    <button class="periodo-btn" id="periodo-ano" onclick="setPeriodo('ano')">Este ano</button>
     <button class="periodo-btn" id="periodo-todos" onclick="setPeriodo('todos')">Todos</button>
     <button class="periodo-btn" id="periodo-realizados" onclick="setPeriodo('realizados')">Realizados</button>
   </div>
-  <div class="board-container">
+  <div class="board-container" ondragover="onDragOverBoard(event)" ondrop="onDropBoard(event)">
     <div class="board">
       <!-- EVENTOS -->
       <div class="column col-eventos" id="col-eventos" ondragover="onDragOver(event,'eventos')" ondrop="onDrop(event,'eventos')" ondragleave="onDragLeave(event)">
@@ -1175,12 +1199,13 @@ var _dragScrollInterval = null;
 
 function onDragStart(e, id) {
   _draggingId = id;
-  setTimeout(function() {
-    var card = document.querySelector('[data-id="' + id + '"]');
-    if (card) card.classList.add('dragging');
-  }, 0);
+  var card = document.querySelector('.evento-card[data-id="' + id + '"]');
+  if (card) {
+    // Usar o próprio card como fantasma mas com opacidade
+    e.dataTransfer.setDragImage(card, card.offsetWidth / 2, 20);
+    setTimeout(function() { card.classList.add('dragging'); }, 0);
+  }
   e.dataTransfer.effectAllowed = 'move';
-  // Enable edge scroll during drag
   document.addEventListener('dragover', onDragScroll);
 }
 
@@ -1207,6 +1232,36 @@ function snapBoardToColumn() {
   var nearest = Math.floor(current + 0.2);
   nearest = Math.max(0, Math.min(2, nearest));
   board.scrollTo({ left: nearest * colW, behavior: 'smooth' });
+}
+
+function onDragOverBoard(e) {
+  // Permite drop na área vazia do board
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function onDropBoard(e) {
+  // Solto em área vazia — mover para coluna mais próxima visível
+  e.preventDefault();
+  onDragLeave(e);
+  if (!_draggingId) return;
+  // Descobrir qual coluna está mais próxima do ponto de drop
+  var cols = ['eventos', 'andamento', 'concluido'];
+  var closest = cols[0];
+  var minDist = Infinity;
+  cols.forEach(function(col) {
+    var el = document.getElementById('col-' + col);
+    if (!el) return;
+    var rect = el.getBoundingClientRect();
+    var cx = rect.left + rect.width / 2;
+    var dist = Math.abs(e.clientX - cx);
+    if (dist < minDist) { minDist = dist; closest = col; }
+  });
+  if (closest) {
+    db.collection('eventos_campo').doc(_draggingId).update({ etapa: closest })
+      .catch(function(err) { console.error('[AdQ] Erro ao mover:', err); });
+  }
+  _draggingId = null;
 }
 
 function onDragOver(e, col) {

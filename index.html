@@ -4424,15 +4424,11 @@ function gerarLinkCalendar(id) {
 
     var title = encodeURIComponent(evento + ' — ' + nome);
     var details = encodeURIComponent(
-      (montagem ? 'Montagem: ' + montagem + '
-' : '') +
+      (montagem ? 'Montagem: ' + montagem + '\n' : '') +
       (inicio ? 'Início: ' + inicio : '') +
-      (fim ? ' | Término: ' + fim : '') + '
-' +
-      (desmontagem ? 'Desmontagem: ' + desmontagem + '
-' : '') +
-      (servicos ? '
-Serviços: ' + servicos : '')
+      (fim ? ' | Término: ' + fim : '') + '\n' +
+      (desmontagem ? 'Desmontagem: ' + desmontagem + '\n' : '') +
+      (servicos ? '\nServiços: ' + servicos : '')
     );
     var loc = encodeURIComponent(local);
 
