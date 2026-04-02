@@ -3681,28 +3681,32 @@ function initFirebase(config) {
     if (!firebase.apps.length) firebase.initializeApp(config);
     db = firebase.firestore();
     var auth = firebase.auth();
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     var ALLOWED = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
-    auth.onAuthStateChanged(function(user) {
-      if (user && ALLOWED.indexOf(user.email) !== -1) {
-        document.getElementById('gerador-login-screen').style.display = 'none';
-        document.getElementById('gerador-app').style.display = 'block';
-        var hu = document.getElementById('header-user');
-        if (hu) hu.textContent = user.email.split('@')[0];
-        var bs = document.getElementById('btn-gerador-sair');
-        if (bs) bs.style.display = 'inline-block';
-        if (user.email === 'natanael.fuques@gmail.com') {
-          var ba = document.getElementById('btn-gerador-acessos');
-          if (ba) ba.style.display = 'inline-flex';
+
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function() {
+      auth.onAuthStateChanged(function(user) {
+        if (user && ALLOWED.indexOf(user.email) !== -1) {
+          document.getElementById('gerador-login-screen').style.display = 'none';
+          document.getElementById('gerador-app').style.display = 'block';
+          var hu = document.getElementById('header-user');
+          if (hu) hu.textContent = user.email.split('@')[0];
+          var bs = document.getElementById('btn-gerador-sair');
+          if (bs) bs.style.display = 'inline-block';
+          if (user.email === 'natanael.fuques@gmail.com') {
+            var ba = document.getElementById('btn-gerador-acessos');
+            if (ba) ba.style.display = 'inline-flex';
+          }
+          registrarAcessoGerador(user);
+          iniciarListenerSalvos();
+          iniciarConnIndicator();
+        } else {
+          if (user) auth.signOut();
+          document.getElementById('gerador-login-screen').style.display = 'flex';
+          document.getElementById('gerador-app').style.display = 'none';
         }
-        registrarAcessoGerador(user);
-        iniciarListenerSalvos();
-        iniciarConnIndicator();
-      } else {
-        if (user) auth.signOut();
-        document.getElementById('gerador-login-screen').style.display = 'flex';
-        document.getElementById('gerador-app').style.display = 'none';
-      }
+      });
+    }).catch(function(e) {
+      console.warn('[AdQ] setPersistence erro:', e);
     });
   } catch(e) {
     console.warn('[AdQ] Firebase erro:', e);
@@ -3727,15 +3731,20 @@ function geradorFazerLogin() {
   if (!email || !senha) { err.textContent = 'Preencha e-mail e senha.'; err.style.display = 'block'; return; }
   btn.disabled = true; btn.textContent = 'Entrando...'; err.style.display = 'none';
   var ALLOWED = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
-  firebase.auth().signInWithEmailAndPassword(email, senha).then(function(cred) {
+  var auth = firebase.auth();
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function() {
+    return auth.signInWithEmailAndPassword(email, senha);
+  }).then(function(cred) {
     if (ALLOWED.indexOf(cred.user.email) === -1) {
-      firebase.auth().signOut();
-      err.textContent = 'Acesso não autorizado para este e-mail.'; err.style.display = 'block';
+      auth.signOut();
+      err.textContent = 'Acesso não autorizado para este e-mail.';
+      err.style.display = 'block';
       btn.disabled = false; btn.textContent = 'Entrar';
     }
-    // Se autorizado, o onAuthStateChanged cuida de exibir o app
+    // Se autorizado, onAuthStateChanged cuida do resto
   }).catch(function() {
-    err.textContent = 'E-mail ou senha incorretos.'; err.style.display = 'block';
+    err.textContent = 'E-mail ou senha incorretos.';
+    err.style.display = 'block';
     btn.disabled = false; btn.textContent = 'Entrar';
   });
 }
