@@ -885,7 +885,35 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
 .hd-user { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; }
 .hd-date { font-size:0.62rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; white-space:nowrap; }
 
-/* ── ACESSOS ── */
+/* ── STATUS ONLINE/OFFLINE ── */
+#conn-indicator {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  transition: border-color 0.3s, background 0.3s;
+  cursor: default;
+}
+#conn-indicator.online  { border-color: #2a4a2a; background: rgba(74,200,122,0.07); }
+#conn-indicator.offline { border-color: #4a2a2a; background: rgba(224,92,92,0.09); }
+#conn-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+#conn-indicator.online  #conn-dot { background: #4AC87A; box-shadow: 0 0 5px rgba(74,200,122,0.5); }
+#conn-indicator.offline #conn-dot { background: #e05c5c; box-shadow: 0 0 4px rgba(224,92,92,0.4); }
+#conn-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  transition: color 0.3s;
+  white-space: nowrap;
+}
+#conn-indicator.online  #conn-label { color: #4AC87A; }
+#conn-indicator.offline #conn-label { color: #e05c5c; }
 .btn-acessos { background:transparent; border:1px solid #444; color:#aaa; border-radius:4px; padding:4px 8px; cursor:pointer; display:none; align-items:center; gap:5px; font-family:'Barlow',sans-serif; font-size:0.7rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; }
 .btn-acessos:hover { border-color:var(--gold); color:var(--gold); }
 .acessos-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:200; align-items:flex-start; justify-content:flex-end; padding:60px 16px 16px; }
@@ -977,6 +1005,10 @@ header { background:var(--dark); border-bottom:2px solid var(--gold); padding:12
   <div class="hd-right">
     <div class="hd-actions">
       <span class="hd-user" id="header-user"></span>
+      <div id="conn-indicator" title="Status da conexão">
+        <div id="conn-dot"></div>
+        <span id="conn-label">Online</span>
+      </div>
       <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico">
         <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="3" r="2.2"/><circle cx="9.5" cy="3" r="2.2"/><path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/><path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/></svg>
       </button>
@@ -3624,6 +3656,7 @@ function initFirebase(config) {
         }
         registrarAcessoGerador(user);
         iniciarListenerSalvos();
+        iniciarConnIndicator();
       } else {
         if (user) auth.signOut();
         document.getElementById('gerador-login-screen').style.display = 'flex';
@@ -3650,6 +3683,36 @@ function geradorFazerLogin() {
     err.textContent = 'E-mail ou senha incorretos.'; err.style.display = 'block';
     btn.disabled = false; btn.textContent = 'Entrar';
   });
+}
+
+function iniciarConnIndicator() {
+  var el = document.getElementById('conn-indicator');
+  if (!el) return;
+  el.style.display = 'inline-flex';
+
+  function setOnline(on) {
+    el.className = on ? 'online' : 'offline';
+    document.getElementById('conn-label').textContent = on ? 'Online' : 'Offline';
+  }
+
+  // Estado inicial via browser
+  setOnline(navigator.onLine);
+
+  // Eventos de rede do browser
+  window.addEventListener('online',  function() { setOnline(true); });
+  window.addEventListener('offline', function() { setOnline(false); });
+
+  // Firestore .info/connected (Realtime-style não existe no Firestore, mas podemos usar
+  // um heartbeat rápido: tentar ler um doc minúsculo periodicamente)
+  if (db) {
+    function heartbeat() {
+      db.collection('logs_gerador').limit(1).get({ source: 'server' })
+        .then(function() { setOnline(true); })
+        .catch(function() { setOnline(false); });
+    }
+    // Checar a cada 30s
+    setInterval(heartbeat, 30000);
+  }
 }
 
 function registrarLogGerador(tipo, detalhe) {
@@ -3691,14 +3754,14 @@ function carregarAcessosGerador() {
       { id:'sessao',         label:'Sessão',          tipos:['entrada','saida'] },
       { id:'orcamentos',     label:'Orçamentos',      tipos:['abrir-orcamento','salvar-orcamento','duplicar-orcamento','excluir-orcamento'] },
       { id:'contratos',      label:'Contratos',       tipos:['abrir-contrato','salvar-contrato','duplicar-contrato','excluir-contrato'] },
-      { id:'compartilhamento', label:'Compartilhamento', tipos:['whatsapp','calendar'] }
+      { id:'compartilhamento', label:'Links Externos', tipos:['whatsapp','calendar'] }
     ];
 
     var labelMap = {
       'entrada':             { label:'Entrada',              color:'#4AC87A' },
       'saida':               { label:'Saída',                color:'#888' },
-      'status-orcamento':    { label:'Status orçamento',     color:'#C8A94A' },
-      'status-contrato':     { label:'Status contrato',      color:'#C8A94A' },
+      'status-orcamento':    { label:'Status orçamento',     color:'#4A90C8' },
+      'status-contrato':     { label:'Status contrato',      color:'#4A90C8' },
       'abrir-orcamento':     { label:'Abrir orçamento',      color:'#aaa' },
       'salvar-orcamento':    { label:'Salvar orçamento',     color:'#C8A94A' },
       'duplicar-orcamento':  { label:'Duplicar orçamento',   color:'#aaa' },
