@@ -23,6 +23,7 @@
     font-family: 'Barlow', sans-serif;
     background: var(--darker);
     color: var(--text);
+    min-height: 100vh;
   }
 
   header {
@@ -816,62 +817,23 @@
   }
 
   /* ── SWIPE NAVIGATION ── */
-  /* ── SALVOS: altura total da viewport com scroll interno ── */
-  #swipe-container,
-  #swipe-track {
-    height: 100%;
-  }
-  #swipe-track .main-panel {
-    height: 100%;
-  }
-  body {
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
-    overflow: hidden;
-  }
-  header {
-    flex-shrink: 0;
-  }
-  #swipe-container {
-    flex: 1;
-    min-height: 0;
-  }
-  #panel-salvos {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  #panel-salvos .container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    padding-bottom: 0;
-  }
-  #panel-salvos .card {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
-  #salvos-lista,
-  #contratos-lista {
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
-    padding-bottom: 16px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
-
   #swipe-container {
     position: relative;
     overflow: hidden;
     width: 100%;
+  }
+
+  /* ── SALVOS: scroll interno na lista ── */
+  #panel-salvos .card {
+    display: flex;
+    flex-direction: column;
+  }
+  #salvos-lista,
+  #contratos-lista {
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
   #swipe-track {
     display: flex;
@@ -887,12 +849,6 @@
     width: calc(100% / 3);
     flex-shrink: 0;
     display: block !important;
-    height: 100%;
-    overflow-y: auto;
-  }
-  /* painel salvos gerencia o próprio scroll internamente */
-  #panel-salvos {
-    overflow-y: hidden !important;
   }
 
 
