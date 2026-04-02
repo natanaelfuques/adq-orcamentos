@@ -717,10 +717,7 @@
   .btn-calendar-ok:hover { background: #4A90C8 !important; color: #fff !important; }
   .btn-whatsapp { border-color: #25D366; color: #25D366; }
   .btn-whatsapp:hover { background: #25D366; color: #fff; }
-  .btn-whatsapp:focus, .btn-calendar:focus { outline: none; }
-  .btn-whatsapp:active, .btn-calendar:active { opacity: 0.7; }
-  .btn-whatsapp:not(:active), .btn-calendar:not(:active) { -webkit-tap-highlight-color: transparent; }
-  .salvo-status { -webkit-tap-highlight-color: transparent; }
+  .btn-whatsapp, .btn-calendar { -webkit-tap-highlight-color: transparent; }
   .salvo-status:hover { opacity: 0.8; }
 
 
@@ -3682,13 +3679,16 @@ function handleSalvosClick(e) {
   else if (action === 'abrir-contrato') abrirContrato(id);
   else if (action === 'duplicar-contrato') duplicarContrato(id);
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
-  else if (action === 'calendar') { btn.blur(); gerarLinkCalendar(id); }
+  else if (action === 'calendar') {
+    var c1 = btn.cloneNode(true); btn.parentNode.replaceChild(c1, btn);
+    gerarLinkCalendar(id);
+  }
   else if (action === 'whatsapp') {
     var fone = btn.getAttribute('data-fone') || '';
     var numero = fone.replace(/\D/g, '');
     if (!numero) { alert('Número de telefone não encontrado.'); return; }
     if (numero.length <= 11) numero = '55' + numero;
-    btn.blur();
+    var c2 = btn.cloneNode(true); btn.parentNode.replaceChild(c2, btn);
     window.open('https://wa.me/' + numero, '_blank');
   }
   else if (action === 'status-contrato') {
