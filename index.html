@@ -717,6 +717,7 @@
   .btn-calendar-ok:hover { background: #4A90C8 !important; color: #fff !important; }
   .btn-whatsapp { border-color: #25D366; color: #25D366; }
   .btn-whatsapp:hover { background: #25D366; color: #fff; }
+  .btn-whatsapp:focus, .btn-calendar:focus { outline: none; }
   .salvo-status:hover { opacity: 0.8; }
 
 
@@ -830,7 +831,7 @@
   }
   #salvos-lista,
   #contratos-lista {
-    max-height: calc(100vh - 220px);
+    max-height: calc(100vh - 300px);
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
@@ -838,7 +839,7 @@
   @media (min-width: 600px) {
     #salvos-lista,
     #contratos-lista {
-      max-height: calc(100vh - 160px);
+      max-height: calc(100vh - 220px);
     }
   }
   #swipe-track {
@@ -1500,8 +1501,8 @@ Revestimento</textarea>
     </div>
     <!-- Sub-abas -->
     <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px">
-      <button id="salvos-tab-orc" onclick="if(window._goToVirtual)_goToVirtual(1,false);else switchSalvosTab('orcamentos')" class="salvos-sub-tab active-sub-tab">Orçamentos</button>
-      <button id="salvos-tab-con" onclick="if(window._goToVirtual)_goToVirtual(2,false);else switchSalvosTab('contratos')" class="salvos-sub-tab">Contratos</button>
+      <button id="salvos-tab-orc" onclick="switchSalvosTab('orcamentos')" class="salvos-sub-tab active-sub-tab">Orçamentos</button>
+      <button id="salvos-tab-con" onclick="switchSalvosTab('contratos')" class="salvos-sub-tab">Contratos</button>
     </div>
     <div id="salvos-lista">
       <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
@@ -2751,15 +2752,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // Recalc total
   recalcDetTotal();
 
-  // Auto-resize on input
+  // Auto-resize all textareas on load and on input
   document.querySelectorAll('textarea').forEach(function(ta) {
+    autoResize(ta);
     ta.addEventListener('input', function() { autoResize(this); });
-  });
-  // Resize apos render completo (paineis ocultos retornam scrollHeight=0 antes)
-  requestAnimationFrame(function() {
-    requestAnimationFrame(function() {
-      document.querySelectorAll('textarea').forEach(function(ta) { autoResize(ta); });
-    });
   });
 });
 // ── NAVEGAÇÃO PRINCIPAL ──
@@ -3672,12 +3668,13 @@ function handleSalvosClick(e) {
   else if (action === 'abrir-contrato') abrirContrato(id);
   else if (action === 'duplicar-contrato') duplicarContrato(id);
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
-  else if (action === 'calendar') gerarLinkCalendar(id);
+  else if (action === 'calendar') { btn.blur(); gerarLinkCalendar(id); }
   else if (action === 'whatsapp') {
     var fone = btn.getAttribute('data-fone') || '';
     var numero = fone.replace(/\D/g, '');
     if (!numero) { alert('Número de telefone não encontrado.'); return; }
     if (numero.length <= 11) numero = '55' + numero;
+    btn.blur();
     window.open('https://wa.me/' + numero, '_blank');
   }
   else if (action === 'status-contrato') {
@@ -4381,17 +4378,8 @@ function filtrarContratos() {
 
 
 // ═══ SWIPE NAVIGATION (Instagram style) ═══
-// Fluxo virtual: 0=orcamento | 1=salvos(orcamentos) | 2=salvos(contratos) | 3=contrato
-// Posicoes 1 e 2 apontam para o mesmo painel fisico (salvos) — sem animacao entre elas.
 (function(){
-  var VIRTUAL = [
-    { phys: 0, salvosTab: null         },
-    { phys: 1, salvosTab: 'orcamentos' },
-    { phys: 1, salvosTab: 'contratos'  },
-    { phys: 2, salvosTab: null         }
-  ];
-  var PHYS_TABS = ['orcamento', 'salvos', 'contrato'];
-  var TOTAL_VIRTUAL = VIRTUAL.length;
+  var tabs = ['orcamento', 'salvos', 'contrato'];
   var currentIdx = 0;
   var track = null;
   var touchStartX = 0;
@@ -4400,56 +4388,41 @@ function filtrarContratos() {
   var isDragging = false;
   var isHorizontal = null;
 
-  function getTrackWidth() { return window.innerWidth; }
+  function getTrackWidth() {
+    return window.innerWidth;
+  }
 
   function setTranslate(x, animate) {
     if (!track) return;
-    if (animate) { track.classList.add('animating'); }
-    else         { track.classList.remove('animating'); }
+    if (animate) {
+      track.classList.add('animating');
+    } else {
+      track.classList.remove('animating');
+    }
     track.style.transform = 'translateX(' + x + 'px)';
   }
 
-  function goToVirtual(vIdx, animate) {
-    if (vIdx < 0 || vIdx >= TOTAL_VIRTUAL) return;
-    var prevPhys = VIRTUAL[currentIdx].phys;
-    currentIdx = vIdx;
-    var map = VIRTUAL[vIdx];
-    var physIdx = map.phys;
-
-    // Se a transicao e entre dois virtuais no mesmo painel fisico (ex: salvos 1<->2),
-    // nao animar o track — evita efeito estranho sem deslocamento real.
-    var samePhys = (physIdx === prevPhys);
-    currentTranslate = -physIdx * getTrackWidth();
-    setTranslate(currentTranslate, samePhys ? false : animate);
-
-    // Highlight nav principal
+  function goToTab(idx, animate) {
+    if (idx < 0 || idx >= tabs.length) return;
+    currentIdx = idx;
+    currentTranslate = -idx * getTrackWidth();
+    setTranslate(currentTranslate, animate);
+    // Update nav
     document.querySelectorAll('.main-tab-btn').forEach(function(b) { b.classList.remove('active'); });
-    var btn = document.getElementById('main-btn-' + PHYS_TABS[physIdx]);
+    var btn = document.getElementById('main-btn-' + tabs[idx]);
     if (btn) btn.classList.add('active');
-    window._currentTab = PHYS_TABS[physIdx];
-
-    // Trocar sub-aba de salvos se necessario
-    if (map.salvosTab && typeof switchSalvosTab === 'function') {
-      switchSalvosTab(map.salvosTab);
-    }
-
-    // Atualizar contador ao entrar em salvos
-    if (physIdx === 1 && typeof atualizarContadorSalvos === 'function') {
+    window._currentTab = tabs[idx];
+    // Update salvos if needed
+    if (tabs[idx] === 'salvos' && typeof atualizarContadorSalvos === 'function') {
       atualizarContadorSalvos();
       if (typeof atualizarAreaBusca === 'function') atualizarAreaBusca();
-    }
 
-    // Re-resize textareas ao voltar para orcamento
-    if (physIdx === 0) {
-      requestAnimationFrame(function() {
-        document.querySelectorAll('#panel-orcamento textarea').forEach(function(ta) { autoResize(ta); });
-      });
     }
   }
 
   document.addEventListener('DOMContentLoaded', function() {
     track = document.getElementById('swipe-track');
-    goToVirtual(0, false);
+    goToTab(0, false);
 
     track.addEventListener('touchstart', function(e) {
       touchStartX = e.touches[0].clientX;
@@ -4464,33 +4437,21 @@ function filtrarContratos() {
       var dx = e.touches[0].clientX - touchStartX;
       var dy = e.touches[0].clientY - touchStartY;
 
+      // Determine direction on first significant move
       if (isHorizontal === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
         isHorizontal = Math.abs(dx) > Math.abs(dy);
       }
+
       if (!isHorizontal) return;
+
       e.preventDefault();
 
-      // Se estamos numa transicao entre virtuais do mesmo painel fisico,
-      // nao arrastar o track — apenas registrar o gesto para decidir no touchend.
-      var physIdx = VIRTUAL[currentIdx].phys;
-      var nextVirtLeft  = currentIdx - 1;
-      var nextVirtRight = currentIdx + 1;
-      var nextPhysLeft  = nextVirtLeft  >= 0            ? VIRTUAL[nextVirtLeft].phys  : -1;
-      var nextPhysRight = nextVirtRight < TOTAL_VIRTUAL ? VIRTUAL[nextVirtRight].phys : -1;
-      var movingLeft    = dx > 0;
-      var targetPhys    = movingLeft ? nextPhysLeft : nextPhysRight;
-      var samePhysMove  = (targetPhys === physIdx);
-
-      if (samePhysMove) {
-        // Nao mover o track — a troca sera instantanea no touchend
-        return;
-      }
-
-      var baseX = -physIdx * getTrackWidth();
-      var newX = baseX + dx;
-      var minX = -(PHYS_TABS.length - 1) * getTrackWidth();
-      if (newX > 0)    newX = dx * 0.2;
+      // Resistance at edges
+      var newX = currentTranslate + dx;
+      var minX = -(tabs.length - 1) * getTrackWidth();
+      if (newX > 0) newX = dx * 0.2;
       if (newX < minX) newX = minX + (newX - minX) * 0.2;
+
       setTranslate(newX, false);
     }, {passive: false});
 
@@ -4499,29 +4460,24 @@ function filtrarContratos() {
       isDragging = false;
       var dx = e.changedTouches[0].clientX - touchStartX;
       var threshold = getTrackWidth() * 0.3;
+      var velocity = dx; // simplified
 
-      if (dx < -threshold && currentIdx < TOTAL_VIRTUAL - 1) {
-        goToVirtual(currentIdx + 1, true);
+      if (dx < -threshold && currentIdx < tabs.length - 1) {
+        goToTab(currentIdx + 1, true);
       } else if (dx > threshold && currentIdx > 0) {
-        goToVirtual(currentIdx - 1, true);
+        goToTab(currentIdx - 1, true);
       } else {
-        goToVirtual(currentIdx, true);
+        goToTab(currentIdx, true); // snap back
       }
     }, {passive: true});
   });
 
-  // Override switchMain
+  // Override switchMain to use track
   window._switchMainOriginal = window.switchMain;
-  window.switchMain = function(name) {
-    if (name === 'orcamento') { goToVirtual(0, true); }
-    else if (name === 'salvos') {
-      var target = (typeof _salvosTab !== 'undefined' && _salvosTab === 'contratos') ? 2 : 1;
-      goToVirtual(target, true);
-    }
-    else if (name === 'contrato') { goToVirtual(3, true); }
+  window.switchMain = function(name, direction) {
+    var idx = tabs.indexOf(name);
+    if (idx >= 0) goToTab(idx, true);
   };
-
-  window._goToVirtual = goToVirtual;
 })();
 
 // ═══ SINCRONIZAÇÃO PAINEL ═══
