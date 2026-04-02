@@ -702,14 +702,14 @@
     transition: all 0.15s;
     margin-top: 8px;
   }
-  .salvo-status.aprovado { border-color: #4caf50; color: #4caf50; }
+  .salvo-status.aprovado { border-color: #4A90C8; color: #4A90C8; }
   .salvo-status-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
   .salvo-montagem-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
   .salvo-montagem-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 0.75rem; padding: 2px 4px; width: 110px; outline: none; }
   .salvo-montagem-input:focus { border-bottom-color: var(--gold); color: var(--text); }
   .salvo-montagem-input::placeholder { color: var(--muted); opacity: 0.6; }
-  .btn-calendar { border-color: #4A90C8; color: #4A90C8; }
-  .btn-calendar:hover { background: #4A90C8; color: #fff; }
+  .btn-calendar { border-color: var(--gold); color: var(--gold); }
+  .btn-calendar:hover { background: var(--gold); color: #111; }
   .btn-whatsapp { border-color: #25D366; color: #25D366; }
   .btn-whatsapp:hover { background: #25D366; color: #fff; }
   .salvo-status:hover { opacity: 0.8; }
@@ -4399,38 +4399,76 @@ function gerarLinkCalendar(id) {
   db.collection('contratos').doc(id).get().then(function(doc) {
     if (!doc.exists) return;
     var d = doc.data();
-    var nome = d.cli_nome || 'Cliente';
-    var evento = d.ev_nome || 'Evento';
-    var local = d.ev_local || '';
-    var data = d.ev_data || '';
-    var inicio = d.ev_inicio || '';
-    var fim = d.ev_fim || '';
-    var montagem = d.montagem || '';
-    var desmontagem = d.desmontagem || '';
-    var servicos = (d.servicos || []).join(', ');
+    var nome      = d.cli_nome   || 'Cliente';
+    var evento    = d.ev_nome    || 'Evento';
+    var resp      = d.ev_resp    || '';
+    var local     = d.ev_local   || '';
+    var data      = d.ev_data    || '';
+    var inicio    = d.ev_inicio  || '';
+    var fim       = d.ev_fim     || '';
+    var montagem  = d.montagem   || '';
+    var desm      = d.desmontagem|| '';
+    var total     = d.val_total  || '';
+    var pgtoSel   = d.pgto_sel   || 'vista';
+    var nparcelas = d.nparcelas  || '';
+    var pgtoCustom= d.pgto_custom|| '';
+    var servicos  = d.servicos   || [];
 
-    // Formatar data para Google Calendar (YYYYMMDD)
+    // ── Data para Google Calendar (YYYYMMDD) ──
     var dateStr = '';
     if (data) {
-      var parts = data.split('-');
-      if (parts.length === 3) dateStr = parts[0] + parts[1] + parts[2];
+      var pts = data.split('-');
+      if (pts.length === 3) dateStr = pts[0] + pts[1] + pts[2];
+    }
+    var startTime = dateStr && inicio ? dateStr + 'T' + inicio.replace(':', '') + '00' : dateStr;
+    var endTime   = dateStr && fim    ? dateStr + 'T' + fim.replace(':', '')    + '00' : (dateStr || '');
+    var dates = (startTime && endTime) ? startTime + '/' + endTime : (dateStr ? dateStr + '/' + dateStr : '');
+
+    // ── Texto de pagamento ──
+    var valNum = parseFloat((total || '0').replace(/\./g,'').replace(',','.')) || 0;
+    var fmtVal = function(v) { return 'R$ ' + v.toFixed(2).replace('.',',').replace(/(\d)(?=(\d{3})+,)/g,'$1.'); };
+    var pgtoTexto = '';
+    if (pgtoSel === 'vista') {
+      pgtoTexto = 'À vista na assinatura: ' + (total ? 'R$ ' + total : '______');
+    } else if (pgtoSel === 'metade') {
+      var metade = valNum > 0 ? fmtVal(valNum * 0.5) : '50%';
+      pgtoTexto = '50% na assinatura (' + metade + ') + 50% até 5 dias antes (' + metade + ')';
+    } else if (pgtoSel === 'entrada') {
+      var ent = valNum > 0 ? fmtVal(valNum * 0.2) : '20%';
+      var sal = valNum > 0 ? fmtVal(valNum * 0.8) : 'saldo';
+      pgtoTexto = 'Entrada 20% (' + ent + ') + saldo (' + sal + ') até 5 dias antes';
+    } else if (pgtoSel === 'parcelado') {
+      var ent2 = valNum > 0 ? fmtVal(valNum * 0.2) : '20%';
+      var sal2 = valNum > 0 ? fmtVal(valNum * 0.8) : 'saldo';
+      var n = parseInt(nparcelas) || 0;
+      var parcVal = (valNum > 0 && n > 0) ? fmtVal((valNum * 0.8) / n) : '______';
+      pgtoTexto = 'Entrada 20% (' + ent2 + ') + ' + (n || '?') + 'x de ' + parcVal;
+    } else if (pgtoSel === 'custom') {
+      pgtoTexto = pgtoCustom || 'Personalizado';
     }
 
-    // Horários
-    var startTime = dateStr && inicio ? dateStr + 'T' + inicio.replace(':', '') + '00' : dateStr;
-    var endTime = dateStr && fim ? dateStr + 'T' + fim.replace(':', '') + '00' : (dateStr ? dateStr : '');
+    // ── Montar descrição ──
+    var lines = [];
+    if (resp)     lines.push('Responsável: ' + resp);
+    if (montagem) lines.push('Montagem: ' + montagem);
+    if (inicio)   lines.push('Início: ' + inicio + (fim ? ' | Término: ' + fim : ''));
+    if (desm)     lines.push('Desmontagem: ' + desm);
+    if (servicos.length) {
+      lines.push('');
+      lines.push('ITENS:');
+      servicos.forEach(function(s) { lines.push('• ' + s); });
+    }
+    if (total || pgtoTexto) {
+      lines.push('');
+      lines.push('PAGAMENTO:');
+      if (total) lines.push('Valor total: R$ ' + total);
+      if (pgtoTexto) lines.push(pgtoTexto);
+    }
 
-    var title = encodeURIComponent(evento + ' — ' + nome);
-    var details = encodeURIComponent(
-      (montagem ? 'Montagem: ' + montagem + '\n' : '') +
-      (inicio ? 'Início: ' + inicio : '') +
-      (fim ? ' | Término: ' + fim : '') + '\n' +
-      (desmontagem ? 'Desmontagem: ' + desmontagem + '\n' : '') +
-      (servicos ? '\nServiços: ' + servicos : '')
-    );
-    var loc = encodeURIComponent(local);
+    var title   = encodeURIComponent(evento + ' — ' + nome);
+    var details = encodeURIComponent(lines.join('\n'));
+    var loc     = encodeURIComponent(local);
 
-    var dates = startTime && endTime ? startTime + '/' + endTime : (dateStr ? dateStr + '/' + dateStr : '');
     var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
       '&text=' + title +
       '&dates=' + dates +

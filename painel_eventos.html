@@ -173,6 +173,9 @@ header {
   justify-content: center;
 }
 .btn-refresh:hover { border-color: var(--gold); color: var(--gold); }
+.btn-refresh.spinning { border-color: var(--gold); color: var(--gold); }
+.btn-refresh.spinning svg { animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .btn-sair {
   background: transparent;
   border: 1px solid var(--border);
@@ -672,7 +675,6 @@ header {
   .acesso-user { font-size: 0.8rem; font-weight: 700; color: var(--text); }
   .acesso-meta { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
   .acessos-empty { padding: 20px 16px; text-align: center; color: var(--muted); font-size: 0.8rem; }
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 
   <!-- PWA -->
@@ -856,7 +858,16 @@ function mostrarErro(msg) {
 }
 
 function sair() {
-  auth.signOut();
+  if (db && auth.currentUser) {
+    db.collection('acessos_painel').add({
+      email:   auth.currentUser.email,
+      usuario: auth.currentUser.email.split('@')[0],
+      tipo:    'saida',
+      data:    firebase.firestore.FieldValue.serverTimestamp()
+    }).then(function() { auth.signOut(); }).catch(function() { auth.signOut(); });
+  } else {
+    auth.signOut();
+  }
 }
 
 function registrarAcesso(user) {
@@ -865,6 +876,7 @@ function registrarAcesso(user) {
     email:    user.email,
     usuario:  user.email.split('@')[0],
     uid:      user.uid,
+    tipo:     'entrada',
     data:     firebase.firestore.FieldValue.serverTimestamp()
   });
 }
@@ -889,24 +901,49 @@ function carregarAcessos() {
   var lista = document.getElementById('acessos-lista');
   lista.innerHTML = '<div class="acessos-empty">Carregando...</div>';
   db.collection('acessos_painel')
-    .limit(50)
+    .limit(80)
     .get().then(function(snap) {
-      if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum acesso registrado.</div>'; return; }
+      if (snap.empty) { lista.innerHTML = '<div class="acessos-empty">Nenhum registro ainda.</div>'; return; }
       var docs = [];
       snap.forEach(function(doc) { docs.push(doc.data()); });
-      // Ordenar por data desc no JS
       docs.sort(function(a, b) {
         var ta = a.data && a.data.toDate ? a.data.toDate().getTime() : 0;
         var tb = b.data && b.data.toDate ? b.data.toDate().getTime() : 0;
         return tb - ta;
       });
+
+      // Labels por tipo — igual ao gerador
+      var tipoLabel = {
+        'entrada':         { label: '→ Entrada',          color: '#4AC87A' },
+        'saida':           { label: '← Saída',            color: '#888'    },
+        'alteracao_item':  { label: '✎ Alteração',        color: '#4A90C8' },
+        'adicionou':       { label: '+ Adicionou',        color: '#4AC87A' },
+        'removeu':         { label: '– Removeu',          color: '#e05c5c' },
+        'restaurou':       { label: '↩ Restaurou',        color: '#C8A94A' },
+        'removeu extra':   { label: '– Removeu extra',    color: '#e05c5c' }
+      };
+
       var html = '';
-      docs.slice(0, 30).forEach(function(d) {
+      docs.slice(0, 50).forEach(function(d) {
         var ts = d.data && d.data.toDate ? d.data.toDate() : null;
-        var dataFmt = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : '—';
+        var dataFmt = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '—';
+
+        // Determinar tipo/label
+        var tipoKey = d.tipo || d.acao || 'entrada';
+        if (d.tipo === 'alteracao_item' && d.acao) tipoKey = d.acao;
+        var t = tipoLabel[tipoKey] || { label: tipoKey, color: '#888' };
+
+        // Detalhe (nome do item alterado)
+        var detalhe = '';
+        if (d.item) detalhe = '<div style="font-size:0.68rem;color:#888;margin-top:1px">' + esc(d.item) + '</div>';
+
         html += '<div class="acesso-item">' +
-          '<div class="acesso-user">' + escHtml(d.usuario || d.email) + '</div>' +
-          '<div class="acesso-meta">' + escHtml(d.email) + ' · ' + dataFmt + '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center">' +
+            '<span style="font-size:0.8rem;font-weight:700;color:' + t.color + '">' + t.label + '</span>' +
+            '<span style="font-size:0.7rem;color:#888">' + dataFmt + '</span>' +
+          '</div>' +
+          '<div style="font-size:0.72rem;color:#aaa;margin-top:1px">' + esc(d.usuario || d.email || '') + '</div>' +
+          detalhe +
           '</div>';
       });
       lista.innerHTML = html;
@@ -1199,13 +1236,32 @@ var _dragScrollInterval = null;
 
 function onDragStart(e, id) {
   _draggingId = id;
-  // Suprimir fantasma — imagem transparente 1x1
-  var blank = document.createElement('canvas');
-  blank.width = 1; blank.height = 1;
-  e.dataTransfer.setDragImage(blank, 0, 0);
-  e.dataTransfer.effectAllowed = 'move';
   var card = document.querySelector('.evento-card[data-id="' + id + '"]');
-  if (card) card.classList.add('dragging');
+  if (card) {
+    // Criar fantasma limpo — só o card-summary, sem o corpo expandido
+    var ghost = document.createElement('div');
+    ghost.style.cssText = [
+      'position:fixed', 'top:-9999px', 'left:-9999px',
+      'width:' + card.offsetWidth + 'px',
+      'background:#2a2a2a',
+      'border:1px solid #444',
+      'border-radius:8px',
+      'padding:12px 14px',
+      'box-shadow:0 4px 20px rgba(0,0,0,0.6)',
+      'pointer-events:none',
+      'font-family:Barlow,sans-serif',
+      'color:#eee'
+    ].join(';');
+    var summary = card.querySelector('.card-summary');
+    if (summary) ghost.innerHTML = summary.outerHTML;
+    document.body.appendChild(ghost);
+    e.dataTransfer.setDragImage(ghost, card.offsetWidth / 2, 30);
+    setTimeout(function() {
+      card.classList.add('dragging');
+      if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+    }, 0);
+  }
+  e.dataTransfer.effectAllowed = 'move';
   document.addEventListener('dragover', onDragScroll);
 }
 
