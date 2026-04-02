@@ -3726,7 +3726,15 @@ function geradorFazerLogin() {
   var err = document.getElementById('gerador-login-error');
   if (!email || !senha) { err.textContent = 'Preencha e-mail e senha.'; err.style.display = 'block'; return; }
   btn.disabled = true; btn.textContent = 'Entrando...'; err.style.display = 'none';
-  firebase.auth().signInWithEmailAndPassword(email, senha).catch(function() {
+  var ALLOWED = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
+  firebase.auth().signInWithEmailAndPassword(email, senha).then(function(cred) {
+    if (ALLOWED.indexOf(cred.user.email) === -1) {
+      firebase.auth().signOut();
+      err.textContent = 'Acesso não autorizado para este e-mail.'; err.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Entrar';
+    }
+    // Se autorizado, o onAuthStateChanged cuida de exibir o app
+  }).catch(function() {
     err.textContent = 'E-mail ou senha incorretos.'; err.style.display = 'block';
     btn.disabled = false; btn.textContent = 'Entrar';
   });
