@@ -2367,6 +2367,8 @@ carregarOrcamentoEditavel._processar = function(d) {
       set('local_evento', d.local_evento);
       set('data_evento',  d.data_evento);
       setChk('inc_cliente',   d.inc_cliente);
+      setChk('inc_opcoes',    d.inc_opcoes);
+      setChk('inc_detalhado', d.inc_detalhado);
       setChk('inc_op1', d.inc_op1);
       setChk('inc_op2', d.inc_op2);
       setChk('inc_op3', d.inc_op3);
@@ -2395,6 +2397,13 @@ carregarOrcamentoEditavel._processar = function(d) {
         });
       }
       if (d.cenica_preco) set('cenica_preco', d.cenica_preco);
+
+      // Disparar eventos para painéis condicionais renderizarem
+      ['inc_opcoes','inc_detalhado','inc_pagamento','inc_cliente'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.dispatchEvent(new Event('change'));
+      });
+
   recalcDetTotal();
   document.querySelectorAll('#det-itens-wrap textarea').forEach(ta => autoResize(ta));
 };
@@ -4435,7 +4444,16 @@ function abrirContrato(id) {
       }
     }
     if (d.val_total) calcEntrada();
+    // Pagamento
+    var pgtoVal = d.pgto_tipo || d.pgto_sel || 'custom';
+    var pgtoRadio = document.querySelector('input[name="pgto"][value="' + pgtoVal + '"]');
+    if (pgtoRadio) { pgtoRadio.checked = true; pgtoRadio.dispatchEvent(new Event('change')); }
+    if (d.pgto_custom) { set('pgto_custom', d.pgto_custom); document.getElementById('pgto_custom_wrap').style.display = 'block'; }
     switchMain('contrato');
+    setTimeout(function() {
+      var el = document.getElementById('tab-contratante');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 200);
   });
 }
 
