@@ -1276,6 +1276,7 @@ function preencherSelects(d) {
 
   // Mapa: label da opção → valor (para recuperar val_total ao enviar)
   _orcData.opcaoValores = {};
+  _orcData.opcoes = d.opcoes || [];
   var NOMES2 = { 1: 'Essencial', 2: 'Mais Escolhido', 3: 'Experiencia Completa' };
   var opcoesPacote = (d.opcoes||[]).filter(function(o){ return o.tipo==='pacote'; });
   var detOpc = (d.opcoes||[]).find(function(o){ return o.tipo==='detalhado'; });
@@ -1403,6 +1404,43 @@ function enviarDadosReserva(e) {
     valTotal = _orcData.valDetalhado;
   }
 
+  // Montar lista de serviços com o conteúdo real da opção escolhida
+  var servicos = [];
+  var opcoes = _orcData.opcoes || [];
+  var opcoesPacote = opcoes.filter(function(o){ return o.tipo === 'pacote'; });
+  var detOpc = opcoes.find(function(o){ return o.tipo === 'detalhado'; });
+
+  if (cardSel) {
+    // Identificar índice do card selecionado
+    var todos = document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"]');
+    var idxSel = -1;
+    todos.forEach(function(c, i) { if (c === cardSel) idxSel = i; });
+
+    if (opcoesPacote.length && idxSel >= 0 && opcoesPacote[idxSel]) {
+      // Pacote: título + linhas da descrição
+      var op = opcoesPacote[idxSel];
+      var NOMES2 = { 1: 'Essencial', 2: 'Mais Escolhido', 3: 'Experiência Completa' };
+      var tituloOp = (op.titulo || NOMES2[op.idx || (idxSel+1)] || 'Pacote') + ' — R$ ' + (op.valor || '');
+      servicos.push(tituloOp);
+      var linhas = (op.desc || '').split('\n').map(function(l){ return l.replace(/^[•\-]\s*/,'').trim(); }).filter(Boolean);
+      linhas.forEach(function(l){ servicos.push(l); });
+    } else if (detOpc && detOpc.itens && detOpc.itens.length) {
+      // Detalhado: item selecionado ou todos os itens
+      if (idxSel >= 0 && detOpc.itens[idxSel]) {
+        var it = detOpc.itens[idxSel];
+        servicos.push((it.titulo || '') + (it.valor ? ' — R$ ' + it.valor : ''));
+        if (it.desc) servicos.push(it.desc);
+      } else {
+        detOpc.itens.forEach(function(it) {
+          servicos.push((it.titulo || '') + (it.valor ? ' — R$ ' + it.valor : ''));
+          if (it.desc) servicos.push(it.desc);
+        });
+      }
+    } else {
+      servicos.push(opcaoSel);
+    }
+  }
+
   // Montar dados do contrato compatíveis com o gerador
   var dadosContrato = {
     _tipo: 'contrato',
@@ -1421,7 +1459,7 @@ function enviarDadosReserva(e) {
     val_total: valTotal,
     pgto_tipo: 'custom',
     pgto_custom: pgtoSel || '',
-    servicos: opcaoSel ? [opcaoSel] : [],
+    servicos: servicos,
     aprovado: false,
     orc_ref: _orcData.ref || '',
     criadoEm: firebase.firestore.FieldValue.serverTimestamp()
