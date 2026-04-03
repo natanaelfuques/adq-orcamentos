@@ -4378,6 +4378,26 @@ function iniciarListenerContratos() {
   });
 }
 
+function irParaOrcamentoRef(ref) {
+  // 1. Navegar para aba Salvos > Orçamentos
+  if (window._goToVirtual) {
+    window._goToVirtual(1, true);
+  } else {
+    switchMain('salvos');
+    switchSalvosTab('orcamentos');
+  }
+  // 2. Abrir busca e preencher com a referência
+  setTimeout(function() {
+    if (!_buscaAberta) toggleBuscaSalvos();
+    var input = document.getElementById('busca-orc-input');
+    if (input) {
+      input.value = ref;
+      filtrarSalvos();
+      input.focus();
+    }
+  }, 350);
+}
+
 function renderContratos(docs) {
   var lista = document.getElementById('contratos-lista');
   if (!lista) return;
@@ -4443,8 +4463,10 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var calClass = doc.calendar_adicionado ? 'salvo-status btn-calendar btn-calendar-ok' : 'salvo-status btn-calendar';
     card += '<button class="' + calClass + '" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
     card += '<button class="salvo-status' + statusClass + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '"' + (statusClickable ? '' : ' style="pointer-events:none"') + '>' + statusLabel + '</button>';
-    card += '<span style="margin-left:auto;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#444;letter-spacing:0.1em"># ' + ref + '</span>';
-    if (doc.orc_ref) card += '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#aaa;letter-spacing:0.1em" title="Originado do orçamento ' + escHtml(doc.orc_ref) + '">ORC # ' + escHtml(doc.orc_ref) + '</span>';
+    card += '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">';
+    if (doc.orc_ref) card += '<button onclick="irParaOrcamentoRef(\'' + escHtml(doc.orc_ref) + '\')" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#aaa;letter-spacing:0.1em;background:transparent;border:none;cursor:pointer;padding:0;transition:color 0.15s" title="Ver orçamento de origem" onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"># ' + escHtml(doc.orc_ref) + '</button>';
+    card += '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#444;letter-spacing:0.1em"># ' + ref + '</span>';
+    card += '</span>';
     card += '</div>';
     card += '<div class="salvo-montagem-row" style="' + (aprovado && etapa !== 'concluido' ? '' : 'display:none') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
