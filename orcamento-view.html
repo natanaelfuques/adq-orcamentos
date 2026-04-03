@@ -1015,10 +1015,15 @@ function _getValTotalAtual() {
     cardsSel.forEach(function(c) {
       if (c.dataset.valorBrl) soma += _parseBRL(c.dataset.valorBrl);
     });
+    // Fallback: usar val_total do orçamento se nenhum item marcado
+    if (soma === 0 && _orcData.valTotal) return _parseBRL(_orcData.valTotal);
     return soma;
   } else {
     var card = document.querySelector('.opcao-card-radio[data-grupo="opcao"].selected');
-    return card && card.dataset.valorBrl ? _parseBRL(card.dataset.valorBrl) : 0;
+    if (card && card.dataset.valorBrl) return _parseBRL(card.dataset.valorBrl);
+    // Fallback: usar val_total do orçamento se nenhuma opção selecionada
+    if (_orcData.valTotal) return _parseBRL(_orcData.valTotal);
+    return 0;
   }
 }
 
@@ -1031,7 +1036,7 @@ function calcPgtoPreview() {
   var total = _getValTotalAtual();
   var titulo = (pgtoCard.dataset.valor || '').toLowerCase();
   var texto = '';
-  var DOLLAR_ICON = '<svg style="display:inline;vertical-align:middle;margin-right:5px" width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="18" height="12" rx="2" fill="#1a3a1a" stroke="#2d7a2d" stroke-width="1.2"/><rect x="1" y="4" width="18" height="12" rx="2" fill="url(#dg)"/><defs><linearGradient id="dg" x1="1" y1="4" x2="19" y2="16" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1e4d1e"/><stop offset="100%" stop-color="#0f2e0f"/></linearGradient></defs><circle cx="10" cy="10" r="3.5" fill="none" stroke="#3ab03a" stroke-width="1"/><text x="10" y="13.5" text-anchor="middle" fill="#3ab03a" font-size="6" font-weight="bold" font-family="serif">$</text><circle cx="3.5" cy="7" r="1.2" fill="#2d7a2d" opacity="0.7"/><circle cx="16.5" cy="13" r="1.2" fill="#2d7a2d" opacity="0.7"/></svg>';
+  var DOLLAR_ICON = '<svg style="display:inline;vertical-align:middle;margin-right:6px;flex-shrink:0" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="0.6" y="0.6" width="22.8" height="22.8" rx="3.4" fill="#0d2e0d" stroke="#2a7a2a" stroke-width="1.2"/><rect x="2" y="2" width="20" height="20" rx="2.5" fill="url(#dlg)"/><defs><linearGradient id="dlg" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1a4d1a"/><stop offset="100%" stop-color="#0a280a"/></linearGradient></defs><circle cx="12" cy="12" r="6.5" fill="none" stroke="#3aaa3a" stroke-width="1.1" opacity="0.5"/><text x="12" y="16.5" text-anchor="middle" fill="#4fd44f" font-size="11" font-weight="900" font-family="Georgia,serif" letter-spacing="-0.5">$</text><circle cx="4.5" cy="4.5" r="1.5" fill="#2a7a2a" opacity="0.6"/><circle cx="19.5" cy="19.5" r="1.5" fill="#2a7a2a" opacity="0.6"/><circle cx="19.5" cy="4.5" r="1.5" fill="#2a7a2a" opacity="0.6"/><circle cx="4.5" cy="19.5" r="1.5" fill="#2a7a2a" opacity="0.6"/></svg>';
 
   // Se for "Personalizar", ocultar a área azul de preview
   if (pgtoCard && pgtoCard.dataset.valor === '__outro__') {
@@ -1265,6 +1270,24 @@ function fecharPainel() {
   var btnDados = document.getElementById('btn-dados-reserva');
   if (dadosForm) dadosForm.style.display = 'none';
   if (btnDados) btnDados.innerHTML = '▶ Gerar Contrato';
+
+  // Resetar todas as seleções de opção e pagamento
+  document.querySelectorAll('.opcao-card-radio').forEach(function(c) {
+    c.classList.remove('selected');
+  });
+
+  // Recolher caixa azul de preview e textarea de personalizar
+  var pgtoPreview = document.getElementById('pgto-preview');
+  var pgtoOutroWrap = document.getElementById('pgto-outro-wrap');
+  var pgtoOutroTxt = document.getElementById('pgto-outro-txt');
+  if (pgtoPreview) pgtoPreview.style.display = 'none';
+  if (pgtoOutroWrap) pgtoOutroWrap.style.display = 'none';
+  if (pgtoOutroTxt) pgtoOutroTxt.value = '';
+
+  // Resetar textarea de modificações
+  var txtMod = document.getElementById('txt-modificacao');
+  if (txtMod) txtMod.value = '';
+
   _painelAtivo = null;
 }
 
@@ -1298,8 +1321,20 @@ function criarCardRadio(nome, desc, grupo, idx) {
       (desc ? '<div class="opcao-card-desc">' + escHtml(desc) + '</div>' : '') +
     '</div>';
   card.addEventListener('click', function() {
+    var jaEstaSelected = card.classList.contains('selected');
     var todos = document.querySelectorAll('.opcao-card-radio[data-grupo="' + grupo + '"]');
     todos.forEach(function(c) { c.classList.remove('selected'); });
+    if (grupo === 'pgto') {
+      // Fechar textarea de personalizar
+      var outroWrap = document.getElementById('pgto-outro-wrap');
+      if (outroWrap) outroWrap.style.display = 'none';
+      if (jaEstaSelected) {
+        // Toggle: desmarca e recolhe caixa azul
+        var box = document.getElementById('pgto-preview');
+        if (box) box.style.display = 'none';
+        return;
+      }
+    }
     card.classList.add('selected');
     if (grupo === 'pgto' || grupo === 'opcao') calcPgtoPreview();
   });
@@ -1402,20 +1437,13 @@ function preencherSelects(d) {
   wrap.innerHTML = '<textarea id="pgto-outro-txt" class="resposta-textarea" placeholder="Ex: 50% na assinatura e o restante para 30 dias..." style="min-height:72px" oninput="calcPgtoPreview()"></textarea>';
   gridPgto.appendChild(wrap);
 
-  // Esconder textarea ao selecionar outra opção
-  document.querySelectorAll('.opcao-card-radio[data-grupo="pgto"]').forEach(function(c) {
-    if (c.dataset.valor !== '__outro__') {
-      c.addEventListener('click', function() {
-        document.getElementById('pgto-outro-wrap').style.display = 'none';
-        calcPgtoPreview();
-      });
-    }
-  });
+  // Esconder textarea ao selecionar outra opção (já tratado dentro de criarCardRadio)
 
   _orcData.nome = d.nome_cliente || d.nome || '';
   _orcData.evento = d.tipo_evento || d.evento || '';
   _orcData.local = d.local_evento || d.local || '';
   _orcData.data = d.data_evento || d.dataEvt || '';
+  _orcData.valTotal = d.val_total || d.valor_total || '';
 
   // Mapa: label da opção → valor (para recuperar val_total ao enviar)
   _orcData.opcaoValores = {};
