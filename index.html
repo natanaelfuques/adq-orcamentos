@@ -3772,10 +3772,8 @@ function initFirebase(config) {
         if (hu) hu.textContent = user.email.split('@')[0];
         var bs = document.getElementById('btn-gerador-sair');
         if (bs) bs.style.display = 'inline-block';
-        if (user.email === 'natanael.fuques@gmail.com') {
-          var ba = document.getElementById('btn-gerador-acessos');
-          if (ba) ba.style.display = 'inline-flex';
-        }
+        var ba = document.getElementById('btn-gerador-acessos');
+        if (ba) ba.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'inline-flex' : 'none';
         registrarAcessoGerador(user);
         iniciarListenerSalvos();
         iniciarConnIndicator();
