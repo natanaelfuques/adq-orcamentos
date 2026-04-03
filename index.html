@@ -2332,15 +2332,66 @@ function identificarECarregarOrcamento(input) {
 }
 
 function carregarContratoNoOrcamento(d) {
-  // Fill orcamento fields from contract data where possible
-  const set    = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
-  const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+  // Fill contract fields from saved contract data
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
 
-  set('nome_cliente', d.cli_nome || '');
-  set('tipo_evento',  d.ev_nome  || '');
-  set('local_evento', d.ev_local || '');
-  set('data_evento',  d.ev_data  || '');
+  // Dados do contratante
+  set('cli_nome',  d.cli_nome  || '');
+  set('cli_doc',   d.cli_doc   || '');
+  set('cli_end',   d.cli_end   || '');
+  set('cli_cep',   d.cli_cep   || '');
+  set('cli_email', d.cli_email || '');
+  set('cli_fone',  d.cli_fone  || '');
 
+  // Dados do evento
+  set('ev_nome',   d.ev_nome   || '');
+  set('ev_resp',   d.ev_resp   || '');
+  set('ev_local',  d.ev_local  || '');
+  set('ev_data',   d.ev_data   || '');
+  set('ev_inicio', d.ev_inicio || '');
+  set('ev_fim',    d.ev_fim    || '');
+
+  // Valor e pagamento
+  set('val_total',   d.val_total   || '');
+  set('pgto_custom', d.pgto_custom || '');
+  set('data_entrada', d.data_entrada || '');
+
+  const pgtoSel = d.pgto_sel || d.pgto_tipo || '';
+  const pgtoRadio = document.querySelector('input[name="pgto"][value="' + pgtoSel + '"]');
+  if (pgtoRadio) { pgtoRadio.checked = true; pgtoRadio.dispatchEvent(new Event('change')); }
+  if (pgtoSel === 'custom') { const w = document.getElementById('pgto_custom_wrap'); if (w) w.style.display = 'block'; }
+
+  if (d.nparcelas) {
+    if (typeof selecionaParcelasIdeal === 'function') selecionaParcelasIdeal();
+    const pr = document.querySelector('input[name="nparcelas"][value="' + d.nparcelas + '"]');
+    if (pr) { pr.checked = true; if (typeof atualizaParceladoInfo === 'function') atualizaParceladoInfo(); }
+  }
+
+  // Serviços
+  const lista = document.getElementById('lista-servicos');
+  if (lista && d.servicos && d.servicos.length) {
+    lista.innerHTML = '';
+    d.servicos.forEach(function(s) {
+      const div = document.createElement('div');
+      div.className = 'servico-item';
+      div.innerHTML = '<input type="text" value="' + s.replace(/"/g, '&quot;') + '"><button class="btn-rem" onclick="remServico(this)">×</button>';
+      lista.appendChild(div);
+    });
+  } else if (lista && !lista.children.length) {
+    if (typeof addServico === 'function') addServico();
+  }
+
+  if (d.val_total && typeof calcEntrada === 'function') calcEntrada();
+
+  // Rastrear origem do orçamento
+  if (d.orc_ref) {
+    const refEl = document.getElementById('orc_ref_origem');
+    if (refEl) { refEl.textContent = 'Originado do orçamento: ' + d.orc_ref; refEl.style.display = 'inline'; }
+  }
+
+  switchMain('contrato');
+  const tab = document.getElementById('tab-contratante');
+  if (tab) tab.scrollIntoView({ behavior: 'smooth' });
 }
 
 function carregarOrcamentoEditavel(input) {
@@ -4393,6 +4444,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button class="' + calClass + '" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
     card += '<button class="salvo-status' + statusClass + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '"' + (statusClickable ? '' : ' style="pointer-events:none"') + '>' + statusLabel + '</button>';
     card += '<span style="margin-left:auto;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#444;letter-spacing:0.1em"># ' + ref + '</span>';
+    if (doc.orc_ref) card += '<span style="margin-left:8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;color:#888;letter-spacing:0.05em" title="Originado do orçamento ' + escHtml(doc.orc_ref) + '">' + escHtml(doc.orc_ref) + '</span>';
     card += '</div>';
     card += '<div class="salvo-montagem-row" style="' + (aprovado && etapa !== 'concluido' ? '' : 'display:none') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
@@ -4422,6 +4474,20 @@ function abrirContrato(id) {
     set('ev_inicio', d.ev_inicio || '');
     set('ev_fim',    d.ev_fim    || '');
     set('val_total', d.val_total || '');
+    set('pgto_custom', d.pgto_custom || '');
+    set('data_entrada', d.data_entrada || '');
+
+    // Restaurar forma de pagamento — salvo como pgto_tipo (index) ou pgto_sel (view)
+    var pgtoSel = d.pgto_tipo || d.pgto_sel || 'vista';
+    var pgtoRadio = document.querySelector('input[name="pgto"][value="' + pgtoSel + '"]');
+    if (pgtoRadio) { pgtoRadio.checked = true; pgtoRadio.dispatchEvent(new Event('change')); }
+    if (pgtoSel === 'custom') { var cw = document.getElementById('pgto_custom_wrap'); if (cw) cw.style.display = 'block'; }
+    if (d.nparcelas) {
+      selecionaParcelasIdeal();
+      var pr = document.querySelector('input[name="nparcelas"][value="' + d.nparcelas + '"]');
+      if (pr) { pr.checked = true; atualizaParceladoInfo(); }
+    }
+
     if (d.servicos && d.servicos.length) {
       var lista = document.getElementById('lista-servicos');
       if (lista) {
