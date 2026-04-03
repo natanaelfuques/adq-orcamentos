@@ -2527,7 +2527,6 @@ function carregarOrcamentoJSON(input) {
 carregarOrcamentoJSON._processar = function(d) {
   _orcDados = d;
   _contratoDados = null;
-  _currentOrcRef = '';
   // Reset label and button text
   const lbl = document.getElementById('orc_opcoes_label');
   if (lbl) lbl.textContent = 'Qual opção o cliente escolheu?';
@@ -4176,6 +4175,7 @@ function abrirSalvo(id) {
     if (!doc.exists) { alert('Orçamento não encontrado.'); return; }
     var d = doc.data();
     if (d._tipo === 'orcamento_completo' || d._tipo === 'orcamento') {
+      _currentOrcRef = id.substring(0, 8).toUpperCase();
       carregarOrcamentoEditavel._processar(d);
       switchMain('orcamento');
     }
@@ -4200,6 +4200,7 @@ function gerarContratoSalvo(id) {
   db.collection('orcamentos').doc(id).get().then(function(doc) {
     if (!doc.exists) return;
     var d = doc.data();
+    _currentOrcRef = id.substring(0, 8).toUpperCase();
     switchMain('contrato');
     setTimeout(function() {
       if (d._tipo === 'orcamento' || d._tipo === 'orcamento_completo') {
@@ -4249,6 +4250,7 @@ function toggleAprovado(id, atual) {
     db.collection('orcamentos').doc(id).get().then(function(doc) {
       if (!doc.exists) return;
       var d = doc.data();
+      _currentOrcRef = id.substring(0, 8).toUpperCase();
       switchMain('contrato');
       setTimeout(function() {
         if (d._tipo === 'orcamento' || d._tipo === 'orcamento_completo') {
