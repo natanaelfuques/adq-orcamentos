@@ -246,7 +246,7 @@
   }
   .btn-download:hover { background: var(--gold); color: var(--dark); transform: translateY(-1px); }
   #btn-salvar-nuvem:hover, #btn-salvar-contrato:hover { background: var(--gold); color: var(--dark) !important; }
-  #btn-copiar-link:hover { background: #4A90C8 !important; color: #111 !important; border-color: #4A90C8 !important; opacity: 1 !important; }
+  #btn-copiar-link:hover { background: transparent !important; color: #4A90C8 !important; border-color: #4A90C8 !important; opacity: 0.85; }
   .btn-download:active { transform: translateY(0); }
 
   /* ── PDF PREVIEW FRAME ── */
@@ -745,7 +745,7 @@
   .active-sub-tab { color: var(--gold) !important; border-bottom: 3px solid var(--gold) !important; }
   .active-sub-tab:hover { color: var(--gold) !important; }
   #btn-salvar-nuvem:hover, #btn-salvar-contrato:hover { background: var(--gold); color: var(--dark) !important; }
-  #btn-copiar-link:hover { background: #4A90C8 !important; color: #111 !important; border-color: #4A90C8 !important; opacity: 1 !important; }
+  #btn-copiar-link:hover { background: transparent !important; color: #4A90C8 !important; border-color: #4A90C8 !important; opacity: 0.85; }
 
 
   /* ── BUSCA SALVOS ── */
@@ -4807,6 +4807,7 @@ function filtrarContratos() {
         document.querySelectorAll('#panel-orcamento textarea').forEach(function(ta) { autoResize(ta); });
       });
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   document.addEventListener('DOMContentLoaded', function() {
