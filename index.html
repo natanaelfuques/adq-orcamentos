@@ -4150,9 +4150,9 @@ function renderSalvos(docs) {
     card += '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
+    card += '<button class="btn-salvo" data-action="link" data-id="' + id + '" title="Copiar link para enviar ao cliente">Link</button>';
     card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Carregar</button>';
     card += '<button class="btn-salvo" data-action="duplicar" data-id="' + id + '">Duplicar</button>';
-    card += '<button class="btn-salvo" data-action="link" data-id="' + id + '" title="Copiar link para enviar ao cliente">Link</button>';
     card += '<button class="btn-salvo" data-action="json-orc" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
@@ -4482,8 +4482,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
-    card += '<button class="btn-salvo primary" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
     card += '<button class="btn-salvo" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
+    card += '<button class="btn-salvo primary" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
     card += '<button class="btn-salvo" data-action="duplicar-contrato" data-id="' + id + '">Duplicar</button>';
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
