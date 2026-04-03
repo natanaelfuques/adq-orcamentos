@@ -1315,7 +1315,7 @@ function getSelectedCard(grupo) {
   if (!sel) return '';
   if (sel.dataset.valor === '__outro__') {
     var txt = document.getElementById('pgto-outro-txt');
-    return txt ? (txt.value.trim() || 'Outro / Personalizar') : 'Outro / Personalizar';
+    return txt ? (txt.value.trim() || 'Personalizar') : 'Personalizar';
   }
   return sel.dataset.valor;
 }
@@ -1369,13 +1369,15 @@ function preencherSelects(d) {
   cardOutro.innerHTML =
     '<div class="opcao-radio-dot"></div>' +
     '<div class="opcao-card-text">' +
-      '<div class="opcao-card-name">Outro / Personalizar</div>' +
+      '<div class="opcao-card-name">Personalizar</div>' +
       '<div class="opcao-card-desc">Descreva sua preferência abaixo</div>' +
     '</div>';
   cardOutro.addEventListener('click', function() {
     var todos = document.querySelectorAll('.opcao-card-radio[data-grupo="pgto"]');
     todos.forEach(function(c) { c.classList.remove('selected'); });
     cardOutro.classList.add('selected');
+    var box = document.getElementById('pgto-preview');
+    if (box) box.style.display = 'none';
     document.getElementById('pgto-outro-wrap').style.display = 'block';
     document.getElementById('pgto-outro-txt').focus();
     calcPgtoPreview();
