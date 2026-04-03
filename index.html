@@ -4206,8 +4206,29 @@ function gerarContratoSalvo(id) {
 function excluirSalvo(id, nome) {
   if (!confirm('Excluir: "' + nome + '"?')) return;
   if (!db) return;
+  // Ref do orçamento = primeiros 8 chars do id em maiúsculo (mesmo padrão usado nos cards)
+  var refOrc = id.substring(0, 8).toUpperCase();
   db.collection('orcamentos').doc(id).delete()
-    .then(function(){ registrarLogGerador('excluir-orcamento', nome); })
+    .then(function(){
+      registrarLogGerador('excluir-orcamento', nome);
+      // Escurecer botão orc_ref nos cards de contratos visíveis no DOM
+      document.querySelectorAll('.salvo-card button[onclick*="irParaOrcamentoRef"]').forEach(function(btn) {
+        if (btn.textContent.trim() === '# ' + refOrc) {
+          btn.style.color = '#444';
+          btn.style.pointerEvents = 'none';
+          btn.removeAttribute('onmouseover');
+          btn.removeAttribute('onmouseout');
+          btn.title = '';
+        }
+      });
+      // Limpar orc_ref nos contratos vinculados no Firestore
+      db.collection('contratos').where('orc_ref', '==', refOrc).get().then(function(snap) {
+        snap.forEach(function(doc) {
+          doc.ref.update({ orc_ref: firebase.firestore.FieldValue.delete() })
+            .catch(function(e) { console.warn('[AdQ] Erro ao limpar orc_ref:', e); });
+        });
+      }).catch(function(e) { console.warn('[AdQ] Erro ao buscar contratos vinculados:', e); });
+    })
     .catch(function(e){ alert('Erro ao excluir: ' + e.message); });
 }
 
