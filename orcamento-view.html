@@ -663,6 +663,17 @@
     flex-shrink: 0;
   }
 
+  /* ── AMPULHETA ESTILIZADA ── */
+  .ampulheta {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; flex-shrink: 0;
+    position: relative;
+  }
+  .ampulheta svg {
+    width: 16px; height: 16px;
+    filter: drop-shadow(0 0 3px rgba(200,169,74,0.4));
+  }
+
   @media (max-width: 600px) {
     .hero-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
     .hero-right { text-align: left; }
@@ -905,7 +916,14 @@
     <!-- OBSERVAÇÕES -->
     <div id="validade-strip" style="margin-top:28px;display:none">
       <div class="obs-box" style="text-align:center;font-size:0.82rem;display:flex;align-items:center;justify-content:center;gap:10px">
-        <span style="font-size:0.9rem">⏳</span>
+        <span class="ampulheta">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 1h10" stroke="#C8A94A" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M3 15h10" stroke="#C8A94A" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M4 1.5 C4 1.5 4 5 8 8 C12 11 12 14.5 12 14.5 L4 14.5 C4 14.5 4 11 8 8 C12 5 12 1.5 12 1.5 Z" fill="rgba(200,169,74,0.15)" stroke="#C8A94A" stroke-width="1" stroke-linejoin="round"/>
+            <path d="M6 12.5 Q8 11 10 12.5" stroke="#C8A94A" stroke-width="0.8" stroke-linecap="round" fill="none"/>
+          </svg>
+        </span>
         <span>Este orçamento expira em <strong id="validade-countdown" style="color:var(--gold)">—</strong></span>
       </div>
     </div>
@@ -979,7 +997,7 @@ function renderOrcamento(doc) {
 
   // Contador de validade (7 dias a partir da emissão)
   if (emissaoDate) {
-    var expira = new Date(emissaoDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    var expira = new Date(emissaoDate.getTime() + 8 * 24 * 60 * 60 * 1000);
     var strip = document.getElementById('validade-strip');
     var countdown = document.getElementById('validade-countdown');
     strip.style.display = 'block';
