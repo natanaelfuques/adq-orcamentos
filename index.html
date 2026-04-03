@@ -1590,7 +1590,7 @@ Revestimento</textarea>
     </div>
     <!-- Área de busca orçamentos -->
     <div class="salvos-search-area" id="busca-orc-area">
-      <input class="salvos-search-input" id="busca-orc-input" placeholder="Buscar por nome ou data (dd/mm/aaaa)..." oninput="filtrarSalvos()" />
+      <input class="salvos-search-input" id="busca-orc-input" placeholder="Buscar por nome, data ou referência..." oninput="filtrarSalvos()" />
       <div class="salvos-filter-btns">
         <button class="salvos-filter-btn" id="filtro-orc-todos" onclick="setFiltroOrc('todos')">Todos</button>
         <button class="salvos-filter-btn" id="filtro-orc-aprovado" onclick="setFiltroOrc('aprovado')">Aprovados</button>
@@ -4063,12 +4063,16 @@ function renderSalvos(docs) {
     var valor = tipo;
     var aprovado = doc.aprovado ? true : false;
     var id = doc.id;
+    var ref = id.substring(0, 8).toUpperCase();
     var nomeEsc = escHtml(nome);
     var card = '<div class="salvo-card">';
     card += '<div class="salvo-card-top">';
-    card += '<div><div class="salvo-card-nome">' + nomeEsc + '</div>';
-    card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div></div>';
+    card += '<div style="min-width:0;flex:1"><div class="salvo-card-nome">' + nomeEsc + '</div>';
+    card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' · ' : '') + dataFmt + '</div></div>';
+    card += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">';
     card += '<div class="salvo-card-tipo">' + escHtml(valor) + '</div>';
+    card += '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:3px;padding:2px 7px;white-space:nowrap;color:#555"># ' + ref + '</div>';
+    card += '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Abrir</button>';
@@ -4567,7 +4571,8 @@ function filtrarSalvos() {
   var filtrados = _todosOrcamentos.filter(function(doc) {
     var nome = (doc.nome_cliente || doc.nome || '').toLowerCase();
     var dataEvt = (doc.data_evento || doc.dataEvt || '').split('-').reverse().join('/');
-    var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0;
+    var ref = (doc.id || '').substring(0, 8).toLowerCase();
+    var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0 || ref.indexOf(termo.replace('#','').trim()) >= 0;
     var aprovado = doc.aprovado ? true : false;
     var matchStatus = _filtroOrc === 'todos' ||
       (_filtroOrc === 'aprovado' && aprovado) ||
