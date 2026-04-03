@@ -716,8 +716,8 @@
   .btn-calendar:hover { background: var(--border); color: var(--text); }
   .btn-calendar-ok { border-color: #4A90C8 !important; color: #4A90C8 !important; }
   .btn-calendar-ok:hover { background: #4A90C8 !important; color: #fff !important; }
-  .btn-whatsapp { border-color: #25D366; color: #25D366; }
-  .btn-whatsapp:hover { background: #25D366; color: #fff; }
+  .btn-whatsapp { border-color: var(--border); color: var(--muted); }
+  .btn-whatsapp:hover { background: var(--border); color: var(--text); }
   .btn-whatsapp:focus, .btn-calendar:focus { outline: none; }
   .btn-whatsapp:active, .btn-calendar:active { opacity: 0.7; }
   .btn-whatsapp:not(:active), .btn-calendar:not(:active) { -webkit-tap-highlight-color: transparent; }
@@ -1614,11 +1614,15 @@ Revestimento</textarea>
       <button id="salvos-tab-orc" onclick="if(window._goToVirtual)_goToVirtual(1,false);else switchSalvosTab('orcamentos')" class="salvos-sub-tab active-sub-tab">Orçamentos</button>
       <button id="salvos-tab-con" onclick="if(window._goToVirtual)_goToVirtual(2,false);else switchSalvosTab('contratos')" class="salvos-sub-tab">Contratos</button>
     </div>
-    <div id="salvos-lista">
-      <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
-    </div>
-    <div id="contratos-lista" style="display:none">
-      <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
+    <div id="salvos-swipe-track" style="overflow:hidden;position:relative">
+      <div id="salvos-swipe-inner" style="display:flex;transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);will-change:transform">
+        <div id="salvos-lista" style="min-width:100%;width:100%;flex-shrink:0;box-sizing:border-box">
+          <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
+        </div>
+        <div id="contratos-lista" style="min-width:100%;width:100%;flex-shrink:0;box-sizing:border-box">
+          <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -4281,26 +4285,66 @@ function atualizarContadorSalvos() {
   }
 }
 
-function switchSalvosTab(tab) {
+function switchSalvosTab(tab, animate) {
   _salvosTab = tab;
-  var orc = document.getElementById('salvos-lista');
-  var con = document.getElementById('contratos-lista');
+  var inner = document.getElementById('salvos-swipe-inner');
   var btnOrc = document.getElementById('salvos-tab-orc');
   var btnCon = document.getElementById('salvos-tab-con');
-  if (tab === 'orcamentos') {
-    if (orc) orc.style.display = 'block';
-    if (con) con.style.display = 'none';
-    if (btnOrc) { btnOrc.classList.add('active-sub-tab'); }
-    if (btnCon) { btnCon.classList.remove('active-sub-tab'); }
-  } else {
-    if (orc) orc.style.display = 'none';
-    if (con) con.style.display = 'block';
-    if (btnOrc) { btnOrc.classList.remove('active-sub-tab'); }
-    if (btnCon) { btnCon.classList.add('active-sub-tab'); }
+  var isOrc = (tab === 'orcamentos');
+  if (inner) {
+    if (animate === false) {
+      inner.style.transition = 'none';
+      inner.style.transform = isOrc ? 'translateX(0%)' : 'translateX(-100%)';
+      // re-enable transition after paint
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() { inner.style.transition = ''; });
+      });
+    } else {
+      inner.style.transform = isOrc ? 'translateX(0%)' : 'translateX(-100%)';
+    }
   }
+  if (btnOrc) { btnOrc.classList.toggle('active-sub-tab', isOrc); }
+  if (btnCon) { btnCon.classList.toggle('active-sub-tab', !isOrc); }
   atualizarContadorSalvos();
   atualizarAreaBusca();
 }
+
+(function() {
+  // Touch swipe between salvos sub-tabs
+  var track, startX, startY, dragging, axisLocked;
+  function initSalvosSwipe() {
+    track = document.getElementById('salvos-swipe-track');
+    if (!track || track._swipeInited) return;
+    track._swipeInited = true;
+    track.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dragging = false; axisLocked = false;
+    }, { passive: true });
+    track.addEventListener('touchmove', function(e) {
+      if (!startX) return;
+      var dx = e.touches[0].clientX - startX;
+      var dy = e.touches[0].clientY - startY;
+      if (!axisLocked) {
+        if (Math.abs(dx) > Math.abs(dy)) { axisLocked = true; dragging = true; }
+        else { axisLocked = true; dragging = false; }
+      }
+    }, { passive: true });
+    track.addEventListener('touchend', function(e) {
+      if (!dragging) return;
+      var dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) < 40) return;
+      if (dx < 0 && _salvosTab === 'orcamentos') {
+        if (window._goToVirtual) window._goToVirtual(2, true); else switchSalvosTab('contratos');
+      } else if (dx > 0 && _salvosTab === 'contratos') {
+        if (window._goToVirtual) window._goToVirtual(1, true); else switchSalvosTab('orcamentos');
+      }
+      dragging = false; startX = null;
+    }, { passive: true });
+  }
+  document.addEventListener('DOMContentLoaded', initSalvosSwipe);
+  setTimeout(initSalvosSwipe, 500);
+})();
 
 function coletarDadosContrato() {
   var get = function(id) { var el = document.getElementById(id); return el ? el.value : ''; };
