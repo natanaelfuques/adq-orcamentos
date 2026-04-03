@@ -772,7 +772,7 @@
           ✓&nbsp; Sim, quero reservar
         </button>
         <button class="proposta-btn proposta-btn--nao" id="btn-nao" onclick="abrirResposta('nao')">
-          ✎&nbsp; Quero modificações
+          ✕&nbsp; Quero modificações
         </button>
       </div>
     </div>
@@ -784,7 +784,7 @@
         <div class="resposta-panel-title">Confirmar Reserva</div>
       </div>
       <div class="resposta-panel-body">
-        <p class="resposta-panel-sub">Selecione a opção e a forma de pagamento. Enviaremos a confirmação pelo WhatsApp.</p>
+        <p class="resposta-panel-sub">Selecione a opção e a forma de pagamento. Preencha os dados para o contrato.</p>
 
         <div class="resposta-field">
           <label class="resposta-label">Opção Escolhida</label>
@@ -799,12 +799,12 @@
       <div class="resposta-actions">
         <div class="resposta-actions-row">
           <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
-          <a id="wa-link-sim" href="#" class="cta-btn" target="_blank" onclick="return enviarSim(event)">
-            ▶ Confirmar pelo WhatsApp
-          </a>
           <button class="cta-btn cta-btn--blue" id="btn-dados-reserva" onclick="toggleDadosReserva()">
             ▶ Preencher Dados
           </button>
+          <a id="wa-link-sim" href="#" class="cta-btn" target="_blank" onclick="return enviarSim(event)">
+            ▶ Confirmar pelo WhatsApp
+          </a>
         </div>
       </div>
     </div>
@@ -883,7 +883,7 @@
       <div class="dados-form-footer">
         <button class="resposta-cancel" onclick="toggleDadosReserva()">Cancelar</button>
         <a id="wa-link-dados" href="#" class="cta-btn cta-btn--blue" target="_blank" onclick="return enviarDadosReserva(event)">
-          ▶ Enviar Dados pelo WhatsApp
+          ▶ Enviar Dados
         </a>
       </div>
     </div>
@@ -1096,6 +1096,13 @@ function abrirResposta(tipo) {
     btnSim.classList.add('proposta-btn--ativo');
     painelSim.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } else {
+    // Fechar formulário de dados se estiver aberto
+    var dadosForm = document.getElementById('dados-reserva-form');
+    var btnDados = document.getElementById('btn-dados-reserva');
+    if (dadosForm && dadosForm.style.display !== 'none') {
+      dadosForm.style.display = 'none';
+      if (btnDados) btnDados.innerHTML = '▶ Preencher Dados';
+    }
     painelNao.style.display = 'block';
     btnNao.classList.add('proposta-btn--ativo');
     painelNao.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1210,6 +1217,9 @@ function preencherSelects(d) {
   });
 
   _orcData.nome = d.nome_cliente || d.nome || '';
+  _orcData.evento = d.tipo_evento || d.evento || '';
+  _orcData.local = d.local_evento || d.local || '';
+  _orcData.data = d.data_evento || d.dataEvt || '';
 }
 
 function enviarSim(e) {
@@ -1265,9 +1275,12 @@ function toggleDadosReserva() {
     form.style.display = 'block';
     btn.innerHTML = '✕ Fechar Formulário';
     form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    // Pre-fill known fields from orcamento
-    var nomeEl = document.getElementById('dr_nome');
-    if (nomeEl && !nomeEl.value && _orcData.nome) nomeEl.value = _orcData.nome;
+    // Pre-fill com dados do orçamento
+    var set = function(id, val) { var el = document.getElementById(id); if (el && !el.value && val) el.value = val; };
+    set('dr_nome',   _orcData.nome);
+    set('dr_evento', _orcData.evento);
+    set('dr_local',  _orcData.local);
+    set('dr_data',   _orcData.data);
   } else {
     form.style.display = 'none';
     btn.innerHTML = '▶ Preencher Dados';
