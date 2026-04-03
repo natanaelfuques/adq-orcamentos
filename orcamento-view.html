@@ -1438,6 +1438,11 @@ function preencherSelects(d) {
     todos.forEach(function(c) { c.classList.remove('selected'); });
     var box = document.getElementById('pgto-preview');
     var outroWrap = document.getElementById('pgto-outro-wrap');
+    var entWrap = document.getElementById('entrada-data-wrap');
+    var entInput = document.getElementById('entrada-data-input');
+    // Sempre recolher caixa de data de entrada ao clicar em Personalizar
+    if (entWrap) entWrap.style.display = 'none';
+    if (entInput) entInput.value = '';
     if (jaEstaSelected) {
       // Toggle: recolhe tudo
       if (box) box.style.display = 'none';
