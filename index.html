@@ -4860,6 +4860,11 @@ function filtrarContratos() {
     goToVirtual(0, false);
 
     track.addEventListener('touchstart', function(e) {
+      // Ignore touches that start inside the salvos inner swipe area
+      if (e.target.closest && e.target.closest('#salvos-swipe-track')) {
+        isDragging = false;
+        return;
+      }
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
       isDragging = true;
