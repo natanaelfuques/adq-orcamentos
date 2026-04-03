@@ -249,6 +249,13 @@
   #btn-copiar-link:hover { background: transparent !important; color: #4A90C8 !important; border-color: #4A90C8 !important; opacity: 0.85; }
   .btn-download:active { transform: translateY(0); }
 
+  /* ── BOTÃO SAIR ── */
+  #btn-gerador-sair:hover {
+    background: #111 !important;
+    border-color: #e55 !important;
+    color: #e55 !important;
+  }
+
   /* ── PDF PREVIEW FRAME ── */
   #pdf-frame {
     width: 100%;
@@ -1056,7 +1063,7 @@ header {
       <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico">
         <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="3" r="2.2"/><circle cx="9.5" cy="3" r="2.2"/><path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/><path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/></svg>
       </button>
-      <button id="btn-gerador-sair" onclick="geradorSair()" onmousedown="this.style.background='#c0392b';this.style.borderColor='#c0392b';this.style.color='#fff';" onmouseup="this.style.background='transparent';this.style.borderColor='#444';this.style.color='#aaa';" onmouseleave="this.style.background='transparent';this.style.borderColor='#444';this.style.color='#aaa';" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 10px;font-family:'Barlow',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;">Sair</button>
+      <button id="btn-gerador-sair" onclick="geradorSair()" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 10px;font-family:'Barlow',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;transition:background 0.18s,border-color 0.18s,color 0.18s;">Sair</button>
       <button id="pwa-install-btn" onclick="adqInstall()" style="display:none;align-items:center;gap:6px;background:#C8A94A;color:#111;border:none;border-radius:4px;padding:5px 12px;font-family:'Barlow',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;">&#8659; Instalar</button>
     </div>
     <div class="hd-date" id="header-date"></div>
