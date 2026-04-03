@@ -861,9 +861,9 @@ auth.onAuthStateChanged(function(user) {
     document.getElementById('app-screen').style.display = 'block';
     var name = user.email.split('@')[0];
     document.getElementById('user-name').textContent = name;
-    if (user.email === 'natanael.fuques@gmail.com') {
-      var btnAcessos = document.getElementById('btn-acessos');
-      if (btnAcessos) btnAcessos.style.display = 'flex';
+    var btnAcessos = document.getElementById('btn-acessos');
+    if (btnAcessos) {
+      btnAcessos.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'flex' : 'none';
     }
     registrarAcesso(user);
     iniciarBoard();
