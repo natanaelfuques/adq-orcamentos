@@ -479,7 +479,7 @@
     background: rgba(0,0,0,0.15);
   }
   .resposta-actions-row {
-    display: flex; gap: 8px; flex-wrap: wrap;
+    display: flex; gap: 8px;
   }
   .resposta-cancel {
     background: transparent; border: 1px solid #2a2a2a;
@@ -674,6 +674,7 @@
     .proposta-btns { flex-direction: column; }
     .proposta-btn { width: 100%; justify-content: center; }
     .resposta-actions { flex-direction: column; }
+    .resposta-actions-row { flex-direction: column; }
     .resposta-actions .cta-btn, .resposta-actions .resposta-cancel { width: 100%; text-align: center; justify-content: center; }
     .container { padding: 24px 16px; }
     .hero-inner { padding: 24px 16px; }
@@ -902,13 +903,9 @@
     </div>
 
     <!-- OBSERVAÇÕES -->
-    <div class="section-gap" style="margin-top:28px">
-      <div class="sec-label">Observações Importantes</div>
-      <div class="obs-box">
-        <p>• Este orçamento tem validade de <strong style="color:var(--text)">7 dias</strong> a partir da data de emissão.</p>
-        <p>• Os valores podem sofrer alterações após o prazo de validade.</p>
-        <p>• A reserva da data só é confirmada após a assinatura do contrato e pagamento da entrada.</p>
-        <p>• Em caso de dúvidas, entre em contato pelo WhatsApp.</p>
+    <div id="validade-strip" style="margin-top:28px;display:none">
+      <div class="obs-box" style="text-align:center;font-size:0.82rem">
+        ⏳ Este orçamento expira em <strong id="validade-countdown" style="color:var(--gold)">—</strong>
       </div>
     </div>
 
@@ -978,6 +975,35 @@ function renderOrcamento(doc) {
     'Emitido em ' + (emissaoDate ? emissaoDate.toLocaleDateString('pt-BR') : '—');
   document.getElementById('hero-ref').textContent = id.substring(0, 8).toUpperCase();
   _orcData.ref = id.substring(0, 8).toUpperCase();
+
+  // Contador de validade (7 dias a partir da emissão)
+  if (emissaoDate) {
+    var expira = new Date(emissaoDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    var strip = document.getElementById('validade-strip');
+    var countdown = document.getElementById('validade-countdown');
+    strip.style.display = 'block';
+    function atualizarContador() {
+      var agora = new Date();
+      var diff = expira - agora;
+      if (diff <= 0) {
+        countdown.textContent = 'expirado';
+        countdown.style.color = '#e55';
+        return;
+      }
+      var dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+      var horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      var segs = Math.floor((diff % (1000 * 60)) / 1000);
+      if (dias > 0) {
+        countdown.textContent = dias + ' dia' + (dias > 1 ? 's' : '') + ', ' + horas + 'h ' + mins + 'min';
+      } else {
+        countdown.textContent = horas + 'h ' + mins + 'min ' + segs + 's';
+        if (diff < 24 * 60 * 60 * 1000) countdown.style.color = '#e55';
+      }
+    }
+    atualizarContador();
+    setInterval(atualizarContador, 1000);
+  }
 
   // Logo removido do topo
 
