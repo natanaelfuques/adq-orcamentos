@@ -619,14 +619,14 @@
           <span style="font-style:normal;margin-right:6px;font-size:0.85rem">▶</span> WhatsApp
         </a>
         <button class="cta-btn cta-btn--outline" id="btn-contrato" onclick="toggleContrato()">
-          <span style="font-style:normal;margin-right:6px;font-size:0.85rem">✦</span> Solicitar Contrato
+          <span style="font-style:normal;margin-right:6px;font-size:0.85rem">📋</span> Solicitar Reserva
         </button>
       </div>
     </div>
 
     <!-- PAINEL SOLICITAR CONTRATO -->
     <div id="contrato-panel" class="contrato-panel" style="display:none">
-      <div class="contrato-panel-title">Solicitar Contrato</div>
+      <div class="contrato-panel-title">Solicitar Reserva</div>
       <p class="contrato-panel-sub">Selecione a opção e a forma de pagamento para prosseguir.</p>
 
       <div class="contrato-field">
@@ -826,7 +826,7 @@ function toggleContrato() {
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } else {
     panel.style.display = 'none';
-    btn.innerHTML = '<span style="font-style:normal;margin-right:6px;font-size:0.85rem">✦</span> Solicitar Contrato';
+    btn.innerHTML = '<span style="font-style:normal;margin-right:6px;font-size:0.85rem">📋</span> Solicitar Reserva';
   }
 }
 
