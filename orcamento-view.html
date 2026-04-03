@@ -324,178 +324,191 @@
 
   /* ── PROPOSTA FEEDBACK ── */
   .proposta-box {
-    background: linear-gradient(135deg, #1a1509, #111);
-    border: 1px solid rgba(200,169,74,0.3);
+    background: linear-gradient(160deg, #161208 0%, #0f0f0f 100%);
+    border: 1px solid rgba(200,169,74,0.25);
+    border-top: 3px solid var(--gold);
     border-radius: 4px;
-    padding: 24px;
+    padding: 28px 24px 24px;
     text-align: center;
   }
   .proposta-pergunta {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.3rem; font-weight: 900;
+    font-size: 1.6rem; font-weight: 900;
     color: var(--gold); text-transform: uppercase;
-    letter-spacing: 0.08em; margin-bottom: 6px;
+    letter-spacing: 0.1em; margin-bottom: 6px;
+    line-height: 1;
   }
-  .proposta-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; }
-  .proposta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .proposta-sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 22px; letter-spacing: 0.03em; }
+  .proposta-divider {
+    width: 40px; height: 1px; background: rgba(200,169,74,0.3);
+    margin: 0 auto 22px;
+  }
+  .proposta-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .proposta-btn {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1rem; font-weight: 800;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 12px 32px; border-radius: 3px;
+    font-size: 0.95rem; font-weight: 800;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 13px 28px; border-radius: 3px;
     border: none; cursor: pointer;
-    transition: opacity 0.15s, transform 0.12s;
+    transition: all 0.18s ease;
     display: inline-flex; align-items: center; gap: 8px;
+    flex: 1; justify-content: center; min-width: 160px;
   }
-  .proposta-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-  .proposta-btn--sim { background: var(--gold); color: var(--dark); }
+  .proposta-btn--sim {
+    background: var(--gold);
+    color: var(--dark);
+    box-shadow: 0 4px 16px rgba(200,169,74,0.25);
+  }
+  .proposta-btn--sim:hover {
+    background: var(--gold-light);
+    box-shadow: 0 6px 22px rgba(200,169,74,0.35);
+    transform: translateY(-1px);
+  }
   .proposta-btn--nao {
-    background: transparent; color: var(--muted);
-    border: 1.5px solid #333;
+    background: transparent; color: #777;
+    border: 1px solid #2e2e2e;
   }
-  .proposta-btn--nao:hover { border-color: #555; color: var(--text); opacity: 1; }
-  .proposta-btn--ativo { opacity: 0.6; cursor: default; transform: none !important; }
+  .proposta-btn--nao:hover { border-color: #484848; color: #aaa; background: #181818; }
+  .proposta-btn--ativo.proposta-btn--sim { opacity: 0.55; cursor: default; transform: none; box-shadow: none; }
+  .proposta-btn--ativo.proposta-btn--nao { opacity: 0.55; cursor: default; }
 
   /* ── PAINEL RESPOSTA ── */
-  .resposta-panel {
-    margin-top: 14px;
-    background: var(--surface);
-    border: 1px solid rgba(200,169,74,0.25);
-    border-radius: 4px;
-    padding: 22px 24px;
-    animation: fadeSlideIn 0.22s ease;
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
+  .resposta-panel {
+    margin-top: 12px;
+    background: var(--surface);
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    overflow: hidden;
+    animation: fadeSlideIn 0.2s ease;
+  }
+  .resposta-panel-header {
+    background: var(--dark);
+    border-bottom: 1px solid #222;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .resposta-panel-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 900; flex-shrink: 0;
+  }
+  .resposta-panel-icon--sim { background: rgba(200,169,74,0.15); color: var(--gold); border: 1px solid rgba(200,169,74,0.4); }
+  .resposta-panel-icon--nao { background: rgba(255,255,255,0.05); color: #888; border: 1px solid #333; }
   .resposta-panel-title {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1rem; font-weight: 800;
-    color: var(--gold); text-transform: uppercase;
-    letter-spacing: 0.08em; margin-bottom: 4px;
+    font-size: 0.95rem; font-weight: 800;
+    color: var(--text); text-transform: uppercase;
+    letter-spacing: 0.07em;
   }
-  .resposta-panel-sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 18px; }
-  .resposta-field { margin-bottom: 14px; }
+  .resposta-panel-body { padding: 20px; }
+  .resposta-panel-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+
+  /* ── OPTION CARDS (replace select) ── */
+  .resposta-field { margin-bottom: 18px; }
   .resposta-label {
-    display: block; font-size: 0.7rem; font-weight: 700;
+    display: block; font-size: 0.68rem; font-weight: 700;
     color: var(--gold); text-transform: uppercase;
-    letter-spacing: 0.12em; margin-bottom: 6px;
+    letter-spacing: 0.14em; margin-bottom: 8px;
   }
-  .resposta-select-wrap { position: relative; }
-  .resposta-select {
-    width: 100%; background: var(--dark);
-    border: 1px solid var(--border); border-radius: 3px;
-    color: var(--text); font-family: 'Barlow', sans-serif;
-    font-size: 0.88rem; padding: 10px 14px;
-    appearance: none; cursor: pointer; outline: none;
-    transition: border-color 0.2s;
+  .opcao-cards-grid { display: flex; flex-direction: column; gap: 6px; }
+  .opcao-card-radio {
+    background: var(--dark);
+    border: 1px solid #2a2a2a;
+    border-radius: 3px;
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
   }
-  .resposta-select:focus { border-color: rgba(200,169,74,0.6); }
-  .resposta-select-wrap::after {
-    content: '▾'; position: absolute; right: 12px; top: 50%;
-    transform: translateY(-50%); color: var(--gold);
-    font-size: 0.8rem; pointer-events: none;
+  .opcao-card-radio:hover { border-color: rgba(200,169,74,0.4); background: #161616; }
+  .opcao-card-radio.selected {
+    border-color: var(--gold);
+    background: rgba(200,169,74,0.06);
   }
+  .opcao-card-radio input[type=radio] { display: none; }
+  .opcao-radio-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 1.5px solid #444; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s;
+  }
+  .opcao-card-radio.selected .opcao-radio-dot {
+    border-color: var(--gold);
+    background: var(--gold);
+    box-shadow: 0 0 0 3px rgba(200,169,74,0.15);
+  }
+  .opcao-radio-dot::after {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--dark);
+    display: none;
+  }
+  .opcao-card-radio.selected .opcao-radio-dot::after { display: block; }
+  .opcao-card-text { flex: 1; }
+  .opcao-card-name {
+    font-size: 0.85rem; font-weight: 600; color: var(--text);
+    line-height: 1.3;
+  }
+  .opcao-card-desc {
+    font-size: 0.75rem; color: var(--muted); margin-top: 1px;
+  }
+
+  /* ── TEXTAREA ── */
   .resposta-textarea {
     width: 100%; background: var(--dark);
-    border: 1px solid var(--border); border-radius: 3px;
+    border: 1px solid #2a2a2a; border-radius: 3px;
     color: var(--text); font-family: 'Barlow', sans-serif;
-    font-size: 0.88rem; padding: 10px 14px;
-    outline: none; resize: vertical; min-height: 90px;
-    transition: border-color 0.2s; line-height: 1.5;
+    font-size: 0.88rem; padding: 12px 14px;
+    outline: none; resize: vertical; min-height: 100px;
+    transition: border-color 0.2s; line-height: 1.6;
   }
-  .resposta-textarea:focus { border-color: rgba(200,169,74,0.6); }
-  .resposta-textarea::placeholder { color: #555; }
+  .resposta-textarea:focus { border-color: rgba(200,169,74,0.5); }
+  .resposta-textarea::placeholder { color: #444; }
+
+  /* ── ACTIONS ── */
   .resposta-actions {
-    display: flex; gap: 10px; justify-content: flex-end;
-    margin-top: 20px; flex-wrap: wrap;
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 16px 20px;
+    border-top: 1px solid #222;
+    background: rgba(0,0,0,0.15);
+  }
+  .resposta-actions-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
   }
   .resposta-cancel {
-    background: transparent; border: 1px solid var(--border);
-    color: var(--muted); border-radius: 3px;
+    background: transparent; border: 1px solid #2a2a2a;
+    color: #666; border-radius: 3px;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.9rem; font-weight: 700;
+    font-size: 0.85rem; font-weight: 700;
     letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 11px 20px; cursor: pointer;
+    padding: 10px 18px; cursor: pointer;
     transition: border-color 0.15s, color 0.15s;
+    flex-shrink: 0;
   }
-  .resposta-cancel:hover { border-color: #555; color: var(--text); }
+  .resposta-cancel:hover { border-color: #444; color: #aaa; }
   .cta-btn {
     background: var(--gold); color: var(--dark);
     border: none; border-radius: 3px;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.9rem; font-weight: 800;
+    font-size: 0.88rem; font-weight: 800;
     letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 11px 22px; cursor: pointer;
+    padding: 10px 20px; cursor: pointer;
     text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
     transition: opacity 0.15s, transform 0.1s;
-    white-space: nowrap;
+    white-space: nowrap; flex: 1; justify-content: center;
   }
   .cta-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-
-  /* ── CONTRATO PANEL ── */
-  .contrato-panel {
-    margin-top: 14px;
-    background: var(--surface);
-    border: 1px solid rgba(200,169,74,0.35);
-    border-radius: 4px;
-    padding: 22px 24px;
-    animation: fadeSlideIn 0.22s ease;
+  .cta-btn--blue {
+    background: #1a56db;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(26,86,219,0.25);
   }
-  @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .contrato-panel-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1rem; font-weight: 800;
-    color: var(--gold); text-transform: uppercase;
-    letter-spacing: 0.08em; margin-bottom: 4px;
-  }
-  .contrato-panel-sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 18px; }
-  .contrato-field { margin-bottom: 14px; }
-  .contrato-label {
-    display: block;
-    font-size: 0.7rem; font-weight: 700;
-    color: var(--gold); text-transform: uppercase;
-    letter-spacing: 0.12em; margin-bottom: 6px;
-  }
-  .contrato-select-wrap { position: relative; }
-  .contrato-select {
-    width: 100%;
-    background: var(--dark);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 0.88rem;
-    padding: 10px 14px;
-    appearance: none;
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .contrato-select:focus { border-color: rgba(200,169,74,0.6); }
-  .contrato-select-wrap::after {
-    content: '▾';
-    position: absolute; right: 12px; top: 50%;
-    transform: translateY(-50%);
-    color: var(--gold); font-size: 0.8rem;
-    pointer-events: none;
-  }
-  .contrato-actions {
-    display: flex; gap: 10px; justify-content: flex-end;
-    margin-top: 20px; flex-wrap: wrap;
-  }
-  .contrato-cancel {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 3px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.9rem; font-weight: 700;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 11px 20px; cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
-  }
-  .contrato-cancel:hover { border-color: #555; color: var(--text); }
+  .cta-btn--blue:hover { opacity: 0.9; }
 
   /* ── DATA INFO STRIP ── */
   .info-strip {
@@ -683,63 +696,70 @@
     <!-- PROPOSTA FEEDBACK -->
     <div class="proposta-box">
       <div class="proposta-pergunta">Gostou da proposta?</div>
+      <div class="proposta-divider"></div>
       <p class="proposta-sub">Confirme sua reserva ou solicite ajustes abaixo.</p>
       <div class="proposta-btns">
         <button class="proposta-btn proposta-btn--sim" id="btn-sim" onclick="abrirResposta('sim')">
-          ✓ Sim, quero reservar
+          ✓&nbsp; Sim, quero reservar
         </button>
         <button class="proposta-btn proposta-btn--nao" id="btn-nao" onclick="abrirResposta('nao')">
-          ✗ Quero modificações
+          ✎&nbsp; Quero modificações
         </button>
       </div>
     </div>
 
     <!-- PAINEL SIM -->
     <div id="painel-sim" class="resposta-panel" style="display:none">
-      <div class="resposta-panel-title">✓ Ótimo! Vamos confirmar sua reserva.</div>
-      <p class="resposta-panel-sub">Selecione a opção e a forma de pagamento para enviarmos pelo WhatsApp.</p>
+      <div class="resposta-panel-header">
+        <div class="resposta-panel-icon resposta-panel-icon--sim">✓</div>
+        <div class="resposta-panel-title">Confirmar Reserva</div>
+      </div>
+      <div class="resposta-panel-body">
+        <p class="resposta-panel-sub">Selecione a opção e a forma de pagamento. Enviaremos a confirmação pelo WhatsApp.</p>
 
-      <div class="resposta-field">
-        <label class="resposta-label">Opção Escolhida</label>
-        <div class="resposta-select-wrap">
-          <select id="sel-opcao" class="resposta-select">
-            <option value="">— Selecione uma opção —</option>
-          </select>
+        <div class="resposta-field">
+          <label class="resposta-label">Opção Escolhida</label>
+          <div class="opcao-cards-grid" id="grid-opcoes"></div>
+        </div>
+
+        <div class="resposta-field">
+          <label class="resposta-label">Forma de Pagamento</label>
+          <div class="opcao-cards-grid" id="grid-pgto"></div>
         </div>
       </div>
-
-      <div class="resposta-field">
-        <label class="resposta-label">Forma de Pagamento</label>
-        <div class="resposta-select-wrap">
-          <select id="sel-pgto" class="resposta-select">
-            <option value="">— Selecione a forma de pagamento —</option>
-          </select>
-        </div>
-      </div>
-
       <div class="resposta-actions">
-        <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
-        <a id="wa-link-sim" href="#" class="cta-btn" target="_blank" onclick="return enviarSim(event)">
-          ▶ Confirmar pelo WhatsApp
-        </a>
+        <div class="resposta-actions-row">
+          <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
+          <a id="wa-link-sim" href="#" class="cta-btn" target="_blank" onclick="return enviarSim(event)">
+            ▶ Confirmar pelo WhatsApp
+          </a>
+        </div>
+        <button class="cta-btn cta-btn--blue" onclick="dadosReserva()">
+          ⊞ Dados para Reserva
+        </button>
       </div>
     </div>
 
     <!-- PAINEL NÃO -->
     <div id="painel-nao" class="resposta-panel" style="display:none">
-      <div class="resposta-panel-title">✎ Nos conte o que ajustamos</div>
-      <p class="resposta-panel-sub">Descreva o que você gostaria de modificar e enviaremos uma nova proposta.</p>
-
-      <div class="resposta-field">
-        <label class="resposta-label">O que você gostaria de modificar?</label>
-        <textarea id="txt-modificacao" class="resposta-textarea" placeholder="Ex: gostaria de incluir mais equipamentos, mudar a data, ajustar o valor..."></textarea>
+      <div class="resposta-panel-header">
+        <div class="resposta-panel-icon resposta-panel-icon--nao">✎</div>
+        <div class="resposta-panel-title">Solicitar Modificações</div>
       </div>
-
+      <div class="resposta-panel-body">
+        <p class="resposta-panel-sub">Descreva o que você gostaria de ajustar e enviaremos uma nova proposta em breve.</p>
+        <div class="resposta-field">
+          <label class="resposta-label">O que você gostaria de modificar?</label>
+          <textarea id="txt-modificacao" class="resposta-textarea" placeholder="Ex: incluir mais equipamentos, mudar a data, ajustar o valor..."></textarea>
+        </div>
+      </div>
       <div class="resposta-actions">
-        <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
-        <a id="wa-link-nao" href="#" class="cta-btn" target="_blank" onclick="return enviarNao(event)">
-          ▶ Enviar pelo WhatsApp
-        </a>
+        <div class="resposta-actions-row">
+          <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
+          <a id="wa-link-nao" href="#" class="cta-btn" target="_blank" onclick="return enviarNao(event)">
+            ▶ Enviar pelo WhatsApp
+          </a>
+        </div>
       </div>
     </div>
 
@@ -943,58 +963,75 @@ function fecharPainel() {
   _painelAtivo = null;
 }
 
+function criarCardRadio(nome, desc, grupo, idx) {
+  var card = document.createElement('div');
+  card.className = 'opcao-card-radio';
+  card.dataset.grupo = grupo;
+  card.dataset.valor = nome;
+  card.innerHTML =
+    '<div class="opcao-radio-dot"></div>' +
+    '<div class="opcao-card-text">' +
+      '<div class="opcao-card-name">' + escHtml(nome) + '</div>' +
+      (desc ? '<div class="opcao-card-desc">' + escHtml(desc) + '</div>' : '') +
+    '</div>';
+  card.addEventListener('click', function() {
+    var todos = document.querySelectorAll('.opcao-card-radio[data-grupo="' + grupo + '"]');
+    todos.forEach(function(c) { c.classList.remove('selected'); });
+    card.classList.add('selected');
+  });
+  return card;
+}
+
+function getSelectedCard(grupo) {
+  var sel = document.querySelector('.opcao-card-radio[data-grupo="' + grupo + '"].selected');
+  return sel ? sel.dataset.valor : '';
+}
+
 function preencherSelects(d) {
-  var selOpcao = document.getElementById('sel-opcao');
-  var selPgto = document.getElementById('sel-pgto');
+  var gridOpcoes = document.getElementById('grid-opcoes');
+  var gridPgto = document.getElementById('grid-pgto');
   var NOMES = { 1: 'Essencial', 2: 'Mais Escolhido', 3: 'Experiencia Completa' };
   var opcoes = (d.opcoes||[]).filter(function(o){ return o.tipo==='pacote'; });
   var det = (d.opcoes||[]).find(function(o){ return o.tipo==='detalhado'; });
+
   if (opcoes.length) {
     opcoes.forEach(function(op, i) {
       var idx = op.idx || (i+1);
-      var opt = document.createElement('option');
-      opt.value = 'Opcao ' + idx + ' - ' + (op.titulo || NOMES[idx] || 'Pacote') + (op.valor ? ' (R$ ' + op.valor + ')' : '');
-      opt.textContent = opt.value;
-      selOpcao.appendChild(opt);
+      var nome = 'Opcao ' + idx + ' - ' + (op.titulo || NOMES[idx] || 'Pacote');
+      var desc = op.valor ? 'R$ ' + op.valor : '';
+      gridOpcoes.appendChild(criarCardRadio(nome, desc, 'opcao', i));
     });
   } else if (det && det.itens && det.itens.length) {
-    det.itens.forEach(function(it) {
-      var opt = document.createElement('option');
-      opt.value = it.titulo + (it.valor ? ' (R$ ' + it.valor + ')' : '');
-      opt.textContent = opt.value;
-      selOpcao.appendChild(opt);
+    det.itens.forEach(function(it, i) {
+      var desc = it.valor ? 'R$ ' + it.valor : '';
+      gridOpcoes.appendChild(criarCardRadio(it.titulo, desc, 'opcao', i));
     });
   } else {
-    var opt = document.createElement('option');
-    opt.value = 'Orcamento unico'; opt.textContent = opt.value;
-    selOpcao.appendChild(opt);
+    gridOpcoes.appendChild(criarCardRadio('Orcamento unico', '', 'opcao', 0));
   }
+
   var pagamentos = (d.pagamentos||[]).filter(function(p){ return p.inc && (p.titulo||p.desc); });
   if (pagamentos.length) {
-    pagamentos.forEach(function(p) {
-      var opt = document.createElement('option');
-      opt.value = (p.titulo||'Pagamento') + (p.desc ? ' - ' + p.desc : '');
-      opt.textContent = opt.value;
-      selPgto.appendChild(opt);
+    pagamentos.forEach(function(p, i) {
+      gridPgto.appendChild(criarCardRadio(p.titulo||'Pagamento', p.desc||'', 'pgto', i));
     });
   } else {
-    var opt = document.createElement('option');
-    opt.value = 'A combinar'; opt.textContent = opt.value;
-    selPgto.appendChild(opt);
+    gridPgto.appendChild(criarCardRadio('A combinar', '', 'pgto', 0));
   }
+
   _orcData.nome = d.nome_cliente || d.nome || '';
 }
 
 function enviarSim(e) {
-  var opcao = document.getElementById('sel-opcao').value;
-  var pgto = document.getElementById('sel-pgto').value;
+  var opcao = getSelectedCard('opcao');
+  var pgto = getSelectedCard('pgto');
   if (!opcao || !pgto) {
     e.preventDefault();
     alert('Por favor, selecione a opcao e a forma de pagamento.');
     return false;
   }
   var linhas = [
-    'Ola! Gostaria de confirmar minha reserva.',
+    'Gostaria de confirmar minha reserva.',
     'Ref: ' + _orcData.ref,
     'Nome: ' + _orcData.nome,
     'Opcao escolhida: ' + opcao,
@@ -1012,12 +1049,18 @@ function enviarNao(e) {
     return false;
   }
   var linhas = [
-    'Ola! Recebi o orcamento (Ref: ' + _orcData.ref + ') e gostaria de solicitar algumas modificacoes.',
+    'Gostaria de solicitar algumas modificacoes.',
     'Nome: ' + _orcData.nome,
+    'Ref: ' + _orcData.ref,
     'Modificacoes: ' + txt
   ];
   document.getElementById('wa-link-nao').href = 'https://wa.me/5547991536771?text=' + encodeURIComponent(linhas.join('\n'));
   return true;
+}
+
+function dadosReserva() {
+  // placeholder - funcionalidade a definir
+  alert('Funcionalidade de Dados para Reserva em breve!');
 }
 // ── INIT ──
 window.addEventListener('load', function() {
