@@ -816,6 +816,11 @@
           <label class="resposta-label">Forma de Pagamento</label>
           <div class="opcao-cards-grid" id="grid-pgto"></div>
           <div id="pgto-preview" style="display:none;margin-top:10px;background:#0e1a27;border:1px solid #1a2e40;border-radius:3px;padding:10px 14px;font-size:0.78rem;color:#8ab4d4;line-height:1.6"></div>
+          <div id="entrada-data-wrap" style="display:none;margin-top:8px;background:#0e1a27;border:1px solid #1a2e40;border-radius:3px;padding:14px 16px;animation:fadeSlideIn 0.2s ease">
+            <label style="display:block;font-size:0.68rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px">Data de Pagamento da Entrada</label>
+            <input id="entrada-data-input" type="date" class="dados-input" style="max-width:220px;background:#111e2a;border-color:#1a2e40;color:#c8e0f0" placeholder="dd/mm/aaaa">
+            <div style="font-size:0.7rem;color:#4a6a88;margin-top:6px">Informe a data prevista para o pagamento da entrada (20%).</div>
+          </div>
         </div>
       </div>
       <div class="resposta-actions">
@@ -1058,6 +1063,8 @@ function calcPgtoPreview() {
     var saldo = total > 0 ? 'R$ ' + _formatBRL(total * 0.8) : '—';
     texto = DOLLAR_ICON + 'Entrada de <strong>' + ent + '</strong> (20%) na assinatura'
           + ' + saldo de <strong>' + saldo + '</strong> (80%) em boletos até 5 dias antes do evento.';
+    var entWrap = document.getElementById('entrada-data-wrap');
+    if (entWrap) entWrap.style.display = 'block';
 
   } else if (titulo.indexOf('parcel') !== -1 || titulo === pgtoCard.dataset.valor.toLowerCase()) {
     // Parcelado no cartão — sem valor fixo de parcelas, só mostrar total
@@ -1070,6 +1077,12 @@ function calcPgtoPreview() {
   } else {
     // Qualquer outro título personalizado — só mostra o total se disponível
     if (total > 0) texto = DOLLAR_ICON + 'Total: <strong>R$ ' + _formatBRL(total) + '</strong>.';
+  }
+
+  // Esconder formulário de data de entrada se não for boleto/entrada
+  if (titulo.indexOf('boleto') === -1 && titulo.indexOf('entrada') === -1) {
+    var entWrap = document.getElementById('entrada-data-wrap');
+    if (entWrap) entWrap.style.display = 'none';
   }
 
   if (texto) {
@@ -1276,13 +1289,17 @@ function fecharPainel() {
     c.classList.remove('selected');
   });
 
-  // Recolher caixa azul de preview e textarea de personalizar
+  // Recolher caixa azul de preview, textarea de personalizar e campo de data de entrada
   var pgtoPreview = document.getElementById('pgto-preview');
   var pgtoOutroWrap = document.getElementById('pgto-outro-wrap');
   var pgtoOutroTxt = document.getElementById('pgto-outro-txt');
+  var entradaWrap = document.getElementById('entrada-data-wrap');
+  var entradaInput = document.getElementById('entrada-data-input');
   if (pgtoPreview) pgtoPreview.style.display = 'none';
   if (pgtoOutroWrap) pgtoOutroWrap.style.display = 'none';
   if (pgtoOutroTxt) pgtoOutroTxt.value = '';
+  if (entradaWrap) entradaWrap.style.display = 'none';
+  if (entradaInput) entradaInput.value = '';
 
   // Resetar textarea de modificações
   var txtMod = document.getElementById('txt-modificacao');
@@ -1325,15 +1342,21 @@ function criarCardRadio(nome, desc, grupo, idx) {
     var todos = document.querySelectorAll('.opcao-card-radio[data-grupo="' + grupo + '"]');
     todos.forEach(function(c) { c.classList.remove('selected'); });
     if (grupo === 'pgto') {
-      // Fechar textarea de personalizar
+      // Fechar textarea de personalizar e campo de data de entrada
       var outroWrap = document.getElementById('pgto-outro-wrap');
       if (outroWrap) outroWrap.style.display = 'none';
+      var entWrap = document.getElementById('entrada-data-wrap');
+      var entInput = document.getElementById('entrada-data-input');
       if (jaEstaSelected) {
-        // Toggle: desmarca e recolhe caixa azul
+        // Toggle: desmarca e recolhe caixa azul e campos extras
         var box = document.getElementById('pgto-preview');
         if (box) box.style.display = 'none';
+        if (entWrap) entWrap.style.display = 'none';
+        if (entInput) entInput.value = '';
         return;
       }
+      // Ao trocar de opção, esconder campo de entrada (será reaberto só se for boleto)
+      if (entWrap) entWrap.style.display = 'none';
     }
     card.classList.add('selected');
     if (grupo === 'pgto' || grupo === 'opcao') calcPgtoPreview();
@@ -1491,6 +1514,13 @@ function enviarSim(e) {
     'Opcao escolhida: ' + opcao,
     'Forma de pagamento: ' + pgto
   ];
+  // Incluir data de entrada se preenchida
+  var entradaInput = document.getElementById('entrada-data-input');
+  if (entradaInput && entradaInput.value) {
+    var partes = entradaInput.value.split('-');
+    var dataFmtEnt = partes.length === 3 ? partes[2] + '/' + partes[1] + '/' + partes[0] : entradaInput.value;
+    linhas.push('Data de pagamento da entrada: ' + dataFmtEnt);
+  }
   document.getElementById('wa-link-sim').href = 'https://wa.me/5547991536771?text=' + encodeURIComponent(linhas.join('\n'));
   return true;
 }
@@ -1669,6 +1699,10 @@ function enviarDadosReserva(e) {
     val_total: valTotal,
     pgto_sel: pgtoSlug,
     pgto_custom: pgtoCustomVal,
+    pgto_entrada_data: (function() {
+      var el = document.getElementById('entrada-data-input');
+      return el && el.value ? el.value : '';
+    })(),
     servicos: servicos,
     aprovado: false,
     orc_ref: _orcData.ref || '',
