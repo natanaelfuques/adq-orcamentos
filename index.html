@@ -1568,7 +1568,7 @@ Revestimento</textarea>
     </div>
     <iframe id="pdf-frame"></iframe>
     <button class="btn-download" onclick="imprimirPDF()">Imprimir / Baixar PDF</button>
-    <button class="btn-download" onclick="salvarESolicitarLink()" style="margin-top:8px;border-color:#4A90C8;color:#4A90C8" id="btn-copiar-link">Salvar / Gerar Link</button>
+    <button class="btn-download" onclick="salvarESolicitarLink()" style="margin-top:8px;border-color:#4A90C8;color:#4A90C8" id="btn-copiar-link">Salvar / Copiar Link</button>
   </div>
 
 </div><!-- /container orcamento -->
@@ -4484,7 +4484,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
-    card += '<button class="btn-salvo primary" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
+    card += '<button class="btn-salvo' + (doc.link_assinatura ? ' primary' : '') + '" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
     card += '<button class="btn-salvo" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
     card += '<button class="btn-salvo" data-action="duplicar-contrato" data-id="' + id + '">Duplicar</button>';
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
@@ -5055,13 +5055,20 @@ function salvarESolicitarLink() {
       registrarLogGerador('salvar-orcamento', dados.nome_cliente || '');
       var link = _getLinkOrcamento(docRef.id);
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(link).then(function() { _mostrarToastLink(link); }).catch(function() { _fallbackCopyLink(link); });
+        navigator.clipboard.writeText(link).catch(function() { _fallbackCopyLink(link); });
       } else { _fallbackCopyLink(link); }
-      if (btn) { btn.textContent = 'Salvar / Gerar Link'; btn.disabled = false; }
+      if (btn) { btn.textContent = 'Salvar / Copiar Link'; btn.disabled = false; }
+      // Navegar para aba Salvos > Orçamentos
+      if (window._goToVirtual) {
+        window._goToVirtual(1, false);
+      } else {
+        switchMain('salvos');
+        switchSalvosTab('orcamentos');
+      }
     })
     .catch(function(e) {
       alert('Erro ao salvar: ' + e.message);
-      if (btn) { btn.textContent = 'Salvar / Gerar Link'; btn.disabled = false; }
+      if (btn) { btn.textContent = 'Salvar / Copiar Link'; btn.disabled = false; }
     });
 }
 
@@ -5133,6 +5140,7 @@ function _salvarLinkAssinatura(id) {
       var linkBtn = document.querySelector('.salvo-card button[data-action="link-contrato"][data-id="' + id + '"]');
       if (linkBtn) {
         linkBtn.setAttribute('data-link', link);
+        if (link) { linkBtn.classList.add('primary'); } else { linkBtn.classList.remove('primary'); }
       }
       document.getElementById('adq-link-ass-modal').remove();
     })
