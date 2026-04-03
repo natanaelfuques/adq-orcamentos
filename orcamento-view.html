@@ -808,7 +808,7 @@
         <p class="resposta-panel-sub">Selecione a opção e a forma de pagamento. Vamos garantir sua data!</p>
 
         <div class="resposta-field">
-          <label class="resposta-label">Opção Escolhida</label>
+          <label class="resposta-label" id="label-opcao-escolhida">Opção Escolhida</label>
           <div class="opcao-cards-grid" id="grid-opcoes"></div>
         </div>
 
@@ -1258,6 +1258,8 @@ function preencherSelects(d) {
     });
   } else if (det && det.itens && det.itens.length) {
     _orcData.isDetalhado = true;
+    var lbl = document.getElementById('label-opcao-escolhida');
+    if (lbl) lbl.textContent = 'Opções';
     det.itens.forEach(function(it, i) {
       var desc = it.valor ? 'R$ ' + it.valor : '';
       var card = criarCardCheckbox(it.titulo, desc, 'opcao', i);
