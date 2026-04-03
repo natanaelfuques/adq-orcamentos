@@ -1436,6 +1436,30 @@ function enviarDadosReserva(e) {
     }
   }
 
+  // Mapear título do card para slug compatível com o index
+  var pgtoCardSel = document.querySelector('.opcao-card-radio[data-grupo="pgto"].selected');
+  var pgtoSlug = 'custom';
+  var pgtoCustomVal = '';
+  if (pgtoCardSel) {
+    if (pgtoCardSel.dataset.valor === '__outro__') {
+      pgtoSlug = 'custom';
+      var pgtoOutroTxt = document.getElementById('pgto-outro-txt');
+      pgtoCustomVal = pgtoOutroTxt ? pgtoOutroTxt.value.trim() : '';
+    } else {
+      var titulo = (pgtoCardSel.dataset.valor || '').toLowerCase().replace(/\s+/g,' ').trim();
+      if (titulo.indexOf('vista') !== -1) {
+        pgtoSlug = 'vista';
+      } else if (titulo.indexOf('50%') !== -1 || titulo.indexOf('metade') !== -1) {
+        pgtoSlug = 'metade';
+      } else if (titulo.indexOf('boleto') !== -1 || titulo.indexOf('entrada') !== -1) {
+        pgtoSlug = 'parcelado';
+      } else {
+        pgtoSlug = 'custom';
+        pgtoCustomVal = pgtoCardSel.dataset.valor || '';
+      }
+    }
+  }
+
   // Montar dados do contrato compatíveis com o gerador
   var dadosContrato = {
     _tipo: 'contrato',
@@ -1452,8 +1476,8 @@ function enviarDadosReserva(e) {
     ev_inicio: inicio,
     ev_fim:    fim,
     val_total: valTotal,
-    pgto_tipo: 'custom',
-    pgto_custom: pgtoSel || '',
+    pgto_sel: pgtoSlug,
+    pgto_custom: pgtoCustomVal,
     servicos: servicos,
     aprovado: false,
     orc_ref: _orcData.ref || '',
