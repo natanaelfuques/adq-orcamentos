@@ -2861,11 +2861,29 @@ document.addEventListener('DOMContentLoaded', function() {
   // Recalc total
   recalcDetTotal();
 
-  // Marcar botoes de filtro iniciais como ativos
   var btnOrcTodos = document.getElementById('filtro-orc-todos');
   if (btnOrcTodos) btnOrcTodos.classList.add('active');
   var btnConTodos = document.getElementById('filtro-con-todos');
   if (btnConTodos) btnConTodos.classList.add('active');
+
+  // ── DEEP LINK: ?tab=contratos ──
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'contratos') {
+      var tentativas = 0;
+      var intervalo = setInterval(function() {
+        tentativas++;
+        var app = document.getElementById('gerador-app');
+        if (app && app.style.display !== 'none') {
+          clearInterval(intervalo);
+          switchMain('salvos');
+          setTimeout(function() { switchSalvosTab('contratos'); }, 200);
+          history.replaceState(null, '', window.location.pathname);
+        }
+        if (tentativas > 60) clearInterval(intervalo);
+      }, 100);
+    }
+  })();
   // Auto-resize on input
   document.querySelectorAll('textarea').forEach(function(ta) {
     ta.addEventListener('input', function() { autoResize(this); });

@@ -767,6 +767,7 @@
     <!-- PROPOSTA FEEDBACK -->
     <div class="proposta-box">
       <div class="proposta-pergunta">Gostou da proposta?</div>
+      <p class="proposta-sub" style="margin-bottom:16px">Confirme sua reserva ou solicite ajustes abaixo.</p>
       <div class="proposta-divider"></div>
       <p class="proposta-sub">Selecione a opção e a forma de pagamento. Vamos garantir sua data!</p>
       <div class="proposta-btns">
@@ -786,7 +787,7 @@
         <div class="resposta-panel-title">Confirmar Reserva</div>
       </div>
       <div class="resposta-panel-body">
-        <p class="resposta-panel-sub">Selecione a opção e a forma de pagamento. Preencha os dados para o contrato.</p>
+        <p class="resposta-panel-sub">Selecione a opção e a forma de pagamento. Vamos garantir sua data!</p>
 
         <div class="resposta-field">
           <label class="resposta-label">Opção Escolhida</label>
@@ -802,7 +803,7 @@
         <div class="resposta-actions-row">
           <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
           <button class="cta-btn cta-btn--blue" id="btn-dados-reserva" onclick="toggleDadosReserva()">
-            ▶ Preencher Dados
+            ▶ Gerar Contrato
           </button>
           <a id="wa-link-sim" href="#" class="cta-btn" target="_blank" onclick="return enviarSim(event)">
             ▶ Confirmar pelo WhatsApp
@@ -936,7 +937,7 @@
     @audiodequalidade &nbsp;•&nbsp;
     facebook.com/audiodequalidade &nbsp;•&nbsp;
     CNPJ 49.276.147/0001-06<br>
-    Felipe Schmidt, 280 – São Luiz, Brusque/SC
+    Brusque/SC
   </div>
 
 </div><!-- /app -->
@@ -1342,11 +1343,12 @@ function toggleDadosReserva() {
     set('dr_data',   _orcData.data);
   } else {
     form.style.display = 'none';
-    btn.innerHTML = '▶ Preencher Dados';
+    btn.innerHTML = '▶ Gerar Contrato';
   }
 }
 
 function enviarDadosReserva(e) {
+  e.preventDefault();
   var nome = document.getElementById('dr_nome').value.trim();
   var doc = document.getElementById('dr_doc').value.trim();
   var end = document.getElementById('dr_end').value.trim();
@@ -1362,41 +1364,96 @@ function enviarDadosReserva(e) {
 
   var algumPreenchido = nome || doc || end || cep || email || fone || evento || resp || local || dataRaw || inicio || fim;
   if (!algumPreenchido) {
-    e.preventDefault();
     alert('Preencha pelo menos um campo antes de enviar.');
     return false;
   }
 
-  // format date
-  var dataFmt = dataRaw;
-  if (dataRaw) {
-    var parts = dataRaw.split('-');
-    if (parts.length === 3) dataFmt = parts[2] + '/' + parts[1] + '/' + parts[0];
+  // Opção e pagamento selecionados
+  var opcaoSel = getSelectedCard('opcao');
+  var pgtoSel = getSelectedCard('pgto');
+
+  // Montar dados do contrato compatíveis com o gerador
+  var dadosContrato = {
+    _tipo: 'contrato',
+    cli_nome:  nome,
+    cli_doc:   doc,
+    cli_end:   end,
+    cli_cep:   cep,
+    cli_email: email,
+    cli_fone:  fone,
+    ev_nome:   evento,
+    ev_resp:   resp,
+    ev_local:  local,
+    ev_data:   dataRaw,
+    ev_inicio: inicio,
+    ev_fim:    fim,
+    val_total: '',
+    pgto_tipo: 'custom',
+    pgto_custom: pgtoSel || '',
+    servicos: opcaoSel ? [opcaoSel] : [],
+    aprovado: false,
+    orc_ref: _orcData.ref || '',
+    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  // Botão feedback
+  var waLink = document.getElementById('wa-link-dados');
+  var btnOrigText = waLink ? waLink.innerHTML : '';
+  if (waLink) { waLink.innerHTML = '⏳ Salvando...'; waLink.style.pointerEvents = 'none'; }
+
+  var db = window._db;
+  if (!db) {
+    alert('Banco de dados não conectado.');
+    if (waLink) { waLink.innerHTML = btnOrigText; waLink.style.pointerEvents = ''; }
+    return false;
   }
 
-  var linhas = [
-    'Dados para elaboracao do contrato.',
-    'Ref: ' + _orcData.ref,
-    '',
-    'CONTRATANTE',
-    (nome ? 'Nome: ' + nome : ''),
-    (doc ? 'CPF/CNPJ: ' + doc : ''),
-    (end ? 'Endereco: ' + end : ''),
-    (cep ? 'CEP: ' + cep : ''),
-    (email ? 'Email: ' + email : ''),
-    (fone ? 'Telefone: ' + fone : ''),
-    '',
-    'EVENTO',
-    (evento ? 'Evento: ' + evento : ''),
-    (local ? 'Local: ' + local : ''),
-    (dataFmt ? 'Data: ' + dataFmt : ''),
-    (inicio ? 'Inicio: ' + inicio : ''),
-    (fim ? 'Termino: ' + fim : ''),
-    (resp ? 'Responsavel no local: ' + resp : '')
-  ].filter(function(l) { return l !== ''; });
+  db.collection('contratos').add(dadosContrato)
+    .then(function() {
+      // Também envia WhatsApp
+      var dataFmt = dataRaw;
+      if (dataRaw) {
+        var parts = dataRaw.split('-');
+        if (parts.length === 3) dataFmt = parts[2] + '/' + parts[1] + '/' + parts[0];
+      }
+      var linhas = [
+        'Dados para elaboracao do contrato.',
+        'Ref: ' + (_orcData.ref || ''),
+        '',
+        'CONTRATANTE',
+        (nome  ? 'Nome: '      + nome  : ''),
+        (doc   ? 'CPF/CNPJ: ' + doc   : ''),
+        (end   ? 'Endereco: '  + end   : ''),
+        (cep   ? 'CEP: '       + cep   : ''),
+        (email ? 'Email: '     + email : ''),
+        (fone  ? 'Telefone: '  + fone  : ''),
+        '',
+        'EVENTO',
+        (evento  ? 'Evento: '              + evento  : ''),
+        (local   ? 'Local: '               + local   : ''),
+        (dataFmt ? 'Data: '                + dataFmt : ''),
+        (inicio  ? 'Inicio: '              + inicio  : ''),
+        (fim     ? 'Termino: '             + fim     : ''),
+        (resp    ? 'Responsavel no local: '+ resp    : ''),
+        '',
+        (opcaoSel ? 'Opcao: ' + opcaoSel : ''),
+        (pgtoSel  ? 'Pagamento: ' + pgtoSel : '')
+      ].filter(function(l) { return l !== ''; });
 
-  document.getElementById('wa-link-dados').href = 'https://wa.me/5547991536771?text=' + encodeURIComponent(linhas.join('\n'));
-  return true;
+      var waUrl = 'https://wa.me/5547991536771?text=' + encodeURIComponent(linhas.join('\n'));
+      window.open(waUrl, '_blank');
+
+      // Redirecionar para o gerador na aba Contratos Salvos
+      var base = window.location.href.split('?')[0];
+      base = base.substring(0, base.lastIndexOf('/') + 1);
+      window.location.href = base + 'index.html?tab=contratos';
+    })
+    .catch(function(err) {
+      alert('Erro ao salvar contrato: ' + err.message);
+      if (waLink) { waLink.innerHTML = btnOrigText; waLink.style.pointerEvents = ''; }
+    });
+
+  return false;
 }
 // ── VALIDAÇÕES ──
 function _validarCpf(d) {
@@ -1469,7 +1526,8 @@ window.addEventListener('load', function() {
 
   try {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    window._db = firebase.firestore();
+    const db = window._db;
 
     db.collection('orcamentos').doc(orcId).get()
       .then(function(doc) {
