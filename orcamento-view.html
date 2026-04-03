@@ -1699,9 +1699,9 @@ function enviarDadosReserva(e) {
     val_total: valTotal,
     pgto_sel: pgtoSlug,
     pgto_custom: pgtoCustomVal,
-    pgto_entrada_data: (function() {
+    data_entrada: (function() {
       var el = document.getElementById('entrada-data-input');
-      return el && el.value ? el.value : '';
+      return el && el.value ? el.value : ''; // formato YYYY-MM-DD, compatível com input[type=date] do index
     })(),
     servicos: servicos,
     aprovado: false,
@@ -1754,7 +1754,14 @@ function enviarDadosReserva(e) {
         (resp    ? 'Responsavel no local: '+ resp    : ''),
         '',
         (opcaoSel ? 'Opcao: ' + opcaoSel : ''),
-        (pgtoSel  ? 'Pagamento: ' + pgtoSel : '')
+        (pgtoSel  ? 'Pagamento: ' + pgtoSel : ''),
+        (function() {
+          var el = document.getElementById('entrada-data-input');
+          if (!el || !el.value) return '';
+          var p = el.value.split('-');
+          var fmt = p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : el.value;
+          return 'Data da entrada (20%): ' + fmt;
+        })()
       ].filter(function(l) { return l !== ''; });
 
       var waUrl = 'https://wa.me/5547991536771?text=' + encodeURIComponent(linhas.join('\n'));
