@@ -1115,6 +1115,10 @@ function fecharPainel() {
   document.getElementById('painel-nao').style.display = 'none';
   document.getElementById('btn-sim').classList.remove('proposta-btn--ativo');
   document.getElementById('btn-nao').classList.remove('proposta-btn--ativo');
+  var dadosForm = document.getElementById('dados-reserva-form');
+  var btnDados = document.getElementById('btn-dados-reserva');
+  if (dadosForm) dadosForm.style.display = 'none';
+  if (btnDados) btnDados.innerHTML = '▶ Preencher Dados';
   _painelAtivo = null;
 }
 
