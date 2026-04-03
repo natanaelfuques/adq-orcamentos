@@ -1693,21 +1693,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var touchStartX = 0;
   var touchStartCol = 0;
+  var touchLastX = 0;
+  var touchLastTime = 0;
 
   board.addEventListener('touchstart', function(e) {
     stopMagnet();
     snapTarget = null;
     touchStartX = e.touches[0].clientX;
+    touchLastX = touchStartX;
+    touchLastTime = Date.now();
     var colW = getColW();
     touchStartCol = colW ? Math.round(board.scrollLeft / colW) : 0;
   }, {passive: true});
 
   board.addEventListener('touchmove', function(e) {
     if (_draggingId || isSnapping) return;
+    touchLastX = e.touches[0].clientX;
+    touchLastTime = Date.now();
     var colW = getColW();
     if (!colW) return;
     var dx = touchStartX - e.touches[0].clientX;
     var fraction = dx / colW;
+    // Threshold de 15%: arrasto leve já muda de coluna
     if (fraction > 0.15) {
       snapTarget = Math.min(2, touchStartCol + 1);
     } else if (fraction < -0.15) {
@@ -1717,9 +1724,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, {passive: true});
 
-  board.addEventListener('touchend', function() {
+  board.addEventListener('touchend', function(e) {
     if (_draggingId) return;
-    var target = snapTarget !== null ? snapTarget : touchStartCol;
+    var colW = getColW();
+    var dt = Date.now() - touchLastTime;
+    var endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : touchLastX;
+    var totalDx = touchStartX - endX;
+
+    // Velocidade em px/ms — só aceita swipe rápido se a distância também for relevante
+    var velocity = dt > 0 ? Math.abs(touchLastX - endX) / dt : 0;
+    var isFlick = velocity > 0.5 && Math.abs(totalDx) > colW * 0.2;
+
+    var target;
+    if (isFlick) {
+      // Swipe rápido mas controlado: avança só 1 coluna
+      target = totalDx > 0
+        ? Math.min(2, touchStartCol + 1)
+        : Math.max(0, touchStartCol - 1);
+    } else {
+      target = snapTarget !== null ? snapTarget : touchStartCol;
+    }
     snapTo(target);
   }, {passive: true});
 
