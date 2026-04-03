@@ -285,6 +285,7 @@
     background: var(--surface);
     border: 1px solid var(--border); border-radius: 4px;
     padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start;
+    align-self: stretch;
   }
   .pgto-num {
     background: var(--dark); color: var(--gold);
@@ -751,22 +752,11 @@
       <div class="pgto-grid" id="pgto-lista"></div>
     </div>
 
-    <!-- OBSERVAÇÕES -->
-    <div class="section-gap">
-      <div class="sec-label">Observações Importantes</div>
-      <div class="obs-box">
-        <p>• Este orçamento tem validade de <strong style="color:var(--text)">7 dias</strong> a partir da data de emissão.</p>
-        <p>• Os valores podem sofrer alterações após o prazo de validade.</p>
-        <p>• A reserva da data só é confirmada após a assinatura do contrato e pagamento da entrada.</p>
-        <p>• Em caso de dúvidas, entre em contato pelo WhatsApp.</p>
-      </div>
-    </div>
-
     <!-- PROPOSTA FEEDBACK -->
     <div class="proposta-box">
       <div class="proposta-pergunta">Gostou da proposta?</div>
       <div class="proposta-divider"></div>
-      <p class="proposta-sub">Confirme sua reserva ou solicite ajustes abaixo.</p>
+      <p class="proposta-sub">Selecione a opção e a forma de pagamento. Vamos garantir sua data!</p>
       <div class="proposta-btns">
         <button class="proposta-btn proposta-btn--sim" id="btn-sim" onclick="abrirResposta('sim')">
           ✓&nbsp; Sim, quero reservar
@@ -812,8 +802,8 @@
     <!-- FORMULÁRIO DADOS PARA RESERVA -->
     <div id="dados-reserva-form" class="dados-form" style="display:none">
       <div class="dados-form-header">
-        <div class="dados-form-icon">▶</div>
-        <div class="dados-form-title">Preencher Dados</div>
+        <div class="dados-form-icon" style="font-size:1rem;letter-spacing:-1px;line-height:1">☰</div>
+        <div class="dados-form-title">Preencher Dados para o Contrato</div>
       </div>
       <div class="dados-form-body">
         <p class="dados-form-sub">Preencha os dados abaixo. Eles serão enviados pelo WhatsApp para agilizar a elaboração do contrato.</p>
@@ -908,6 +898,17 @@
             ▶ Enviar pelo WhatsApp
           </a>
         </div>
+      </div>
+    </div>
+
+    <!-- OBSERVAÇÕES -->
+    <div class="section-gap" style="margin-top:28px">
+      <div class="sec-label">Observações Importantes</div>
+      <div class="obs-box">
+        <p>• Este orçamento tem validade de <strong style="color:var(--text)">7 dias</strong> a partir da data de emissão.</p>
+        <p>• Os valores podem sofrer alterações após o prazo de validade.</p>
+        <p>• A reserva da data só é confirmada após a assinatura do contrato e pagamento da entrada.</p>
+        <p>• Em caso de dúvidas, entre em contato pelo WhatsApp.</p>
       </div>
     </div>
 
@@ -1276,6 +1277,13 @@ function toggleDadosReserva() {
   var form = document.getElementById('dados-reserva-form');
   var btn = document.getElementById('btn-dados-reserva');
   if (form.style.display === 'none') {
+    // Validar seleção antes de abrir
+    var opcao = getSelectedCard('opcao');
+    var pgtoSel = document.querySelector('.opcao-card-radio[data-grupo="pgto"].selected');
+    if (!opcao || !pgtoSel) {
+      alert('Por favor, selecione a opcao e a forma de pagamento.');
+      return;
+    }
     form.style.display = 'block';
     btn.innerHTML = '✕ Fechar Formulário';
     form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
