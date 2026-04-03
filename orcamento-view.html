@@ -93,7 +93,7 @@
   .hero-inner {
     max-width: 780px;
     margin: 0 auto;
-    padding: 36px 28px 32px;
+    padding: 22px 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -106,26 +106,29 @@
   .hero-brand-text {}
   .hero-brand-name {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.5rem; font-weight: 900;
+    font-size: 2rem; font-weight: 900;
     color: var(--gold); letter-spacing: 0.07em; text-transform: uppercase;
     line-height: 1;
   }
   .hero-brand-sub {
     font-size: 0.65rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px;
+    text-transform: uppercase; letter-spacing: 0.12em; margin-top: 5px;
   }
-  .hero-right { text-align: right; }
-  .hero-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 2.8rem; font-weight: 900;
-    color: var(--text); text-transform: uppercase; letter-spacing: 0.03em;
-    line-height: 1;
+  .hero-right { text-align: right; flex-shrink: 0; }
+  .hero-meta-label {
+    font-size: 0.58rem; font-weight: 700;
+    color: var(--gold); text-transform: uppercase;
+    letter-spacing: 0.14em; margin-bottom: 3px;
   }
-  .hero-title span { color: var(--gold); }
-  .hero-subtitle {
-    font-size: 0.78rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.1em; margin-top: 6px;
+  .hero-meta-value {
+    font-size: 0.8rem; font-weight: 600; color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.04em;
   }
+  .hero-meta-ref {
+    font-size: 0.68rem; color: var(--muted); margin-top: 6px;
+    font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.1em;
+  }
+  .hero-meta-ref strong { color: #aaa; font-weight: 600; }
 
   /* ── BANNER CLIENTE ── */
   .client-banner {
@@ -426,9 +429,9 @@
   }
 
   @media (max-width: 600px) {
-    .hero-inner { flex-direction: column; align-items: flex-start; }
+    .hero-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
     .hero-right { text-align: left; }
-    .hero-title { font-size: 2rem; }
+    .hero-brand-name { font-size: 1.5rem; }
     .client-banner-inner { grid-template-columns: 1fr; }
     .cb-left { border-right: none; padding-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 14px; }
     .cb-right { padding-left: 0; }
@@ -466,8 +469,9 @@
         </div>
       </div>
       <div class="hero-right">
-        <div class="hero-title">Confira seu<br><span>Orçamento!</span></div>
-        <div class="hero-subtitle" id="hero-data"></div>
+        <div class="hero-meta-label">Orçamento</div>
+        <div class="hero-meta-value" id="hero-data">—</div>
+        <div class="hero-meta-ref">Ref: <strong id="hero-ref">—</strong></div>
       </div>
     </div>
   </div>
@@ -490,12 +494,6 @@
 
   <!-- CONTEÚDO PRINCIPAL -->
   <div class="container">
-
-    <!-- INFO STRIP -->
-    <div class="info-strip" id="info-strip" style="display:none">
-      <span><i class="strip-icon">✦</i> Emitido em: <strong id="strip-emitido">—</strong></span>
-      <span><i class="strip-icon">#</i> Ref: <strong id="strip-ref">—</strong></span>
-    </div>
 
     <!-- OPÇÕES / PACOTES -->
     <div id="sec-pacotes" class="section-gap" style="display:none">
@@ -530,7 +528,7 @@
     <!-- CTA -->
     <div class="cta-row">
       <div class="cta-text">
-        <strong>Gostou? Fale comigo!</strong>
+        <strong>Gostou? Fale conosco!</strong>
         <span>Confirme sua data e garanta sua reserva agora mesmo.</span>
       </div>
       <a href="https://wa.me/5547991536771" class="cta-btn" target="_blank">
@@ -602,12 +600,7 @@ function renderOrcamento(doc) {
   const emissaoDate = d.criadoEm ? (d.criadoEm.toDate ? d.criadoEm.toDate() : new Date(d.criadoEm)) : null;
   document.getElementById('hero-data').textContent =
     'Emitido em ' + (emissaoDate ? emissaoDate.toLocaleDateString('pt-BR') : '—');
-
-  // Info strip
-  const strip = document.getElementById('info-strip');
-  strip.style.display = 'flex';
-  document.getElementById('strip-emitido').textContent = fmtTs(d.criadoEm);
-  document.getElementById('strip-ref').textContent = id.substring(0, 8).toUpperCase();
+  document.getElementById('hero-ref').textContent = id.substring(0, 8).toUpperCase();
 
   // Logo removido do topo
 
@@ -632,7 +625,7 @@ function renderOrcamento(doc) {
           <div class="opcao-head">
             <div class="opcao-head-left">
               <span class="opcao-num">Opção ${idx}</span>
-              <span class="opcao-titulo">${escHtml(op.titulo || NOMES[idx] || 'Pacote')}${isMaisEscolhido ? ' <span class="opcao-titulo-star">★ Mais Escolhido</span>' : ''}</span>
+              <span class="opcao-titulo">${escHtml(op.titulo || NOMES[idx] || 'Pacote')}${isMaisEscolhido ? '<span class="opcao-titulo-star"> ★</span>' : ''}</span>
             </div>
           </div>
           <div class="opcao-body">
