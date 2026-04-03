@@ -4149,8 +4149,8 @@ function renderSalvos(docs) {
     card += '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
-    card += '<button class="btn-salvo" data-action="link" data-id="' + id + '" title="Copiar link para enviar ao cliente">Link</button>';
-    card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Carregar</button>';
+    card += '<button class="btn-salvo primary" data-action="link" data-id="' + id + '" title="Copiar link para enviar ao cliente">Link</button>';
+    card += '<button class="btn-salvo" data-action="abrir" data-id="' + id + '">Carregar</button>';
     card += '<button class="btn-salvo" data-action="duplicar" data-id="' + id + '">Duplicar</button>';
     card += '<button class="btn-salvo" data-action="json-orc" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
@@ -4484,8 +4484,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
-    card += '<button class="btn-salvo" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
-    card += '<button class="btn-salvo primary" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
+    card += '<button class="btn-salvo primary" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
+    card += '<button class="btn-salvo" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
     card += '<button class="btn-salvo" data-action="duplicar-contrato" data-id="' + id + '">Duplicar</button>';
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
@@ -5020,10 +5020,9 @@ function _getLinkOrcamento(id) {
 
 function copiarLinkOrcamento(id) {
   var link = _getLinkOrcamento(id);
+  window.open(link, '_blank');
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(link).then(function() {
-      _mostrarToastLink(link);
-    }).catch(function() {
+    navigator.clipboard.writeText(link).catch(function() {
       _fallbackCopyLink(link);
     });
   } else {
@@ -5037,41 +5036,9 @@ function _fallbackCopyLink(link) {
   ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
   document.body.appendChild(ta);
   ta.focus(); ta.select();
-  try { document.execCommand('copy'); _mostrarToastLink(link); }
-  catch(e) { prompt('Copie o link abaixo:', link); }
+  try { document.execCommand('copy'); }
+  catch(e) {}
   document.body.removeChild(ta);
-}
-
-function _mostrarToastLink(link) {
-  // Remove toast anterior se existir
-  var old = document.getElementById('adq-link-toast');
-  if (old) old.remove();
-
-  var toast = document.createElement('div');
-  toast.id = 'adq-link-toast';
-  toast.style.cssText = [
-    'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
-    'background:#1a1a1a', 'border:1px solid #C8A94A', 'border-radius:6px',
-    'padding:14px 20px', 'z-index:9999', 'max-width:90vw', 'width:360px',
-    'box-shadow:0 8px 32px rgba(0,0,0,0.6)', 'animation:adqFadeIn 0.2s ease'
-  ].join(';');
-
-  toast.innerHTML = [
-    '<style>@keyframes adqFadeIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}</style>',
-    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">✓ Link copiado!</div>',
-    '<div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:12px">' + link + '</div>',
-    '<div style="display:flex;gap:8px">',
-    '<a href="' + link + '" target="_blank" style="flex:1;text-align:center;background:transparent;border:1px solid #333;color:#888;padding:7px;border-radius:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:all 0.15s" onmouseover="this.style.borderColor=\'#C8A94A\';this.style.color=\'#C8A94A\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#888\'">Abrir</a>',
-    '<a href="https://wa.me/?text=' + encodeURIComponent('Olá! Segue o link do seu orçamento: ' + link) + '" target="_blank" style="flex:1;text-align:center;background:#25D366;border:1px solid #25D366;color:#1a1a1a;padding:7px;border-radius:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none">WhatsApp</a>',
-    '<button onclick="document.getElementById(\'adq-link-toast\').remove()" style="width:30px;background:transparent;border:1px solid #333;color:#666;border-radius:3px;cursor:pointer;font-size:1rem;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
-    '</div>'
-  ].join('');
-
-  document.body.appendChild(toast);
-  setTimeout(function() {
-    var t = document.getElementById('adq-link-toast');
-    if (t) t.remove();
-  }, 12000);
 }
 
 function salvarESolicitarLink() {
