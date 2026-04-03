@@ -488,7 +488,7 @@
     letter-spacing: 0.06em; text-transform: uppercase;
     padding: 10px 18px; cursor: pointer;
     transition: border-color 0.15s, color 0.15s;
-    flex-shrink: 0;
+    flex: 1;
   }
   .resposta-cancel:hover { border-color: #444; color: #aaa; }
   .cta-btn {
@@ -504,11 +504,12 @@
   }
   .cta-btn:hover { opacity: 0.88; transform: translateY(-1px); }
   .cta-btn--blue {
-    background: #4A90C8;
-    color: #fff;
-    box-shadow: 0 2px 10px rgba(74,144,200,0.25);
+    background: transparent;
+    color: #4A90C8;
+    border: 1px solid #4A90C8;
+    box-shadow: none;
   }
-  .cta-btn--blue:hover { opacity: 0.9; }
+  .cta-btn--blue:hover { background: #4A90C8; color: #111; opacity: 1; }
 
   /* ── DADOS RESERVA FORM ── */
   .dados-form {
@@ -801,10 +802,10 @@
           <a id="wa-link-sim" href="#" class="cta-btn" target="_blank" onclick="return enviarSim(event)">
             ▶ Confirmar pelo WhatsApp
           </a>
+          <button class="cta-btn cta-btn--blue" id="btn-dados-reserva" onclick="toggleDadosReserva()">
+            ▶ Preencher Dados
+          </button>
         </div>
-        <button class="cta-btn cta-btn--blue" id="btn-dados-reserva" onclick="toggleDadosReserva()">
-          ▶ Preencher Dados
-        </button>
       </div>
     </div>
 
@@ -1131,7 +1132,12 @@ function criarCardRadio(nome, desc, grupo, idx) {
 
 function getSelectedCard(grupo) {
   var sel = document.querySelector('.opcao-card-radio[data-grupo="' + grupo + '"].selected');
-  return sel ? sel.dataset.valor : '';
+  if (!sel) return '';
+  if (sel.dataset.valor === '__outro__') {
+    var txt = document.getElementById('pgto-outro-txt');
+    return txt ? (txt.value.trim() || 'Outro / Personalizar') : 'Outro / Personalizar';
+  }
+  return sel.dataset.valor;
 }
 
 function preencherSelects(d) {
@@ -1166,16 +1172,63 @@ function preencherSelects(d) {
     gridPgto.appendChild(criarCardRadio('A combinar', '', 'pgto', 0));
   }
 
+  // Card "Outro / Personalizar"
+  var cardOutro = document.createElement('div');
+  cardOutro.className = 'opcao-card-radio';
+  cardOutro.dataset.grupo = 'pgto';
+  cardOutro.dataset.valor = '__outro__';
+  cardOutro.innerHTML =
+    '<div class="opcao-radio-dot"></div>' +
+    '<div class="opcao-card-text">' +
+      '<div class="opcao-card-name">Outro / Personalizar</div>' +
+      '<div class="opcao-card-desc">Descreva sua preferência abaixo</div>' +
+    '</div>';
+  cardOutro.addEventListener('click', function() {
+    var todos = document.querySelectorAll('.opcao-card-radio[data-grupo="pgto"]');
+    todos.forEach(function(c) { c.classList.remove('selected'); });
+    cardOutro.classList.add('selected');
+    document.getElementById('pgto-outro-wrap').style.display = 'block';
+    document.getElementById('pgto-outro-txt').focus();
+  });
+  gridPgto.appendChild(cardOutro);
+
+  // Textarea para "Outro"
+  var wrap = document.createElement('div');
+  wrap.id = 'pgto-outro-wrap';
+  wrap.style.display = 'none';
+  wrap.style.marginTop = '8px';
+  wrap.innerHTML = '<textarea id="pgto-outro-txt" class="resposta-textarea" placeholder="Ex: 30% na assinatura e o restante no dia do evento..." style="min-height:72px"></textarea>';
+  gridPgto.appendChild(wrap);
+
+  // Esconder textarea ao selecionar outra opção
+  document.querySelectorAll('.opcao-card-radio[data-grupo="pgto"]').forEach(function(c) {
+    if (c.dataset.valor !== '__outro__') {
+      c.addEventListener('click', function() {
+        document.getElementById('pgto-outro-wrap').style.display = 'none';
+      });
+    }
+  });
+
   _orcData.nome = d.nome_cliente || d.nome || '';
 }
 
 function enviarSim(e) {
   var opcao = getSelectedCard('opcao');
+  var pgtoSel = document.querySelector('.opcao-card-radio[data-grupo="pgto"].selected');
   var pgto = getSelectedCard('pgto');
-  if (!opcao || !pgto) {
+  if (!opcao || !pgtoSel) {
     e.preventDefault();
     alert('Por favor, selecione a opcao e a forma de pagamento.');
     return false;
+  }
+  if (pgtoSel.dataset.valor === '__outro__') {
+    var txt = document.getElementById('pgto-outro-txt');
+    if (!txt || !txt.value.trim()) {
+      e.preventDefault();
+      alert('Por favor, descreva sua forma de pagamento preferida.');
+      txt && txt.focus();
+      return false;
+    }
   }
   var linhas = [
     'Gostaria de confirmar minha reserva.',
@@ -1235,9 +1288,10 @@ function enviarDadosReserva(e) {
   var inicio = document.getElementById('dr_inicio').value.trim();
   var fim = document.getElementById('dr_fim').value.trim();
 
-  if (!nome || !doc || !fone) {
+  var algumPreenchido = nome || doc || end || cep || email || fone || evento || resp || local || dataRaw || inicio || fim;
+  if (!algumPreenchido) {
     e.preventDefault();
-    alert('Por favor, preencha pelo menos: Nome, CPF/CNPJ e Telefone.');
+    alert('Preencha pelo menos um campo antes de enviar.');
     return false;
   }
 
@@ -1253,12 +1307,12 @@ function enviarDadosReserva(e) {
     'Ref: ' + _orcData.ref,
     '',
     'CONTRATANTE',
-    'Nome: ' + nome,
-    'CPF/CNPJ: ' + doc,
+    (nome ? 'Nome: ' + nome : ''),
+    (doc ? 'CPF/CNPJ: ' + doc : ''),
     (end ? 'Endereco: ' + end : ''),
     (cep ? 'CEP: ' + cep : ''),
     (email ? 'Email: ' + email : ''),
-    'Telefone: ' + fone,
+    (fone ? 'Telefone: ' + fone : ''),
     '',
     'EVENTO',
     (evento ? 'Evento: ' + evento : ''),
