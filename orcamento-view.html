@@ -451,6 +451,28 @@
     display: none;
   }
   .opcao-card-radio.selected .opcao-radio-dot::after { display: block; }
+  /* ── CHECKBOX DOT ── */
+  .opcao-check-box {
+    width: 16px; height: 16px; border-radius: 3px;
+    border: 1.5px solid #444; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .opcao-card-radio.selected .opcao-check-box {
+    border-color: var(--gold);
+    background: var(--gold);
+    box-shadow: 0 0 0 3px rgba(200,169,74,0.15);
+  }
+  .opcao-check-box::after {
+    content: '';
+    width: 9px; height: 5px;
+    border-left: 2px solid var(--dark);
+    border-bottom: 2px solid var(--dark);
+    transform: rotate(-45deg) translateY(-1px);
+    display: none;
+  }
+  .opcao-card-radio.selected .opcao-check-box::after { display: block; }
+
   .opcao-card-text { flex: 1; }
   .opcao-card-name {
     font-size: 0.85rem; font-weight: 600; color: var(--text);
@@ -506,12 +528,12 @@
   }
   .cta-btn:hover { opacity: 0.88; transform: translateY(-1px); }
   .cta-btn--blue {
-    background: transparent;
+    background: #000 !important;
     color: #4A90C8;
     border: 1px solid #4A90C8;
     box-shadow: none;
   }
-  .cta-btn--blue:hover { background: #4A90C8; color: #111; opacity: 1; }
+  .cta-btn--blue:hover { background: #000 !important; color: #6aaee0; opacity: 1; border-color: #6aaee0; }
 
   /* ── DADOS RESERVA FORM ── */
   .dados-form {
@@ -1165,6 +1187,23 @@ function fecharPainel() {
   _painelAtivo = null;
 }
 
+function criarCardCheckbox(nome, desc, grupo, idx) {
+  var card = document.createElement('div');
+  card.className = 'opcao-card-radio';
+  card.dataset.grupo = grupo;
+  card.dataset.valor = nome;
+  card.innerHTML =
+    '<div class="opcao-check-box"></div>' +
+    '<div class="opcao-card-text">' +
+      '<div class="opcao-card-name">' + escHtml(nome) + '</div>' +
+      (desc ? '<div class="opcao-card-desc">' + escHtml(desc) + '</div>' : '') +
+    '</div>';
+  card.addEventListener('click', function() {
+    card.classList.toggle('selected');
+  });
+  return card;
+}
+
 function criarCardRadio(nome, desc, grupo, idx) {
   var card = document.createElement('div');
   card.className = 'opcao-card-radio';
@@ -1185,6 +1224,12 @@ function criarCardRadio(nome, desc, grupo, idx) {
 }
 
 function getSelectedCard(grupo) {
+  if (grupo === 'opcao' && _orcData.isDetalhado) {
+    var selecionados = document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"].selected');
+    var nomes = [];
+    selecionados.forEach(function(c) { nomes.push(c.dataset.valor); });
+    return nomes.join(', ');
+  }
   var sel = document.querySelector('.opcao-card-radio[data-grupo="' + grupo + '"].selected');
   if (!sel) return '';
   if (sel.dataset.valor === '__outro__') {
@@ -1202,6 +1247,7 @@ function preencherSelects(d) {
   var det = (d.opcoes||[]).find(function(o){ return o.tipo==='detalhado'; });
 
   if (opcoes.length) {
+    _orcData.isDetalhado = false;
     opcoes.forEach(function(op, i) {
       var idx = op.idx || (i+1);
       var nome = 'Opcao ' + idx + ' - ' + (op.titulo || NOMES[idx] || 'Pacote');
@@ -1211,13 +1257,15 @@ function preencherSelects(d) {
       gridOpcoes.appendChild(card);
     });
   } else if (det && det.itens && det.itens.length) {
+    _orcData.isDetalhado = true;
     det.itens.forEach(function(it, i) {
       var desc = it.valor ? 'R$ ' + it.valor : '';
-      var card = criarCardRadio(it.titulo, desc, 'opcao', i);
+      var card = criarCardCheckbox(it.titulo, desc, 'opcao', i);
       if (it.valor) card.dataset.valorBrl = it.valor;
       gridOpcoes.appendChild(card);
     });
   } else {
+    _orcData.isDetalhado = false;
     gridOpcoes.appendChild(criarCardRadio('Orcamento unico', '', 'opcao', 0));
   }
 
@@ -1294,7 +1342,10 @@ function enviarSim(e) {
   var opcao = getSelectedCard('opcao');
   var pgtoSel = document.querySelector('.opcao-card-radio[data-grupo="pgto"].selected');
   var pgto = getSelectedCard('pgto');
-  if (!opcao || !pgtoSel) {
+  var opcaoValida = _orcData.isDetalhado
+    ? document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"].selected').length > 0
+    : !!opcao;
+  if (!opcaoValida || !pgtoSel) {
     e.preventDefault();
     alert('Por favor, selecione a opcao e a forma de pagamento.');
     return false;
@@ -1343,7 +1394,10 @@ function toggleDadosReserva() {
     // Validar seleção antes de abrir
     var opcao = getSelectedCard('opcao');
     var pgtoSel = document.querySelector('.opcao-card-radio[data-grupo="pgto"].selected');
-    if (!opcao || !pgtoSel) {
+    var opcaoValida = _orcData.isDetalhado
+      ? document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"].selected').length > 0
+      : !!opcao;
+    if (!opcaoValida || !pgtoSel) {
       alert('Por favor, selecione a opcao e a forma de pagamento.');
       return;
     }
@@ -1389,13 +1443,27 @@ function enviarDadosReserva(e) {
   var opcaoSel = getSelectedCard('opcao');
   var pgtoSel = getSelectedCard('pgto');
 
-  // Extrair valor direto do card selecionado
+  // Extrair valor direto do(s) card(s) selecionado(s)
   var valTotal = '';
-  var cardSel = document.querySelector('.opcao-card-radio[data-grupo="opcao"].selected');
-  if (cardSel && cardSel.dataset.valorBrl) {
-    valTotal = cardSel.dataset.valorBrl;
-  } else if (_orcData.valDetalhado) {
-    valTotal = _orcData.valDetalhado;
+  if (_orcData.isDetalhado) {
+    var cardsSel = document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"].selected');
+    var soma = 0;
+    cardsSel.forEach(function(c) {
+      if (c.dataset.valorBrl) {
+        // valorBrl pode ser "800,00" ou "1.600,00" — remover pontos de milhar, trocar vírgula por ponto
+        var v = parseFloat(c.dataset.valorBrl.replace(/\./g,'').replace(',','.'));
+        if (!isNaN(v)) soma += v;
+      }
+    });
+    if (soma > 0) valTotal = soma.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    else if (_orcData.valDetalhado) valTotal = _orcData.valDetalhado;
+  } else {
+    var cardSel = document.querySelector('.opcao-card-radio[data-grupo="opcao"].selected');
+    if (cardSel && cardSel.dataset.valorBrl) {
+      valTotal = cardSel.dataset.valorBrl;
+    } else if (_orcData.valDetalhado) {
+      valTotal = _orcData.valDetalhado;
+    }
   }
 
   // Montar lista de serviços com o conteúdo real da opção escolhida
@@ -1404,31 +1472,33 @@ function enviarDadosReserva(e) {
   var opcoesPacote = opcoes.filter(function(o){ return o.tipo === 'pacote'; });
   var detOpc = opcoes.find(function(o){ return o.tipo === 'detalhado'; });
 
-  if (cardSel) {
-    // Identificar índice do card selecionado
-    var todos = document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"]');
-    var idxSel = -1;
-    todos.forEach(function(c, i) { if (c === cardSel) idxSel = i; });
-
-    if (opcoesPacote.length && idxSel >= 0 && opcoesPacote[idxSel]) {
-      // Pacote: só as linhas da descrição, sem o título
-      var op = opcoesPacote[idxSel];
-      var linhas = (op.desc || '').split('\n').map(function(l){ return l.replace(/^[•\-]\s*/,'').trim(); }).filter(Boolean);
-      linhas.forEach(function(l){ servicos.push(l); });
-    } else if (detOpc && detOpc.itens && detOpc.itens.length) {
-      // Detalhado: item selecionado ou todos os itens
-      if (idxSel >= 0 && detOpc.itens[idxSel]) {
-        var it = detOpc.itens[idxSel];
-        servicos.push((it.titulo || '') + (it.valor ? ' — R$ ' + it.valor : ''));
-        if (it.desc) servicos.push(it.desc);
-      } else {
-        detOpc.itens.forEach(function(it) {
-          servicos.push((it.titulo || '') + (it.valor ? ' — R$ ' + it.valor : ''));
-          if (it.desc) servicos.push(it.desc);
-        });
+  if (_orcData.isDetalhado && detOpc && detOpc.itens && detOpc.itens.length) {
+    // Detalhado: coletar todos os itens marcados — título + desc em linha única
+    var cardsSel = document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"].selected');
+    var nomesMarcados = [];
+    cardsSel.forEach(function(c) { nomesMarcados.push(c.dataset.valor); });
+    detOpc.itens.forEach(function(it) {
+      if (nomesMarcados.indexOf(it.titulo) !== -1) {
+        var linha = (it.titulo || '');
+        if (it.desc && it.desc.trim()) linha += ': ' + it.desc.trim();
+        if (it.valor) linha += ' — R$ ' + it.valor;
+        servicos.push(linha);
       }
-    } else {
-      servicos.push(opcaoSel);
+    });
+  } else {
+    var cardSel = document.querySelector('.opcao-card-radio[data-grupo="opcao"].selected');
+    if (cardSel) {
+      var todos = document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"]');
+      var idxSel = -1;
+      todos.forEach(function(c, i) { if (c === cardSel) idxSel = i; });
+
+      if (opcoesPacote.length && idxSel >= 0 && opcoesPacote[idxSel]) {
+        var op = opcoesPacote[idxSel];
+        var linhas = (op.desc || '').split('\n').map(function(l){ return l.replace(/^[•\-]\s*/,'').trim(); }).filter(Boolean);
+        linhas.forEach(function(l){ servicos.push(l); });
+      } else {
+        servicos.push(opcaoSel);
+      }
     }
   }
 
