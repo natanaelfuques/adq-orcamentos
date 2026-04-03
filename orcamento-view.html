@@ -201,13 +201,10 @@
     display: flex; align-items: center; gap: 6px;
   }
   .opcao-titulo-star {
-    display: inline-flex;
-    align-items: center;
+    font-size: 1.1rem;
+    color: var(--gold);
     line-height: 1;
-    font-size: 1rem;
-    vertical-align: middle;
-    position: relative;
-    top: 0;
+    flex-shrink: 0;
   }
   .opcao-badge {
     font-size: 0.65rem; font-weight: 700;
@@ -635,8 +632,9 @@ function renderOrcamento(doc) {
           <div class="opcao-head">
             <div class="opcao-head-left">
               <span class="opcao-num">Opção ${idx}</span>
-              <span class="opcao-titulo">${escHtml(op.titulo || NOMES[idx] || 'Pacote')}${isMaisEscolhido ? '<span class="opcao-titulo-star"> ★</span>' : ''}</span>
+              <span class="opcao-titulo">${escHtml(op.titulo || NOMES[idx] || 'Pacote')}</span>
             </div>
+            ${isMaisEscolhido ? '<span class="opcao-titulo-star">★</span>' : ''}
           </div>
           <div class="opcao-body">
             <ul class="opcao-itens">
