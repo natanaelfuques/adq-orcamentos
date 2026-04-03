@@ -815,6 +815,7 @@
         <div class="resposta-field">
           <label class="resposta-label">Forma de Pagamento</label>
           <div class="opcao-cards-grid" id="grid-pgto"></div>
+          <div id="pgto-preview" style="display:none;margin-top:10px;background:#0e1a27;border:1px solid #1a2e40;border-radius:3px;padding:10px 14px;font-size:0.78rem;color:#8ab4d4;line-height:1.6"></div>
         </div>
       </div>
       <div class="resposta-actions">
@@ -992,6 +993,84 @@ function fmtTs(ts) {
     const d = ts.toDate ? ts.toDate() : new Date(ts);
     return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   } catch(e) { return '—'; }
+}
+
+// ── HELPERS BRL ──
+function _parseBRL(str) {
+  if (!str) return 0;
+  var clean = String(str).trim().replace(/[^\d,.]/g,'').replace(/\./g,'').replace(',','.');
+  var val = parseFloat(clean);
+  return isNaN(val) ? 0 : val;
+}
+function _formatBRL(n) {
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ── PRÉVIA PAGAMENTO ──
+function _getValTotalAtual() {
+  // Soma os cards marcados no detalhado, ou pega o valor do card selecionado (pacote)
+  if (_orcData.isDetalhado) {
+    var cardsSel = document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"].selected');
+    var soma = 0;
+    cardsSel.forEach(function(c) {
+      if (c.dataset.valorBrl) soma += _parseBRL(c.dataset.valorBrl);
+    });
+    return soma;
+  } else {
+    var card = document.querySelector('.opcao-card-radio[data-grupo="opcao"].selected');
+    return card && card.dataset.valorBrl ? _parseBRL(card.dataset.valorBrl) : 0;
+  }
+}
+
+function calcPgtoPreview() {
+  var box = document.getElementById('pgto-preview');
+  if (!box) return;
+  var pgtoCard = document.querySelector('.opcao-card-radio[data-grupo="pgto"].selected');
+  if (!pgtoCard) { box.style.display = 'none'; return; }
+
+  var total = _getValTotalAtual();
+  var titulo = (pgtoCard.dataset.valor || '').toLowerCase();
+  var texto = '';
+
+  if (titulo.indexOf('vista') !== -1) {
+    var tot = total > 0 ? 'R$ ' + _formatBRL(total) : '—';
+    texto = '💳 Pagamento integral de <strong>' + tot + '</strong> na assinatura do contrato.';
+
+  } else if (titulo.indexOf('50%') !== -1 || titulo.indexOf('metade') !== -1) {
+    var metade = total > 0 ? 'R$ ' + _formatBRL(total * 0.5) : '—';
+    texto = '💳 <strong>' + metade + '</strong> na assinatura'
+          + ' + <strong>' + metade + '</strong> até 5 dias antes do evento.';
+
+  } else if (titulo.indexOf('boleto') !== -1 || titulo.indexOf('entrada') !== -1) {
+    var ent   = total > 0 ? 'R$ ' + _formatBRL(total * 0.2) : '—';
+    var saldo = total > 0 ? 'R$ ' + _formatBRL(total * 0.8) : '—';
+    texto = '💳 Entrada de <strong>' + ent + '</strong> (20%) na assinatura'
+          + ' + saldo de <strong>' + saldo + '</strong> (80%) em boletos até 5 dias antes do evento.';
+
+  } else if (titulo.indexOf('parcel') !== -1 || titulo === pgtoCard.dataset.valor.toLowerCase()) {
+    // Parcelado no cartão — sem valor fixo de parcelas, só mostrar total
+    if (total > 0) {
+      texto = '💳 Total de <strong>R$ ' + _formatBRL(total) + '</strong> parcelado em até 12x no cartão de crédito (juros da operadora).';
+    } else {
+      texto = '💳 Parcelado em até 12x no cartão de crédito (juros da operadora).';
+    }
+
+  } else if (pgtoCard.dataset.valor === '__outro__') {
+    var outroTxt = document.getElementById('pgto-outro-txt');
+    var custom = outroTxt ? outroTxt.value.trim() : '';
+    texto = custom ? '💳 ' + escHtml(custom) : '';
+
+  } else {
+    // Qualquer outro título personalizado — só mostra o total se disponível
+    if (total > 0) texto = '💳 Total: <strong>R$ ' + _formatBRL(total) + '</strong>.';
+  }
+
+  if (texto) {
+    box.innerHTML = texto;
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+  }
 }
 
 // ── RENDER ──
@@ -1200,6 +1279,7 @@ function criarCardCheckbox(nome, desc, grupo, idx) {
     '</div>';
   card.addEventListener('click', function() {
     card.classList.toggle('selected');
+    calcPgtoPreview();
   });
   return card;
 }
@@ -1219,6 +1299,7 @@ function criarCardRadio(nome, desc, grupo, idx) {
     var todos = document.querySelectorAll('.opcao-card-radio[data-grupo="' + grupo + '"]');
     todos.forEach(function(c) { c.classList.remove('selected'); });
     card.classList.add('selected');
+    if (grupo === 'pgto' || grupo === 'opcao') calcPgtoPreview();
   });
   return card;
 }
@@ -1297,6 +1378,7 @@ function preencherSelects(d) {
     cardOutro.classList.add('selected');
     document.getElementById('pgto-outro-wrap').style.display = 'block';
     document.getElementById('pgto-outro-txt').focus();
+    calcPgtoPreview();
   });
   gridPgto.appendChild(cardOutro);
 
@@ -1305,7 +1387,7 @@ function preencherSelects(d) {
   wrap.id = 'pgto-outro-wrap';
   wrap.style.display = 'none';
   wrap.style.marginTop = '8px';
-  wrap.innerHTML = '<textarea id="pgto-outro-txt" class="resposta-textarea" placeholder="Ex: 30% na assinatura e o restante no dia do evento..." style="min-height:72px"></textarea>';
+  wrap.innerHTML = '<textarea id="pgto-outro-txt" class="resposta-textarea" placeholder="Ex: 30% na assinatura e o restante no dia do evento..." style="min-height:72px" oninput="calcPgtoPreview()"></textarea>';
   gridPgto.appendChild(wrap);
 
   // Esconder textarea ao selecionar outra opção
@@ -1313,6 +1395,7 @@ function preencherSelects(d) {
     if (c.dataset.valor !== '__outro__') {
       c.addEventListener('click', function() {
         document.getElementById('pgto-outro-wrap').style.display = 'none';
+        calcPgtoPreview();
       });
     }
   });
