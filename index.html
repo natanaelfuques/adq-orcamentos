@@ -4465,7 +4465,11 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button class="salvo-status' + statusClass + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '"' + (statusClickable ? '' : ' style="pointer-events:none"') + '>' + statusLabel + '</button>';
     card += '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">';
     if (doc.orc_ref) card += '<button onclick="irParaOrcamentoRef(\'' + escHtml(doc.orc_ref) + '\')" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#aaa;letter-spacing:0.1em;background:transparent;border:none;cursor:pointer;padding:0;transition:color 0.15s" title="Ver orçamento de origem" onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"># ' + escHtml(doc.orc_ref) + '</button>';
-    card += '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#444;letter-spacing:0.1em"># ' + ref + '</span>';
+    var linkAss = doc.link_assinatura || '';
+    var refColor = linkAss ? '#aaa' : '#444';
+    var refHover = '#C8A94A';
+    var refTitle = linkAss ? 'Link de assinatura salvo — clique para abrir ou trocar' : 'Colar link de assinatura';
+    card += '<button onclick="abrirModalLinkAssinatura(\'' + id + '\', this)" data-link="' + escHtml(linkAss) + '" title="' + refTitle + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + refColor + ';letter-spacing:0.1em;background:transparent;border:none;cursor:pointer;padding:0;transition:color 0.15s" onmouseover="this.style.color=\'' + refHover + '\'" onmouseout="this.style.color=\'' + refColor + '\'"># ' + ref + '</button>';
     card += '</span>';
     card += '</div>';
     card += '<div class="salvo-montagem-row" style="' + (aprovado && etapa !== 'concluido' ? '' : 'display:none') + '">';
@@ -5059,6 +5063,83 @@ function salvarESolicitarLink() {
       alert('Erro ao salvar: ' + e.message);
       if (btn) { btn.textContent = 'Salvar / Gerar Link'; btn.disabled = false; }
     });
+}
+
+// ═══ LINK DE ASSINATURA DO CONTRATO ═══
+
+function abrirModalLinkAssinatura(id, btnEl) {
+  var linkAtual = btnEl ? (btnEl.getAttribute('data-link') || '') : '';
+
+  // Remove modal anterior se existir
+  var old = document.getElementById('adq-link-ass-modal');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-link-ass-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  if (linkAtual) {
+    // Modo: link já existe — opções de abrir ou trocar
+    modal.innerHTML = [
+      '<div style="background:#1e1e1e;border:1px solid #C8A94A;border-radius:8px;padding:24px 22px;width:100%;max-width:380px;box-sizing:border-box">',
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:14px">Link de Assinatura</div>',
+        '<div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">' + escHtml(linkAtual) + '</div>',
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">',
+          '<a href="' + escHtml(linkAtual) + '" target="_blank" onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:#C8A94A;border:1px solid #C8A94A;color:#111;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
+          '<button onclick="_trocarLinkAssinatura(\'' + id + '\')" style="flex:1;min-width:80px;background:transparent;border:1px solid #555;color:#aaa;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Trocar</button>',
+          '<button onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
+        '</div>',
+      '</div>'
+    ].join('');
+  } else {
+    // Modo: sem link — colar novo link
+    modal.innerHTML = [
+      '<div style="background:#1e1e1e;border:1px solid #C8A94A;border-radius:8px;padding:24px 22px;width:100%;max-width:380px;box-sizing:border-box">',
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px">Link de Assinatura</div>',
+        '<input id="adq-link-ass-input" type="url" placeholder="Cole o link aqui..." style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">',
+        '<div style="display:flex;gap:8px">',
+          '<button onclick="_salvarLinkAssinatura(\'' + id + '\')" style="flex:1;background:#C8A94A;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">OK</button>',
+          '<button onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
+        '</div>',
+      '</div>'
+    ].join('');
+    // Fechar ao clicar fora
+    modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+    setTimeout(function() { var inp = document.getElementById('adq-link-ass-input'); if (inp) inp.focus(); }, 60);
+    return;
+  }
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+function _salvarLinkAssinatura(id) {
+  var inp = document.getElementById('adq-link-ass-input');
+  var link = inp ? inp.value.trim() : '';
+  if (!link) { if (inp) inp.focus(); return; }
+  if (!db) { alert('Banco de dados não conectado.'); return; }
+  db.collection('contratos').doc(id).update({ link_assinatura: link })
+    .then(function() {
+      // Atualizar botão no card sem re-render
+      var btn = document.querySelector('.salvo-card button[onclick*="abrirModalLinkAssinatura(\'' + id + '\'"]');
+      if (btn) {
+        btn.setAttribute('data-link', link);
+        btn.setAttribute('title', 'Link de assinatura salvo — clique para abrir ou trocar');
+        btn.style.color = '#aaa';
+        btn.setAttribute('onmouseout', 'this.style.color=\'#aaa\'');
+      }
+      document.getElementById('adq-link-ass-modal').remove();
+    })
+    .catch(function(e) { alert('Erro ao salvar: ' + e.message); });
+}
+
+function _trocarLinkAssinatura(id) {
+  document.getElementById('adq-link-ass-modal').remove();
+  // Abrir modal de inserção
+  var fakeBtn = { getAttribute: function() { return ''; } };
+  abrirModalLinkAssinatura(id, fakeBtn);
+  // Após renderizar, apontar o save para atualização (mesma função já faz update)
 }
 
 function removerDoPainel(contratoId) {
