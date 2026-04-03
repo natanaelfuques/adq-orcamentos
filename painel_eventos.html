@@ -1649,8 +1649,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var scrollVelocity = 0;
   var magnetInterval = null;
 
-  var snapTarget = null;
   var isSnapping = false;
+  var rafId = null;
 
   function getColW() {
     var col = document.querySelector('.column');
@@ -1661,14 +1661,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var colW = getColW();
     if (!colW) return;
     idx = Math.max(0, Math.min(2, idx));
-    snapTarget = idx;
     isSnapping = true;
+    if (rafId) cancelAnimationFrame(rafId);
     var dest = idx * colW;
-
-    // Animação manual com easing — mais rápida e precisa que 'smooth'
     var start = board.scrollLeft;
     var distance = dest - start;
-    var duration = Math.max(120, Math.min(260, Math.abs(distance) * 0.5));
+    var duration = Math.max(150, Math.min(280, Math.abs(distance) * 0.6));
     var startTime = null;
 
     function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
@@ -1679,78 +1677,79 @@ document.addEventListener('DOMContentLoaded', function() {
       var progress = Math.min(elapsed / duration, 1);
       board.scrollLeft = start + distance * easeOutCubic(progress);
       if (progress < 1) {
-        requestAnimationFrame(step);
+        rafId = requestAnimationFrame(step);
       } else {
         board.scrollLeft = dest;
         isSnapping = false;
+        rafId = null;
       }
     }
-    requestAnimationFrame(step);
+    rafId = requestAnimationFrame(step);
   }
 
-  function startMagnet() { /* magnetismo substituído por snapTo direto */ }
-  function stopMagnet() { isSnapping = false; }
+  function startMagnet() {}
+  function stopMagnet() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    isSnapping = false;
+  }
 
   var touchStartX = 0;
+  var touchStartScrollLeft = 0;
   var touchStartCol = 0;
-  var touchLastX = 0;
-  var touchLastTime = 0;
+  var touchPrevX = 0;
+  var touchPrevTime = 0;
+  var touchCurX = 0;
+  var touchCurTime = 0;
 
   board.addEventListener('touchstart', function(e) {
+    if (_draggingId) return;
     stopMagnet();
-    snapTarget = null;
     touchStartX = e.touches[0].clientX;
-    touchLastX = touchStartX;
-    touchLastTime = Date.now();
+    touchPrevX = touchStartX;
+    touchPrevTime = Date.now();
+    touchCurX = touchStartX;
+    touchCurTime = touchPrevTime;
     var colW = getColW();
+    touchStartScrollLeft = board.scrollLeft;
     touchStartCol = colW ? Math.round(board.scrollLeft / colW) : 0;
-  }, {passive: true});
+  }, {passive: false});
 
   board.addEventListener('touchmove', function(e) {
     if (_draggingId || isSnapping) return;
-    touchLastX = e.touches[0].clientX;
-    touchLastTime = Date.now();
-    var colW = getColW();
-    if (!colW) return;
-    var dx = touchStartX - e.touches[0].clientX;
-    var fraction = dx / colW;
-    // Threshold de 20%
-    if (fraction > 0.20) {
-      snapTarget = Math.min(2, touchStartCol + 1);
-    } else if (fraction < -0.20) {
-      snapTarget = Math.max(0, touchStartCol - 1);
-    } else {
-      snapTarget = null;
-    }
-  }, {passive: true});
+    e.preventDefault();
+    touchPrevX = touchCurX;
+    touchPrevTime = touchCurTime;
+    touchCurX = e.touches[0].clientX;
+    touchCurTime = Date.now();
+    var dx = touchStartX - touchCurX;
+    board.scrollLeft = touchStartScrollLeft + dx;
+  }, {passive: false});
 
-  board.addEventListener('touchend', function(e) {
+  board.addEventListener('touchend', function() {
     if (_draggingId) return;
     var colW = getColW();
-    var dt = Date.now() - touchLastTime;
-    var endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : touchLastX;
-    var totalDx = touchStartX - endX;
+    if (!colW) return;
 
-    // Velocidade em px/ms — só aceita swipe rápido se a distância também for relevante
-    var velocity = dt > 0 ? Math.abs(touchLastX - endX) / dt : 0;
-    var isFlick = velocity > 0.5 && Math.abs(totalDx) > colW * 0.2;
+    var dt = touchCurTime - touchPrevTime;
+    var dxRecent = touchPrevX - touchCurX;
+    var velocity = dt > 0 ? dxRecent / dt : 0;
 
     var target;
-    if (isFlick) {
-      // Swipe rápido mas controlado: avança só 1 coluna
-      target = totalDx > 0
+    if (Math.abs(velocity) > 0.3) {
+      target = velocity > 0
         ? Math.min(2, touchStartCol + 1)
         : Math.max(0, touchStartCol - 1);
     } else {
-      target = snapTarget !== null ? snapTarget : touchStartCol;
+      var fraction = (board.scrollLeft - touchStartScrollLeft) / colW;
+      if (fraction > 0.20) {
+        target = Math.min(2, touchStartCol + 1);
+      } else if (fraction < -0.20) {
+        target = Math.max(0, touchStartCol - 1);
+      } else {
+        target = touchStartCol;
+      }
     }
     snapTo(target);
-  }, {passive: true});
-
-  board.addEventListener('scroll', function() {
-    if (_draggingId) return;
-    scrollVelocity = board.scrollLeft - lastScrollLeft;
-    lastScrollLeft = board.scrollLeft;
   }, {passive: true});
 });
 
