@@ -1144,7 +1144,7 @@ function abrirResposta(tipo) {
     var btnDados = document.getElementById('btn-dados-reserva');
     if (dadosForm && dadosForm.style.display !== 'none') {
       dadosForm.style.display = 'none';
-      if (btnDados) btnDados.innerHTML = '▶ Preencher Dados';
+      if (btnDados) btnDados.innerHTML = '▶ Gerar Contrato';
     }
     painelNao.style.display = 'block';
     btnNao.classList.add('proposta-btn--ativo');
@@ -1161,7 +1161,7 @@ function fecharPainel() {
   var dadosForm = document.getElementById('dados-reserva-form');
   var btnDados = document.getElementById('btn-dados-reserva');
   if (dadosForm) dadosForm.style.display = 'none';
-  if (btnDados) btnDados.innerHTML = '▶ Preencher Dados';
+  if (btnDados) btnDados.innerHTML = '▶ Gerar Contrato';
   _painelAtivo = null;
 }
 
@@ -1349,8 +1349,6 @@ function toggleDadosReserva() {
     }
     form.style.display = 'block';
     btn.innerHTML = '✕ Fechar Formulário';
-    btn.classList.remove('cta-btn--blue');
-    btn.classList.add('resposta-cancel');
     btn.style.flex = '1';
     form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     // Pre-fill com dados do orçamento
@@ -1362,8 +1360,6 @@ function toggleDadosReserva() {
   } else {
     form.style.display = 'none';
     btn.innerHTML = '▶ Gerar Contrato';
-    btn.classList.remove('resposta-cancel');
-    btn.classList.add('cta-btn--blue');
     btn.style.flex = '';
   }
 }
