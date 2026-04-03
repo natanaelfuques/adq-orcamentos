@@ -510,6 +510,74 @@
   }
   .cta-btn--blue:hover { opacity: 0.9; }
 
+  /* ── DADOS RESERVA FORM ── */
+  .dados-form {
+    margin-top: 12px;
+    background: var(--surface);
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    overflow: hidden;
+    animation: fadeSlideIn 0.2s ease;
+  }
+  .dados-form-header {
+    background: #111b2e;
+    border-bottom: 1px solid #1e2d4a;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .dados-form-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 900; flex-shrink: 0;
+    background: rgba(26,86,219,0.18); color: #6b9fff;
+    border: 1px solid rgba(26,86,219,0.4);
+  }
+  .dados-form-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem; font-weight: 800;
+    color: var(--text); text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .dados-form-body { padding: 20px; }
+  .dados-form-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+  .dados-section-label {
+    font-size: 0.65rem; font-weight: 700;
+    color: #6b9fff; text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 10px; margin-top: 20px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #1e2d4a;
+  }
+  .dados-section-label:first-child { margin-top: 0; }
+  .dados-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .dados-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .dados-field { margin-bottom: 10px; }
+  .dados-label {
+    display: block; font-size: 0.72rem; font-weight: 600;
+    color: #aaa; margin-bottom: 5px;
+  }
+  .dados-input {
+    width: 100%; background: var(--dark);
+    border: 1px solid #2a2a2a; border-radius: 3px;
+    color: var(--text); font-family: 'Barlow', sans-serif;
+    font-size: 0.88rem; padding: 9px 12px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .dados-input:focus { border-color: rgba(26,86,219,0.6); }
+  .dados-input::placeholder { color: #444; font-size: 0.82rem; }
+  .dados-hint {
+    font-size: 0.7rem; color: #555; margin-top: 3px;
+  }
+  .dados-form-footer {
+    padding: 14px 20px;
+    border-top: 1px solid #1a1a1a;
+    background: rgba(0,0,0,0.15);
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  @media (max-width: 600px) {
+    .dados-grid-2, .dados-grid-3 { grid-template-columns: 1fr; }
+  }
+
   /* ── DATA INFO STRIP ── */
   .info-strip {
     background: rgba(200,169,74,0.06);
@@ -734,9 +802,88 @@
             ▶ Confirmar pelo WhatsApp
           </a>
         </div>
-        <button class="cta-btn cta-btn--blue" onclick="dadosReserva()">
+        <button class="cta-btn cta-btn--blue" id="btn-dados-reserva" onclick="toggleDadosReserva()">
           ⊞ Dados para Reserva
         </button>
+      </div>
+    </div>
+
+    <!-- FORMULÁRIO DADOS PARA RESERVA -->
+    <div id="dados-reserva-form" class="dados-form" style="display:none">
+      <div class="dados-form-header">
+        <div class="dados-form-icon">⊞</div>
+        <div class="dados-form-title">Dados para Reserva</div>
+      </div>
+      <div class="dados-form-body">
+        <p class="dados-form-sub">Preencha os dados abaixo. Eles serão enviados pelo WhatsApp para agilizar a elaboração do contrato.</p>
+
+        <div class="dados-section-label">Dados do Contratante</div>
+        <div class="dados-grid-2">
+          <div class="dados-field">
+            <label class="dados-label">Nome completo / Razão Social</label>
+            <input class="dados-input" id="dr_nome" type="text" placeholder="Ex: Maria da Silva">
+          </div>
+          <div class="dados-field">
+            <label class="dados-label">CPF / CNPJ</label>
+            <input class="dados-input" id="dr_doc" type="text" placeholder="000.000.000-00">
+          </div>
+        </div>
+        <div class="dados-grid-2">
+          <div class="dados-field">
+            <label class="dados-label">Endereço</label>
+            <input class="dados-input" id="dr_end" type="text" placeholder="Rua, nº, Bairro, Cidade/UF">
+          </div>
+          <div class="dados-field">
+            <label class="dados-label">CEP</label>
+            <input class="dados-input" id="dr_cep" type="text" placeholder="00000-000">
+          </div>
+        </div>
+        <div class="dados-grid-2">
+          <div class="dados-field">
+            <label class="dados-label">E-mail</label>
+            <input class="dados-input" id="dr_email" type="email" placeholder="contato@email.com">
+          </div>
+          <div class="dados-field">
+            <label class="dados-label">Telefone / WhatsApp</label>
+            <input class="dados-input" id="dr_fone" type="tel" placeholder="(47) 99999-9999">
+          </div>
+        </div>
+
+        <div class="dados-section-label">Dados do Evento</div>
+        <div class="dados-grid-2">
+          <div class="dados-field">
+            <label class="dados-label">Evento</label>
+            <input class="dados-input" id="dr_evento" type="text" placeholder="Ex: Aniversário, Casamento...">
+          </div>
+          <div class="dados-field">
+            <label class="dados-label">Responsável no Local</label>
+            <input class="dados-input" id="dr_resp" type="text" placeholder="Quem receberá a equipe">
+          </div>
+        </div>
+        <div class="dados-field">
+          <label class="dados-label">Local do Evento</label>
+          <input class="dados-input" id="dr_local" type="text" placeholder="Ex: Salão das Rosas, Brusque/SC">
+        </div>
+        <div class="dados-grid-3">
+          <div class="dados-field">
+            <label class="dados-label">Data do Evento</label>
+            <input class="dados-input" id="dr_data" type="date">
+          </div>
+          <div class="dados-field">
+            <label class="dados-label">Hora Início</label>
+            <input class="dados-input" id="dr_inicio" type="text" placeholder="Ex: 18:00">
+          </div>
+          <div class="dados-field">
+            <label class="dados-label">Hora Término</label>
+            <input class="dados-input" id="dr_fim" type="text" placeholder="Ex: 23:00">
+          </div>
+        </div>
+      </div>
+      <div class="dados-form-footer">
+        <button class="resposta-cancel" onclick="toggleDadosReserva()">Cancelar</button>
+        <a id="wa-link-dados" href="#" class="cta-btn cta-btn--blue" target="_blank" onclick="return enviarDadosReserva(event)">
+          ▶ Enviar Dados pelo WhatsApp
+        </a>
       </div>
     </div>
 
@@ -1058,9 +1205,72 @@ function enviarNao(e) {
   return true;
 }
 
-function dadosReserva() {
-  // placeholder - funcionalidade a definir
-  alert('Funcionalidade de Dados para Reserva em breve!');
+function toggleDadosReserva() {
+  var form = document.getElementById('dados-reserva-form');
+  var btn = document.getElementById('btn-dados-reserva');
+  if (form.style.display === 'none') {
+    form.style.display = 'block';
+    btn.innerHTML = '✕ Fechar Formulário';
+    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Pre-fill known fields from orcamento
+    var nomeEl = document.getElementById('dr_nome');
+    if (nomeEl && !nomeEl.value && _orcData.nome) nomeEl.value = _orcData.nome;
+  } else {
+    form.style.display = 'none';
+    btn.innerHTML = '⊞ Dados para Reserva';
+  }
+}
+
+function enviarDadosReserva(e) {
+  var nome = document.getElementById('dr_nome').value.trim();
+  var doc = document.getElementById('dr_doc').value.trim();
+  var end = document.getElementById('dr_end').value.trim();
+  var cep = document.getElementById('dr_cep').value.trim();
+  var email = document.getElementById('dr_email').value.trim();
+  var fone = document.getElementById('dr_fone').value.trim();
+  var evento = document.getElementById('dr_evento').value.trim();
+  var resp = document.getElementById('dr_resp').value.trim();
+  var local = document.getElementById('dr_local').value.trim();
+  var dataRaw = document.getElementById('dr_data').value;
+  var inicio = document.getElementById('dr_inicio').value.trim();
+  var fim = document.getElementById('dr_fim').value.trim();
+
+  if (!nome || !doc || !fone) {
+    e.preventDefault();
+    alert('Por favor, preencha pelo menos: Nome, CPF/CNPJ e Telefone.');
+    return false;
+  }
+
+  // format date
+  var dataFmt = dataRaw;
+  if (dataRaw) {
+    var parts = dataRaw.split('-');
+    if (parts.length === 3) dataFmt = parts[2] + '/' + parts[1] + '/' + parts[0];
+  }
+
+  var linhas = [
+    'Dados para elaboracao do contrato.',
+    'Ref: ' + _orcData.ref,
+    '',
+    'CONTRATANTE',
+    'Nome: ' + nome,
+    'CPF/CNPJ: ' + doc,
+    (end ? 'Endereco: ' + end : ''),
+    (cep ? 'CEP: ' + cep : ''),
+    (email ? 'Email: ' + email : ''),
+    'Telefone: ' + fone,
+    '',
+    'EVENTO',
+    (evento ? 'Evento: ' + evento : ''),
+    (local ? 'Local: ' + local : ''),
+    (dataFmt ? 'Data: ' + dataFmt : ''),
+    (inicio ? 'Inicio: ' + inicio : ''),
+    (fim ? 'Termino: ' + fim : ''),
+    (resp ? 'Responsavel no local: ' + resp : '')
+  ].filter(function(l) { return l !== ''; });
+
+  document.getElementById('wa-link-dados').href = 'https://wa.me/5547991536771?text=' + encodeURIComponent(linhas.join('\n'));
+  return true;
 }
 // ── INIT ──
 window.addEventListener('load', function() {
