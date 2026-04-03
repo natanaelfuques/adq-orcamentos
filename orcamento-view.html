@@ -350,6 +350,81 @@
     white-space: nowrap; flex-shrink: 0;
   }
   .cta-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .cta-buttons { display: flex; gap: 10px; flex-wrap: wrap; flex-shrink: 0; }
+  .cta-btn--outline {
+    background: transparent;
+    color: var(--gold);
+    border: 1.5px solid var(--gold);
+    cursor: pointer;
+  }
+  .cta-btn--outline:hover { background: rgba(200,169,74,0.1); opacity: 1; }
+
+  /* ── CONTRATO PANEL ── */
+  .contrato-panel {
+    margin-top: 14px;
+    background: var(--surface);
+    border: 1px solid rgba(200,169,74,0.35);
+    border-radius: 4px;
+    padding: 22px 24px;
+    animation: fadeSlideIn 0.22s ease;
+  }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .contrato-panel-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: var(--gold); text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 4px;
+  }
+  .contrato-panel-sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 18px; }
+  .contrato-field { margin-bottom: 14px; }
+  .contrato-label {
+    display: block;
+    font-size: 0.7rem; font-weight: 700;
+    color: var(--gold); text-transform: uppercase;
+    letter-spacing: 0.12em; margin-bottom: 6px;
+  }
+  .contrato-select-wrap { position: relative; }
+  .contrato-select {
+    width: 100%;
+    background: var(--dark);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    appearance: none;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .contrato-select:focus { border-color: rgba(200,169,74,0.6); }
+  .contrato-select-wrap::after {
+    content: '▾';
+    position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold); font-size: 0.8rem;
+    pointer-events: none;
+  }
+  .contrato-actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-top: 20px; flex-wrap: wrap;
+  }
+  .contrato-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 11px 20px; cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .contrato-cancel:hover { border-color: #555; color: var(--text); }
 
   /* ── DATA INFO STRIP ── */
   .info-strip {
@@ -443,6 +518,8 @@
     .cb-right { padding-left: 0; }
     .pgto-grid { grid-template-columns: 1fr; }
     .cta-row { flex-direction: column; align-items: flex-start; }
+    .cta-buttons { width: 100%; }
+    .cta-btn { width: 100%; text-align: center; justify-content: center; display: flex; align-items: center; }
     .container { padding: 24px 16px; }
     .hero-inner { padding: 24px 16px; }
     .client-banner-inner { padding: 16px; }
@@ -537,9 +614,45 @@
         <strong>Gostou? Fale conosco!</strong>
         <span>Confirme sua data e garanta sua reserva agora mesmo.</span>
       </div>
-      <a href="https://wa.me/5547991536771" class="cta-btn" target="_blank">
-        <span style="font-style:normal;margin-right:6px;font-size:0.85rem">▶</span> WhatsApp
-      </a>
+      <div class="cta-buttons">
+        <a href="https://wa.me/5547991536771" class="cta-btn" target="_blank">
+          <span style="font-style:normal;margin-right:6px;font-size:0.85rem">▶</span> WhatsApp
+        </a>
+        <button class="cta-btn cta-btn--outline" id="btn-contrato" onclick="toggleContrato()">
+          <span style="font-style:normal;margin-right:6px;font-size:0.85rem">✦</span> Solicitar Contrato
+        </button>
+      </div>
+    </div>
+
+    <!-- PAINEL SOLICITAR CONTRATO -->
+    <div id="contrato-panel" class="contrato-panel" style="display:none">
+      <div class="contrato-panel-title">Solicitar Contrato</div>
+      <p class="contrato-panel-sub">Selecione a opção e a forma de pagamento para prosseguir.</p>
+
+      <div class="contrato-field">
+        <label class="contrato-label">Opção Escolhida</label>
+        <div class="contrato-select-wrap">
+          <select id="sel-opcao" class="contrato-select">
+            <option value="">— Selecione uma opção —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="contrato-field">
+        <label class="contrato-label">Forma de Pagamento</label>
+        <div class="contrato-select-wrap">
+          <select id="sel-pgto" class="contrato-select">
+            <option value="">— Selecione a forma de pagamento —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="contrato-actions">
+        <button class="contrato-cancel" onclick="toggleContrato()">Cancelar</button>
+        <a id="contrato-wa-link" href="#" class="cta-btn" target="_blank" onclick="return enviarContrato(event)">
+          <span style="font-style:normal;margin-right:6px;font-size:0.85rem">▶</span> Enviar pelo WhatsApp
+        </a>
+      </div>
     </div>
 
   </div><!-- /container -->
@@ -607,6 +720,7 @@ function renderOrcamento(doc) {
   document.getElementById('hero-data').textContent =
     'Emitido em ' + (emissaoDate ? emissaoDate.toLocaleDateString('pt-BR') : '—');
   document.getElementById('hero-ref').textContent = id.substring(0, 8).toUpperCase();
+  _contratoData.ref = id.substring(0, 8).toUpperCase();
 
   // Logo removido do topo
 
@@ -687,6 +801,7 @@ function renderOrcamento(doc) {
   }
 
   // Mostrar app
+  preencherSelects(d);
   document.getElementById('loading').style.display = 'none';
   document.getElementById('app').style.display = 'block';
 }
@@ -698,6 +813,86 @@ function showError(msg) {
   if (msg) document.getElementById('error-msg').textContent = msg;
 }
 
+
+// ── CONTRATO ──
+var _contratoData = { opcoes: [], pagamentos: [], nome: '', ref: '' };
+
+function toggleContrato() {
+  var panel = document.getElementById('contrato-panel');
+  var btn = document.getElementById('btn-contrato');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    btn.textContent = '✕  Fechar';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else {
+    panel.style.display = 'none';
+    btn.innerHTML = '<span style="font-style:normal;margin-right:6px;font-size:0.85rem">✦</span> Solicitar Contrato';
+  }
+}
+
+function preencherSelects(d) {
+  var selOpcao = document.getElementById('sel-opcao');
+  var selPgto = document.getElementById('sel-pgto');
+  var NOMES = { 1: 'Essencial', 2: 'Mais Escolhido', 3: 'Experiência Completa' };
+  var opcoes = (d.opcoes||[]).filter(function(o){ return o.tipo==='pacote'; });
+  var det = (d.opcoes||[]).find(function(o){ return o.tipo==='detalhado'; });
+  if (opcoes.length) {
+    opcoes.forEach(function(op, i) {
+      var idx = op.idx || (i+1);
+      var opt = document.createElement('option');
+      opt.value = 'Opção ' + idx + ' – ' + (op.titulo || NOMES[idx] || 'Pacote') + (op.valor ? ' (R$ ' + op.valor + ')' : '');
+      opt.textContent = opt.value;
+      selOpcao.appendChild(opt);
+    });
+  } else if (det && det.itens && det.itens.length) {
+    det.itens.forEach(function(it) {
+      var opt = document.createElement('option');
+      opt.value = it.titulo + (it.valor ? ' (R$ ' + it.valor + ')' : '');
+      opt.textContent = opt.value;
+      selOpcao.appendChild(opt);
+    });
+  } else {
+    var opt = document.createElement('option');
+    opt.value = 'Orçamento único'; opt.textContent = opt.value;
+    selOpcao.appendChild(opt);
+  }
+  var pagamentos = (d.pagamentos||[]).filter(function(p){ return p.inc && (p.titulo||p.desc); });
+  if (pagamentos.length) {
+    pagamentos.forEach(function(p) {
+      var opt = document.createElement('option');
+      opt.value = (p.titulo||'Pagamento') + (p.desc ? ' – ' + p.desc : '');
+      opt.textContent = opt.value;
+      selPgto.appendChild(opt);
+    });
+  } else {
+    var opt = document.createElement('option');
+    opt.value = 'A combinar'; opt.textContent = opt.value;
+    selPgto.appendChild(opt);
+  }
+  _contratoData.nome = d.nome_cliente || d.nome || '';
+  _contratoData.ref = '';
+}
+
+function enviarContrato(e) {
+  var opcao = document.getElementById('sel-opcao').value;
+  var pgto = document.getElementById('sel-pgto').value;
+  if (!opcao || !pgto) {
+    e.preventDefault();
+    alert('Por favor, selecione a opcao e a forma de pagamento.');
+    return false;
+  }
+  var linhas = [
+    'Ola! Gostaria de solicitar o contrato.',
+    '*Referencia:* ' + _contratoData.ref,
+    '*Nome:* ' + _contratoData.nome,
+    '*Opcao escolhida:* ' + opcao,
+    '*Forma de pagamento:* ' + pgto
+  ];
+  var msg = linhas.join('\n');
+  var link = document.getElementById('contrato-wa-link');
+  link.href = 'https://wa.me/5547991536771?text=' + encodeURIComponent(msg);
+  return true;
+}
 // ── INIT ──
 window.addEventListener('load', function() {
   const params = new URLSearchParams(window.location.search);
