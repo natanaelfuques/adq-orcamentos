@@ -4333,13 +4333,21 @@ function switchSalvosTab(tab, animate) {
     track.addEventListener('touchend', function(e) {
       if (!dragging) return;
       var dx = e.changedTouches[0].clientX - startX;
+      dragging = false; startX = null;
       if (Math.abs(dx) < 40) return;
       if (dx < 0 && _salvosTab === 'orcamentos') {
+        // em orçamentos, arrastar esquerda → vai para contratos salvos
         if (window._goToVirtual) window._goToVirtual(2, true); else switchSalvosTab('contratos');
       } else if (dx > 0 && _salvosTab === 'contratos') {
+        // em contratos, arrastar direita → volta para orçamentos salvos
         if (window._goToVirtual) window._goToVirtual(1, true); else switchSalvosTab('orcamentos');
+      } else if (dx > 0 && _salvosTab === 'orcamentos') {
+        // em orçamentos, arrastar direita → sai para aba Orçamento (esquerda)
+        if (window._goToVirtual) window._goToVirtual(0, true);
+      } else if (dx < 0 && _salvosTab === 'contratos') {
+        // em contratos, arrastar esquerda → sai para aba Contrato (direita)
+        if (window._goToVirtual) window._goToVirtual(3, true);
       }
-      dragging = false; startX = null;
     }, { passive: true });
   }
   document.addEventListener('DOMContentLoaded', initSalvosSwipe);
