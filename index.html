@@ -1567,6 +1567,7 @@ Revestimento</textarea>
     <iframe id="pdf-frame"></iframe>
     <button class="btn-download" onclick="imprimirPDF()">Imprimir / Baixar PDF</button>
     <button class="btn-download" onclick="salvarNaNuvem()" style="margin-top:8px;border-color:var(--gold);color:var(--gold)" id="btn-salvar-nuvem">Salvar Orçamento</button>
+    <button class="btn-download" onclick="salvarESolicitarLink()" style="margin-top:8px;border-color:#4A90C8;color:#4A90C8" id="btn-copiar-link">🔗 Gerar Link para Cliente</button>
   </div>
 
 </div><!-- /container orcamento -->
@@ -3873,6 +3874,7 @@ function handleSalvosClick(e) {
   var nome = btn.getAttribute('data-nome') || '';
   if (action === 'abrir') { registrarLogGerador('abrir-orcamento', nome); abrirSalvo(id); }
   else if (action === 'duplicar') { registrarLogGerador('duplicar-orcamento', nome); duplicarSalvo(id); }
+  else if (action === 'link') { copiarLinkOrcamento(id); }
   else if (action === 'excluir') excluirSalvo(id, nome);
   else if (action === 'status') {
     var ap = btn.getAttribute('data-aprovado') === 'true';
@@ -4070,6 +4072,7 @@ function renderSalvos(docs) {
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Abrir</button>';
     card += '<button class="btn-salvo" data-action="duplicar" data-id="' + id + '">Duplicar</button>';
+    card += '<button class="btn-salvo" data-action="link" data-id="' + id + '" title="Copiar link para enviar ao cliente">🔗 Link</button>';
     card += '<button class="btn-salvo" data-action="json-orc" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
@@ -4851,6 +4854,95 @@ function adicionarAoPainel(contratoId) {
       });
     });
   });
+}
+
+// ═══ LINK PÚBLICO DO ORÇAMENTO ═══
+
+function _getLinkOrcamento(id) {
+  // Detecta a URL base automaticamente — funciona tanto local quanto em produção
+  var base = window.location.href.split('?')[0]; // ex: https://site.com/index.html
+  base = base.substring(0, base.lastIndexOf('/') + 1); // ex: https://site.com/
+  return base + 'orcamento-view.html?orc=' + id;
+}
+
+function copiarLinkOrcamento(id) {
+  var link = _getLinkOrcamento(id);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(function() {
+      _mostrarToastLink(link);
+    }).catch(function() {
+      _fallbackCopyLink(link);
+    });
+  } else {
+    _fallbackCopyLink(link);
+  }
+}
+
+function _fallbackCopyLink(link) {
+  var ta = document.createElement('textarea');
+  ta.value = link;
+  ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); _mostrarToastLink(link); }
+  catch(e) { prompt('Copie o link abaixo:', link); }
+  document.body.removeChild(ta);
+}
+
+function _mostrarToastLink(link) {
+  // Remove toast anterior se existir
+  var old = document.getElementById('adq-link-toast');
+  if (old) old.remove();
+
+  var toast = document.createElement('div');
+  toast.id = 'adq-link-toast';
+  toast.style.cssText = [
+    'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
+    'background:#1a1a1a', 'border:1px solid #C8A94A', 'border-radius:6px',
+    'padding:14px 20px', 'z-index:9999', 'max-width:90vw', 'width:360px',
+    'box-shadow:0 8px 32px rgba(0,0,0,0.6)', 'animation:adqFadeIn 0.2s ease'
+  ].join(';');
+
+  toast.innerHTML = [
+    '<style>@keyframes adqFadeIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}</style>',
+    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">✓ Link copiado!</div>',
+    '<div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:12px">' + link + '</div>',
+    '<div style="display:flex;gap:8px">',
+    '<a href="' + link + '" target="_blank" style="flex:1;text-align:center;background:transparent;border:1px solid #333;color:#888;padding:7px;border-radius:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:all 0.15s" onmouseover="this.style.borderColor=\'#C8A94A\';this.style.color=\'#C8A94A\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#888\'">Abrir</a>',
+    '<a href="https://wa.me/?text=' + encodeURIComponent('Olá! Segue o link do seu orçamento: ' + link) + '" target="_blank" style="flex:1;text-align:center;background:#25D366;border:1px solid #25D366;color:#fff;padding:7px;border-radius:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none">WhatsApp</a>',
+    '<button onclick="document.getElementById(\'adq-link-toast\').remove()" style="width:30px;background:transparent;border:1px solid #333;color:#666;border-radius:3px;cursor:pointer;font-size:1rem;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(toast);
+  setTimeout(function() {
+    var t = document.getElementById('adq-link-toast');
+    if (t) t.remove();
+  }, 12000);
+}
+
+function salvarESolicitarLink() {
+  if (!db) { alert('Banco de dados não conectado.'); return; }
+
+  var btn = document.getElementById('btn-copiar-link');
+  if (btn) { btn.textContent = 'Salvando...'; btn.disabled = true; }
+
+  var dados = coletarDadosOrcamento();
+  dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
+
+  db.collection('orcamentos').add(dados)
+    .then(function(docRef) {
+      registrarLogGerador('salvar-orcamento', dados.nome_cliente || '');
+      var link = _getLinkOrcamento(docRef.id);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(function() { _mostrarToastLink(link); }).catch(function() { _fallbackCopyLink(link); });
+      } else { _fallbackCopyLink(link); }
+      if (btn) { btn.textContent = '🔗 Gerar Link para Cliente'; btn.disabled = false; }
+    })
+    .catch(function(e) {
+      alert('Erro ao salvar: ' + e.message);
+      if (btn) { btn.textContent = '🔗 Gerar Link para Cliente'; btn.disabled = false; }
+    });
 }
 
 function removerDoPainel(contratoId) {
