@@ -2387,6 +2387,9 @@ function carregarContratoNoOrcamento(d) {
   if (d.orc_ref) {
     const refEl = document.getElementById('orc_ref_origem');
     if (refEl) { refEl.textContent = 'Originado do orçamento: ' + d.orc_ref; refEl.style.display = 'inline'; }
+    _currentOrcRef = d.orc_ref;
+  } else {
+    _currentOrcRef = '';
   }
 
   switchMain('contrato');
@@ -2524,6 +2527,7 @@ function carregarOrcamentoJSON(input) {
 carregarOrcamentoJSON._processar = function(d) {
   _orcDados = d;
   _contratoDados = null;
+  _currentOrcRef = '';
   // Reset label and button text
   const lbl = document.getElementById('orc_opcoes_label');
   if (lbl) lbl.textContent = 'Qual opção o cliente escolheu?';
@@ -2535,7 +2539,7 @@ carregarOrcamentoJSON._processar = function(d) {
 function resetCarregarOrcamento() {
   _orcDados = null;
   _contratoDados = null;
-  document.getElementById('orc_opcoes_wrap').style.display = 'none';
+  _currentOrcRef = '';
   document.getElementById('orc_opcoes_lista').innerHTML = '';
   const lbl = document.getElementById('orc_opcoes_label');
   if (lbl) lbl.textContent = 'Qual opção o cliente escolheu?';
@@ -3320,6 +3324,7 @@ function baixarDadosContrato() {
 }
 
 let _contratoDados = null;
+let _currentOrcRef = '';
 
 function identificarECarregar(input) {
   const file = input.files[0];
@@ -3374,6 +3379,7 @@ carregarContratoJSON._processar = function(d) {
 function preencherContratoDados() {
   const d = _contratoDados;
   if (!d) return;
+  _currentOrcRef = d.orc_ref || '';
   const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
   set('cli_nome',  d.cli_nome);
   set('cli_doc',   d.cli_doc);
@@ -3952,6 +3958,7 @@ function handleSalvosClick(e) {
     toggleAprovado(id, ap);
   }
   else if (action === 'abrir-contrato') { registrarLogGerador('abrir-contrato', nome); abrirContrato(id); }
+  else if (action === 'link-contrato') { abrirModalLinkAssinatura(id, btn); }
   else if (action === 'duplicar-contrato') { registrarLogGerador('duplicar-contrato', nome); duplicarContrato(id); }
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
   else if (action === 'calendar') { btn.blur(); registrarLogGerador('calendar', nome); gerarLinkCalendar(id); }
@@ -4143,7 +4150,7 @@ function renderSalvos(docs) {
     card += '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
-    card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Abrir</button>';
+    card += '<button class="btn-salvo primary" data-action="abrir" data-id="' + id + '">Carregar</button>';
     card += '<button class="btn-salvo" data-action="duplicar" data-id="' + id + '">Duplicar</button>';
     card += '<button class="btn-salvo" data-action="link" data-id="' + id + '" title="Copiar link para enviar ao cliente">Link</button>';
     card += '<button class="btn-salvo" data-action="json-orc" data-id="' + id + '">Baixar</button>';
@@ -4321,7 +4328,8 @@ function coletarDadosContrato() {
     pgto_custom: get('pgto_custom'),
     data_entrada: get('data_entrada'),
     servicos:  servicos,
-    aprovado:  false
+    aprovado:  false,
+    orc_ref:   _currentOrcRef || ''
   };
 }
 
@@ -4474,7 +4482,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
-    card += '<button class="btn-salvo primary" data-action="abrir-contrato" data-id="' + id + '">Abrir</button>';
+    card += '<button class="btn-salvo primary" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
+    card += '<button class="btn-salvo" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
     card += '<button class="btn-salvo" data-action="duplicar-contrato" data-id="' + id + '">Duplicar</button>';
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
@@ -4548,6 +4557,7 @@ function abrirContrato(id) {
       }
     }
     if (d.val_total) calcEntrada();
+    _currentOrcRef = d.orc_ref || '';
     switchMain('contrato');
   });
 }
@@ -5138,17 +5148,22 @@ function abrirModalLinkAssinatura(id, btnEl) {
 function _salvarLinkAssinatura(id) {
   var inp = document.getElementById('adq-link-ass-input');
   var link = inp ? inp.value.trim() : '';
-  if (!link) { if (inp) inp.focus(); return; }
   if (!db) { alert('Banco de dados não conectado.'); return; }
-  db.collection('contratos').doc(id).update({ link_assinatura: link })
+  var updateVal = link ? { link_assinatura: link } : { link_assinatura: firebase.firestore.FieldValue.delete() };
+  db.collection('contratos').doc(id).update(updateVal)
     .then(function() {
-      // Atualizar botão no card sem re-render
+      // Atualizar botão inline (status row) sem re-render
       var btn = document.querySelector('.salvo-card button[onclick*="abrirModalLinkAssinatura(\'' + id + '\'"]');
       if (btn) {
         btn.setAttribute('data-link', link);
-        btn.setAttribute('title', 'Link de assinatura salvo — clique para abrir ou trocar');
-        btn.style.color = '#aaa';
-        btn.setAttribute('onmouseout', 'this.style.color=\'#aaa\'');
+        btn.setAttribute('title', link ? 'Link de assinatura salvo — clique para abrir ou trocar' : 'Colar link de assinatura');
+        btn.style.color = link ? '#aaa' : '#444';
+        btn.setAttribute('onmouseout', 'this.style.color=\'' + (link ? '#aaa' : '#444') + '\'');
+      }
+      // Atualizar botão "Link" da linha de ações
+      var linkBtn = document.querySelector('.salvo-card button[data-action="link-contrato"][data-id="' + id + '"]');
+      if (linkBtn) {
+        linkBtn.setAttribute('data-link', link);
       }
       document.getElementById('adq-link-ass-modal').remove();
     })
