@@ -4444,7 +4444,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button class="' + calClass + '" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
     card += '<button class="salvo-status' + statusClass + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '"' + (statusClickable ? '' : ' style="pointer-events:none"') + '>' + statusLabel + '</button>';
     card += '<span style="margin-left:auto;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#444;letter-spacing:0.1em"># ' + ref + '</span>';
-    if (doc.orc_ref) card += '<span style="margin-left:8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;color:#888;letter-spacing:0.05em" title="Originado do orçamento ' + escHtml(doc.orc_ref) + '">' + escHtml(doc.orc_ref) + '</span>';
+    if (doc.orc_ref) card += '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#aaa;letter-spacing:0.1em" title="Originado do orçamento ' + escHtml(doc.orc_ref) + '">ORC # ' + escHtml(doc.orc_ref) + '</span>';
     card += '</div>';
     card += '<div class="salvo-montagem-row" style="' + (aprovado && etapa !== 'concluido' ? '' : 'display:none') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
