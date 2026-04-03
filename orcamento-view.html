@@ -767,9 +767,7 @@
     <!-- PROPOSTA FEEDBACK -->
     <div class="proposta-box">
       <div class="proposta-pergunta">Gostou da proposta?</div>
-      <p class="proposta-sub" style="margin-bottom:16px">Confirme sua reserva ou solicite ajustes abaixo.</p>
-      <div class="proposta-divider"></div>
-      <p class="proposta-sub">Selecione a opção e a forma de pagamento. Vamos garantir sua data!</p>
+      <p class="proposta-sub" style="white-space:nowrap">Confirme sua reserva ou solicite ajustes abaixo.</p>
       <div class="proposta-btns">
         <button class="proposta-btn proposta-btn--sim" id="btn-sim" onclick="abrirResposta('sim')">
           ✓&nbsp; Sim, quero reservar
@@ -801,13 +799,15 @@
       </div>
       <div class="resposta-actions">
         <div class="resposta-actions-row">
-          <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
-          <button class="cta-btn cta-btn--blue" id="btn-dados-reserva" onclick="toggleDadosReserva()">
-            ▶ Gerar Contrato
-          </button>
           <a id="wa-link-sim" href="#" class="cta-btn" target="_blank" onclick="return enviarSim(event)">
             ▶ Confirmar pelo WhatsApp
           </a>
+          <button class="cta-btn cta-btn--blue" id="btn-dados-reserva" onclick="toggleDadosReserva()">
+            ▶ Gerar Contrato
+          </button>
+        </div>
+        <div class="resposta-actions-row">
+          <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
         </div>
       </div>
     </div>
@@ -933,11 +933,7 @@
 
   <!-- FOOTER -->
   <div class="page-footer">
-    <strong>(47) 99153-6771</strong> &nbsp;•&nbsp;
-    @audiodequalidade &nbsp;•&nbsp;
-    facebook.com/audiodequalidade &nbsp;•&nbsp;
-    CNPJ 49.276.147/0001-06<br>
-    Brusque/SC
+    <strong>(47) 99153-6771</strong> &nbsp;•&nbsp; @audiodequalidade &nbsp;•&nbsp; facebook.com/audiodequalidade &nbsp;•&nbsp; Brusque/SC &nbsp;•&nbsp; CNPJ 49.276.147/0001-06
   </div>
 
 </div><!-- /app -->
@@ -1212,12 +1208,16 @@ function preencherSelects(d) {
       var idx = op.idx || (i+1);
       var nome = 'Opcao ' + idx + ' - ' + (op.titulo || NOMES[idx] || 'Pacote');
       var desc = op.valor ? 'R$ ' + op.valor : '';
-      gridOpcoes.appendChild(criarCardRadio(nome, desc, 'opcao', i));
+      var card = criarCardRadio(nome, desc, 'opcao', i);
+      if (op.valor) card.dataset.valorBrl = op.valor;
+      gridOpcoes.appendChild(card);
     });
   } else if (det && det.itens && det.itens.length) {
     det.itens.forEach(function(it, i) {
       var desc = it.valor ? 'R$ ' + it.valor : '';
-      gridOpcoes.appendChild(criarCardRadio(it.titulo, desc, 'opcao', i));
+      var card = criarCardRadio(it.titulo, desc, 'opcao', i);
+      if (it.valor) card.dataset.valorBrl = it.valor;
+      gridOpcoes.appendChild(card);
     });
   } else {
     gridOpcoes.appendChild(criarCardRadio('Orcamento unico', '', 'opcao', 0));
@@ -1273,6 +1273,22 @@ function preencherSelects(d) {
   _orcData.evento = d.tipo_evento || d.evento || '';
   _orcData.local = d.local_evento || d.local || '';
   _orcData.data = d.data_evento || d.dataEvt || '';
+
+  // Mapa: label da opção → valor (para recuperar val_total ao enviar)
+  _orcData.opcaoValores = {};
+  var NOMES2 = { 1: 'Essencial', 2: 'Mais Escolhido', 3: 'Experiencia Completa' };
+  var opcoesPacote = (d.opcoes||[]).filter(function(o){ return o.tipo==='pacote'; });
+  var detOpc = (d.opcoes||[]).find(function(o){ return o.tipo==='detalhado'; });
+  if (opcoesPacote.length) {
+    opcoesPacote.forEach(function(op, i) {
+      var idx = op.idx || (i+1);
+      var nome = 'Opcao ' + idx + ' - ' + (op.titulo || NOMES2[idx] || 'Pacote');
+      if (op.valor) _orcData.opcaoValores[nome] = op.valor;
+    });
+  } else if (detOpc && detOpc.valor) {
+    _orcData.opcaoValores['__det__'] = detOpc.valor;
+    _orcData.valDetalhado = detOpc.valor;
+  }
 }
 
 function enviarSim(e) {
@@ -1334,6 +1350,9 @@ function toggleDadosReserva() {
     }
     form.style.display = 'block';
     btn.innerHTML = '✕ Fechar Formulário';
+    btn.classList.remove('cta-btn--blue');
+    btn.classList.add('resposta-cancel');
+    btn.style.flex = '1';
     form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     // Pre-fill com dados do orçamento
     var set = function(id, val) { var el = document.getElementById(id); if (el && !el.value && val) el.value = val; };
@@ -1344,6 +1363,9 @@ function toggleDadosReserva() {
   } else {
     form.style.display = 'none';
     btn.innerHTML = '▶ Gerar Contrato';
+    btn.classList.remove('resposta-cancel');
+    btn.classList.add('cta-btn--blue');
+    btn.style.flex = '';
   }
 }
 
@@ -1372,6 +1394,15 @@ function enviarDadosReserva(e) {
   var opcaoSel = getSelectedCard('opcao');
   var pgtoSel = getSelectedCard('pgto');
 
+  // Extrair valor direto do card selecionado
+  var valTotal = '';
+  var cardSel = document.querySelector('.opcao-card-radio[data-grupo="opcao"].selected');
+  if (cardSel && cardSel.dataset.valorBrl) {
+    valTotal = cardSel.dataset.valorBrl;
+  } else if (_orcData.valDetalhado) {
+    valTotal = _orcData.valDetalhado;
+  }
+
   // Montar dados do contrato compatíveis com o gerador
   var dadosContrato = {
     _tipo: 'contrato',
@@ -1387,7 +1418,7 @@ function enviarDadosReserva(e) {
     ev_data:   dataRaw,
     ev_inicio: inicio,
     ev_fim:    fim,
-    val_total: '',
+    val_total: valTotal,
     pgto_tipo: 'custom',
     pgto_custom: pgtoSel || '',
     servicos: opcaoSel ? [opcaoSel] : [],
@@ -1399,12 +1430,16 @@ function enviarDadosReserva(e) {
   // Botão feedback
   var waLink = document.getElementById('wa-link-dados');
   var btnOrigText = waLink ? waLink.innerHTML : '';
-  if (waLink) { waLink.innerHTML = '⏳ Salvando...'; waLink.style.pointerEvents = 'none'; }
+  if (waLink) {
+    waLink.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 1h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3 15h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 1.5 C4 1.5 4 5 8 8 C12 11 12 14.5 12 14.5 L4 14.5 C4 14.5 4 11 8 8 C12 5 12 1.5 12 1.5 Z" fill="rgba(0,0,0,0.15)" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/><path d="M6 12.5 Q8 11 10 12.5" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" fill="none"/></svg> Salvando...</span>';
+    waLink.style.pointerEvents = 'none';
+    waLink.style.opacity = '0.75';
+  }
 
   var db = window._db;
   if (!db) {
     alert('Banco de dados não conectado.');
-    if (waLink) { waLink.innerHTML = btnOrigText; waLink.style.pointerEvents = ''; }
+    if (waLink) { waLink.innerHTML = btnOrigText; waLink.style.pointerEvents = ''; waLink.style.opacity = ''; }
     return false;
   }
 
@@ -1450,7 +1485,7 @@ function enviarDadosReserva(e) {
     })
     .catch(function(err) {
       alert('Erro ao salvar contrato: ' + err.message);
-      if (waLink) { waLink.innerHTML = btnOrigText; waLink.style.pointerEvents = ''; }
+      if (waLink) { waLink.innerHTML = btnOrigText; waLink.style.pointerEvents = ''; waLink.style.opacity = ''; }
     });
 
   return false;
