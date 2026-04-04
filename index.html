@@ -2264,6 +2264,10 @@ function salvarDadosOrcamento() {
 let _dadosCarregados = null;
 
 function resetFormularioOrcamento() {
+  // Limpar rascunho ao limpar formulário
+  try { localStorage.removeItem(_DRAFT_ORC_KEY); } catch(e) {}
+  var bannerOrc = document.getElementById('adq-draft-orc-banner');
+  if (bannerOrc) bannerOrc.remove();
   // Dados do cliente / evento
   ['nome_cliente','tipo_evento','local_evento','data_evento'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -2977,6 +2981,16 @@ document.addEventListener('DOMContentLoaded', function() {
     painelContrato.addEventListener('input', _agendarRascunho);
     painelContrato.addEventListener('change', _agendarRascunho);
   }
+
+  // Restaurar rascunho do orçamento se existir
+  _restaurarRascunhoOrcamento();
+
+  // Auto-save rascunho ao digitar nos campos do orçamento
+  var painelOrcamento = document.getElementById('panel-orcamento');
+  if (painelOrcamento) {
+    painelOrcamento.addEventListener('input', _agendarRascunhoOrc);
+    painelOrcamento.addEventListener('change', _agendarRascunhoOrc);
+  }
 });
 // ── RASCUNHO AUTOMÁTICO DO CONTRATO ──
 var _DRAFT_KEY = 'adq_contrato_draft';
@@ -3085,6 +3099,171 @@ function _descartarRascunhoContrato() {
 function _agendarRascunho() {
   clearTimeout(_draftTimer);
   _draftTimer = setTimeout(_salvarRascunhoContrato, 1500);
+}
+
+// ── RASCUNHO AUTOMÁTICO DO ORÇAMENTO ──
+var _DRAFT_ORC_KEY = 'adq_orcamento_draft';
+var _draftOrcTimer = null;
+
+function _salvarRascunhoOrcamento() {
+  try {
+    var dados = {
+      _ts: Date.now(),
+      // Campos simples
+      nome_cliente: (document.getElementById('nome_cliente') || {}).value || '',
+      tipo_evento:  (document.getElementById('tipo_evento')  || {}).value || '',
+      local_evento: (document.getElementById('local_evento') || {}).value || '',
+      data_evento:  (document.getElementById('data_evento')  || {}).value || '',
+      // Checkboxes de inclusão
+      inc_cliente:   !!(document.getElementById('inc_cliente')   || {}).checked,
+      inc_op1:       !!(document.getElementById('inc_op1')       || {}).checked,
+      inc_op2:       !!(document.getElementById('inc_op2')       || {}).checked,
+      inc_op3:       !!(document.getElementById('inc_op3')       || {}).checked,
+      inc_pagamento: !!(document.getElementById('inc_pagamento') || {}).checked,
+      // Pacotes
+      desc1: (document.getElementById('desc1') || {}).value || '',
+      desc2: (document.getElementById('desc2') || {}).value || '',
+      desc3: (document.getElementById('desc3') || {}).value || '',
+      valor1: (document.getElementById('valor1') || {}).value || '',
+      valor2: (document.getElementById('valor2') || {}).value || '',
+      valor3: (document.getElementById('valor3') || {}).value || '',
+      // Pagamentos
+      pagamentos: [1,2,3,4].map(function(i) {
+        return {
+          inc:    !!(document.getElementById('inc_pg'+i)      || {}).checked,
+          titulo: (document.getElementById('pg'+i+'_titulo') || {}).value || '',
+          desc:   (document.getElementById('pg'+i+'_desc')   || {}).value || ''
+        };
+      }),
+      // Aba ativa (pacotes ou detalhado)
+      serv_aba: (typeof detCount !== 'undefined' && document.getElementById('inc_detalhado') && document.getElementById('inc_detalhado').checked) ? 'detalhado' : 'pacotes',
+      // Det items
+      detCount: typeof detCount !== 'undefined' ? detCount : 8,
+      cenica_preco: (document.getElementById('cenica_preco') || {}).value || '50,00',
+      detItens: (function() {
+        var n = typeof detCount !== 'undefined' ? detCount : 8;
+        var arr = [];
+        for (var i = 1; i <= n; i++) {
+          arr.push({
+            titulo: (document.getElementById('det_titulo'+i) || {}).value || '',
+            desc:   (document.getElementById('det_desc'+i)   || {}).value || '',
+            val:    (document.getElementById('det_val'+i)    || {}).value || '',
+            inc:    !!(document.getElementById('inc_det'+i)  || {}).checked
+          });
+        }
+        return arr;
+      })()
+    };
+    localStorage.setItem(_DRAFT_ORC_KEY, JSON.stringify(dados));
+  } catch(e) {}
+}
+
+function _restaurarRascunhoOrcamento() {
+  try {
+    var raw = localStorage.getItem(_DRAFT_ORC_KEY);
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    // Só restaura se tiver algo preenchido
+    if (!d.nome_cliente && !d.tipo_evento) { localStorage.removeItem(_DRAFT_ORC_KEY); return; }
+    var idade = Date.now() - (d._ts || 0);
+    if (idade > 7 * 24 * 60 * 60 * 1000) { localStorage.removeItem(_DRAFT_ORC_KEY); return; }
+    _exibirBannerRascunhoOrc(d);
+  } catch(e) {}
+}
+
+function _exibirBannerRascunhoOrc(d) {
+  var existente = document.getElementById('adq-draft-orc-banner');
+  if (existente) existente.remove();
+
+  var banner = document.createElement('div');
+  banner.id = 'adq-draft-orc-banner';
+  banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:500;background:#1e1e1e;border:1px solid var(--gold);border-radius:6px;padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.5);max-width:calc(100vw - 32px);box-sizing:border-box';
+
+  var dataStr = d._ts ? new Date(d._ts).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+  var label = escHtml((d.nome_cliente || d.tipo_evento || 'Orçamento')) + (dataStr ? ' · ' + dataStr : '');
+
+  banner.innerHTML =
+    '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap">Rascunho Orc.</span>' +
+    '<span style="font-size:0.78rem;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">' + label + '</span>' +
+    '<button onclick="_aplicarRascunhoOrcamento()" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;background:var(--gold);color:#111;border:none;border-radius:4px;padding:6px 12px;cursor:pointer;white-space:nowrap">Restaurar</button>' +
+    '<button onclick="_descartarRascunhoOrcamento()" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;background:transparent;color:#666;border:1px solid #333;border-radius:4px;padding:6px 10px;cursor:pointer;white-space:nowrap" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">Descartar</button>';
+
+  document.body.appendChild(banner);
+}
+
+function _aplicarRascunhoOrcamento() {
+  try {
+    var raw = localStorage.getItem(_DRAFT_ORC_KEY);
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    var set    = function(id, val) { var el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+    var setChk = function(id, val) { var el = document.getElementById(id); if (el) el.checked = !!val; };
+
+    set('nome_cliente', d.nome_cliente);
+    set('tipo_evento',  d.tipo_evento);
+    set('local_evento', d.local_evento);
+    set('data_evento',  d.data_evento);
+
+    setChk('inc_cliente',   d.inc_cliente);
+    setChk('inc_op1',       d.inc_op1);
+    setChk('inc_op2',       d.inc_op2);
+    setChk('inc_op3',       d.inc_op3);
+    setChk('inc_pagamento', d.inc_pagamento);
+
+    set('desc1', d.desc1); set('desc2', d.desc2); set('desc3', d.desc3);
+    set('valor1', d.valor1); set('valor2', d.valor2); set('valor3', d.valor3);
+
+    if (d.pagamentos) {
+      d.pagamentos.forEach(function(pg, i) {
+        var n = i + 1;
+        setChk('inc_pg'+n,      pg.inc);
+        set('pg'+n+'_titulo',   pg.titulo);
+        set('pg'+n+'_desc',     pg.desc);
+      });
+    }
+
+    // Restaurar aba de serviços
+    if (d.serv_aba === 'detalhado') {
+      if (typeof switchServ === 'function') switchServ('detalhado');
+    } else {
+      if (typeof switchServ === 'function') switchServ('pacotes');
+    }
+
+    // Det items
+    if (d.detItens) {
+      d.detItens.forEach(function(it, i) {
+        var n = i + 1;
+        set('det_titulo'+n, it.titulo);
+        set('det_desc'+n,   it.desc);
+        set('det_val'+n,    it.val);
+        setChk('inc_det'+n, it.inc);
+      });
+    }
+    if (d.cenica_preco) set('cenica_preco', d.cenica_preco);
+    if (typeof recalcDetTotal === 'function') recalcDetTotal();
+    document.querySelectorAll('#panel-orcamento textarea').forEach(function(ta) {
+      if (typeof autoResize === 'function') autoResize(ta);
+    });
+
+    switchMain('orcamento');
+  } catch(e) {}
+  var banner = document.getElementById('adq-draft-orc-banner');
+  if (banner) banner.remove();
+}
+
+function _descartarRascunhoOrcamento() {
+  localStorage.removeItem(_DRAFT_ORC_KEY);
+  var banner = document.getElementById('adq-draft-orc-banner');
+  if (banner) {
+    banner.style.transition = 'opacity 0.2s';
+    banner.style.opacity = '0';
+    setTimeout(function() { if (banner.parentNode) banner.remove(); }, 200);
+  }
+}
+
+function _agendarRascunhoOrc() {
+  clearTimeout(_draftOrcTimer);
+  _draftOrcTimer = setTimeout(_salvarRascunhoOrcamento, 1500);
 }
 
 // ── NAVEGAÇÃO PRINCIPAL ──
@@ -5267,6 +5446,7 @@ function salvarESolicitarLink() {
   db.collection('orcamentos').add(dados)
     .then(function(docRef) {
       registrarLogGerador('salvar-orcamento', dados.nome_cliente || '');
+      localStorage.removeItem(_DRAFT_ORC_KEY);
       var link = _getLinkOrcamento(docRef.id);
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(link).catch(function() { _fallbackCopyLink(link); });
