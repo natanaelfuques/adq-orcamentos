@@ -1046,32 +1046,16 @@ header {
 
 /* ── BLOCO NOVO EVENTO (anotação rápida) ── */
 .nota-bloco {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 14px 18px 16px;
+  background: transparent;
+  border: none;
+  padding: 0;
   margin-bottom: 20px;
-  transition: border-color 0.2s;
-}
-.nota-bloco:focus-within {
-  border-color: #555;
 }
 .nota-bloco-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  display: none;
 }
 .nota-bloco-titulo {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gold);
-  white-space: nowrap;
-  flex-shrink: 0;
+  display: none;
 }
 .nota-bloco-input {
   width: 100%;
@@ -1093,13 +1077,14 @@ header {
 }
 .nota-bloco-input:focus {
   border-color: var(--gold);
-  height: 100px;
+  height: 72px;
 }
 .nota-bloco-input::placeholder { color: var(--muted); opacity: 0.7; }
 .nota-bloco-actions {
   display: flex;
   gap: 6px;
-  flex-shrink: 0;
+  margin-top: 8px;
+  justify-content: flex-end;
 }
 .nota-bloco-actions button {
   font-family: 'Barlow Condensed', sans-serif;
@@ -1108,7 +1093,7 @@ header {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border-radius: 4px;
-  padding: 6px 14px;
+  padding: 6px 18px;
   cursor: pointer;
   transition: opacity 0.15s, background 0.15s;
   border: none;
@@ -1239,14 +1224,11 @@ header {
 
   <!-- BLOCO NOVO EVENTO -->
   <div class="nota-bloco">
-    <div class="nota-bloco-header">
-      <span class="nota-bloco-titulo">Anotações</span>
-      <div class="nota-bloco-actions" id="nota-bloco-actions" style="display:none">
-        <button class="nota-bloco-ok" onclick="salvarNota()">OK</button>
-        <button class="nota-bloco-cancel" onclick="cancelarNota()">&#x2715;</button>
-      </div>
+    <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anotações / Evento rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()"></textarea>
+    <div class="nota-bloco-actions" id="nota-bloco-actions" style="display:none">
+      <button class="nota-bloco-ok" onclick="salvarNota()">OK</button>
+      <button class="nota-bloco-cancel" onclick="cancelarNota()">&#x2715;</button>
     </div>
-    <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anote algo rapido sobre o evento..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()"></textarea>
   </div>
 
   <!-- ABA DADOS DO CLIENTE -->
@@ -5767,7 +5749,7 @@ function notaBlocoAutoResize(el) {
 
 function cancelarNota() {
   var tx = document.getElementById('nota-bloco-texto-input');
-  if (tx) { tx.value = ''; tx.style.height = '38px'; }
+  if (tx) { tx.value = ''; tx.style.height = '42px'; }
   document.getElementById('nota-bloco-actions').style.display = 'none';
   if (tx) tx.blur();
 }
