@@ -257,10 +257,43 @@
   .btn-download:active { transform: translateY(0); }
 
   /* ── BOTÃO SAIR ── */
+  #btn-gerador-sair {
+    display: none;
+    background: transparent;
+    border: 1px solid #444;
+    color: #aaa;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, color 0.18s;
+  }
   #btn-gerador-sair:hover {
     background: #111 !important;
     border-color: #e55 !important;
     color: #e55 !important;
+  }
+
+  /* ── BOTÃO INSTALAR PWA ── */
+  #pwa-install-btn {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: #C8A94A;
+    color: #111;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
   }
 
   /* ── PDF PREVIEW FRAME ── */
@@ -305,64 +338,7 @@
   .serv-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); background: var(--surface); }
   .serv-tab-panel { display: none; padding: 16px 20px 20px; }
   .serv-tab-panel.active { display: block; }
-  .browser-tabs-wrap-unused {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-  .browser-tabs-nav {
-    display: flex;
-    border-bottom: 2px solid var(--border);
-    background: var(--darker);
-  }
-  .browser-tab-btn {
-    flex: 1;
-    padding: 12px 18px;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-    color: var(--muted);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-  .browser-tab-btn:hover { color: var(--text); background: #1e1e1e; }
-  .browser-tab-btn.active {
-    color: var(--gold);
-    border-bottom-color: var(--gold);
-    background: var(--surface);
-  }
-  .browser-tab-panel { display: none; padding: 20px; }
-  .browser-tab-panel.active { display: block; }
-  .browser-tab-include {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    padding: 2px 8px;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    cursor: pointer;
-    background: transparent;
-    transition: border-color 0.15s, color 0.15s;
-  }
-  .browser-tab-include input { width:14px; height:14px; accent-color:var(--gold); cursor:pointer; margin:0; }
-  .browser-tab-include:has(input:checked) { border-color: var(--gold); color: var(--gold); }
+
 
   /* ── NAVEGAÇÃO PRINCIPAL ── */
   #main-nav {
@@ -765,8 +741,6 @@
   .salvos-sub-tab:hover { color: var(--text) !important; }
   .active-sub-tab { color: var(--gold) !important; border-bottom: 3px solid var(--gold) !important; }
   .active-sub-tab:hover { color: var(--gold) !important; }
-  #btn-salvar-nuvem:hover, #btn-salvar-contrato:hover { background: var(--gold); color: var(--dark) !important; }
-  #btn-copiar-link:hover { background: transparent !important; color: #4A90C8 !important; border-color: #4A90C8 !important; opacity: 0.85; }
 
 
   /* ── BUSCA SALVOS ── */
@@ -1040,7 +1014,6 @@ header {
   #btn-copiar-link:hover { background: transparent !important; color: var(--muted) !important; border-color: var(--border) !important; opacity: 1; }
   #btn-gerador-sair:hover { background: transparent !important; border-color: var(--border) !important; color: var(--muted) !important; }
   .serv-tab-btn:hover { color: var(--muted); background: transparent; }
-  .browser-tab-btn:hover { color: var(--muted); background: transparent; }
   .main-tab-btn:hover { color: var(--muted); background: transparent; }
   .btn-rem:hover { border-color: var(--border); color: var(--muted); }
   .btn-add-servico:hover { background: transparent; }
@@ -1112,8 +1085,8 @@ header {
       <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico">
         <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="3" r="2.2"/><circle cx="9.5" cy="3" r="2.2"/><path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/><path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/></svg>
       </button>
-      <button id="btn-gerador-sair" onclick="geradorSair()" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 10px;font-family:'Barlow',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;transition:background 0.18s,border-color 0.18s,color 0.18s;">Sair</button>
-      <button id="pwa-install-btn" onclick="adqInstall()" style="display:none;align-items:center;gap:6px;background:#C8A94A;color:#111;border:none;border-radius:4px;padding:5px 12px;font-family:'Barlow',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;">&#8659; Instalar</button>
+      <button id="btn-gerador-sair" onclick="geradorSair()">Sair</button>
+      <button id="pwa-install-btn" onclick="adqInstall()">&#8659; Instalar</button>
     </div>
     <div class="hd-date" id="header-date"></div>
   </div>
@@ -5644,33 +5617,33 @@ function _abrirModalAutentique(onConfirm) {
   modal.id = 'adq-autentique-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
 
-  modal.innerHTML = [
-    '<div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
-      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Enviar para Assinatura — Autentique</div>',
+  modal.innerHTML = `
+    <div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Enviar para Assinatura — Autentique</div>
 
-      '<div style="margin-bottom:12px">',
-        '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Nome do signatário</label>',
-        '<input id="adq-aut-nome" type="text" value="' + escHtml(nomePreenchido) + '" placeholder="Nome completo do cliente" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'">',
-      '</div>',
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Nome do signatário</label>
+        <input id="adq-aut-nome" type="text" value="${escHtml(nomePreenchido)}" placeholder="Nome completo do cliente" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor='#4A90C8'" onblur="this.style.borderColor='#444'">
+      </div>
 
-      '<div style="margin-bottom:16px">',
-        '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">E-mail do signatário</label>',
-        '<input id="adq-aut-email" type="email" value="' + escHtml(emailPreenchido) + '" placeholder="email@cliente.com" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'">',
-      '</div>',
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">E-mail do signatário</label>
+        <input id="adq-aut-email" type="email" value="${escHtml(emailPreenchido)}" placeholder="email@cliente.com" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor='#4A90C8'" onblur="this.style.borderColor='#444'">
+      </div>
 
-      (!AUTENTIQUE_TOKEN ? '<div style="background:#2a1a0a;border:1px solid #c8752a;border-radius:4px;padding:10px 12px;font-size:0.75rem;color:#e0a060;margin-bottom:14px;line-height:1.5">⚠ Token da API não configurado.<br>Edite <code style="background:#111;padding:1px 4px;border-radius:2px">AUTENTIQUE_TOKEN</code> no início do bloco de integração.</div>' : ''),
+      ${!AUTENTIQUE_TOKEN ? '<div style="background:#2a1a0a;border:1px solid #c8752a;border-radius:4px;padding:10px 12px;font-size:0.75rem;color:#e0a060;margin-bottom:14px;line-height:1.5">⚠ Token da API não configurado.<br>Edite <code style="background:#111;padding:1px 4px;border-radius:2px">AUTENTIQUE_TOKEN</code> no início do bloco de integração.</div>' : ''}
 
-      '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:16px;user-select:none">',
-        '<input id="adq-aut-sandbox" type="checkbox" style="width:15px;height:15px;accent-color:#4A90C8;cursor:pointer;margin:0">',
-        '<span style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em">Modo Sandbox (teste — não consome documento)</span>',
-      '</label>',
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:16px;user-select:none">
+        <input id="adq-aut-sandbox" type="checkbox" style="width:15px;height:15px;accent-color:#4A90C8;cursor:pointer;margin:0">
+        <span style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em">Modo Sandbox (teste — não consome documento)</span>
+      </label>
 
-      '<div style="display:flex;gap:8px">',
-        '<button id="adq-aut-ok" onclick="_confirmarAutentique()" style="flex:1;background:#4A90C8;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Enviar</button>',
-        '<button onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
-      '</div>',
-    '</div>'
-  ].join('');
+      <div style="display:flex;gap:8px">
+        <button id="adq-aut-ok" onclick="_confirmarAutentique()" style="flex:1;background:#4A90C8;border:none;color:#111;padding:10px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Enviar</button>
+        <button onclick="document.getElementById('adq-autentique-modal').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#666'">×</button>
+      </div>
+    </div>
+  `;
 
   modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
   document.body.appendChild(modal);
@@ -5811,25 +5784,25 @@ function _exibirSucessoAutentique(link, email, sandbox) {
   modal.id = 'adq-autentique-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
 
-  modal.innerHTML = [
-    '<div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
-        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em">Enviado com sucesso!</span>',
-        (sandbox ? '<span style="font-size:0.62rem;font-weight:700;color:#888;background:#222;border:1px solid #555;border-radius:3px;padding:2px 6px;letter-spacing:0.06em;text-transform:uppercase">Sandbox</span>' : ''),
-      '</div>',
-      '<div style="font-size:0.8rem;color:#aaa;margin-bottom:14px;line-height:1.6">',
-        'O contrato foi enviado para assinatura.<br>',
-        'O signatário receberá um e-mail em <strong style="color:#eee">' + escHtml(email) + '</strong>.',
-        (sandbox ? '<br><span style="color:#888;font-size:0.75rem">Documento de teste — será excluído automaticamente.</span>' : ''),
-      '</div>',
-      '<div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">' + escHtml(link) + '</div>',
-      '<div style="display:flex;gap:8px;flex-wrap:wrap">',
-        '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(\'' + link.replace(/'/g, "\\'") + '\');this.textContent=\'Copiado!\'" style="flex:1;min-width:80px;background:#4A90C8;border:none;color:#111;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Copiar Link</button>',
-        '<a href="' + escHtml(link) + '" target="_blank" onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:transparent;border:1px solid #4A90C8;color:#4A90C8;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
-        '<button onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
-      '</div>',
-    '</div>'
-  ].join('');
+  modal.innerHTML = `
+    <div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em">Enviado com sucesso!</span>
+        ${sandbox ? '<span style="font-size:0.62rem;font-weight:700;color:#888;background:#222;border:1px solid #555;border-radius:3px;padding:2px 6px;letter-spacing:0.06em;text-transform:uppercase">Sandbox</span>' : ''}
+      </div>
+      <div style="font-size:0.8rem;color:#aaa;margin-bottom:14px;line-height:1.6">
+        O contrato foi enviado para assinatura.<br>
+        O signatário receberá um e-mail em <strong style="color:#eee">${escHtml(email)}</strong>.
+        ${sandbox ? '<br><span style="color:#888;font-size:0.75rem">Documento de teste — será excluído automaticamente.</span>' : ''}
+      </div>
+      <div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">${escHtml(link)}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="navigator.clipboard&&navigator.clipboard.writeText('${link.replace(/'/g, "\\'")}');this.textContent='Copiado!'" style="flex:1;min-width:80px;background:#4A90C8;border:none;color:#111;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Copiar Link</button>
+        <a href="${escHtml(link)}" target="_blank" onclick="document.getElementById('adq-autentique-modal').remove()" style="flex:1;min-width:80px;text-align:center;background:transparent;border:1px solid #4A90C8;color:#4A90C8;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>
+        <button onclick="document.getElementById('adq-autentique-modal').remove()" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#666'">×</button>
+      </div>
+    </div>
+  `;
 
   modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
   document.body.appendChild(modal);
