@@ -5337,7 +5337,7 @@ function _confirmarAutentique() {
 }
 
 function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, htmlConteudo, sandbox) {
-  var ENDPOINT = 'https://api.autentique.com.br/v2/graphql';
+  var ENDPOINT = 'https://autentique.natanael-fuques.workers.dev/';
 
   var query = `mutation CreateDocumentMutation($document: DocumentInput!, $signers: [SignerInput!]!, $file: Upload!) {
     createDocument(document: $document, signers: $signers, file: $file) {
@@ -5369,7 +5369,7 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
 
   return fetch(ENDPOINT, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + AUTENTIQUE_TOKEN },
+    headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
     body: formData
   })
   .then(function(res) { return res.json(); })
