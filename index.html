@@ -1035,6 +1035,7 @@ header {
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -5302,7 +5303,7 @@ function _confirmarAutentique() {
   }
 
   var btn = document.getElementById('adq-aut-ok');
-  if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+  if (btn) { btn.textContent = 'Gerando PDF...'; btn.disabled = true; }
 
   // Obtém o HTML do contrato já gerado no iframe
   var iframe = document.getElementById('pdf-frame-contrato');
@@ -5339,6 +5340,41 @@ function _confirmarAutentique() {
 function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, htmlConteudo, sandbox) {
   var ENDPOINT = 'https://autentique.natanael-fuques.workers.dev/';
 
+  // Converte HTML para PDF antes de enviar
+  return _htmlParaPdfBlob(htmlConteudo, nomeDoc).then(function(pdfBlob) {
+    return _enviarBlobAutentique(nomeDoc, emailSignatario, nomeSignatario, pdfBlob, sandbox);
+  });
+}
+
+function _htmlParaPdfBlob(htmlConteudo, nomeDoc) {
+  return new Promise(function(resolve, reject) {
+    var container = document.createElement('div');
+    container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;z-index:-1';
+    container.innerHTML = htmlConteudo;
+    document.body.appendChild(container);
+
+    var opt = {
+      margin: [10, 10, 10, 10],
+      filename: nomeDoc + '.pdf',
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    html2pdf().set(opt).from(container).outputPdf('blob').then(function(blob) {
+      document.body.removeChild(container);
+      resolve(blob);
+    }).catch(function(err) {
+      document.body.removeChild(container);
+      reject(err);
+    });
+  });
+}
+
+function _enviarBlobAutentique(nomeDoc, emailSignatario, nomeSignatario, pdfBlob, sandbox) {
+  var ENDPOINT = 'https://autentique.natanael-fuques.workers.dev/';
+
   var query = sandbox
     ? `mutation CreateDocumentMutation($document: DocumentInput!, $signers: [SignerInput!]!, $file: Upload!) {
     createDocument(document: $document, signers: $signers, file: $file, sandbox: true) {
@@ -5371,9 +5407,8 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
     file: null
   };
 
-  // Gera arquivo HTML como Blob
-  var blob = new Blob([htmlConteudo], { type: 'text/html' });
-  var file = new File([blob], nomeDoc.replace(/\s+/g, '_') + '.html', { type: 'text/html' });
+  // Usa o PDF gerado
+  var file = new File([pdfBlob], nomeDoc.replace(/\s+/g, '_') + '.pdf', { type: 'application/pdf' });
 
   var formData = new FormData();
   formData.append('operations', JSON.stringify({ query: query, variables: variables }));
