@@ -5339,7 +5339,20 @@ function _confirmarAutentique() {
 function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, htmlConteudo, sandbox) {
   var ENDPOINT = 'https://autentique.natanael-fuques.workers.dev/';
 
-  var query = `mutation CreateDocumentMutation($document: DocumentInput!, $signers: [SignerInput!]!, $file: Upload!) {
+  var query = sandbox
+    ? `mutation CreateDocumentMutation($document: DocumentInput!, $signers: [SignerInput!]!, $file: Upload!) {
+    createDocument(document: $document, signers: $signers, file: $file, sandbox: true) {
+      id
+      name
+      signatures {
+        public_id
+        name
+        email
+        link { short_link }
+      }
+    }
+  }`
+    : `mutation CreateDocumentMutation($document: DocumentInput!, $signers: [SignerInput!]!, $file: Upload!) {
     createDocument(document: $document, signers: $signers, file: $file) {
       id
       name
@@ -5353,7 +5366,7 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
   }`;
 
   var variables = {
-    document: { name: nomeDoc, sandbox: !!sandbox },
+    document: { name: nomeDoc },
     signers: [{ email: emailSignatario, action: 'SIGN', name: nomeSignatario || undefined }],
     file: null
   };
