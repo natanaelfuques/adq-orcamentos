@@ -5834,6 +5834,15 @@ function renderNotas(docs) {
       card += '<div class="nota-card-titulo">' + titulo + '</div>';
     }
     if (texto)   card += '<div class="nota-card-texto">'  + texto   + '</div>';
+    // Exibir data e local do evento se preenchidos
+    var evData  = doc.ev_data  ? doc.ev_data.split('-').reverse().join('/') : '';
+    var evLocal = escHtml(doc.ev_local || '');
+    if (evData || evLocal) {
+      card += '<div class="nota-card-evento-info" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;margin-bottom:2px">';
+      if (evData)  card += '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;background:rgba(200,169,74,0.12);border:1px solid rgba(200,169,74,0.3);border-radius:3px;padding:2px 7px;letter-spacing:0.06em">📅 ' + evData + '</span>';
+      if (evLocal) card += '<span style="font-size:0.72rem;color:#888;letter-spacing:0.02em">📍 ' + evLocal + '</span>';
+      card += '</div>';
+    }
     if (dataFmt) card += '<div class="nota-card-meta">'   + dataFmt + '</div>';
     var noPainel = !!(doc.no_painel);
     card += '<div class="salvo-card-actions">';
@@ -5865,19 +5874,55 @@ function handleNotasClick(e) {
     if (!db) return;
     var jaNoPainel = btn.getAttribute('data-no-painel') === '1';
     if (jaNoPainel) {
-      db.collection('notas').doc(id).update({ no_painel: false })
-        .then(function() {
-          btn.classList.remove('no-painel');
-          btn.setAttribute('data-no-painel', '0');
-          btn.title = 'Enviar para o painel';
-        }).catch(function(e) { alert('Erro: ' + e.message); });
+      // Remover do painel: apagar doc em eventos_campo e marcar nota como no_painel=false
+      var notaParaRemover = _todasNotas.find(function(n) { return n.id === id; });
+      var painelId = notaParaRemover && notaParaRemover.painel_id ? notaParaRemover.painel_id : null;
+      var removerPromise = painelId
+        ? db.collection('eventos_campo').doc(painelId).delete()
+        : Promise.resolve();
+      removerPromise.then(function() {
+        return db.collection('notas').doc(id).update({ no_painel: false, painel_id: null });
+      }).then(function() {
+        btn.classList.remove('no-painel');
+        btn.setAttribute('data-no-painel', '0');
+        btn.title = 'Enviar para o painel';
+      }).catch(function(e) { alert('Erro: ' + e.message); });
     } else {
-      db.collection('notas').doc(id).update({ no_painel: true })
-        .then(function() {
-          btn.classList.add('no-painel');
-          btn.setAttribute('data-no-painel', '1');
-          btn.title = 'Remover do painel';
-        }).catch(function(e) { alert('Erro: ' + e.message); });
+      // Buscar dados atuais da nota para ter ev_data e ev_local
+      db.collection('notas').doc(id).get().then(function(docSnap) {
+        if (!docSnap.exists) return;
+        var nota = docSnap.data();
+        var evNome  = (nota.titulo || nota.texto || 'Anotação').substring(0, 60);
+        var evLocal = nota.ev_local || '';
+        var evData  = nota.ev_data  || '';
+        var evTexto = nota.texto    || '';
+
+        // Criar card em eventos_campo
+        return db.collection('eventos_campo').add({
+          ev_nome:     evNome,
+          ev_local:    evLocal,
+          ev_data:     evData,
+          ev_inicio:   '',
+          ev_fim:      '',
+          ev_montagem: '',
+          ev_desmontagem: '',
+          ev_resp:     '',
+          cli_nome:    '',
+          servicos:    evTexto ? [evTexto] : [],
+          itens_ok:    {},
+          itens_extras: [],
+          etapa:       'eventos',
+          nota_id:     id,
+          criadoEm:    firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }).then(function(docRef) {
+        // Marcar nota como no_painel com referência ao doc do painel
+        return db.collection('notas').doc(id).update({ no_painel: true, painel_id: docRef ? docRef.id : null });
+      }).then(function() {
+        btn.classList.add('no-painel');
+        btn.setAttribute('data-no-painel', '1');
+        btn.title = 'Remover do painel';
+      }).catch(function(e) { alert('Erro ao enviar para o painel: ' + e.message); });
     }
   }
 }
@@ -5897,9 +5942,19 @@ function _abrirModalEditarNota(nota) {
         <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Título</label>
         <input id="nota-edit-titulo" type="text" value="${escHtml(nota.titulo || '')}" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'">
       </div>
-      <div style="margin-bottom:18px">
+      <div style="margin-bottom:12px">
         <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Anotação</label>
-        <textarea id="nota-edit-texto" rows="5" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;resize:vertical;transition:border-color 0.2s" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'">${escHtml(nota.texto || '')}</textarea>
+        <textarea id="nota-edit-texto" rows="4" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;resize:vertical;transition:border-color 0.2s" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'">${escHtml(nota.texto || '')}</textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+        <div>
+          <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Data do Evento</label>
+          <input id="nota-edit-data" type="date" value="${escHtml(nota.ev_data || '')}" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.85rem;padding:9px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'">
+        </div>
+        <div>
+          <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Local</label>
+          <input id="nota-edit-local" type="text" value="${escHtml(nota.ev_local || '')}" placeholder="Ex: Salão Espaço Nobre" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.85rem;padding:9px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'">
+        </div>
       </div>
       <div style="display:flex;gap:8px">
         <button onclick="_salvarEdicaoNota('${nota.id}')" style="flex:1;background:#C8A94A;border:none;color:#111;padding:10px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Salvar</button>
@@ -5917,12 +5972,16 @@ function _abrirModalEditarNota(nota) {
 }
 
 function _salvarEdicaoNota(id) {
-  var titulo = (document.getElementById('nota-edit-titulo') || {}).value || '';
-  var texto  = (document.getElementById('nota-edit-texto')  || {}).value || '';
+  var titulo  = (document.getElementById('nota-edit-titulo') || {}).value || '';
+  var texto   = (document.getElementById('nota-edit-texto')  || {}).value || '';
+  var evData  = (document.getElementById('nota-edit-data')   || {}).value || '';
+  var evLocal = (document.getElementById('nota-edit-local')  || {}).value || '';
   if (!db) return;
   db.collection('notas').doc(id).update({
-    titulo: titulo.trim(),
-    texto:  texto.trim()
+    titulo:   titulo.trim(),
+    texto:    texto.trim(),
+    ev_data:  evData.trim(),
+    ev_local: evLocal.trim()
   }).then(function() {
     var modal = document.getElementById('nota-edit-modal');
     if (modal) modal.remove();
