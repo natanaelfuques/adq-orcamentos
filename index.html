@@ -1673,28 +1673,23 @@ Revestimento</textarea>
 <div id="panel-contrato" class="main-panel">
 <div class="container">
 
-  <!-- CARREGAR ORÇAMENTO -->
-  <div class="collapse-tab" id="tab-carregar-orc">
-    <div class="collapse-header carregar-header">
-      <input type="file" id="orc_json_input" accept=".json" onchange="identificarECarregar(this)" style="display:none">
-      <div class="carregar-left">
-        <div class="section-title" style="margin:0;white-space:nowrap">Carregar</div>
-        <button class="btn-preset" onclick="document.getElementById('orc_json_input').click();event.stopPropagation()" style="padding:6px 10px;font-size:0.72rem;white-space:nowrap">📂 Orçamento / Contrato</button>
-      </div>
-      <button onclick="resetFormularioContrato()" class="btn-preset btn-limpar" style="padding:6px 10px;font-size:0.72rem;color:var(--muted);white-space:nowrap;margin-left:auto" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">X Limpar formulário</button>
-    </div>
-    <div class="collapse-body open" style="padding:0">
-      <div id="orc_opcoes_wrap" style="display:none;padding:0 20px 20px;margin-top:0">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <label id="orc_opcoes_label" style="margin:0">Qual opção o cliente escolheu?</label>
-          <button onclick="resetCarregarOrcamento()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;width:26px;height:26px;font-size:1rem;cursor:pointer;line-height:1;transition:all 0.15s" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">×</button>
-        </div>
-        <div id="orc_opcoes_lista" style="display:flex;flex-direction:column;gap:8px"></div>
-        <button class="btn-gerar" onclick="_contratoDados ? preencherContratoDados() : aplicarOpcaoSelecionada()" style="margin-top:16px;padding:12px">Preencher Contrato com esta Opção</button>
-      </div>
-    </div>
+  <!-- INPUT ARQUIVO + MODAL OPÇÕES -->
+  <input type="file" id="orc_json_input" accept=".json" onchange="identificarECarregar(this)" style="display:none">
+  <!-- orc_opcoes_wrap movido para modal — mantido oculto para compatibilidade JS -->
+  <div id="orc_opcoes_wrap" style="display:none">
+    <label id="orc_opcoes_label"></label>
+    <div id="orc_opcoes_lista"></div>
   </div>
 
+  <!-- HEADER CONTRATO -->
+  <div class="card" style="padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+    <div class="section-title" style="margin:0;border:none;padding:0">Contrato</div>
+    <button class="salvos-search-toggle" onclick="document.getElementById('orc_json_input').click()" title="Carregar orçamento / contrato" style="padding:6px 8px">
+      <svg width="17" height="15" viewBox="0 0 20 17" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1.5 3C1.5 2.17 2.17 1.5 3 1.5H7.38L9.38 3.5H17C17.83 3.5 18.5 4.17 18.5 5V14C18.5 14.83 17.83 15.5 17 15.5H3C2.17 15.5 1.5 14.83 1.5 14V3ZM3 0C1.34 0 0 1.34 0 3V14C0 15.66 1.34 17 3 17H17C18.66 17 20 15.66 20 14V5C20 3.34 18.66 2 17 2H10L8 0H3Z"/>
+      </svg>
+    </button>
+  </div>
 
   <!-- CONTRATANTE -->
   <div class="collapse-tab" id="tab-contratante">
@@ -2359,20 +2354,15 @@ function identificarECarregarOrcamento(input) {
   reader.onload = function(e) {
     try {
       const d = JSON.parse(e.target.result);
-      const wrap  = document.getElementById('orc_carregar_wrap');
-      const label = document.getElementById('orc_carregar_label');
-      const info  = document.getElementById('orc_carregar_info');
       if (d._tipo === 'orcamento' || d._tipo === 'orcamento_completo') {
         _dadosCarregados = d;
-        const nome = d.nome_cliente || d.nome || '—';
-        if (label) label.textContent = 'Orçamento carregado';
-        if (info)  info.innerHTML = 'Orçamento de <strong>' + nome + '</strong> carregado.';
-        wrap.style.display = 'block';
+        aplicarDadosCarregados();
+        // Navegar para aba Orçamento
+        if (window._goToVirtual) { window._goToVirtual(0, false); } else { switchMain('orcamento'); }
       } else if (d._tipo === 'contrato') {
         _dadosCarregados = d;
-        if (label) label.textContent = 'Contrato carregado';
-        if (info)  info.innerHTML = 'Contrato de <strong>' + (d.cli_nome || '—') + '</strong> carregado.';
-        wrap.style.display = 'block';
+        aplicarDadosCarregados();
+        if (window._goToVirtual) { window._goToVirtual(0, false); } else { switchMain('orcamento'); }
       } else {
         alert('Arquivo não reconhecido. Use um .json gerado por este sistema.');
       }
@@ -2579,12 +2569,10 @@ function carregarOrcamentoJSON(input) {
 carregarOrcamentoJSON._processar = function(d) {
   _orcDados = d;
   _contratoDados = null;
-  // Reset label and button text
-  const lbl = document.getElementById('orc_opcoes_label');
+  var lbl = document.getElementById('orc_opcoes_label');
   if (lbl) lbl.textContent = 'Qual opção o cliente escolheu?';
-  const btn = document.querySelector('#orc_opcoes_wrap .btn-gerar');
-  if (btn) btn.textContent = 'Preencher Contrato com esta Opção';
   renderOpcoesList(_orcDados);
+  _abrirModalOpcoes();
 };
 
 function resetCarregarOrcamento() {
@@ -2608,7 +2596,6 @@ function renderOpcoesList(dados) {
 
   if (!dados.opcoes || !dados.opcoes.length) {
     lista.innerHTML = '<p style="color:var(--muted);font-size:0.85rem">Nenhuma opção encontrada no arquivo.</p>';
-    wrap.style.display = 'block';
     return;
   }
 
@@ -2638,7 +2625,6 @@ function renderOpcoesList(dados) {
     const first = lista.querySelector('input[name="orc_opcao_sel"]');
     if (first) first.checked = true;
   }
-  wrap.style.display = 'block';
 }
 
 function aplicarOpcaoSelecionada() {
@@ -3691,6 +3677,51 @@ function identificarECarregar(input) {
   reader.readAsText(file);
 }
 
+function _abrirModalOpcoes() {
+  var old = document.getElementById('adq-opcoes-modal');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-opcoes-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;display:flex;align-items:flex-end;justify-content:center;padding:0';
+
+  var lbl = document.getElementById('orc_opcoes_label');
+  var titulo = lbl ? lbl.textContent : 'Qual opção o cliente escolheu?';
+  var lista = document.getElementById('orc_opcoes_lista');
+  var listaHTML = lista ? lista.innerHTML : '';
+  var isContrato = !!_contratoDados;
+  var btnLabel = isContrato ? 'Preencher Contrato' : 'Preencher Contrato com esta Opção';
+
+  modal.innerHTML = [
+    '<div style="background:#1e1e1e;border:1px solid #333;border-radius:12px 12px 0 0;padding:24px 20px 32px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;box-sizing:border-box">',
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">',
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:var(--gold,#C8A94A);text-transform:uppercase;letter-spacing:0.12em">' + titulo + '</span>',
+        '<button onclick="document.getElementById(\'adq-opcoes-modal\').remove();resetCarregarOrcamento()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;font-size:1.1rem;cursor:pointer;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
+      '</div>',
+      '<div id="adq-opcoes-modal-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">' + listaHTML + '</div>',
+      '<button onclick="_aplicarOpcaoModal()" style="width:100%;padding:14px;background:#C8A94A;border:none;color:#111;border-radius:5px;font-family:\'Barlow Condensed\',sans-serif;font-size:1rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">' + btnLabel + '</button>',
+    '</div>'
+  ].join('');
+
+  document.body.appendChild(modal);
+}
+
+function _aplicarOpcaoModal() {
+  if (_contratoDados) {
+    preencherContratoDados();
+  } else {
+    // Sync radio selection from modal back to hidden lista
+    var modalSel = document.querySelector('#adq-opcoes-modal-lista input[name="orc_opcao_sel"]:checked');
+    if (!modalSel) { alert('Selecione uma opção primeiro.'); return; }
+    // Reflect selection to hidden lista for aplicarOpcaoSelecionada
+    var hiddenRadio = document.querySelector('#orc_opcoes_lista input[name="orc_opcao_sel"][value="' + modalSel.value + '"]');
+    if (hiddenRadio) hiddenRadio.checked = true;
+    aplicarOpcaoSelecionada();
+  }
+  var modal = document.getElementById('adq-opcoes-modal');
+  if (modal) modal.remove();
+}
+
 function carregarContratoJSON(input) {
   const file = input.files[0];
   if (!file) return;
@@ -3709,15 +3740,12 @@ function carregarContratoJSON(input) {
 carregarContratoJSON._processar = function(d) {
   _contratoDados = d;
   _orcDados = null;
-  // Show "Preencher" button, hide opcoes lista
-  const wrap = document.getElementById('orc_opcoes_wrap');
-  const lista = document.getElementById('orc_opcoes_lista');
+  var lista = document.getElementById('orc_opcoes_lista');
   lista.innerHTML = '<p style="color:var(--muted);font-size:0.85rem">Contrato de <strong style="color:var(--text)">' + (d.cli_nome || '—') + '</strong> carregado.</p>';
-  const lbl = document.getElementById('orc_opcoes_label');
+  var lbl = document.getElementById('orc_opcoes_label');
   if (lbl) lbl.textContent = 'Contrato carregado';
-  const btn = document.querySelector('#orc_opcoes_wrap .btn-gerar');
-  if (btn) btn.textContent = 'Preencher Contrato';
-  wrap.style.display = 'block';
+  // Aplicar diretamente sem modal (contrato não precisa de seleção de opção)
+  preencherContratoDados();
 };
 
 function preencherContratoDados() {
