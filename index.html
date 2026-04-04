@@ -3642,6 +3642,32 @@ function baixarDadosContrato() {
 let _contratoDados = null;
 let _currentOrcRef = '';
 
+// Marca o orçamento de origem como aprovado quando o contrato é gerado/enviado
+function _aprovarOrcamentoOrigem() {
+  if (!db || !_currentOrcRef) return;
+  // _currentOrcRef contém os 8 primeiros chars do id em maiúsculo (ex: "A1B2C3D4")
+  // Precisamos encontrar o documento cujo id começa com esses chars
+  db.collection('orcamentos').get().then(function(snap) {
+    snap.forEach(function(doc) {
+      if (doc.id.substring(0, 8).toUpperCase() === _currentOrcRef && !doc.data().aprovado) {
+        doc.ref.update({ aprovado: true })
+          .then(function() {
+            // Atualizar span no DOM se o card estiver visível
+            var btn = document.querySelector('[data-action="gerar-contrato"][data-id="' + doc.id + '"]');
+            if (btn) {
+              var card = btn.closest('.salvo-card');
+              if (card) {
+                var sp = card.querySelector('span.salvo-status');
+                if (sp) { sp.textContent = 'Aprovado'; sp.classList.add('aprovado'); }
+              }
+            }
+          })
+          .catch(function(e) { console.warn('[AdQ] Erro ao aprovar orcamento origem:', e); });
+      }
+    });
+  }).catch(function(e) { console.warn('[AdQ] Erro ao buscar orcamento origem:', e); });
+}
+
 function identificarECarregar(input) {
   const file = input.files[0];
   if (!file) return;
@@ -4283,7 +4309,19 @@ function handleSalvosClick(e) {
   else if (action === 'excluir') excluirSalvo(id, nome);
   else if (action === 'abrir-contrato') { registrarLogGerador('abrir-contrato', nome); abrirContrato(id); }
   else if (action === 'link-contrato') { abrirModalLinkAssinatura(id, btn); }
-  else if (action === 'enviar-painel') { registrarLogGerador('enviar-painel', nome); adicionarAoPainel(id); }
+  else if (action === 'enviar-painel') {
+    var noPanel = btn.getAttribute('data-no-painel') === 'true';
+    registrarLogGerador('enviar-painel', nome);
+    if (noPanel) {
+      adicionarAoPainel(id);
+      btn.setAttribute('data-no-painel', 'false');
+      btn.classList.add('primary');
+    } else {
+      removerDoPainel(id);
+      btn.setAttribute('data-no-painel', 'true');
+      btn.classList.remove('primary');
+    }
+  }
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
   else if (action === 'calendar') { btn.blur(); registrarLogGerador('calendar', nome); gerarLinkCalendar(id); }
   else if (action === 'verificar-autentique') { verificarAssinaturaAutentique(id, btn); }
@@ -4717,6 +4755,7 @@ function salvarContratoNaNuvem() {
       _ultimoContratoSalvoId = docRef.id;
       localStorage.removeItem(_DRAFT_KEY);
       registrarLogGerador('salvar-contrato', dados.cli_nome||'');
+      _aprovarOrcamentoOrigem();
       if (btn) { btn.textContent = 'Salvo!'; }
       setTimeout(function() {
         if (btn) { btn.textContent = 'Salvar Contrato'; btn.disabled = false; }
@@ -4776,6 +4815,14 @@ function iniciarListenerContratos() {
       if (cardEl) {
         var monRow = cardEl.querySelector('.salvo-montagem-row');
         if (monRow) monRow.style.display = (aprovado && etapa !== 'concluido') ? '' : 'none';
+        // Sincronizar botão Painel com estado real do painel
+        var painelBtn = cardEl.querySelector('[data-action="enviar-painel"][data-id="' + id + '"]');
+        if (painelBtn) {
+          var noPanel = (change.type === 'removed' || etapa === '');
+          painelBtn.setAttribute('data-no-painel', noPanel ? 'true' : 'false');
+          if (noPanel) { painelBtn.classList.remove('primary'); }
+          else         { painelBtn.classList.add('primary'); }
+        }
       }
     });
   });
@@ -4858,7 +4905,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo' + (doc.link_assinatura ? ' primary' : '') + '" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
     card += '<button class="btn-salvo" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
-    card += '<button class="btn-salvo" data-action="enviar-painel" data-id="' + id + '">Painel</button>';
+    var noPanel = !etapa;
+    card += '<button class="btn-salvo' + (noPanel ? '' : ' primary') + '" data-action="enviar-painel" data-id="' + id + '" data-no-painel="' + noPanel + '">Painel</button>';
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
@@ -5680,7 +5728,31 @@ function _confirmarAutentique() {
   var _nomeCliente = (document.getElementById('cli_nome') || {}).value || 'Cliente'; var _evDataRaw = (document.getElementById('ev_data') || {}).value || ''; var _partes = _evDataRaw.split('-'); var _dd = (_partes[2] || ''); var _mm = (_partes[1] || ''); var _aaaa = (_partes[0] || ''); if (!_dd || !_mm || !_aaaa) { var _hoje = new Date(); _dd = String(_hoje.getDate()).padStart(2,'0'); _mm = String(_hoje.getMonth()+1).padStart(2,'0'); _aaaa = String(_hoje.getFullYear()); } var nomeContrato = 'CONTRATO - ' + _nomeCliente.toUpperCase() + ' ' + _dd + '-' + _mm + '-' + _aaaa;
   var htmlContrato = iframe.srcdoc;
 
-  _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox)
+  // Se o contrato ainda não foi salvo nesta sessão, salvar antes de enviar
+  function _dispararEnvio() {
+    _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox)
+  }
+
+  if (!_ultimoContratoSalvoId && db) {
+    if (btn) btn.textContent = 'Salvando contrato...';
+    var dadosContrato = coletarDadosContrato();
+    dadosContrato.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
+    db.collection('contratos').add(dadosContrato)
+      .then(function(docRef) {
+        _ultimoContratoSalvoId = docRef.id;
+        localStorage.removeItem(_DRAFT_KEY);
+        registrarLogGerador('salvar-contrato', dadosContrato.cli_nome || '');
+        if (btn) btn.textContent = 'Enviando...';
+        _dispararEnvio()
+      })
+      .catch(function(e) {
+        alert('Erro ao salvar contrato antes de enviar: ' + e.message);
+        if (btn) { btn.textContent = 'Enviar'; btn.disabled = false; }
+      });
+    return;
+  }
+
+  _dispararEnvio()
     .then(function(resultado) {
       var modal = document.getElementById('adq-autentique-modal');
       if (modal) modal.remove();
@@ -5690,11 +5762,14 @@ function _confirmarAutentique() {
       console.log('[AdQ] Autentique — documento criado' + (sandbox ? ' (SANDBOX)' : '') + ':', resultado);
 
       // Gravar autentique_id e link no contrato salvo, se existir
-      if (db && _ultimoContratoSalvoId && autentiqueId && !sandbox) {
-        db.collection('contratos').doc(_ultimoContratoSalvoId).update({
-          autentique_id:   autentiqueId,
-          link_assinatura: linkAssinatura
-        }).catch(function(e) { console.warn('[AdQ] Erro ao gravar autentique_id:', e); });
+      if (db && _ultimoContratoSalvoId && autentiqueId) {
+        if (!sandbox) {
+          db.collection('contratos').doc(_ultimoContratoSalvoId).update({
+            autentique_id:   autentiqueId,
+            link_assinatura: linkAssinatura
+          }).catch(function(e) { console.warn('[AdQ] Erro ao gravar autentique_id:', e); });
+        }
+        _aprovarOrcamentoOrigem();
       }
 
       if (linkAssinatura) {
