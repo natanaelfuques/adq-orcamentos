@@ -1618,7 +1618,7 @@ Revestimento</textarea>
           <label id="orc_carregar_label"></label>
           <div id="orc_carregar_info"></div>
         </div>
-        <button class="salvos-search-toggle" onclick="document.getElementById('orc_carregar_input').click()" title="Carregar orçamento / contrato" style="padding:6px 8px">
+        <button id="salvos-carregar-btn" class="salvos-search-toggle" onclick="document.getElementById('orc_carregar_input').click()" title="Carregar orçamento / contrato" style="padding:6px 8px">
           <svg width="17" height="15" viewBox="0 0 20 17" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M1.5 3C1.5 2.17 2.17 1.5 3 1.5H7.38L9.38 3.5H17C17.83 3.5 18.5 4.17 18.5 5V14C18.5 14.83 17.83 15.5 17 15.5H3C2.17 15.5 1.5 14.83 1.5 14V3ZM3 0C1.34 0 0 1.34 0 3V14C0 15.66 1.34 17 3 17H17C18.66 17 20 15.66 20 14V5C20 3.34 18.66 2 17 2H10L8 0H3Z"/>
           </svg>
@@ -2374,69 +2374,13 @@ function identificarECarregarOrcamento(input) {
 }
 
 function carregarContratoNoOrcamento(d) {
-  // Fill contract fields from saved contract data
+  // Preenche os campos do painel ORÇAMENTO (IDs diferentes do painel Contrato)
   const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
 
-  // Dados do contratante
-  set('cli_nome',  d.cli_nome  || '');
-  set('cli_doc',   d.cli_doc   || '');
-  set('cli_end',   d.cli_end   || '');
-  set('cli_cep',   d.cli_cep   || '');
-  set('cli_email', d.cli_email || '');
-  set('cli_fone',  d.cli_fone  || '');
-
-  // Dados do evento
-  set('ev_nome',   d.ev_nome   || '');
-  set('ev_resp',   d.ev_resp   || '');
-  set('ev_local',  d.ev_local  || '');
-  set('ev_data',   d.ev_data   || '');
-  set('ev_inicio', d.ev_inicio || '');
-  set('ev_fim',    d.ev_fim    || '');
-
-  // Valor e pagamento
-  set('val_total',   d.val_total   || '');
-  set('pgto_custom', d.pgto_custom || '');
-  set('data_entrada', d.data_entrada || '');
-
-  const pgtoSel = d.pgto_sel || d.pgto_tipo || '';
-  const pgtoRadio = document.querySelector('input[name="pgto"][value="' + pgtoSel + '"]');
-  if (pgtoRadio) { pgtoRadio.checked = true; pgtoRadio.dispatchEvent(new Event('change')); }
-  if (pgtoSel === 'custom') { const w = document.getElementById('pgto_custom_wrap'); if (w) w.style.display = 'block'; }
-
-  if (d.nparcelas) {
-    if (typeof selecionaParcelasIdeal === 'function') selecionaParcelasIdeal();
-    const pr = document.querySelector('input[name="nparcelas"][value="' + d.nparcelas + '"]');
-    if (pr) { pr.checked = true; if (typeof atualizaParceladoInfo === 'function') atualizaParceladoInfo(); }
-  }
-
-  // Serviços
-  const lista = document.getElementById('lista-servicos');
-  if (lista && d.servicos && d.servicos.length) {
-    lista.innerHTML = '';
-    d.servicos.forEach(function(s) {
-      const div = document.createElement('div');
-      div.className = 'servico-item';
-      div.innerHTML = '<input type="text" value="' + s.replace(/"/g, '&quot;') + '"><button class="btn-rem" onclick="remServico(this)">×</button>';
-      lista.appendChild(div);
-    });
-  } else if (lista && !lista.children.length) {
-    if (typeof addServico === 'function') addServico();
-  }
-
-  if (d.val_total && typeof calcEntrada === 'function') calcEntrada();
-
-  // Rastrear origem do orçamento
-  if (d.orc_ref) {
-    const refEl = document.getElementById('orc_ref_origem');
-    if (refEl) { refEl.textContent = 'Originado do orçamento: ' + d.orc_ref; refEl.style.display = 'inline'; }
-    _currentOrcRef = d.orc_ref;
-  } else {
-    _currentOrcRef = '';
-  }
-
-  switchMain('contrato');
-  const tab = document.getElementById('tab-contratante');
-  if (tab) tab.scrollIntoView({ behavior: 'smooth' });
+  set('nome_cliente', d.cli_nome  || '');
+  set('local_evento', d.ev_local  || '');
+  set('tipo_evento',  d.ev_nome   || '');
+  set('data_evento',  d.ev_data   || '');
 }
 
 function carregarOrcamentoEditavel(input) {
@@ -4692,6 +4636,8 @@ function switchSalvosTab(tab, animate) {
   }
   if (btnOrc) { btnOrc.classList.toggle('active-sub-tab', isOrc); }
   if (btnCon) { btnCon.classList.toggle('active-sub-tab', !isOrc); }
+  var carregarBtn = document.getElementById('salvos-carregar-btn');
+  if (carregarBtn) carregarBtn.style.display = isOrc ? '' : 'none';
   atualizarContadorSalvos();
   atualizarAreaBusca();
 }
