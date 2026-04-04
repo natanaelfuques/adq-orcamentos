@@ -1131,27 +1131,6 @@ header {
 <div id="swipe-container"><div id="swipe-track"><div id="panel-orcamento" class="main-panel active">
 <div class="container">
 
-  <!-- CARREGAR ORÇAMENTO -->
-  <div class="collapse-tab">
-    <div class="collapse-header carregar-header">
-      <input type="file" id="orc_carregar_input" accept=".json" onchange="identificarECarregarOrcamento(this)" style="display:none">
-      <div class="carregar-left">
-        <div class="section-title" style="margin:0;white-space:nowrap">Carregar</div>
-        <button class="btn-preset" onclick="document.getElementById('orc_carregar_input').click();event.stopPropagation()" style="padding:6px 10px;font-size:0.72rem;white-space:nowrap">📂 Orçamento / Contrato</button>
-      </div>
-      <button onclick="resetFormularioOrcamento()" class="btn-preset btn-limpar" style="padding:6px 10px;font-size:0.72rem;color:var(--muted);white-space:nowrap;margin-left:auto" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">X Limpar formulário</button>
-    </div>
-    <div class="collapse-body open" style="padding:0">
-      <div id="orc_carregar_wrap" style="display:none;padding:0 20px 20px;margin-top:0">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <label id="orc_carregar_label" style="margin:0"></label>
-          <button onclick="resetCarregarOrcamentoEditavel()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;width:26px;height:26px;font-size:1rem;cursor:pointer;line-height:1;transition:all 0.15s" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">×</button>
-        </div>
-        <div id="orc_carregar_info" style="font-size:0.85rem;color:var(--muted);margin-bottom:12px"></div>
-        <button class="btn-gerar" onclick="aplicarDadosCarregados()" style="padding:12px">Preencher Orçamento</button>
-      </div>
-    </div>
-  </div>
 
   <!-- ABA DADOS DO CLIENTE -->
   <div class="collapse-tab" id="tab-cliente">
@@ -1633,6 +1612,17 @@ Revestimento</textarea>
       <div class="section-title" style="margin:0;border:none;padding:0">Salvos</div>
       <div style="display:flex;align-items:center;gap:10px">
         <div id="salvos-sync-status" style="font-size:0.72rem;color:var(--muted);letter-spacing:0.06em;text-align:right"></div>
+        <input type="file" id="orc_carregar_input" accept=".json" onchange="identificarECarregarOrcamento(this)" style="display:none">
+        <!-- Elementos ocultos mantidos para compatibilidade com o JS de carregamento -->
+        <div id="orc_carregar_wrap" style="display:none">
+          <label id="orc_carregar_label"></label>
+          <div id="orc_carregar_info"></div>
+        </div>
+        <button class="salvos-search-toggle" onclick="document.getElementById('orc_carregar_input').click()" title="Carregar orçamento / contrato" style="padding:6px 8px">
+          <svg width="17" height="15" viewBox="0 0 20 17" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.5 3C1.5 2.17 2.17 1.5 3 1.5H7.38L9.38 3.5H17C17.83 3.5 18.5 4.17 18.5 5V14C18.5 14.83 17.83 15.5 17 15.5H3C2.17 15.5 1.5 14.83 1.5 14V3ZM3 0C1.34 0 0 1.34 0 3V14C0 15.66 1.34 17 3 17H17C18.66 17 20 15.66 20 14V5C20 3.34 18.66 2 17 2H10L8 0H3Z"/>
+          </svg>
+        </button>
         <button class="salvos-search-toggle" id="salvos-search-btn" onclick="toggleBuscaSalvos()" title="Buscar">
   <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
     <circle cx="6.5" cy="6.5" r="4.5"/>
