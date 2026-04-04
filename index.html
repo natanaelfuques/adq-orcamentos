@@ -5312,7 +5312,7 @@ function _confirmarAutentique() {
     return;
   }
 
-  var nomeContrato = (document.getElementById('cli_nome') || {}).value || 'Contrato';
+  var _nomeCliente = (document.getElementById('cli_nome') || {}).value || 'Cliente'; var _hoje = new Date(); var _dd = String(_hoje.getDate()).padStart(2,'0'); var _mm = String(_hoje.getMonth()+1).padStart(2,'0'); var _aaaa = _hoje.getFullYear(); var nomeContrato = 'CONTRATO - ' + _nomeCliente.toUpperCase() + ' ' + _dd + '-' + _mm + '-' + _aaaa;
   var htmlContrato = iframe.srcdoc;
 
   _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox)
