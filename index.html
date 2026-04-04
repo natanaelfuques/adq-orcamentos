@@ -246,8 +246,8 @@
   }
   .btn-download:hover { background: var(--gold); color: var(--dark); transform: translateY(-1px); }
   #btn-salvar-nuvem:hover, #btn-salvar-contrato:hover { background: var(--gold); color: var(--dark) !important; }
-  #btn-autentique { border-color: #2563eb; color: #2563eb; }
-  #btn-autentique:hover { background: #2563eb !important; color: #fff !important; border-color: #2563eb !important; opacity: 1; }
+  #btn-autentique { border-color: #25D366; color: #25D366; }
+  #btn-autentique:hover { background: #25D366 !important; color: #111 !important; border-color: #25D366 !important; opacity: 1; }
   #btn-autentique:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   #btn-copiar-link:hover { background: transparent !important; color: #4A90C8 !important; border-color: #4A90C8 !important; opacity: 0.85; }
   .btn-download:active { transform: translateY(0); }
@@ -1035,7 +1035,6 @@ header {
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -1814,7 +1813,7 @@ Revestimento</textarea>
     <iframe id="pdf-frame-contrato" style="width:100%;height:820px;border:1px solid var(--border);border-radius:4px"></iframe>
     <button class="btn-download" onclick="imprimirContrato()">Imprimir / Baixar PDF</button>
     <button class="btn-download" onclick="salvarContratoNaNuvem()" style="margin-top:8px;border-color:var(--gold);color:var(--gold)" id="btn-salvar-contrato">Salvar Contrato</button>
-    <button class="btn-download" onclick="enviarParaAutentique()" style="margin-top:8px" id="btn-autentique">Enviar para Assinatura (Autentique)</button>
+    <button class="btn-download" onclick="enviarParaAutentique()" style="margin-top:8px" id="btn-autentique">✍ Enviar para Assinatura (Autentique)</button>
   </div>
 
 </div>
@@ -3494,48 +3493,51 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:'Open Sans',Arial,sans-serif; font-size:9.5pt; color:#1a1a1a; background:#fff; }
+  body { font-family:'Open Sans',Arial,sans-serif; font-size:10.5pt; color:#1a1a1a; background:#fff; }
   .page { width:210mm; min-height:297mm; margin:0 auto; display:flex; flex-direction:column; }
 
   .doc-header { background:#1a1a1a; padding:14px 22px; display:flex; align-items:center; justify-content:space-between; }
-  .doc-header-info { text-align:right; color:#ccc; font-size:8pt; line-height:1.6; }
+  .doc-header-info { text-align:right; color:#ccc; font-size:9pt; line-height:1.6; }
   .doc-header-info strong { color:#C8A94A; }
 
   .hero { background:#f5f5f5; border-left:4px solid #C8A94A; padding:12px 22px; display:flex; justify-content:space-between; align-items:center; }
-  .hero h1 { font-size:12pt; font-weight:800; color:#1a1a1a; text-transform:uppercase; letter-spacing:0.04em; }
-  .hero-date { font-size:8.5pt; color:#555; white-space:nowrap; padding-left:16px; }
+  .hero h1 { font-size:13pt; font-weight:800; color:#1a1a1a; text-transform:uppercase; letter-spacing:0.04em; }
+  .hero-date { font-size:9.5pt; color:#555; white-space:nowrap; padding-left:16px; }
 
-  .parties { margin:8px 22px; font-size:8pt; line-height:1.6; color:#222; text-align:justify; }
+  .parties { margin:8px 22px; font-size:9pt; line-height:1.6; color:#222; text-align:justify; }
 
   .cl1 { margin:16px 22px 12px; border:1px solid #ddd; border-radius:3px; overflow:hidden; }
-  .cl1-head { background:#1a1a1a; color:#C8A94A; padding:8px 14px; font-size:8.5pt; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; }
-  .cl1-body { padding:8px 14px; font-size:8pt; line-height:1.6; color:#222; }
+  .cl1-head { background:#1a1a1a; color:#C8A94A; padding:8px 14px; font-size:9.5pt; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; }
+  .cl1-body { padding:8px 14px; font-size:9pt; line-height:1.6; color:#222; }
 
   .ev-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px 20px; margin:8px 0 10px; }
-  .ev-campo .ev-label { font-size:7pt; font-weight:700; color:#C8A94A; text-transform:uppercase; letter-spacing:0.07em; }
-  .ev-campo .ev-val { font-size:9pt; font-weight:600; color:#1a1a1a; }
+  .ev-campo .ev-label { font-size:8pt; font-weight:700; color:#C8A94A; text-transform:uppercase; letter-spacing:0.07em; }
+  .ev-campo .ev-val { font-size:10pt; font-weight:600; color:#1a1a1a; }
 
   .serv-box { border:1px solid #ddd; border-radius:3px; padding:8px 12px; margin:7px 0 10px; background:#fafafa; }
   .serv-box ul { list-style:none; padding:0; }
-  .serv-box ul li { padding:2px 0 2px 12px; position:relative; font-size:8.5pt; line-height:1.6; }
+  .serv-box ul li { padding:2px 0 2px 12px; position:relative; font-size:9.5pt; line-height:1.6; }
   .serv-box ul li::before { content:'•'; color:#C8A94A; position:absolute; left:0; font-weight:700; }
 
-  .valor-linha { font-size:9pt; margin:7px 0 4px; }
-  .valor-linha u { font-weight:700; font-size:10pt; }
-  .pix-linha { font-size:8.5pt; margin-top:5px; color:#333; }
+  .valor-linha { font-size:10pt; margin:7px 0 4px; }
+  .valor-linha u { font-weight:700; font-size:11pt; }
+  .pix-linha { font-size:9.5pt; margin-top:5px; color:#333; }
 
   .cl-sep { border:none; border-top:1px solid #e0e0e0; margin:6px 22px; }
   .cl-fixed { margin:0 22px 6px; }
-  .cl-titulo { font-size:7.8pt; font-weight:700; color:#1a1a1a; margin-bottom:3px; }
-  .cl-par { font-size:7.5pt; line-height:1.6; color:#333; margin-bottom:2px; text-align:justify; }
+  .cl-fixed.pg2 { margin:0 22px 18px; }
+  .cl-titulo { font-size:8.8pt; font-weight:700; color:#1a1a1a; margin-bottom:3px; }
+  .cl-fixed.pg2 .cl-titulo { margin-bottom:6px; }
+  .cl-par { font-size:8.5pt; line-height:1.65; color:#333; margin-bottom:2px; text-align:justify; }
+  .cl-fixed.pg2 .cl-par { margin-bottom:5px; }
   .cl-par.indent { padding-left:12px; }
   .page-break { page-break-before:always; break-before:page; margin-top:0; }
 
   .assinaturas { display:grid; grid-template-columns:1fr 1fr; gap:30px; margin:48px 22px 0; }
-  .ass-bloco { border-top:1px solid #333; padding-top:7px; text-align:center; font-size:8pt; }
-  .ass-bloco .ass-nome { font-weight:700; font-size:8.5pt; }
-  .ass-bloco .ass-cargo { color:#666; font-size:7.5pt; }
-  .local-data { text-align:right; margin:16px 22px 0; font-size:8pt; color:#555; }
+  .ass-bloco { border-top:1px solid #333; padding-top:7px; text-align:center; font-size:9pt; }
+  .ass-bloco .ass-nome { font-weight:700; font-size:9.5pt; }
+  .ass-bloco .ass-cargo { color:#666; font-size:8.5pt; }
+  .local-data { text-align:right; margin:16px 22px 0; font-size:9pt; color:#555; }
 
   @media print {
     body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
@@ -3543,7 +3545,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
     .page-break { page-break-before:always; break-before:page; }
   }
 
-  .doc-footer { background:#1a1a1a; color:#888; text-align:center; font-size:7.5pt; padding:10px 22px; margin-top:auto; }
+  .doc-footer { background:#1a1a1a; color:#888; text-align:center; font-size:8.5pt; padding:10px 22px; margin-top:auto; }
   .doc-footer strong { color:#C8A94A; }
 
 </style>
@@ -3607,7 +3609,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
       <p class="cl-par">§ 3º — O CONTRATANTE se obriga a garantir o fornecimento de energia 220V compatíveis com os equipamentos. Em caso de falta de energia ou oscilações na rede o evento se dará por realizado. Recomenda-se o uso de gerador sempre que possível.</p>
     </div>
 
-    <div class="cl-fixed page-break">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 4ª — Responsabilidade por Danos:</p>
       <p class="cl-par">§ 1º — O CONTRATANTE fica inteiramente responsável pelo zelo do material, comprometendo-se a ressarcir eventuais danos causados por sua equipe e/ou seus convidados.</p>
       <p class="cl-par">§ 2º — O CONTRATADO poderá retirar todos os equipamentos a qualquer momento e por qualquer razão que cause danos ou que ponha em risco o bom funcionamento destes.</p>
@@ -3615,7 +3617,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
       <p class="cl-par">§ 4º — É proibido o uso de CANHÃO DE PAPEL PICADO em nossos equipamentos. O CONTRATANTE fica inteiramente responsável por terceiros que utilizem o papel picado, e deverá arcar com manutenção, limpeza e/ou possíveis danos causados.</p>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2 page-break">
       <p class="cl-titulo">CLÁUSULA 5ª — Da Equipe no Evento:</p>
       <p class="cl-par">§ 1º — O CONTRATANTE se responsabilizará pela segurança pessoal da equipe do CONTRATADO, sendo que o evento poderá ser interrompido a qualquer momento por qualquer adversidade que ponha em risco a integridade de sua equipe.</p>
       <p class="cl-par">§ 2º — Em eventos longos (mais que 4 horas corridas), a alimentação da equipe deverá ser provida pelo CONTRATANTE. Considera-se alimentação todo e qualquer tipo de lanche/refeição fornecido ou ofertado para os convidados ou staff no decorrer do evento.</p>
@@ -3623,7 +3625,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
       <p class="cl-par">§ 4º — A equipe ficará responsável somente pelas atividades definidas pelo CONTRATADO, sendo proibida a inclusão de tarefas além das suas atribuições durante o evento.</p>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 6ª — Limitação de Responsabilidade:</p>
       <p class="cl-par">§ 1º — O CONTRATADO se compromete estar no Local/Data/Hora combinado, com todos os equipamentos em condições, garantindo a realização do evento. Salvo em caso fortuito (ex. grave acidente ou doença) e/ou força maior (paralisações, fenômenos da natureza, tais como tempestades, deslizamentos, alagamentos etc.).</p>
       <p class="cl-par">§ 2º — A responsabilidade total do CONTRATADO por quaisquer danos, perdas ou prejuízos decorrentes deste contrato não excederá o valor total do contrato.</p>
@@ -3632,7 +3634,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
       <p class="cl-par">§ 5º — O CONTRATANTE declara estar ciente de que, em caso de indicação apenas (ex. DJ's), atuamos unicamente como intermediadora/facilitadora, não assumindo responsabilidade direta pela execução, prazos ou eventuais danos decorrentes dos serviços prestados pelos subcontratados.</p>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 7ª — Condições Climáticas e Eventos ao Ar Livre:</p>
       <p class="cl-par">§ 1º — Para eventos realizados total ou parcialmente ao ar livre, o CONTRATANTE reconhece e aceita os riscos associados às condições climáticas imprevisíveis.</p>
       <p class="cl-par">§ 2º — O CONTRATADO não será responsável por quaisquer atrasos, interrupções ou cancelamentos do evento devido a condições climáticas adversas, incluindo chuva intensa, ventos fortes, tempestades ou raios.</p>
@@ -3641,13 +3643,13 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
       <p class="cl-par">§ 5º — Se o CONTRATANTE optar por prosseguir em condições climáticas desfavoráveis, assume total responsabilidade por quaisquer danos aos equipamentos do CONTRATADO. <em>Recomenda-se contratar seguro específico para eventos ao ar livre.</em></p>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 8ª — Cobrança Adicional por Hora Extra:</p>
       <p class="cl-par">§ 1º — Ultrapassado o prazo previamente estabelecido, será cobrado um valor adicional por hora extra, salvo acordo prévio por escrito entre as partes.</p>
       <p class="cl-par">§ 2º — O valor adicional será de 10% do valor de contrato por hora ou fração de hora excedente, referente exclusivamente ao custo da estrutura fornecida, não abrangendo custos como técnicos e/ou DJ's. A contagem iniciará imediatamente após o término do prazo contratual.</p>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 9ª — Cobrança Adicional por Impedimento de Recolhimento:</p>
       <p class="cl-par">§ 1º — Caso o CONTRATANTE ou terceiros sob sua responsabilidade impeçam ou dificultem o acesso do CONTRATADO para recolhimento da estrutura e equipamentos no horário previamente acordado, será aplicada uma multa adicional.</p>
       <p class="cl-par">§ 2º — A multa será de: 20% (vinte por cento) do valor de contrato por hora de atraso nas primeiras 4 (quatro) horas; e 40% (quarenta por cento) por hora após as primeiras 4 (quatro) horas.</p>
@@ -3655,19 +3657,19 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
       <p class="cl-par">§ 4º — O pagamento das multas e valores adicionais deverá ser efetuado no prazo máximo de 5 (cinco) dias úteis após o recebimento da cobrança detalhada.</p>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 10ª — Da Rescisão e Multa:</p>
       <p class="cl-par">§ 1º — O presente contrato poderá ser rescindido: a) Por acordo mútuo entre as partes; b) Por descumprimento de qualquer das cláusulas contratuais; c) Em caso de falência, recuperação judicial ou extrajudicial; d) Por força maior ou caso fortuito que impeça a prestação dos serviços por período superior a 30 dias.</p>
       <p class="cl-par">§ 2º — Em caso de rescisão unilateral sem justificativa legalmente admissível: a) Até 7 (sete) dias antes do evento: multa de 20% (vinte por cento) do valor total; b) Dentro dos 7 (sete) dias que antecedem o evento, inclusive: multa de 50% (cinquenta por cento) do valor total. Prazo de pagamento: 7 (sete) dias úteis contados da comunicação formal da rescisão.</p>
       <p class="cl-par">§ 3º — Em caso de cancelamento por iniciativa do CONTRATANTE, os valores já pagos não serão devolvidos, ficando retidos a título de compensação por reserva de agenda, custos administrativos e perda de oportunidade de contratação com terceiros.</p>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 11ª — Autorização de Uso de Imagem e Conteúdo:</p>
       <p class="cl-par">CONTRATANTE e CONTRATADO autorizam mutuamente, de forma gratuita, irrevogável e por prazo indeterminado, o uso de suas respectivas imagens, marcas, logotipos e obras intelectuais relacionadas ao evento objeto deste contrato, incluindo fotos, vídeos, áudios e artes, para fins de divulgação, marketing e registro do evento em quaisquer meios de comunicação. As partes comprometem-se a utilizar o material de forma ética, respeitando a legislação vigente e os direitos de imagem e autorais envolvidos.</p>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 12ª — Disposições Finais e Foro:</p>
       <p class="cl-par">§ 1º — A parte infratora arcará com todas as despesas que porventura se originem nos trâmites legais.</p>
       <p class="cl-par">§ 2º — Por estarem, assim, de acordo com as cláusulas deste contrato, as partes elegem o foro da comarca de Brusque-SC, para dirimir quaisquer dúvidas ou pendências judiciais.</p>
@@ -5253,28 +5255,28 @@ function _abrirModalAutentique(onConfirm) {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
 
   modal.innerHTML = [
-    '<div style="background:#1e1e1e;border:1px solid #2563eb;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
-      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Enviar para Assinatura — Autentique</div>',
+    '<div style="background:#1e1e1e;border:1px solid #25D366;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Enviar para Assinatura — Autentique</div>',
 
       '<div style="margin-bottom:12px">',
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Nome do signatário</label>',
-        '<input id="adq-aut-nome" type="text" value="' + escHtml(nomePreenchido) + '" placeholder="Nome completo do cliente" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#2563eb\'" onblur="this.style.borderColor=\'#444\'">',
+        '<input id="adq-aut-nome" type="text" value="' + escHtml(nomePreenchido) + '" placeholder="Nome completo do cliente" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'">',
       '</div>',
 
       '<div style="margin-bottom:16px">',
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">E-mail do signatário</label>',
-        '<input id="adq-aut-email" type="email" value="' + escHtml(emailPreenchido) + '" placeholder="email@cliente.com" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#2563eb\'" onblur="this.style.borderColor=\'#444\'">',
+        '<input id="adq-aut-email" type="email" value="' + escHtml(emailPreenchido) + '" placeholder="email@cliente.com" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'">',
       '</div>',
 
       (!AUTENTIQUE_TOKEN ? '<div style="background:#2a1a0a;border:1px solid #c8752a;border-radius:4px;padding:10px 12px;font-size:0.75rem;color:#e0a060;margin-bottom:14px;line-height:1.5">⚠ Token da API não configurado.<br>Edite <code style="background:#111;padding:1px 4px;border-radius:2px">AUTENTIQUE_TOKEN</code> no início do bloco de integração.</div>' : ''),
 
       '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:16px;user-select:none">',
-        '<input id="adq-aut-sandbox" type="checkbox" style="width:15px;height:15px;accent-color:#2563eb;cursor:pointer;margin:0">',
+        '<input id="adq-aut-sandbox" type="checkbox" style="width:15px;height:15px;accent-color:#25D366;cursor:pointer;margin:0">',
         '<span style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em">Modo Sandbox (teste — não consome documento)</span>',
       '</label>',
 
       '<div style="display:flex;gap:8px">',
-        '<button id="adq-aut-ok" onclick="_confirmarAutentique()" style="flex:1;background:#2563eb;border:none;color:#fff;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Enviar</button>',
+        '<button id="adq-aut-ok" onclick="_confirmarAutentique()" style="flex:1;background:#25D366;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Enviar</button>',
         '<button onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
       '</div>',
     '</div>'
@@ -5313,17 +5315,7 @@ function _confirmarAutentique() {
     return;
   }
 
-  var _nomeCliente = (document.getElementById('cli_nome') || {}).value || 'Cliente';
-  var _dataEvtRaw = (document.getElementById('data_evento') || {}).value || '';
-  var _dataFmt = '';
-  if (_dataEvtRaw) {
-    var _partes = _dataEvtRaw.split('-');
-    _dataFmt = _partes[2] + '-' + _partes[1] + '-' + _partes[0];
-  } else {
-    var _h = new Date();
-    _dataFmt = String(_h.getDate()).padStart(2,'0') + '-' + String(_h.getMonth()+1).padStart(2,'0') + '-' + _h.getFullYear();
-  }
-  var nomeContrato = 'CONTRATO - ' + _nomeCliente.toUpperCase() + ' ' + _dataFmt;
+  var _nomeCliente = (document.getElementById('cli_nome') || {}).value || 'Cliente'; var _evDataRaw = (document.getElementById('ev_data') || {}).value || ''; var _partes = _evDataRaw.split('-'); var _dd = (_partes[2] || ''); var _mm = (_partes[1] || ''); var _aaaa = (_partes[0] || ''); if (!_dd || !_mm || !_aaaa) { var _hoje = new Date(); _dd = String(_hoje.getDate()).padStart(2,'0'); _mm = String(_hoje.getMonth()+1).padStart(2,'0'); _aaaa = String(_hoje.getFullYear()); } var nomeContrato = 'CONTRATO - ' + _nomeCliente.toUpperCase() + ' ' + _dd + '-' + _mm + '-' + _aaaa;
   var htmlContrato = iframe.srcdoc;
 
   _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox)
@@ -5421,9 +5413,9 @@ function _exibirSucessoAutentique(link, email, sandbox) {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
 
   modal.innerHTML = [
-    '<div style="background:#1e1e1e;border:1px solid #2563eb;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
+    '<div style="background:#1e1e1e;border:1px solid #25D366;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
-        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:0.12em">✓ Enviado com sucesso!</span>',
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.12em">✓ Enviado com sucesso!</span>',
         (sandbox ? '<span style="font-size:0.62rem;font-weight:700;color:#888;background:#222;border:1px solid #555;border-radius:3px;padding:2px 6px;letter-spacing:0.06em;text-transform:uppercase">Sandbox</span>' : ''),
       '</div>',
       '<div style="font-size:0.8rem;color:#aaa;margin-bottom:14px;line-height:1.6">',
@@ -5433,8 +5425,8 @@ function _exibirSucessoAutentique(link, email, sandbox) {
       '</div>',
       '<div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">' + escHtml(link) + '</div>',
       '<div style="display:flex;gap:8px;flex-wrap:wrap">',
-        '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(\'' + link.replace(/'/g, "\\'") + '\');this.textContent=\'Copiado!\'" style="flex:1;min-width:80px;background:#2563eb;border:none;color:#fff;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Copiar Link</button>',
-        '<a href="' + escHtml(link) + '" target="_blank" onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:transparent;border:1px solid #2563eb;color:#2563eb;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
+        '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(\'' + link.replace(/'/g, "\\'") + '\');this.textContent=\'Copiado!\'" style="flex:1;min-width:80px;background:#25D366;border:none;color:#111;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Copiar Link</button>',
+        '<a href="' + escHtml(link) + '" target="_blank" onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:transparent;border:1px solid #25D366;color:#25D366;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
         '<button onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
       '</div>',
     '</div>'
