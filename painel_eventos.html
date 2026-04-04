@@ -1724,34 +1724,49 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   var touchStartX = 0;
+  var touchStartY = 0;
   var touchStartScrollLeft = 0;
   var touchStartCol = 0;
   var touchPrevX = 0;
   var touchPrevTime = 0;
   var touchCurX = 0;
   var touchCurTime = 0;
+  var touchDirection = null; // 'h' = horizontal, 'v' = vertical, null = undecided
 
   board.addEventListener('touchstart', function(e) {
     if (_draggingId) return;
     stopMagnet();
     touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
     touchPrevX = touchStartX;
     touchPrevTime = Date.now();
     touchCurX = touchStartX;
     touchCurTime = touchPrevTime;
+    touchDirection = null;
     var colW = getColW();
     touchStartScrollLeft = board.scrollLeft;
     touchStartCol = colW ? Math.round(board.scrollLeft / colW) : 0;
-  }, {passive: false});
+  }, {passive: true});
 
   board.addEventListener('touchmove', function(e) {
     if (_draggingId || isSnapping) return;
+
+    var dx = touchStartX - e.touches[0].clientX;
+    var dy = touchStartY - e.touches[0].clientY;
+
+    // Determine direction on first significant move
+    if (touchDirection === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      touchDirection = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    }
+
+    // Only intercept horizontal swipes
+    if (touchDirection !== 'h') return;
+
     e.preventDefault();
     touchPrevX = touchCurX;
     touchPrevTime = touchCurTime;
     touchCurX = e.touches[0].clientX;
     touchCurTime = Date.now();
-    var dx = touchStartX - touchCurX;
     board.scrollLeft = touchStartScrollLeft + dx;
   }, {passive: false});
 
