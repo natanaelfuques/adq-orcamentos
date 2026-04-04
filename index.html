@@ -246,8 +246,8 @@
   }
   .btn-download:hover { background: var(--gold); color: var(--dark); transform: translateY(-1px); }
   #btn-salvar-nuvem:hover, #btn-salvar-contrato:hover { background: var(--gold); color: var(--dark) !important; }
-  #btn-autentique { border-color: #25D366; color: #25D366; }
-  #btn-autentique:hover { background: #25D366 !important; color: #111 !important; border-color: #25D366 !important; opacity: 1; }
+  #btn-autentique { border-color: #4A90C8; color: #4A90C8; }
+  #btn-autentique:hover { background: #4A90C8 !important; color: #111 !important; border-color: #4A90C8 !important; opacity: 1; }
   #btn-autentique:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   #btn-copiar-link:hover { background: transparent !important; color: #4A90C8 !important; border-color: #4A90C8 !important; opacity: 0.85; }
   .btn-download:active { transform: translateY(0); }
@@ -1813,7 +1813,7 @@ Revestimento</textarea>
     <iframe id="pdf-frame-contrato" style="width:100%;height:820px;border:1px solid var(--border);border-radius:4px"></iframe>
     <button class="btn-download" onclick="imprimirContrato()">Imprimir / Baixar PDF</button>
     <button class="btn-download" onclick="salvarContratoNaNuvem()" style="margin-top:8px;border-color:var(--gold);color:var(--gold)" id="btn-salvar-contrato">Salvar Contrato</button>
-    <button class="btn-download" onclick="enviarParaAutentique()" style="margin-top:8px" id="btn-autentique">✍ Enviar para Assinatura (Autentique)</button>
+    <button class="btn-download" onclick="enviarParaAutentique()" style="margin-top:8px" id="btn-autentique">Enviar para Assinatura (Autentique)</button>
   </div>
 
 </div>
@@ -3509,6 +3509,8 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
   .cl1 { margin:16px 22px 12px; border:1px solid #ddd; border-radius:3px; overflow:hidden; }
   .cl1-head { background:#1a1a1a; color:#C8A94A; padding:8px 14px; font-size:9.5pt; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; }
   .cl1-body { padding:8px 14px; font-size:9pt; line-height:1.6; color:#222; }
+  .cl1-inciso { padding:10px 0; border-bottom:1px solid #ebebeb; }
+  .cl1-inciso:last-child { border-bottom:none; padding-bottom:4px; }
 
   .ev-grid { display:grid; grid-template-columns:1fr 1fr; gap:3px 20px; margin:8px 0 10px; }
   .ev-campo .ev-label { font-size:8pt; font-weight:700; color:#C8A94A; text-transform:uppercase; letter-spacing:0.07em; }
@@ -3575,9 +3577,12 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
     <div class="cl1">
       <div class="cl1-head">CLÁUSULA 1ª — Detalhamento dos Serviços, do Evento e do Pagamento</div>
       <div class="cl1-body">
+        <div class="cl1-inciso">
         <strong>§ 1º — Serviços e/ou estruturas contratadas:</strong>
         <div class="serv-box"><ul>${itensLi}</ul></div>
+        </div>
 
+        <div class="cl1-inciso">
         <strong>§ 2º — O CONTRATADO realizará seu trabalho no seguinte evento:</strong>
         <div class="ev-grid">
           <div class="ev-campo"><div class="ev-label">Evento</div><div class="ev-val">${evNome}</div></div>
@@ -3587,14 +3592,17 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
           <div class="ev-campo"><div class="ev-label">Data</div><div class="ev-val">${fmtData(evData)}</div></div>
           <div class="ev-campo"><div class="ev-label">Hora Término</div><div class="ev-val">${evFim || "___:___"}</div></div>
         </div>
+        </div>
 
+        <div class="cl1-inciso">
         <p class="valor-linha">§ 3º — O presente serviço será remunerado pela quantia total de <u>R$ ${valTotal}</u> sendo realizado da seguinte forma:</p>
         <p class="cl-par indent">— ${pgto}</p>
         <p class="pix-linha">Chave PIX CNPJ: <strong>49.276.147/0001-06</strong> — NF SOLUÇÕES PARA EVENTOS</p>
+        </div>
       </div>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2 page-break">
       <p class="cl-titulo">CLÁUSULA 2ª — Do Atraso ou Inadimplemento:</p>
       <p class="cl-par">§ 1º — A reserva da data somente será considerada efetivada após a confirmação do pagamento na forma estabelecida na Cláusula 1ª, § 3º, não havendo qualquer garantia de disponibilidade de agenda antes da sua devida compensação.</p>
       <p class="cl-par">§ 2º — Em caso de atraso no pagamento, incidirá multa moratória de 2% (dois por cento) sobre o valor devido, acrescida de juros de 1% (um por cento) ao mês, além de correção monetária pelo índice vigente.</p>
@@ -3602,7 +3610,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
       <p class="cl-par">§ 4º — Persistindo o inadimplemento por mais de 10 (dez) dias, o débito poderá ser encaminhado para cobrança administrativa ou judicial, acrescido de honorários e custas.</p>
     </div>
 
-    <div class="cl-fixed">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 3ª — Condições de Transporte e Local:</p>
       <p class="cl-par">§ 1º — Todo o transporte, montagem e desmontagem dos equipamentos ficarão por conta do CONTRATADO, sendo proibido a execução por terceiros sem prévia autorização.</p>
       <p class="cl-par">§ 2º — É de responsabilidade do CONTRATANTE reservar espaço adequado para alocar os itens contratados, bem como garantir acesso até o local determinado em tempo razoável para montagem. Qualquer adversidade que cause atrasos ou impossibilite a montagem, a obrigação é considerada cumprida.</p>
@@ -3617,7 +3625,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
       <p class="cl-par">§ 4º — É proibido o uso de CANHÃO DE PAPEL PICADO em nossos equipamentos. O CONTRATANTE fica inteiramente responsável por terceiros que utilizem o papel picado, e deverá arcar com manutenção, limpeza e/ou possíveis danos causados.</p>
     </div>
 
-    <div class="cl-fixed pg2 page-break">
+    <div class="cl-fixed pg2">
       <p class="cl-titulo">CLÁUSULA 5ª — Da Equipe no Evento:</p>
       <p class="cl-par">§ 1º — O CONTRATANTE se responsabilizará pela segurança pessoal da equipe do CONTRATADO, sendo que o evento poderá ser interrompido a qualquer momento por qualquer adversidade que ponha em risco a integridade de sua equipe.</p>
       <p class="cl-par">§ 2º — Em eventos longos (mais que 4 horas corridas), a alimentação da equipe deverá ser provida pelo CONTRATANTE. Considera-se alimentação todo e qualquer tipo de lanche/refeição fornecido ou ofertado para os convidados ou staff no decorrer do evento.</p>
@@ -5255,28 +5263,28 @@ function _abrirModalAutentique(onConfirm) {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
 
   modal.innerHTML = [
-    '<div style="background:#1e1e1e;border:1px solid #25D366;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
-      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Enviar para Assinatura — Autentique</div>',
+    '<div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Enviar para Assinatura — Autentique</div>',
 
       '<div style="margin-bottom:12px">',
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Nome do signatário</label>',
-        '<input id="adq-aut-nome" type="text" value="' + escHtml(nomePreenchido) + '" placeholder="Nome completo do cliente" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'">',
+        '<input id="adq-aut-nome" type="text" value="' + escHtml(nomePreenchido) + '" placeholder="Nome completo do cliente" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'">',
       '</div>',
 
       '<div style="margin-bottom:16px">',
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">E-mail do signatário</label>',
-        '<input id="adq-aut-email" type="email" value="' + escHtml(emailPreenchido) + '" placeholder="email@cliente.com" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'">',
+        '<input id="adq-aut-email" type="email" value="' + escHtml(emailPreenchido) + '" placeholder="email@cliente.com" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'">',
       '</div>',
 
       (!AUTENTIQUE_TOKEN ? '<div style="background:#2a1a0a;border:1px solid #c8752a;border-radius:4px;padding:10px 12px;font-size:0.75rem;color:#e0a060;margin-bottom:14px;line-height:1.5">⚠ Token da API não configurado.<br>Edite <code style="background:#111;padding:1px 4px;border-radius:2px">AUTENTIQUE_TOKEN</code> no início do bloco de integração.</div>' : ''),
 
       '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:16px;user-select:none">',
-        '<input id="adq-aut-sandbox" type="checkbox" style="width:15px;height:15px;accent-color:#25D366;cursor:pointer;margin:0">',
+        '<input id="adq-aut-sandbox" type="checkbox" style="width:15px;height:15px;accent-color:#4A90C8;cursor:pointer;margin:0">',
         '<span style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em">Modo Sandbox (teste — não consome documento)</span>',
       '</label>',
 
       '<div style="display:flex;gap:8px">',
-        '<button id="adq-aut-ok" onclick="_confirmarAutentique()" style="flex:1;background:#25D366;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Enviar</button>',
+        '<button id="adq-aut-ok" onclick="_confirmarAutentique()" style="flex:1;background:#4A90C8;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Enviar</button>',
         '<button onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
       '</div>',
     '</div>'
@@ -5413,9 +5421,9 @@ function _exibirSucessoAutentique(link, email, sandbox) {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
 
   modal.innerHTML = [
-    '<div style="background:#1e1e1e;border:1px solid #25D366;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
+    '<div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
-        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.12em">✓ Enviado com sucesso!</span>',
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em">Enviado com sucesso!</span>',
         (sandbox ? '<span style="font-size:0.62rem;font-weight:700;color:#888;background:#222;border:1px solid #555;border-radius:3px;padding:2px 6px;letter-spacing:0.06em;text-transform:uppercase">Sandbox</span>' : ''),
       '</div>',
       '<div style="font-size:0.8rem;color:#aaa;margin-bottom:14px;line-height:1.6">',
@@ -5425,8 +5433,8 @@ function _exibirSucessoAutentique(link, email, sandbox) {
       '</div>',
       '<div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">' + escHtml(link) + '</div>',
       '<div style="display:flex;gap:8px;flex-wrap:wrap">',
-        '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(\'' + link.replace(/'/g, "\\'") + '\');this.textContent=\'Copiado!\'" style="flex:1;min-width:80px;background:#25D366;border:none;color:#111;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Copiar Link</button>',
-        '<a href="' + escHtml(link) + '" target="_blank" onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:transparent;border:1px solid #25D366;color:#25D366;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
+        '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(\'' + link.replace(/'/g, "\\'") + '\');this.textContent=\'Copiado!\'" style="flex:1;min-width:80px;background:#4A90C8;border:none;color:#111;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Copiar Link</button>',
+        '<a href="' + escHtml(link) + '" target="_blank" onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:transparent;border:1px solid #4A90C8;color:#4A90C8;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
         '<button onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
       '</div>',
     '</div>'
