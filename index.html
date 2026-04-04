@@ -735,8 +735,8 @@
   .btn-whatsapp:focus, .btn-calendar:focus { outline: none; }
   .btn-whatsapp:active, .btn-calendar:active { opacity: 0.7; }
   .btn-whatsapp:not(:active), .btn-calendar:not(:active) { -webkit-tap-highlight-color: transparent; }
-  .salvo-status { -webkit-tap-highlight-color: transparent; }
-  .salvo-status:hover { opacity: 0.8; }
+  .salvo-status.status-readonly { cursor: default; }
+  .salvo-status.status-readonly:hover { opacity: 1; }
 
 
   /* ── SALVOS SUB-TABS ── */
@@ -4278,17 +4278,12 @@ function handleSalvosClick(e) {
   var id = btn.getAttribute('data-id');
   var nome = btn.getAttribute('data-nome') || '';
   if (action === 'abrir') { registrarLogGerador('abrir-orcamento', nome); abrirSalvo(id); }
-  else if (action === 'duplicar') { registrarLogGerador('duplicar-orcamento', nome); duplicarSalvo(id); }
+  else if (action === 'gerar-contrato') { registrarLogGerador('gerar-contrato', nome); gerarContratoSalvo(id); }
   else if (action === 'link') { copiarLinkOrcamento(id); }
   else if (action === 'excluir') excluirSalvo(id, nome);
-  else if (action === 'status') {
-    var ap = btn.getAttribute('data-aprovado') === 'true';
-    registrarLogGerador('status-orcamento', nome);
-    toggleAprovado(id, ap);
-  }
   else if (action === 'abrir-contrato') { registrarLogGerador('abrir-contrato', nome); abrirContrato(id); }
   else if (action === 'link-contrato') { abrirModalLinkAssinatura(id, btn); }
-  else if (action === 'duplicar-contrato') { registrarLogGerador('duplicar-contrato', nome); duplicarContrato(id); }
+  else if (action === 'enviar-painel') { registrarLogGerador('enviar-painel', nome); adicionarAoPainel(id); }
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
   else if (action === 'calendar') { btn.blur(); registrarLogGerador('calendar', nome); gerarLinkCalendar(id); }
   else if (action === 'verificar-autentique') { verificarAssinaturaAutentique(id, btn); }
@@ -4300,11 +4295,6 @@ function handleSalvosClick(e) {
     btn.blur();
     registrarLogGerador('whatsapp', nome);
     window.open('https://wa.me/' + numero, '_blank');
-  }
-  else if (action === 'status-contrato') {
-    var ap2 = btn.getAttribute('data-aprovado') === 'true';
-    registrarLogGerador('status-contrato', nome);
-    toggleAprovadoContrato(id, ap2);
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
   else if (action === 'json-con') baixarContratoJSON(id);
@@ -4482,13 +4472,13 @@ function renderSalvos(docs) {
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo primary" data-action="link" data-id="' + id + '" title="Copiar link para enviar ao cliente">Link</button>';
     card += '<button class="btn-salvo" data-action="abrir" data-id="' + id + '">Carregar</button>';
-    card += '<button class="btn-salvo" data-action="duplicar" data-id="' + id + '">Duplicar</button>';
+    card += '<button class="btn-salvo" data-action="gerar-contrato" data-id="' + id + '">Gerar Contrato</button>';
     card += '<button class="btn-salvo" data-action="json-orc" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">';
-    card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="status" data-id="' + id + '" data-aprovado="' + aprovado + '">';
-    card += (aprovado ? 'Aprovado' : 'Pendente') + '</button>';
+    card += '<span class="salvo-status status-readonly' + (aprovado ? ' aprovado' : '') + '">';
+    card += (aprovado ? 'Aprovado' : 'Pendente') + '</span>';
     card += '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#444;letter-spacing:0.1em"># ' + ref + '</span>';
     card += '</div>';
     card += '</div>';
@@ -4761,7 +4751,7 @@ function iniciarListenerContratos() {
       if (change.type === 'removed') delete _etapaMapContratos[change.doc.id];
       var id = change.doc.id;
       var etapa = change.type === 'removed' ? '' : (change.doc.data().etapa || 'eventos');
-      var btn = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + id + '"]');
+      var btn = document.querySelector('.salvo-card span.salvo-status[data-id="' + id + '"]');
       if (!btn) return;
       var aprovado = btn.getAttribute('data-aprovado') === 'true';
       var statusClass, statusLabel, clickable;
@@ -4778,9 +4768,8 @@ function iniciarListenerContratos() {
       } else {
         statusClass = ''; statusLabel = 'Pendente'; clickable = true;
       }
-      btn.className = 'salvo-status' + (statusClass ? ' ' + statusClass : '');
+      btn.className = 'salvo-status status-readonly' + (statusClass ? ' ' + statusClass : '');
       btn.textContent = statusLabel;
-      btn.style.pointerEvents = clickable ? '' : 'none';
       btn.setAttribute('data-etapa', etapa);
       // Montagem/desmontagem
       var cardEl = btn.closest('.salvo-card');
@@ -4869,7 +4858,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo' + (doc.link_assinatura ? ' primary' : '') + '" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
     card += '<button class="btn-salvo" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
-    card += '<button class="btn-salvo" data-action="duplicar-contrato" data-id="' + id + '">Duplicar</button>';
+    card += '<button class="btn-salvo" data-action="enviar-painel" data-id="' + id + '">Painel</button>';
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
@@ -4880,7 +4869,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     if (doc.autentique_id) {
       card += '<button class="salvo-status btn-autentique-check" data-action="verificar-autentique" data-id="' + id + '" data-aut-id="' + escHtml(doc.autentique_id) + '" title="Verificar assinatura no Autentique">Verificar</button>';
     }
-    card += '<button class="salvo-status' + statusClass + '" data-action="status-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '"' + (statusClickable ? '' : ' style="pointer-events:none"') + '>' + statusLabel + '</button>';
+    card += '<span class="salvo-status status-readonly' + statusClass + '" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '">' + statusLabel + '</span>';
     card += '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">';
     if (doc.orc_ref) card += '<button onclick="irParaOrcamentoRef(\'' + escHtml(doc.orc_ref) + '\')" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#aaa;letter-spacing:0.1em;background:transparent;border:none;cursor:pointer;padding:0;transition:color 0.15s" title="Ver orçamento de origem" onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"># ' + escHtml(doc.orc_ref) + '</button>';
     var linkAss = doc.link_assinatura || '';
@@ -4972,8 +4961,9 @@ function excluirContrato(id, nome) {
 
 function toggleAprovadoContrato(id, atual) {
   if (!db) return;
-  var btn = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + id + '"]');
-  var etapa = btn ? (btn.getAttribute('data-etapa') || '') : '';
+  var statusEl = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + id + '"]')
+    || document.querySelector('.salvo-card span.salvo-status[data-id="' + id + '"]');
+  var etapa = statusEl ? (statusEl.getAttribute('data-etapa') || '') : '';
   // Ciclo: Pendente → Assinado → Cancelado → Pendente
   // Em andamento e Concluído são somente leitura (vêm do painel)
   var novoAprovado, novoLabel, novoClass, novoPainel;
@@ -4986,13 +4976,12 @@ function toggleAprovadoContrato(id, atual) {
   }
   db.collection('contratos').doc(id).update({ aprovado: novoAprovado })
     .catch(function(e) { console.error('[AdQ] Erro ao atualizar status:', e); });
-  if (btn) {
-    var cardEl = btn.closest('.salvo-card');
-    btn.textContent = novoLabel;
-    btn.setAttribute('data-aprovado', novoAprovado);
-    btn.setAttribute('data-etapa', novoAprovado ? 'eventos' : '');
-    btn.className = 'salvo-status ' + novoClass;
-    btn.style.pointerEvents = '';
+  if (statusEl) {
+    var cardEl = statusEl.closest('.salvo-card');
+    statusEl.textContent = novoLabel;
+    statusEl.setAttribute('data-aprovado', novoAprovado);
+    statusEl.setAttribute('data-etapa', novoAprovado ? 'eventos' : '');
+    statusEl.className = 'salvo-status status-readonly ' + novoClass;
     if (cardEl) {
       var monRow = cardEl.querySelector('.salvo-montagem-row');
       if (monRow) monRow.style.display = novoAprovado ? '' : 'none';
