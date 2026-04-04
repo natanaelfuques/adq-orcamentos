@@ -695,8 +695,8 @@
   .btn-salvo:hover { border-color: var(--gold); color: var(--gold); }
   .btn-salvo.primary:hover { border-color: #4A90C8; color: #4A90C8; }
   .btn-salvo.danger:hover { border-color: #e55; color: #e55; }
-  .btn-salvo.no-painel { border-color: var(--gold); color: var(--gold); background: rgba(200,169,74,0.10); }
-  .btn-salvo.no-painel:hover { background: rgba(200,169,74,0.22); }
+  .btn-salvo.no-painel { border-color: #7B22B8; color: #7B22B8; background: rgba(123,34,184,0.10); }
+  .btn-salvo.no-painel:hover { background: rgba(123,34,184,0.22); }
   .btn-salvo.primary { border-color: #4A90C8; color: #4A90C8; }
   .salvo-status {
     display: inline-flex;
@@ -1027,6 +1027,21 @@ header {
   #conn-label { display:none; }
 }
 
+/* ── SEM HIGHLIGHT DE TOQUE EM MOBILE ── */
+@media (hover: none) {
+  button, a, [data-action] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-y;
+  }
+  button:active, a:active {
+    opacity: 1 !important;
+    background: inherit;
+    color: inherit;
+    border-color: inherit;
+    transform: none !important;
+  }
+}
+
 /* ── SEM HOVER EM TOUCH/CELULAR ── */
 @media (hover: none) {
   .btn-gerar:hover { opacity: 1; transform: none; }
@@ -1047,7 +1062,7 @@ header {
   .btn-salvo:hover { border-color: var(--border); color: var(--muted); }
   .btn-salvo.primary:hover { border-color: #4A90C8; color: #4A90C8; }
   .btn-salvo.danger:hover { border-color: var(--border); color: var(--muted); }
-  .btn-salvo.no-painel:hover { background: rgba(200,169,74,0.10); }
+  .btn-salvo.no-painel:hover { background: rgba(123,34,184,0.10); }
   .btn-calendar:hover { background: transparent; color: var(--muted); }
   .btn-calendar-ok:hover { background: #4A90C8 !important; color: #fff !important; }
   .btn-whatsapp:hover { background: transparent; color: var(--muted); }
@@ -4323,7 +4338,7 @@ function handleSalvosClick(e) {
   else if (action === 'link-contrato') { abrirModalLinkAssinatura(id, btn); }
   else if (action === 'enviar-painel') {
     registrarLogGerador('enviar-painel', nome);
-    var painelBtn = el;
+    var painelBtn = btn;
     var jaNoPainel = painelBtn.getAttribute('data-no-painel') === '1';
     if (jaNoPainel) {
       removerDoPainel(id);
