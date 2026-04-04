@@ -1027,21 +1027,6 @@ header {
   #conn-label { display:none; }
 }
 
-/* ── SEM HIGHLIGHT DE TOQUE EM MOBILE ── */
-@media (hover: none) {
-  button, a, [data-action] {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: pan-y;
-  }
-  button:active, a:active {
-    opacity: 1 !important;
-    background: inherit;
-    color: inherit;
-    border-color: inherit;
-    transform: none !important;
-  }
-}
-
 /* ── SEM HOVER EM TOUCH/CELULAR ── */
 @media (hover: none) {
   .btn-gerar:hover { opacity: 1; transform: none; }
