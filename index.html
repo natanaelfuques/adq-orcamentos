@@ -695,6 +695,8 @@
   .btn-salvo:hover { border-color: var(--gold); color: var(--gold); }
   .btn-salvo.primary:hover { border-color: #4A90C8; color: #4A90C8; }
   .btn-salvo.danger:hover { border-color: #e55; color: #e55; }
+  .btn-salvo.no-painel { border-color: var(--gold); color: var(--gold); background: rgba(200,169,74,0.10); }
+  .btn-salvo.no-painel:hover { background: rgba(200,169,74,0.22); }
   .btn-salvo.primary { border-color: #4A90C8; color: #4A90C8; }
   .salvo-status {
     display: inline-flex;
@@ -1023,6 +1025,42 @@ header {
   /* Conn: só o ponto, sem label nem borda */
   #conn-indicator { padding:0; border-color:transparent !important; background:transparent !important; gap:0; }
   #conn-label { display:none; }
+}
+
+/* ── SEM HOVER EM TOUCH/CELULAR ── */
+@media (hover: none) {
+  .btn-gerar:hover { opacity: 1; transform: none; }
+  .btn-download:hover { background: transparent; color: var(--gold); transform: none; }
+  #btn-salvar-nuvem:hover, #btn-salvar-contrato:hover { background: transparent; color: var(--gold) !important; }
+  #btn-autentique:hover { background: transparent !important; color: #4A90C8 !important; border-color: #4A90C8 !important; opacity: 1; }
+  #btn-copiar-link:hover { background: transparent !important; color: var(--muted) !important; border-color: var(--border) !important; opacity: 1; }
+  #btn-gerador-sair:hover { background: transparent !important; border-color: var(--border) !important; color: var(--muted) !important; }
+  .serv-tab-btn:hover { color: var(--muted); background: transparent; }
+  .browser-tab-btn:hover { color: var(--muted); background: transparent; }
+  .main-tab-btn:hover { color: var(--muted); background: transparent; }
+  .btn-rem:hover { border-color: var(--border); color: var(--muted); }
+  .btn-add-servico:hover { background: transparent; }
+  .collapse-header:hover { background: transparent; }
+  .carregar-header:hover { background: transparent !important; }
+  .btn-preset:hover { opacity: 1; transform: none; background: var(--darker); border-color: var(--border); color: var(--text); }
+  .salvo-card:hover { border-color: var(--border); }
+  .btn-salvo:hover { border-color: var(--border); color: var(--muted); }
+  .btn-salvo.primary:hover { border-color: #4A90C8; color: #4A90C8; }
+  .btn-salvo.danger:hover { border-color: var(--border); color: var(--muted); }
+  .btn-salvo.no-painel:hover { background: rgba(200,169,74,0.10); }
+  .btn-calendar:hover { background: transparent; color: var(--muted); }
+  .btn-calendar-ok:hover { background: #4A90C8 !important; color: #fff !important; }
+  .btn-whatsapp:hover { background: transparent; color: var(--muted); }
+  .btn-autentique-check:hover { border-color: var(--border); color: var(--muted); }
+  .salvo-status.status-readonly:hover { opacity: 1; }
+  .salvos-sub-tab:hover { color: var(--muted) !important; }
+  .active-sub-tab:hover { color: var(--gold) !important; }
+  .salvos-search-toggle:hover { border-color: var(--border); color: var(--muted); }
+  .salvos-filter-btn:hover { border-color: var(--border); color: var(--muted); }
+  .gerador-btn-login:hover { opacity: 1; }
+  .btn-acessos:hover { border-color: var(--border); color: var(--muted); }
+  .acessos-close:hover { color: var(--muted); }
+  .acesso-grupo-header:hover { background: transparent; }
 }
 </style>
 
@@ -4283,7 +4321,22 @@ function handleSalvosClick(e) {
   else if (action === 'excluir') excluirSalvo(id, nome);
   else if (action === 'abrir-contrato') { registrarLogGerador('abrir-contrato', nome); abrirContrato(id); }
   else if (action === 'link-contrato') { abrirModalLinkAssinatura(id, btn); }
-  else if (action === 'enviar-painel') { registrarLogGerador('enviar-painel', nome); adicionarAoPainel(id); }
+  else if (action === 'enviar-painel') {
+    registrarLogGerador('enviar-painel', nome);
+    var painelBtn = el;
+    var jaNoPainel = painelBtn.getAttribute('data-no-painel') === '1';
+    if (jaNoPainel) {
+      removerDoPainel(id);
+      painelBtn.classList.remove('no-painel');
+      painelBtn.setAttribute('data-no-painel', '0');
+      painelBtn.title = 'Enviar para o painel';
+    } else {
+      adicionarAoPainel(id);
+      painelBtn.classList.add('no-painel');
+      painelBtn.setAttribute('data-no-painel', '1');
+      painelBtn.title = 'Remover do painel';
+    }
+  }
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
   else if (action === 'calendar') { btn.blur(); registrarLogGerador('calendar', nome); gerarLinkCalendar(id); }
   else if (action === 'verificar-autentique') { verificarAssinaturaAutentique(id, btn); }
@@ -4771,6 +4824,13 @@ function iniciarListenerContratos() {
       btn.className = 'salvo-status status-readonly' + (statusClass ? ' ' + statusClass : '');
       btn.textContent = statusLabel;
       btn.setAttribute('data-etapa', etapa);
+      // Atualizar botão Painel do mesmo card
+      var painelBtnRT = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('[data-action="enviar-painel"][data-id="' + id + '"]');
+      if (painelBtnRT) {
+        var noPanel = change.type !== 'removed' && !!etapa;
+        if (noPanel) { painelBtnRT.classList.add('no-painel'); painelBtnRT.setAttribute('data-no-painel','1'); painelBtnRT.title='Remover do painel'; }
+        else { painelBtnRT.classList.remove('no-painel'); painelBtnRT.setAttribute('data-no-painel','0'); painelBtnRT.title='Enviar para o painel'; }
+      }
       // Montagem/desmontagem
       var cardEl = btn.closest('.salvo-card');
       if (cardEl) {
@@ -4858,7 +4918,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo' + (doc.link_assinatura ? ' primary' : '') + '" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
     card += '<button class="btn-salvo" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
-    card += '<button class="btn-salvo" data-action="enviar-painel" data-id="' + id + '">Painel</button>';
+    var noPainel = !!etapa; // etapa existe no etapaMap → card já está no painel
+    card += '<button class="btn-salvo' + (noPainel ? ' no-painel' : '') + '" data-action="enviar-painel" data-id="' + id + '" data-no-painel="' + (noPainel ? '1' : '0') + '" title="' + (noPainel ? 'Remover do painel' : 'Enviar para o painel') + '">Painel</button>';
     card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
