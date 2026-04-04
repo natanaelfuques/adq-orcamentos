@@ -219,6 +219,16 @@ header {
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 120px);
+}
+
+.column-body {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  flex: 1;
 }
 
 .column-header {
@@ -271,7 +281,12 @@ header {
   padding: 12px;
   min-height: 200px;
   transition: background 0.15s;
+  -webkit-overflow-scrolling: touch;
 }
+
+.column-body::-webkit-scrollbar { width: 4px; }
+.column-body::-webkit-scrollbar-track { background: transparent; }
+.column-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .column-body.drag-over { background: rgba(200,169,74,0.05); }
 
@@ -1153,7 +1168,20 @@ function renderBoard() {
           c.classList.remove('expanded');
         });
         // Expand this one if it was collapsed
-        if (!wasExpanded) card.classList.add('expanded');
+        if (!wasExpanded) {
+          card.classList.add('expanded');
+          // Scroll card into view inside column after transition starts
+          setTimeout(function() {
+            var colBody = card.closest('.column-body');
+            if (colBody) {
+              var cardRect = card.getBoundingClientRect();
+              var colRect = colBody.getBoundingClientRect();
+              if (cardRect.bottom > colRect.bottom) {
+                colBody.scrollBy({ top: cardRect.bottom - colRect.bottom + 16, behavior: 'smooth' });
+              }
+            }
+          }, 50);
+        }
       });
     });
     body.querySelectorAll('.item-check').forEach(function(chk) {
