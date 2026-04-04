@@ -1049,14 +1049,19 @@ header {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 16px 20px;
+  padding: 14px 18px 16px;
   margin-bottom: 20px;
   transition: border-color 0.2s;
+}
+.nota-bloco:focus-within {
+  border-color: #555;
 }
 .nota-bloco-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 .nota-bloco-titulo {
   font-family: 'Barlow Condensed', sans-serif;
@@ -1069,26 +1074,26 @@ header {
   flex-shrink: 0;
 }
 .nota-bloco-input {
-  flex: 1;
+  width: 100%;
   background: var(--darker);
   border: 1px solid var(--border);
   color: var(--text);
   font-family: 'Barlow', sans-serif;
-  font-size: 0.9rem;
-  padding: 8px 12px;
+  font-size: 0.92rem;
+  padding: 10px 13px;
   border-radius: 4px;
   outline: none;
   resize: none;
   overflow: hidden;
-  height: 38px;
-  min-height: 38px;
-  line-height: 1.4;
-  transition: border-color 0.2s, height 0.2s;
+  height: 42px;
+  min-height: 42px;
+  line-height: 1.45;
+  transition: border-color 0.2s, height 0.25s ease;
   display: block;
 }
 .nota-bloco-input:focus {
   border-color: var(--gold);
-  height: 90px;
+  height: 100px;
 }
 .nota-bloco-input::placeholder { color: var(--muted); opacity: 0.7; }
 .nota-bloco-actions {
@@ -1103,7 +1108,7 @@ header {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   border-radius: 4px;
-  padding: 7px 14px;
+  padding: 6px 14px;
   cursor: pointer;
   transition: opacity 0.15s, background 0.15s;
   border: none;
@@ -1138,6 +1143,17 @@ header {
   letter-spacing: 0.04em;
   margin-bottom: 4px;
 }
+/* Título vazio: ocupa zero espaço e é invisível */
+.nota-card-titulo--vazio {
+  display: none;
+}
+/* Quando sem título, o texto assume posição de destaque */
+.nota-sem-titulo .nota-card-texto {
+  font-size: 0.92rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+/* Quando título é adicionado depois, volta ao normal automaticamente */
 .nota-card-texto {
   font-size: 0.85rem;
   color: var(--muted);
@@ -1224,13 +1240,13 @@ header {
   <!-- BLOCO NOVO EVENTO -->
   <div class="nota-bloco">
     <div class="nota-bloco-header">
-      <span class="nota-bloco-titulo">Novo Evento</span>
-      <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anote algo rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()"></textarea>
+      <span class="nota-bloco-titulo">Anotações</span>
       <div class="nota-bloco-actions" id="nota-bloco-actions" style="display:none">
         <button class="nota-bloco-ok" onclick="salvarNota()">OK</button>
-        <button class="nota-bloco-cancel" onclick="cancelarNota()">✕</button>
+        <button class="nota-bloco-cancel" onclick="cancelarNota()">&#x2715;</button>
       </div>
     </div>
+    <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anote algo rapido sobre o evento..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()"></textarea>
   </div>
 
   <!-- ABA DADOS DO CLIENTE -->
@@ -5821,18 +5837,27 @@ function renderNotas(docs) {
     return;
   }
   lista.innerHTML = docs.map(function(doc) {
-    var id      = doc.id;
-    var titulo  = escHtml(doc.titulo  || '(sem título)');
-    var texto   = escHtml(doc.texto   || '');
-    var ts      = doc.criadoEm && doc.criadoEm.toDate ? doc.criadoEm.toDate() : null;
-    var dataFmt = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
-    var card = '<div class="nota-card">';
-    card += '<div class="nota-card-titulo">' + titulo + '</div>';
+    var id        = doc.id;
+    var tituloRaw = (doc.titulo || '').trim();
+    var titulo    = escHtml(tituloRaw);
+    var texto     = escHtml(doc.texto || '');
+    var ts        = doc.criadoEm && doc.criadoEm.toDate ? doc.criadoEm.toDate() : null;
+    var dataFmt   = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+    var semTitulo = !tituloRaw;
+    var card = '<div class="nota-card' + (semTitulo ? ' nota-sem-titulo' : '') + '">';
+    // Título: invisível quando vazio mas reserva espaço via CSS só quando há título
+    if (semTitulo) {
+      card += '<div class="nota-card-titulo nota-card-titulo--vazio" aria-hidden="true"></div>';
+    } else {
+      card += '<div class="nota-card-titulo">' + titulo + '</div>';
+    }
     if (texto)   card += '<div class="nota-card-texto">'  + texto   + '</div>';
     if (dataFmt) card += '<div class="nota-card-meta">'   + dataFmt + '</div>';
+    var noPainel = !!(doc.no_painel);
     card += '<div class="salvo-card-actions">';
+    card += '<button class="btn-salvo' + (noPainel ? ' no-painel' : '') + '" data-action="painel-nota" data-id="' + id + '" data-no-painel="' + (noPainel ? '1' : '0') + '" title="' + (noPainel ? 'Remover do painel' : 'Enviar para o painel') + '">Painel</button>';
     card += '<button class="btn-salvo" data-action="editar-nota" data-id="' + id + '">Editar</button>';
-    card += '<button class="btn-salvo danger" data-action="excluir-nota" data-id="' + id + '" data-nome="' + titulo + '">Excluir</button>';
+    card += '<button class="btn-salvo danger" data-action="excluir-nota" data-id="' + id + '" data-nome="' + (titulo || 'esta anotação') + '">Excluir</button>';
     card += '</div>';
     card += '</div>';
     return card;
@@ -5854,6 +5879,24 @@ function handleNotasClick(e) {
     var nota = _todasNotas.find(function(n) { return n.id === id; });
     if (!nota) return;
     _abrirModalEditarNota(nota);
+  } else if (action === 'painel-nota') {
+    if (!db) return;
+    var jaNoPainel = btn.getAttribute('data-no-painel') === '1';
+    if (jaNoPainel) {
+      db.collection('notas').doc(id).update({ no_painel: false })
+        .then(function() {
+          btn.classList.remove('no-painel');
+          btn.setAttribute('data-no-painel', '0');
+          btn.title = 'Enviar para o painel';
+        }).catch(function(e) { alert('Erro: ' + e.message); });
+    } else {
+      db.collection('notas').doc(id).update({ no_painel: true })
+        .then(function() {
+          btn.classList.add('no-painel');
+          btn.setAttribute('data-no-painel', '1');
+          btn.title = 'Remover do painel';
+        }).catch(function(e) { alert('Erro: ' + e.message); });
+    }
   }
 }
 
