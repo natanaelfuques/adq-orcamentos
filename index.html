@@ -829,7 +829,8 @@
     flex-direction: column;
   }
   #salvos-lista,
-  #contratos-lista {
+  #contratos-lista,
+  #notas-lista {
     max-height: calc(100vh - 220px);
     overflow-y: auto;
     scrollbar-width: thin;
@@ -837,7 +838,8 @@
   }
   @media (min-width: 600px) {
     #salvos-lista,
-    #contratos-lista {
+    #contratos-lista,
+    #notas-lista {
       max-height: calc(100vh - 160px);
     }
   }
@@ -1038,6 +1040,116 @@ header {
   .btn-acessos:hover { border-color: var(--border); color: var(--muted); }
   .acessos-close:hover { color: var(--muted); }
   .acesso-grupo-header:hover { background: transparent; }
+  .nota-bloco:hover { border-color: var(--border) !important; }
+  .nota-bloco-input:hover { border-color: var(--border) !important; }
+}
+
+/* ── BLOCO NOVO EVENTO (anotação rápida) ── */
+.nota-bloco {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  transition: border-color 0.2s;
+}
+.nota-bloco-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.nota-bloco-titulo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.nota-bloco-input {
+  flex: 1;
+  background: var(--darker);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  border-radius: 4px;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  height: 38px;
+  min-height: 38px;
+  line-height: 1.4;
+  transition: border-color 0.2s, height 0.2s;
+  display: block;
+}
+.nota-bloco-input:focus {
+  border-color: var(--gold);
+  height: 90px;
+}
+.nota-bloco-input::placeholder { color: var(--muted); opacity: 0.7; }
+.nota-bloco-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.nota-bloco-actions button {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  border: none;
+}
+.nota-bloco-ok {
+  background: var(--gold);
+  color: var(--dark);
+}
+.nota-bloco-ok:hover { opacity: 0.85; }
+.nota-bloco-cancel {
+  background: transparent;
+  border: 1px solid var(--border) !important;
+  color: var(--muted);
+}
+.nota-bloco-cancel:hover { border-color: #e55 !important; color: #e55; }
+
+/* ── CARD DE NOTA ── */
+.nota-card {
+  background: var(--darker);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+.nota-card:hover { border-color: #555; }
+.nota-card-titulo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.nota-card-texto {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.nota-card-meta {
+  font-size: 0.72rem;
+  color: #555;
+  margin-bottom: 10px;
 }
 </style>
 
@@ -1108,6 +1220,19 @@ header {
 <div id="swipe-container"><div id="swipe-track"><div id="panel-orcamento" class="main-panel active">
 <div class="container">
 
+
+  <!-- BLOCO NOVO EVENTO -->
+  <div class="nota-bloco">
+    <div class="nota-bloco-header">
+      <span class="nota-bloco-titulo">Novo Evento</span>
+      <textarea id="nota-bloco-titulo-input" class="nota-bloco-input" placeholder="Título do evento..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()" style="max-width:180px;min-width:80px;flex:0 0 auto"></textarea>
+      <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anote algo rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()"></textarea>
+      <div class="nota-bloco-actions" id="nota-bloco-actions" style="display:none">
+        <button class="nota-bloco-ok" onclick="salvarNota()">OK</button>
+        <button class="nota-bloco-cancel" onclick="cancelarNota()">✕</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ABA DADOS DO CLIENTE -->
   <div class="collapse-tab" id="tab-cliente">
@@ -1632,6 +1757,7 @@ Revestimento</textarea>
     <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px">
       <button id="salvos-tab-orc" onclick="if(window._goToVirtual)_goToVirtual(1,false);else switchSalvosTab('orcamentos')" class="salvos-sub-tab active-sub-tab">Propostas</button>
       <button id="salvos-tab-con" onclick="if(window._goToVirtual)_goToVirtual(2,false);else switchSalvosTab('contratos')" class="salvos-sub-tab">Eventos</button>
+      <button id="salvos-tab-not" onclick="switchSalvosTab('notas')" class="salvos-sub-tab">Anotações</button>
     </div>
     <div id="salvos-swipe-track" style="overflow:hidden;position:relative">
       <div id="salvos-swipe-inner" style="display:flex;transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);will-change:transform">
@@ -1639,6 +1765,9 @@ Revestimento</textarea>
           <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
         </div>
         <div id="contratos-lista" style="min-width:100%;width:100%;flex-shrink:0;box-sizing:border-box">
+          <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
+        </div>
+        <div id="notas-lista" style="min-width:100%;width:100%;flex-shrink:0;box-sizing:border-box">
           <div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Conectando a nuvem...</div>
         </div>
       </div>
@@ -4311,7 +4440,10 @@ function iniciarListenerSalvos() {
       db.collection('eventos_campo').doc(id).update(evUpd).catch(function(){});
     });
   }
+  var listaN = document.getElementById('notas-lista');
+  if (listaN) listaN.addEventListener('click', handleNotasClick);
   iniciarListenerContratos();
+  iniciarListenerNotas();
   if (!db) return;
   const statusEl = document.getElementById('salvos-sync-status');
   if (statusEl) statusEl.textContent = 'Sincronizando...';
@@ -4582,10 +4714,12 @@ var _salvosTab = 'orcamentos';
 function atualizarContadorSalvos() {
   var statusEl = document.getElementById('salvos-sync-status');
   if (!statusEl) return;
-  // Only show counter relevant to active sub-tab
   if (_salvosTab === 'contratos') {
     var n = window._countContratos || 0;
     statusEl.textContent = n + ' contrato' + (n !== 1 ? 's' : '');
+  } else if (_salvosTab === 'notas') {
+    var n = window._countNotas || 0;
+    statusEl.textContent = n + ' anotaç' + (n !== 1 ? 'ões' : 'ão');
   } else {
     var n = window._countOrcamentos || 0;
     statusEl.textContent = n + ' orcamento' + (n !== 1 ? 's' : '');
@@ -4597,21 +4731,24 @@ function switchSalvosTab(tab, animate) {
   var inner = document.getElementById('salvos-swipe-inner');
   var btnOrc = document.getElementById('salvos-tab-orc');
   var btnCon = document.getElementById('salvos-tab-con');
+  var btnNot = document.getElementById('salvos-tab-not');
   var isOrc = (tab === 'orcamentos');
+  var isNot = (tab === 'notas');
+  var translateX = isOrc ? '0%' : (isNot ? '-200%' : '-100%');
   if (inner) {
     if (animate === false) {
       inner.style.transition = 'none';
-      inner.style.transform = isOrc ? 'translateX(0%)' : 'translateX(-100%)';
-      // re-enable transition after paint
+      inner.style.transform = 'translateX(' + translateX + ')';
       requestAnimationFrame(function() {
         requestAnimationFrame(function() { inner.style.transition = ''; });
       });
     } else {
-      inner.style.transform = isOrc ? 'translateX(0%)' : 'translateX(-100%)';
+      inner.style.transform = 'translateX(' + translateX + ')';
     }
   }
-  if (btnOrc) { btnOrc.classList.toggle('active-sub-tab', isOrc); }
-  if (btnCon) { btnCon.classList.toggle('active-sub-tab', !isOrc); }
+  if (btnOrc) btnOrc.classList.toggle('active-sub-tab', isOrc);
+  if (btnCon) btnCon.classList.toggle('active-sub-tab', tab === 'contratos');
+  if (btnNot) btnNot.classList.toggle('active-sub-tab', isNot);
   var carregarBtn = document.getElementById('salvos-carregar-btn');
   if (carregarBtn) carregarBtn.style.display = isOrc ? '' : 'none';
   atualizarContadorSalvos();
@@ -4645,16 +4782,16 @@ function switchSalvosTab(tab, animate) {
       dragging = false; startX = null;
       if (Math.abs(dx) < 40) return;
       if (dx < 0 && _salvosTab === 'orcamentos') {
-        // em orçamentos, arrastar esquerda → vai para contratos salvos
-        if (window._goToVirtual) window._goToVirtual(2, true); else switchSalvosTab('contratos');
-      } else if (dx > 0 && _salvosTab === 'contratos') {
-        // em contratos, arrastar direita → volta para orçamentos salvos
-        if (window._goToVirtual) window._goToVirtual(1, true); else switchSalvosTab('orcamentos');
-      } else if (dx > 0 && _salvosTab === 'orcamentos') {
-        // em orçamentos, arrastar direita → sai para aba Orçamento (esquerda)
-        if (window._goToVirtual) window._goToVirtual(0, true);
+        switchSalvosTab('contratos');
       } else if (dx < 0 && _salvosTab === 'contratos') {
-        // em contratos, arrastar esquerda → sai para aba Contrato (direita)
+        switchSalvosTab('notas');
+      } else if (dx > 0 && _salvosTab === 'notas') {
+        switchSalvosTab('contratos');
+      } else if (dx > 0 && _salvosTab === 'contratos') {
+        switchSalvosTab('orcamentos');
+      } else if (dx > 0 && _salvosTab === 'orcamentos') {
+        if (window._goToVirtual) window._goToVirtual(0, true);
+      } else if (dx < 0 && _salvosTab === 'notas') {
         if (window._goToVirtual) window._goToVirtual(3, true);
       }
     }, { passive: true });
@@ -5600,6 +5737,178 @@ function verificarAssinaturaAutentique(contratoId, btn) {
     btn.className = 'salvo-status btn-autentique-check';
     alert('Erro ao verificar: ' + err.message);
   });
+}
+
+// ═══ BLOCO NOVO EVENTO (anotação rápida) ═══
+
+function notaBlocoFocus() {
+  document.getElementById('nota-bloco-actions').style.display = 'flex';
+}
+
+function notaBlocoAutoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.max(38, el.scrollHeight) + 'px';
+}
+
+function cancelarNota() {
+  var t = document.getElementById('nota-bloco-titulo-input');
+  var tx = document.getElementById('nota-bloco-texto-input');
+  if (t) { t.value = ''; t.style.height = '38px'; }
+  if (tx) { tx.value = ''; tx.style.height = '38px'; }
+  document.getElementById('nota-bloco-actions').style.display = 'none';
+  if (t) t.blur();
+  if (tx) tx.blur();
+}
+
+function salvarNota() {
+  var titulo = (document.getElementById('nota-bloco-titulo-input') || {}).value || '';
+  var texto  = (document.getElementById('nota-bloco-texto-input')  || {}).value || '';
+  titulo = titulo.trim();
+  texto  = texto.trim();
+  if (!titulo && !texto) { cancelarNota(); return; }
+  if (!db) { alert('Sem conexão com a nuvem.'); return; }
+  db.collection('notas').add({
+    titulo:    titulo,
+    texto:     texto,
+    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function() {
+    cancelarNota();
+    // Navegar para Salvos → Anotações
+    if (window._goToVirtual) {
+      window._goToVirtual(1, true);
+      setTimeout(function() { switchSalvosTab('notas'); }, 320);
+    } else {
+      switchMain('salvos');
+      switchSalvosTab('notas');
+    }
+  }).catch(function(e) {
+    alert('Erro ao salvar anotação: ' + e.message);
+  });
+}
+
+// Fechar botões ao clicar fora do bloco
+document.addEventListener('click', function(e) {
+  var bloco = document.querySelector('.nota-bloco');
+  if (bloco && !bloco.contains(e.target)) {
+    var actions = document.getElementById('nota-bloco-actions');
+    if (actions && actions.style.display !== 'none') {
+      var t  = document.getElementById('nota-bloco-titulo-input');
+      var tx = document.getElementById('nota-bloco-texto-input');
+      var hasContent = (t && t.value.trim()) || (tx && tx.value.trim());
+      if (!hasContent) cancelarNota();
+    }
+  }
+});
+
+// ═══ NOTAS — LISTENER FIRESTORE E RENDER ═══
+
+function iniciarListenerNotas() {
+  if (!db) return;
+  db.collection('notas')
+    .orderBy('criadoEm', 'desc')
+    .onSnapshot(function(snap) {
+      var docs = [];
+      snap.forEach(function(doc) { docs.push(Object.assign({ id: doc.id }, doc.data())); });
+      _todasNotas = docs;
+      renderNotas(docs);
+      window._countNotas = docs.length;
+      if (_salvosTab === 'notas') atualizarContadorSalvos();
+    }, function(err) {
+      console.warn('[AdQ] Notas listener erro:', err);
+    });
+}
+
+var _todasNotas = [];
+
+function renderNotas(docs) {
+  var lista = document.getElementById('notas-lista');
+  if (!lista) return;
+  if (!docs.length) {
+    lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhuma anotação ainda.</div>';
+    return;
+  }
+  lista.innerHTML = docs.map(function(doc) {
+    var id      = doc.id;
+    var titulo  = escHtml(doc.titulo  || '(sem título)');
+    var texto   = escHtml(doc.texto   || '');
+    var ts      = doc.criadoEm && doc.criadoEm.toDate ? doc.criadoEm.toDate() : null;
+    var dataFmt = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+    var card = '<div class="nota-card">';
+    card += '<div class="nota-card-titulo">' + titulo + '</div>';
+    if (texto)   card += '<div class="nota-card-texto">'  + texto   + '</div>';
+    if (dataFmt) card += '<div class="nota-card-meta">'   + dataFmt + '</div>';
+    card += '<div class="salvo-card-actions">';
+    card += '<button class="btn-salvo" data-action="editar-nota" data-id="' + id + '">Editar</button>';
+    card += '<button class="btn-salvo danger" data-action="excluir-nota" data-id="' + id + '" data-nome="' + titulo + '">Excluir</button>';
+    card += '</div>';
+    card += '</div>';
+    return card;
+  }).join('');
+}
+
+function handleNotasClick(e) {
+  var btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  var action = btn.getAttribute('data-action');
+  var id     = btn.getAttribute('data-id');
+  var nome   = btn.getAttribute('data-nome') || '';
+  if (action === 'excluir-nota') {
+    if (!confirm('Excluir anotação "' + nome + '"?')) return;
+    if (!db) return;
+    db.collection('notas').doc(id).delete()
+      .catch(function(e) { alert('Erro ao excluir: ' + e.message); });
+  } else if (action === 'editar-nota') {
+    var nota = _todasNotas.find(function(n) { return n.id === id; });
+    if (!nota) return;
+    _abrirModalEditarNota(nota);
+  }
+}
+
+function _abrirModalEditarNota(nota) {
+  var old = document.getElementById('nota-edit-modal');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'nota-edit-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  modal.innerHTML = `
+    <div style="background:#1e1e1e;border:1px solid var(--border, #333);border-top:2px solid #C8A94A;border-radius:8px;padding:24px 22px;width:100%;max-width:420px;box-sizing:border-box">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Editar Anotação</div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Título</label>
+        <input id="nota-edit-titulo" type="text" value="${escHtml(nota.titulo || '')}" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'">
+      </div>
+      <div style="margin-bottom:18px">
+        <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Anotação</label>
+        <textarea id="nota-edit-texto" rows="5" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;resize:vertical;transition:border-color 0.2s" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'">${escHtml(nota.texto || '')}</textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="_salvarEdicaoNota('${nota.id}')" style="flex:1;background:#C8A94A;border:none;color:#111;padding:10px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Salvar</button>
+        <button onclick="document.getElementById('nota-edit-modal').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#666'">×</button>
+      </div>
+    </div>
+  `;
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+  setTimeout(function() {
+    var inp = document.getElementById('nota-edit-titulo');
+    if (inp) inp.focus();
+  }, 60);
+}
+
+function _salvarEdicaoNota(id) {
+  var titulo = (document.getElementById('nota-edit-titulo') || {}).value || '';
+  var texto  = (document.getElementById('nota-edit-texto')  || {}).value || '';
+  if (!db) return;
+  db.collection('notas').doc(id).update({
+    titulo: titulo.trim(),
+    texto:  texto.trim()
+  }).then(function() {
+    var modal = document.getElementById('nota-edit-modal');
+    if (modal) modal.remove();
+  }).catch(function(e) { alert('Erro ao salvar: ' + e.message); });
 }
 
 // ═══ INTEGRAÇÃO AUTENTIQUE ═══
