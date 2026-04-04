@@ -105,6 +105,10 @@
     color: var(--muted);
   }
   .include-toggle input:checked + span { color: var(--gold); }
+
+  @media (max-width: 600px) {
+    .include-toggle span { display: none; }
+  }
   .tab-disabled .collapse-body { opacity: 0.4; pointer-events: none; }
 
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
