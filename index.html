@@ -82,11 +82,11 @@
 
   /* ── TOGGLE INCLUDE CHECKBOX ── */
   .include-toggle {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    height: 16px;
+    padding: 2px 0;
   }
   .include-toggle input[type=checkbox] {
     width: 16px; height: 16px; min-width: 16px;
@@ -96,8 +96,6 @@
     padding: 0;
     border: none;
     background: transparent;
-    display: block;
-    vertical-align: middle;
   }
   .include-toggle span {
     font-size: 0.68rem;
@@ -494,9 +492,6 @@
     color: var(--gold);
     font-size: 0.75rem;
     transition: transform 0.25s;
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
   }
   .collapse-arrow.open { transform: rotate(180deg); }
   .collapse-body {
@@ -612,23 +607,13 @@
   .det-item .opcao-header {
     cursor: pointer;
     user-select: none;
-    align-items: center;
-  }
-  .det-titulo-input {
-    padding: 0 4px !important;
-    line-height: 1.4;
   }
   .det-arrow {
     color: var(--gold);
     font-size: 0.7rem;
     transition: transform 0.25s;
+    margin-left: 8px;
     flex-shrink: 0;
-    margin: 0;
-    padding: 0;
-    line-height: 16px;
-    height: 16px;
-    display: inline-flex;
-    align-items: center;
   }
   .det-item.open .det-arrow { transform: rotate(180deg); }
 
