@@ -246,6 +246,9 @@
   }
   .btn-download:hover { background: var(--gold); color: var(--dark); transform: translateY(-1px); }
   #btn-salvar-nuvem:hover, #btn-salvar-contrato:hover { background: var(--gold); color: var(--dark) !important; }
+  #btn-autentique { border-color: #25D366; color: #25D366; }
+  #btn-autentique:hover { background: #25D366 !important; color: #111 !important; border-color: #25D366 !important; opacity: 1; }
+  #btn-autentique:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   #btn-copiar-link:hover { background: transparent !important; color: #4A90C8 !important; border-color: #4A90C8 !important; opacity: 0.85; }
   .btn-download:active { transform: translateY(0); }
 
@@ -1810,6 +1813,7 @@ Revestimento</textarea>
     <iframe id="pdf-frame-contrato" style="width:100%;height:820px;border:1px solid var(--border);border-radius:4px"></iframe>
     <button class="btn-download" onclick="imprimirContrato()">Imprimir / Baixar PDF</button>
     <button class="btn-download" onclick="salvarContratoNaNuvem()" style="margin-top:8px;border-color:var(--gold);color:var(--gold)" id="btn-salvar-contrato">Salvar Contrato</button>
+    <button class="btn-download" onclick="enviarParaAutentique()" style="margin-top:8px" id="btn-autentique">✍ Enviar para Assinatura (Autentique)</button>
   </div>
 
 </div>
@@ -5230,6 +5234,199 @@ function removerDoPainel(contratoId) {
     .catch(function(e) {
       console.warn('[AdQ] Erro ao remover do painel (pode nao existir):', e.message);
     });
+}
+
+// ═══ INTEGRAÇÃO AUTENTIQUE ═══
+
+var AUTENTIQUE_TOKEN = '';  // ← cole seu token de API aqui
+
+function _abrirModalAutentique(onConfirm) {
+  var old = document.getElementById('adq-autentique-modal');
+  if (old) old.remove();
+
+  var emailPreenchido = (document.getElementById('cli_email') || {}).value || '';
+  var nomePreenchido  = (document.getElementById('cli_nome')  || {}).value || '';
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-autentique-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  modal.innerHTML = [
+    '<div style="background:#1e1e1e;border:1px solid #25D366;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Enviar para Assinatura — Autentique</div>',
+
+      '<div style="margin-bottom:12px">',
+        '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Nome do signatário</label>',
+        '<input id="adq-aut-nome" type="text" value="' + escHtml(nomePreenchido) + '" placeholder="Nome completo do cliente" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'">',
+      '</div>',
+
+      '<div style="margin-bottom:16px">',
+        '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">E-mail do signatário</label>',
+        '<input id="adq-aut-email" type="email" value="' + escHtml(emailPreenchido) + '" placeholder="email@cliente.com" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'">',
+      '</div>',
+
+      (!AUTENTIQUE_TOKEN ? '<div style="background:#2a1a0a;border:1px solid #c8752a;border-radius:4px;padding:10px 12px;font-size:0.75rem;color:#e0a060;margin-bottom:14px;line-height:1.5">⚠ Token da API não configurado.<br>Edite <code style="background:#111;padding:1px 4px;border-radius:2px">AUTENTIQUE_TOKEN</code> no início do bloco de integração.</div>' : ''),
+
+      '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:16px;user-select:none">',
+        '<input id="adq-aut-sandbox" type="checkbox" style="width:15px;height:15px;accent-color:#25D366;cursor:pointer;margin:0">',
+        '<span style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em">Modo Sandbox (teste — não consome documento)</span>',
+      '</label>',
+
+      '<div style="display:flex;gap:8px">',
+        '<button id="adq-aut-ok" onclick="_confirmarAutentique()" style="flex:1;background:#25D366;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Enviar</button>',
+        '<button onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
+      '</div>',
+    '</div>'
+  ].join('');
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+  setTimeout(function() {
+    var inp = document.getElementById('adq-aut-email');
+    if (inp) inp.focus();
+  }, 60);
+}
+
+function _confirmarAutentique() {
+  var nome    = (document.getElementById('adq-aut-nome')    || {}).value || '';
+  var email   = (document.getElementById('adq-aut-email')   || {}).value || '';
+  var sandbox = !!(document.getElementById('adq-aut-sandbox') || {}).checked;
+
+  if (!email || !email.includes('@')) {
+    alert('Informe um e-mail válido para o signatário.');
+    return;
+  }
+  if (!AUTENTIQUE_TOKEN) {
+    alert('Configure o AUTENTIQUE_TOKEN no código antes de usar esta função.');
+    return;
+  }
+
+  var btn = document.getElementById('adq-aut-ok');
+  if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+
+  // Obtém o HTML do contrato já gerado no iframe
+  var iframe = document.getElementById('pdf-frame-contrato');
+  if (!iframe || !iframe.srcdoc) {
+    alert('Gere o contrato antes de enviar para assinatura.');
+    if (btn) { btn.textContent = 'Enviar'; btn.disabled = false; }
+    return;
+  }
+
+  var nomeContrato = (document.getElementById('cli_nome') || {}).value || 'Contrato';
+  var htmlContrato = iframe.srcdoc;
+
+  _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox)
+    .then(function(resultado) {
+      var modal = document.getElementById('adq-autentique-modal');
+      if (modal) modal.remove();
+
+      var linkAssinatura = resultado.link || '';
+      console.log('[AdQ] Autentique — documento criado' + (sandbox ? ' (SANDBOX)' : '') + ':', resultado);
+
+      if (linkAssinatura) {
+        _exibirSucessoAutentique(linkAssinatura, email, sandbox);
+      } else {
+        alert('Documento enviado com sucesso ao Autentique' + (sandbox ? ' (modo sandbox)' : '') + '!');
+      }
+    })
+    .catch(function(err) {
+      console.error('[AdQ] Erro Autentique:', err);
+      alert('Erro ao enviar para o Autentique: ' + err.message);
+      if (btn) { btn.textContent = 'Enviar'; btn.disabled = false; }
+    });
+}
+
+function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, htmlConteudo, sandbox) {
+  var ENDPOINT = 'https://api.autentique.com.br/v2/graphql';
+
+  var query = `mutation CreateDocumentMutation($document: DocumentInput!, $signers: [SignerInput!]!, $file: Upload!) {
+    createDocument(document: $document, signers: $signers, file: $file) {
+      id
+      name
+      signatures {
+        public_id
+        name
+        email
+        link { short_link }
+      }
+    }
+  }`;
+
+  var variables = {
+    document: { name: nomeDoc, sandbox: !!sandbox },
+    signers: [{ email: emailSignatario, action: 'SIGN', name: nomeSignatario || undefined }],
+    file: null
+  };
+
+  // Gera arquivo HTML como Blob
+  var blob = new Blob([htmlConteudo], { type: 'text/html' });
+  var file = new File([blob], nomeDoc.replace(/\s+/g, '_') + '.html', { type: 'text/html' });
+
+  var formData = new FormData();
+  formData.append('operations', JSON.stringify({ query: query, variables: variables }));
+  formData.append('map', JSON.stringify({ file: ['variables.file'] }));
+  formData.append('file', file);
+
+  return fetch(ENDPOINT, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + AUTENTIQUE_TOKEN },
+    body: formData
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.errors && data.errors.length) {
+      throw new Error(data.errors[0].message || 'Erro da API Autentique');
+    }
+    var doc = data.data && data.data.createDocument;
+    if (!doc) throw new Error('Resposta inesperada da API Autentique');
+    // Pega o link do primeiro signatário
+    var link = '';
+    if (doc.signatures && doc.signatures[0] && doc.signatures[0].link) {
+      link = doc.signatures[0].link.short_link || '';
+    }
+    return { id: doc.id, name: doc.name, link: link };
+  });
+}
+
+function _exibirSucessoAutentique(link, email, sandbox) {
+  var old = document.getElementById('adq-autentique-modal');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-autentique-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  modal.innerHTML = [
+    '<div style="background:#1e1e1e;border:1px solid #25D366;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">',
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">',
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.12em">✓ Enviado com sucesso!</span>',
+        (sandbox ? '<span style="font-size:0.62rem;font-weight:700;color:#888;background:#222;border:1px solid #555;border-radius:3px;padding:2px 6px;letter-spacing:0.06em;text-transform:uppercase">Sandbox</span>' : ''),
+      '</div>',
+      '<div style="font-size:0.8rem;color:#aaa;margin-bottom:14px;line-height:1.6">',
+        'O contrato foi enviado para assinatura.<br>',
+        'O signatário receberá um e-mail em <strong style="color:#eee">' + escHtml(email) + '</strong>.',
+        (sandbox ? '<br><span style="color:#888;font-size:0.75rem">Documento de teste — será excluído automaticamente.</span>' : ''),
+      '</div>',
+      '<div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">' + escHtml(link) + '</div>',
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">',
+        '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(\'' + link.replace(/'/g, "\\'") + '\');this.textContent=\'Copiado!\'" style="flex:1;min-width:80px;background:#25D366;border:none;color:#111;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Copiar Link</button>',
+        '<a href="' + escHtml(link) + '" target="_blank" onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:transparent;border:1px solid #25D366;color:#25D366;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
+        '<button onclick="document.getElementById(\'adq-autentique-modal\').remove()" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
+      '</div>',
+    '</div>'
+  ].join('');
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+function enviarParaAutentique() {
+  var iframe = document.getElementById('pdf-frame-contrato');
+  if (!iframe || !iframe.srcdoc) {
+    alert('Gere o contrato antes de enviar para assinatura.');
+    return;
+  }
+  _abrirModalAutentique();
 }
 </script>
 </div>
