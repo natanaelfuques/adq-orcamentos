@@ -1746,7 +1746,7 @@ Revestimento</textarea>
   <!-- ÁREA DO PDF GERADO -->
   <div id="preview-area">
     <div class="preview-toolbar">
-      <span>Pré-visualização do orçamento</span>
+      <span id="orc-preview-label" onclick="togglePreviaOrcamento()" style="cursor:pointer;user-select:none">▲ Pré-visualização do orçamento</span>
     </div>
     <iframe id="pdf-frame"></iframe>
     <button class="btn-download" onclick="imprimirPDF()">Imprimir / Baixar PDF</button>
@@ -3892,6 +3892,19 @@ function preencherContratoDados() {
   calcEntrada();
   // Painel permanece aberto — dados limpos só ao clicar X
   document.getElementById('tab-contratante').scrollIntoView({ behavior: 'smooth' });
+}
+
+function togglePreviaOrcamento() {
+  var iframe = document.getElementById('pdf-frame');
+  var label  = document.getElementById('orc-preview-label');
+  if (!iframe) return;
+  if (iframe.style.display === 'none') {
+    iframe.style.display = '';
+    if (label) label.textContent = '▲ Pré-visualização do orçamento';
+  } else {
+    iframe.style.display = 'none';
+    if (label) label.textContent = '▼ Pré-visualização do orçamento';
+  }
 }
 
 function togglePreviaContrato() {
