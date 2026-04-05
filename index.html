@@ -624,6 +624,10 @@
     transition: border-color 0.2s;
   }
   .salvo-card:hover { border-color: #555; }
+  .salvo-card.borda-azul { border: 2px solid #4A90C8 !important; }
+  .salvo-card.borda-azul:hover { border-color: #6aaee0 !important; }
+  .salvo-card.borda-rosa { border: 2px solid #E85CA0 !important; }
+  .salvo-card.borda-rosa:hover { border-color: #f07fba !important; }
   .salvo-card-top {
     display: flex;
     align-items: flex-start;
@@ -1122,6 +1126,12 @@ header {
   transition: border-color 0.2s;
 }
 .nota-card:hover { border-color: #555; }
+.nota-card.borda-azul { border: 2px solid #4A90C8 !important; }
+.nota-card.borda-azul:hover { border-color: #6aaee0 !important; }
+.nota-card.borda-rosa { border: 2px solid #E85CA0 !important; }
+.nota-card.borda-rosa:hover { border-color: #f07fba !important; }
+.ev-painel-card.borda-azul { border: 2px solid #4A90C8 !important; }
+.ev-painel-card.borda-rosa { border: 2px solid #E85CA0 !important; }
 .nota-card-titulo {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 0.95rem;
@@ -4682,8 +4692,8 @@ function renderSalvos(docs) {
     var ref = id.substring(0, 8).toUpperCase();
     var nomeEsc = escHtml(nome);
     var _criadorOrc = doc.criador || '';
-    var _bordaOrc = _criadorOrc === 'natanael.fuques@gmail.com' ? '2px solid #4A90C8' : _criadorOrc === 'karielenmoreira@gmail.com' ? '2px solid #E85CA0' : '1px solid var(--border)';
-    var card = '<div class="salvo-card" style="border:' + _bordaOrc + '">';
+    var _classeBordaOrc = _criadorOrc === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorOrc === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
+    var card = '<div class="salvo-card' + _classeBordaOrc + '">';
     card += '<div class="salvo-card-top">';
     card += '<div style="min-width:0;flex:1"><div class="salvo-card-nome">' + nomeEsc + '</div>';
     card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' · ' : '') + dataFmt + '</div></div>';
@@ -5093,8 +5103,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
       statusClass = ' aprovado'; statusLabel = 'Assinado'; statusClickable = true;
     }
     var _criadorCon = doc.criador || '';
-    var _bordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? '2px solid #4A90C8' : _criadorCon === 'karielenmoreira@gmail.com' ? '2px solid #E85CA0' : '1px solid var(--border)';
-    var card = '<div class="salvo-card" style="border:' + _bordaCon + '">';
+    var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
+    var card = '<div class="salvo-card' + _classeBordaCon + '">';
     card += '<div class="salvo-card-top">';
     card += '<div><div class="salvo-card-nome">' + nomeEsc + '</div>';
     card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div></div>';
@@ -6118,8 +6128,9 @@ function renderNotas() {
     }
 
     var _criadorEv = ev.criador || '';
+    var _classeBordaEv = _criadorEv === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorEv === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
     var _bordaEv = _criadorEv === 'natanael.fuques@gmail.com' ? '2px solid #4A90C8' : _criadorEv === 'karielenmoreira@gmail.com' ? '2px solid #E85CA0' : '1px solid var(--border)';
-    var card = '<div class="ev-painel-card" data-ev-id="'+id+'" style="background:var(--darker);border:'+_bordaEv+';border-radius:6px;padding:12px 16px;margin-bottom:8px">';
+    var card = '<div class="ev-painel-card' + _classeBordaEv + '" data-ev-id="'+id+'" style="background:var(--darker);border:'+_bordaEv+';border-radius:6px;padding:12px 16px;margin-bottom:8px">';
 
     // Summary
     card += '<div class="ev-painel-summary" data-ev-toggle="'+id+'" style="display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer">';
@@ -6197,8 +6208,8 @@ function renderNotas() {
     var dataFmt   = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
     var semTitulo = !tituloRaw;
     var _criadorNota = doc.criador || '';
-    var _bordaNota = _criadorNota === 'natanael.fuques@gmail.com' ? '2px solid #4A90C8' : _criadorNota === 'karielenmoreira@gmail.com' ? '2px solid #E85CA0' : '1px solid var(--border)';
-    var card = '<div class="nota-card' + (semTitulo ? ' nota-sem-titulo' : '') + '" style="border:' + _bordaNota + '">';
+    var _classeBordaNota = _criadorNota === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorNota === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
+    var card = '<div class="nota-card' + (semTitulo ? ' nota-sem-titulo' : '') + _classeBordaNota + '">';
     if (semTitulo) {
       card += '<div class="nota-card-titulo nota-card-titulo--vazio" aria-hidden="true"></div>';
     } else {
