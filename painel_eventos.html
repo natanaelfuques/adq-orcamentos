@@ -318,7 +318,7 @@ header {
 /* Collapsed summary row */
 .card-summary {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
   cursor: pointer;
@@ -329,6 +329,7 @@ header {
   align-items: center;
   gap: 10px;
   min-width: 0;
+  flex: 1;
 }
 
 .card-evento {
@@ -337,9 +338,8 @@ header {
   font-weight: 700;
   color: var(--text);
   letter-spacing: 0.03em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .card-data-badge {
