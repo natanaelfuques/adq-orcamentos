@@ -6513,15 +6513,23 @@ function _abrirModalEditarNota(nota) {
       '<input id="nota-edit-titulo" type="text" value="' + escHtml(nota.titulo || '') + '" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
     '</div>' +
 
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">' +
-      '<div>' +
-        '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Data do Evento</label>' +
-        '<input id="nota-edit-data" type="date" value="' + escHtml(nota.ev_data || '') + '" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+    '<div style="margin-bottom:10px">' +
+      '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Data &amp; Horário</label>' +
+      '<div style="display:flex;gap:6px;align-items:center">' +
+        '<input id="nota-edit-data" type="date" value="' + escHtml(nota.ev_data || '') + '" style="flex:1;min-width:0;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 8px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0">' +
+          '<span style="font-size:0.55rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.06em;line-height:1">Início</span>' +
+          '<input id="nota-edit-inicio" type="time" value="' + escHtml(nota.ev_inicio || '') + '" style="width:78px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 6px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0">' +
+          '<span style="font-size:0.55rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.06em;line-height:1">Término</span>' +
+          '<input id="nota-edit-fim" type="time" value="' + escHtml(nota.ev_fim || '') + '" style="width:78px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 6px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '</div>' +
       '</div>' +
-      '<div>' +
-        '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Local</label>' +
-        '<input id="nota-edit-local" type="text" value="' + escHtml(nota.ev_local || '') + '" placeholder="Ex: Salão Espaço Nobre" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
-      '</div>' +
+    '</div>' +
+    '<div style="margin-bottom:14px">' +
+      '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Local</label>' +
+      '<input id="nota-edit-local" type="text" value="' + escHtml(nota.ev_local || '') + '" placeholder="Ex: Salão Espaço Nobre" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
     '</div>' +
 
     '<div style="margin-bottom:12px">' +
@@ -6534,7 +6542,7 @@ function _abrirModalEditarNota(nota) {
     '</div>' +
 
     '<div style="display:flex;gap:8px;margin-top:16px">' +
-      '<button onclick="_salvarEdicaoNota(\'' + nota.id + '\')" style="flex:1;background:#C8A94A;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Salvar</button>' +
+      '<button onclick="_autoAddItemNota();_salvarEdicaoNota(\'' + nota.id + '\')" style="flex:1;background:#C8A94A;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Salvar</button>' +
       '<button onclick="document.getElementById(\'nota-edit-modal\').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
     '</div>' +
   '</div>';
@@ -6545,6 +6553,12 @@ function _abrirModalEditarNota(nota) {
     var inp = document.getElementById('nota-edit-titulo');
     if (inp) inp.focus();
   }, 60);
+}
+
+
+function _autoAddItemNota() {
+  var inp = document.getElementById("nota-edit-novo-item");
+  if (inp && inp.value.trim()) _adicionarItemNota();
 }
 
 function _adicionarItemNota() {
@@ -6567,7 +6581,9 @@ function _adicionarItemNota() {
 function _salvarEdicaoNota(id) {
   var titulo  = (document.getElementById('nota-edit-titulo') || {}).value || '';
   var evData  = (document.getElementById('nota-edit-data')   || {}).value || '';
-  var evLocal = (document.getElementById('nota-edit-local')  || {}).value || '';
+  var evLocal  = (document.getElementById('nota-edit-local')  || {}).value || '';
+  var evInicio = (document.getElementById('nota-edit-inicio') || {}).value || '';
+  var evFim    = (document.getElementById('nota-edit-fim')    || {}).value || '';
   // Coletar itens da lista
   var inputs = document.querySelectorAll('#nota-edit-itens-lista .nota-edit-item-input');
   var itens = [];
@@ -6578,7 +6594,9 @@ function _salvarEdicaoNota(id) {
     texto:    '',
     itens:    itens,
     ev_data:  evData.trim(),
-    ev_local: evLocal.trim()
+    ev_local:  evLocal.trim(),
+    ev_inicio: evInicio.trim(),
+    ev_fim:    evFim.trim()
   };
   db.collection('notas').doc(id).update(updateData).then(function() {
     var modal = document.getElementById('nota-edit-modal');
