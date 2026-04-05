@@ -6098,6 +6098,7 @@ function renderNotas() {
             +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;opacity:0.5"><circle cx="6" cy="6" r="5"/><polyline points="6,3 6,6 8,7.5"/></svg>'
             +'<span style="font-size:0.78rem;color:var(--text);font-weight:600;white-space:nowrap">'+escHtml(horarioInline)+'</span>'
           : '')
+      +(ev.contrato_id ? '<span style="margin-left:auto;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;font-weight:700;color:#444;letter-spacing:0.1em;white-space:nowrap"># '+ev.contrato_id.substring(0,8).toUpperCase()+'</span>' : '')
       +'</div>';
     card += resp + itensHtml;
     // Formulário para adicionar item/obs — layout idêntico ao painel (input + OK lado a lado)
