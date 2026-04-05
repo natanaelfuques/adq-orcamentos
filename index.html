@@ -5074,15 +5074,14 @@ function irParaOrcamentoRef(ref) {
 }
 
 function irParaEventoRef(ref) {
-  // 1. Navegar para aba Salvos > Eventos
+  // 1. Navegar para aba Salvos > Eventos (índice virtual 3)
   if (window._goToVirtual) {
-    window._goToVirtual(1, true);
-    setTimeout(function() { switchSalvosTab('notas'); }, 320);
+    window._goToVirtual(3, true);
   } else {
     switchMain('salvos');
     switchSalvosTab('notas');
   }
-  // 2. Abrir busca e preencher com a referência
+  // 2. Abrir busca e preencher com a referência após a navegação
   setTimeout(function() {
     if (!_buscaAberta) toggleBuscaSalvos();
     var input = document.getElementById('busca-ev-input');
@@ -5091,7 +5090,7 @@ function irParaEventoRef(ref) {
       renderNotas();
       input.focus();
     }
-  }, 420);
+  }, 450);
 }
 
 function renderContratos(docs) {
