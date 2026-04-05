@@ -6118,9 +6118,20 @@ function renderNotas() {
   });
 
   // Cards de notas manuais (excluir as que já estão no painel — aparecem como cards de evento)
-  var cardsNotas = (_todasNotas || []).filter(function(doc) {
+  var notasFiltradas = (_todasNotas || []).filter(function(doc) {
     return !doc.no_painel;
-  }).map(function(doc) {
+  });
+
+  // Mesclar eventos do painel + notas manuais ordenados por criadoEm desc
+  var tudo = eventosFiltrados.map(function(ev) { return { tipo: 'ev', doc: ev }; })
+    .concat(notasFiltradas.map(function(n) { return { tipo: 'nota', doc: n }; }));
+  tudo.sort(function(a, b) {
+    var ta = a.doc.criadoEm && a.doc.criadoEm.toDate ? a.doc.criadoEm.toDate().getTime() : 0;
+    var tb = b.doc.criadoEm && b.doc.criadoEm.toDate ? b.doc.criadoEm.toDate().getTime() : 0;
+    return tb - ta;
+  });
+
+  var cardsNotas = tudo.filter(function(x) { return x.tipo === 'nota'; }).map(function(x) { var doc = x.doc;
     var id        = doc.id;
     var tituloRaw = (doc.titulo || '').trim();
     var titulo    = escHtml(tituloRaw);
@@ -6159,7 +6170,15 @@ function renderNotas() {
     return card;
   });
 
-  var todos = cardsContratos.concat(cardsNotas);
+  // Montar lookup de HTML por id para preservar a lógica existente de cada tipo
+  var evHtmlById = {};
+  eventosFiltrados.forEach(function(ev, i) { evHtmlById[ev.id] = cardsContratos[i]; });
+  var notaHtmlList = cardsNotas.slice();
+  var notaHtmlIdx = 0;
+  var todos = tudo.map(function(item) {
+    if (item.tipo === 'ev') return evHtmlById[item.doc.id] || '';
+    return notaHtmlList[notaHtmlIdx++] || '';
+  });
   if (!todos.length) {
     lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum evento ainda.</div>';
   } else {
