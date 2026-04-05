@@ -6178,7 +6178,7 @@ function renderNotas() {
       +'</button>';
     // Botão Remover do painel — action diferente para notas vs contratos
     if (ev.nota_id) {
-      card += '<div style="margin-top:8px"><button class="btn-salvo no-painel" data-action="painel-nota" data-id="'+escHtml(ev.nota_id)+'" data-no-painel="1" title="Remover do painel" style="width:100%">Remover do painel</button></div>';
+      card += '<div style="margin-top:8px"><button class="btn-salvo no-painel" data-action="painel-nota" data-id="'+escHtml(ev.nota_id)+'" data-ev-id="'+escHtml(id)+'" data-no-painel="1" title="Remover do painel" style="width:100%">Remover do painel</button></div>';
     } else {
       card += '<div style="margin-top:8px"><button class="btn-salvo no-painel" data-action="remover-ev-painel" data-id="'+id+'" data-contrato-id="'+escHtml(ev.id)+'" title="Remover do painel" style="width:100%">Remover do painel</button></div>';
     }
@@ -6493,10 +6493,15 @@ function handleNotasClick(e) {
     var jaNoPainel = btn.getAttribute('data-no-painel') === '1';
     if (jaNoPainel) {
       // Remover do painel
+      var evId = btn.getAttribute('data-ev-id') || '';
       db.collection('notas').doc(id).get().then(function(snap) {
-        if (!snap.exists) return;
+        if (!snap.exists) {
+          // Nota não existe mais — deletar direto o doc do eventos_campo
+          var p = evId ? db.collection('eventos_campo').doc(evId).delete() : Promise.resolve();
+          return p;
+        }
         var d = snap.data();
-        var painelId = d.painel_id || null;
+        var painelId = d.painel_id || evId || null;
         var removerPromise = painelId
           ? db.collection('eventos_campo').doc(painelId).delete()
           : Promise.resolve();
@@ -6536,8 +6541,8 @@ function handleNotasClick(e) {
           itens_extras:   [],
           etapa:          'eventos',
           nota_id:        id,
-          criador:        nota.criador || '',
-          criadoEm:       firebase.firestore.FieldValue.serverTimestamp()
+          criadoEm:       firebase.firestore.FieldValue.serverTimestamp(),
+          criador:        nota.criador || ''
         });
       }).then(function(docRef) {
         return db.collection('notas').doc(id).update({ no_painel: true, painel_id: docRef.id });
