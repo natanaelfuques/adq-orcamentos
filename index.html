@@ -6111,8 +6111,12 @@ function renderNotas() {
       +'<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>'
       +'Adicionar item'
       +'</button>';
-    // Botão Remover do painel
-    card += '<div style="margin-top:8px"><button class="btn-salvo no-painel" data-action="remover-ev-painel" data-id="'+id+'" data-contrato-id="'+escHtml(ev.id)+'" title="Remover do painel" style="width:100%">Remover do painel</button></div>';
+    // Botão Remover do painel — action diferente para notas vs contratos
+    if (ev.nota_id) {
+      card += '<div style="margin-top:8px"><button class="btn-salvo no-painel" data-action="painel-nota" data-id="'+escHtml(ev.nota_id)+'" data-no-painel="1" title="Remover do painel" style="width:100%">Remover do painel</button></div>';
+    } else {
+      card += '<div style="margin-top:8px"><button class="btn-salvo no-painel" data-action="remover-ev-painel" data-id="'+id+'" data-contrato-id="'+escHtml(ev.id)+'" title="Remover do painel" style="width:100%">Remover do painel</button></div>';
+    }
     card += '</div></div></div>'; // fim body-inner / body / card
     return card;
   });
