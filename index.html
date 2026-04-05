@@ -677,6 +677,8 @@
   .btn-salvo.danger:hover { border-color: #e55; color: #e55; }
   .btn-salvo.no-painel { border-color: #7B22B8; color: #7B22B8; background: rgba(123,34,184,0.10); }
   .btn-salvo.no-painel:hover { background: rgba(123,34,184,0.22); }
+  .btn-salvo[data-action="painel-nota"]:hover,
+  .btn-salvo[data-action="enviar-painel"]:hover { border-color: #7B22B8; color: #7B22B8; }
   .btn-salvo.primary { border-color: #4A90C8; color: #4A90C8; }
   .salvo-status {
     display: inline-flex;
@@ -6553,18 +6555,18 @@ function _abrirModalEditarNota(nota) {
 
     '<div style="margin-bottom:10px">' +
       '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Data &amp; Horário</label>' +
-      '<div style="display:flex;gap:6px;align-items:flex-end">' +
+      '<div style="display:flex;gap:4px;align-items:flex-end">' +
         '<div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">' +
           '<span style="font-size:0.55rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.06em;line-height:1">Data</span>' +
-          '<input id="nota-edit-data" type="date" value="' + escHtml(nota.ev_data || '') + '" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 6px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+          '<input id="nota-edit-data" type="date" value="' + escHtml(nota.ev_data || '') + '" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.78rem;padding:7px 4px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
         '</div>' +
         '<div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">' +
           '<span style="font-size:0.55rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.06em;line-height:1;text-align:center">Início</span>' +
-          '<input id="nota-edit-inicio" type="time" value="' + escHtml(nota.ev_inicio || '') + '" style="width:68px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 4px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+          '<input id="nota-edit-inicio" type="time" value="' + escHtml(nota.ev_inicio || '') + '" style="width:62px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.78rem;padding:7px 3px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
         '</div>' +
         '<div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">' +
           '<span style="font-size:0.55rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.06em;line-height:1;text-align:center">Término</span>' +
-          '<input id="nota-edit-fim" type="time" value="' + escHtml(nota.ev_fim || '') + '" style="width:68px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 4px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+          '<input id="nota-edit-fim" type="time" value="' + escHtml(nota.ev_fim || '') + '" style="width:62px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.78rem;padding:7px 3px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
         '</div>' +
       '</div>' +
     '</div>' +
