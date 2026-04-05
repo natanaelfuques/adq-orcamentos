@@ -1364,7 +1364,7 @@ function buildCard(ev, past, col) {
           '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') +
             (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
           '</span>' +
-          (ev.id ? '<span style="font-size:0.65rem;font-weight:700;color:var(--muted);letter-spacing:0.05em;flex-shrink:0;margin-left:8px"># ' + esc(ev.id.slice(-8).toUpperCase()) + '</span>' : '') +
+          (ev.contrato_id || ev.id ? '<span style="font-size:0.65rem;font-weight:700;color:var(--muted);letter-spacing:0.05em;flex-shrink:0;margin-left:8px"># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>' : '') +
         '</div>' +
         resp + itens +
       '</div>' +
