@@ -5246,7 +5246,7 @@ function toggleBuscaSalvos() {
     if (orcInput) { orcInput.value = ''; }
     if (conInput) { conInput.value = ''; }
     setFiltroOrc('todos');
-    setFiltroConStatus('todos');
+    setFiltroConStatus('sem-painel');
   }
   atualizarAreaBusca();
 }
@@ -5904,13 +5904,49 @@ function renderNotas() {
   var lista = document.getElementById('notas-lista');
   if (!lista) return;
 
+  // Preserve which ev-painel cards are currently expanded
+  var expandedEvIds = [];
+  lista.querySelectorAll('.ev-painel-body').forEach(function(body) {
+    if (body.style.maxHeight && body.style.maxHeight !== '0px') {
+      expandedEvIds.push(body.getAttribute('data-ev-body'));
+    }
+  });
+
   // Cards de contratos no painel (vêm de eventos_campo sem nota_id) — design idêntico ao painel
   var cardsContratos = (_todosEventosCampo || []).map(function(ev) {
     var id     = ev.id;
     var etapa  = ev.etapa || 'eventos';
     var etapaColor = etapa === 'andamento' ? '#4A90C8' : etapa === 'concluido' ? '#4AC87A' : 'var(--gold)';
-    var badgeBg    = etapa === 'andamento' ? 'rgba(74,144,200,0.12)' : etapa === 'concluido' ? 'rgba(74,200,122,0.12)' : 'rgba(200,169,74,0.15)';
-    var etapaLabel = etapa === 'andamento' ? 'Em andamento' : etapa === 'concluido' ? 'Concluído' : 'No painel';
+    var etapaLabel = etapa === 'andamento' ? 'Em Andamento' : etapa === 'concluido' ? 'Concluído' : 'Eventos';
+
+    // Cor do badge de data igual ao painel (buildCard): por coluna e proximidade
+    var badgeDateColor = '';
+    var badgeDateBg = '';
+    if (etapa === 'andamento') {
+      badgeDateColor = '#4A90C8'; badgeDateBg = 'rgba(74,144,200,0.12)';
+    } else if (etapa === 'concluido') {
+      badgeDateColor = '#4AC87A'; badgeDateBg = 'rgba(74,200,122,0.12)';
+    } else {
+      // coluna 'eventos' — cor por proximidade
+      if (ev.ev_data) {
+        var _parts = ev.ev_data.split('-');
+        var _evDate = new Date(parseInt(_parts[0]), parseInt(_parts[1])-1, parseInt(_parts[2]));
+        var _hoje = new Date(); _hoje.setHours(0,0,0,0);
+        var _diff = Math.round((_evDate - _hoje) / 86400000);
+        if (_diff < 0) {
+          badgeDateColor = '#555'; badgeDateBg = 'rgba(85,85,85,0.15)'; // passado
+        } else if (_diff <= 1) {
+          badgeDateColor = '#e05c5c'; badgeDateBg = 'rgba(224,92,92,0.15)'; // vermelho
+        } else if (_diff < 7) {
+          badgeDateColor = '#4A90C8'; badgeDateBg = 'rgba(74,144,200,0.15)'; // azul
+        } else {
+          badgeDateColor = '#aaa'; badgeDateBg = 'rgba(170,170,170,0.12)'; // cinza
+        }
+      } else {
+        badgeDateColor = 'var(--gold)'; badgeDateBg = 'rgba(200,169,74,0.15)';
+      }
+    }
+    var badgeBg = badgeDateBg; // manter compatibilidade com uso posterior
 
     var dataEv = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
 
@@ -5968,7 +6004,7 @@ function renderNotas() {
     // Coluna esquerda: badge etapa (acima) + badge data (abaixo)
     card += '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex-shrink:0">';
     card += '<span style="font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:'+etapaColor+';border:1px solid '+etapaColor+';border-radius:3px;padding:2px 6px;white-space:nowrap">'+etapaLabel+'</span>';
-    if (dataEv) card += '<div style="font-size:0.65rem;font-weight:700;color:'+etapaColor+';background:'+badgeBg+';padding:3px 7px;border-radius:3px;white-space:nowrap;letter-spacing:0.06em">'+dataEv+'</div>';
+    if (dataEv) card += '<div style="font-size:0.65rem;font-weight:700;color:'+badgeDateColor+';background:'+badgeDateBg+';padding:3px 7px;border-radius:3px;white-space:nowrap;letter-spacing:0.06em">'+dataEv+'</div>';
     card += '</div>';
     // Nome + cliente
     card += '<div style="min-width:0">'
@@ -5993,13 +6029,11 @@ function renderNotas() {
           : '')
       +'</div>';
     card += resp + itensHtml;
-    // Formulário para adicionar item/obs
-    card += '<div id="add-form-ev-'+id+'" style="display:none;margin-top:8px;display:none">'
-      +'<input class="ev-add-item-input" data-ev-id="'+id+'" placeholder="Item ou obs: observação..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:\'Barlow\',sans-serif;font-size:0.8rem;padding:5px 8px;outline:none;box-sizing:border-box"/>'
-      +'<div style="display:flex;gap:6px;margin-top:6px">'
-      +'<button class="btn-salvo" data-action="add-ev-item-ok" data-id="'+id+'" style="flex:1">OK</button>'
-      +'<button class="btn-salvo" data-action="add-ev-item-cancel" data-id="'+id+'">×</button>'
-      +'</div>'
+    // Formulário para adicionar item/obs — layout idêntico ao painel (input + OK lado a lado)
+    card += '<div id="add-form-ev-'+id+'" style="display:none;gap:6px;margin-top:8px;flex-direction:row;align-items:center" class="add-item-form-ev">'
+      +'<input class="ev-add-item-input" data-ev-id="'+id+'" placeholder="Item ou obs: observação..." style="flex:1;background:#2a2a2a;border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:\'Barlow\',sans-serif;font-size:0.8rem;padding:5px 8px;outline:none;box-sizing:border-box" onfocus="this.style.borderColor=\'var(--gold)\'" onblur="this.style.borderColor=\'var(--border)\'"/>'
+      +'<button class="btn-add-item-ev-ok" data-action="add-ev-item-ok" data-id="'+id+'" style="background:var(--gold);color:#111;border:none;border-radius:4px;padding:5px 10px;font-weight:700;font-size:0.75rem;cursor:pointer;font-family:\'Barlow\',sans-serif;white-space:nowrap">OK</button>'
+      +'<button data-action="add-ev-item-cancel" data-id="'+id+'" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:5px 8px;cursor:pointer;font-size:0.9rem;line-height:1">×</button>'
       +'</div>';
     card += '<button class="btn-salvo" data-action="add-ev-item" data-id="'+id+'" style="margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:5px;border-style:dashed">'
       +'<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>'
@@ -6056,9 +6090,18 @@ function renderNotas() {
     lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum evento ainda.</div>';
   } else {
     lista.innerHTML = todos.join('');
+    // Restore expanded state for cards that were open before re-render
+    expandedEvIds.forEach(function(evId) {
+      var body = lista.querySelector('[data-ev-body="' + evId + '"]');
+      var icon = lista.querySelector('[data-ev-icon="' + evId + '"]');
+      if (body) { body.style.maxHeight = '2000px'; body.style.opacity = '1'; }
+      if (icon) icon.style.transform = 'rotate(180deg)';
+    });
     // Listeners de toggle (expandir/colapsar) para os cards do painel
     lista.querySelectorAll('.ev-painel-summary').forEach(function(summary) {
-      summary.addEventListener('click', function() {
+      summary.addEventListener('click', function(e) {
+        // Don't collapse when clicking checklist items or action buttons
+        if (e.target.closest('[data-action]')) return;
         var evId = summary.getAttribute('data-ev-toggle');
         var body = lista.querySelector('[data-ev-body="' + evId + '"]');
         var icon = lista.querySelector('[data-ev-icon="' + evId + '"]');
@@ -6141,6 +6184,20 @@ function handleNotasClick(e) {
     var itensOk = Object.assign({}, ev.itens_ok || {});
     itensOk[idx] = !itensOk[idx];
     ev.itens_ok = itensOk;
+    // Update DOM directly (avoid full re-render that collapses the card)
+    var done = itensOk[idx];
+    var chkEl = btn; // btn IS the check div
+    if (done) {
+      chkEl.style.background = '#4AC87A';
+      chkEl.style.borderColor = '#4AC87A';
+      chkEl.innerHTML = '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>';
+    } else {
+      chkEl.style.background = '';
+      chkEl.style.borderColor = '';
+      chkEl.innerHTML = '';
+    }
+    var textEl = chkEl.nextElementSibling;
+    if (textEl) textEl.style.opacity = done ? '0.5' : '';
     db.collection('eventos_campo').doc(id).update({ itens_ok: itensOk })
       .catch(function(e) { console.warn('Erro ao marcar ev item:', e); });
 
@@ -6150,7 +6207,7 @@ function handleNotasClick(e) {
     var form = lista2.querySelector('#add-form-ev-' + id);
     var addBtn = lista2.querySelector('[data-action="add-ev-item"][data-id="' + id + '"]');
     if (!form) return;
-    form.style.display = 'block';
+    form.style.display = 'flex';
     if (addBtn) addBtn.style.display = 'none';
     var inp = form.querySelector('.ev-add-item-input');
     if (inp) { inp.value = ''; setTimeout(function(){ inp.focus(); }, 50); }
