@@ -5717,6 +5717,8 @@ function salvarESolicitarLink() {
 
   var dados = coletarDadosOrcamento();
   dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
+  var _userAtualLink = window._currentUser || firebase.auth().currentUser;
+  if (_userAtualLink) dados.criador = _userAtualLink.email;
 
   db.collection('orcamentos').add(dados)
     .then(function(docRef) {
@@ -6534,6 +6536,7 @@ function handleNotasClick(e) {
           itens_extras:   [],
           etapa:          'eventos',
           nota_id:        id,
+          criador:        nota.criador || '',
           criadoEm:       firebase.firestore.FieldValue.serverTimestamp()
         });
       }).then(function(docRef) {
