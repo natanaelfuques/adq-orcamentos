@@ -1991,11 +1991,11 @@ Revestimento</textarea>
     </div>
   </div>
 
-  <button class="btn-gerar" onclick="gerarContratoToggle()">Gerar Contrato</button>
+  <button class="btn-gerar" onclick="gerarContrato()">Gerar Contrato</button>
 
   <div id="preview-area-contrato" style="display:none;margin-top:24px">
     <div class="preview-toolbar">
-      <span>Pré-visualização do contrato</span>
+      <span id="contrato-preview-label" onclick="togglePreviaContrato()" style="cursor:pointer;user-select:none">▲ Pré-visualização do contrato</span>
     </div>
     <iframe id="pdf-frame-contrato" style="width:100%;height:820px;border:1px solid var(--border);border-radius:4px"></iframe>
     <button class="btn-download" onclick="imprimirContrato()">Imprimir / Baixar PDF</button>
@@ -3894,17 +3894,22 @@ function preencherContratoDados() {
   document.getElementById('tab-contratante').scrollIntoView({ behavior: 'smooth' });
 }
 
-function gerarContratoToggle() {
+function togglePreviaContrato() {
+  var iframe  = document.getElementById('pdf-frame-contrato');
+  var label   = document.getElementById('contrato-preview-label');
+  if (!iframe) return;
+  var hidden = iframe.style.display === 'none';
+  // toggle iframe + botões de ação
   var area = document.getElementById('preview-area-contrato');
-  var btn  = document.querySelector('.btn-gerar');
-  if (area && area.style.display !== 'none') {
-    // já visível → ocultar
-    area.style.display = 'none';
-    if (btn) btn.textContent = 'Gerar Contrato';
+  var btns = area ? area.querySelectorAll('.btn-download') : [];
+  if (hidden) {
+    iframe.style.display = '';
+    btns.forEach(function(b){ b.style.display = ''; });
+    if (label) label.textContent = '▲ Pré-visualização do contrato';
   } else {
-    // gerar e mostrar
-    gerarContrato();
-    if (btn) btn.textContent = 'Ocultar Prévia';
+    iframe.style.display = 'none';
+    btns.forEach(function(b){ b.style.display = 'none'; });
+    if (label) label.textContent = '▼ Pré-visualização do contrato';
   }
 }
 
@@ -3939,8 +3944,6 @@ function gerarContrato() {
   iframe.srcdoc = contratoHTML;
   document.getElementById('preview-area-contrato').style.display = 'block';
   document.getElementById('preview-area-contrato').scrollIntoView({ behavior: 'smooth' });
-  var _btn = document.querySelector('.btn-gerar');
-  if (_btn) _btn.textContent = 'Ocultar Prévia';
   window._printContratoHTML = contratoHTML;
 }
 
