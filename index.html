@@ -5861,32 +5861,93 @@ document.addEventListener('click', function(e) {
 
 // ═══ NOTAS — LISTENER FIRESTORE E RENDER ═══
 
+var _todasNotas = [];
+var _todosEventosCampo = []; // contratos enviados ao painel
+
 function iniciarListenerNotas() {
   if (!db) return;
+
+  // Listener de notas (anotações manuais)
   db.collection('notas')
     .orderBy('criadoEm', 'desc')
     .onSnapshot(function(snap) {
       var docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({ id: doc.id }, doc.data())); });
       _todasNotas = docs;
-      renderNotas(docs);
+      renderNotas();
       window._countNotas = docs.length;
       if (_salvosTab === 'notas') atualizarContadorSalvos();
     }, function(err) {
       console.warn('[AdQ] Notas listener erro:', err);
     });
+
+  // Listener de eventos_campo — contratos enviados ao painel (nota_id ausente = veio de contrato)
+  db.collection('eventos_campo')
+    .orderBy('criadoEm', 'desc')
+    .onSnapshot(function(snap) {
+      var docs = [];
+      snap.forEach(function(doc) {
+        var d = Object.assign({ id: doc.id }, doc.data());
+        if (!d.nota_id) docs.push(d); // só contratos (notas já aparecem pelo listener acima)
+      });
+      _todosEventosCampo = docs;
+      renderNotas();
+    }, function(err) {
+      console.warn('[AdQ] EventosCampo listener erro:', err);
+    });
 }
 
-var _todasNotas = [];
-
-function renderNotas(docs) {
+function renderNotas() {
   var lista = document.getElementById('notas-lista');
   if (!lista) return;
-  if (!docs.length) {
-    lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhuma anotação ainda.</div>';
-    return;
-  }
-  lista.innerHTML = docs.map(function(doc) {
+
+  // Cards de contratos no painel (vêm de eventos_campo sem nota_id)
+  var cardsContratos = (_todosEventosCampo || []).map(function(ev) {
+    var id       = ev.id;
+    var nome     = escHtml(ev.ev_nome || 'Contrato');
+    var local    = ev.ev_local ? escHtml(ev.ev_local) : '';
+    var dataEv   = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
+    var itens    = Array.isArray(ev.servicos) ? ev.servicos : [];
+    var itensOk  = ev.itens_ok || {};
+    var etapa    = ev.etapa || 'eventos';
+    var etapaLabels = { eventos: 'No painel', andamento: 'Em andamento', concluido: 'Concluído' };
+    var etapaColors = { eventos: 'var(--gold)', andamento: '#4A90C8', concluido: '#4AC87A' };
+    var etapaLabel = etapaLabels[etapa] || etapa;
+    var etapaColor = etapaColors[etapa] || 'var(--muted)';
+
+    var card = '<div class="nota-card">';
+    card += '<div class="nota-card-titulo" style="display:flex;align-items:center;justify-content:space-between;gap:8px">';
+    card += '<span>' + nome + '</span>';
+    card += '<span style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:' + etapaColor + ';border:1px solid ' + etapaColor + ';border-radius:3px;padding:2px 6px;white-space:nowrap">' + etapaLabel + '</span>';
+    card += '</div>';
+    if (local || dataEv) {
+      card += '<div class="nota-card-meta" style="margin-top:4px">';
+      if (local) card += escHtml(local);
+      if (local && dataEv) card += ' · ';
+      if (dataEv) card += dataEv;
+      card += '</div>';
+    }
+    if (itens.length) {
+      card += '<div class="nota-card-itens">';
+      itens.forEach(function(item, i) {
+        var done = !!itensOk[i];
+        var isObs = item.toLowerCase().indexOf('obs:') === 0 || item.toLowerCase().indexOf('obs.') === 0;
+        card += '<div class="nota-item-row' + (done && !isObs ? ' nota-item-done' : '') + '" style="' + (isObs ? 'align-items:flex-start' : '') + '">';
+        if (!isObs) card += '<div class="nota-item-check' + (done ? ' checked' : '') + '" data-action="check-ev" data-id="' + id + '" data-idx="' + i + '"></div>';
+        card += '<span class="nota-item-text"' + (isObs ? ' style="color:var(--gold);flex:1"' : '') + '>' + escHtml(item) + '</span>';
+        card += '</div>';
+      });
+      card += '</div>';
+    }
+    card += '<div class="salvo-card-actions">';
+    card += '<button class="btn-salvo no-painel" data-action="remover-ev-painel" data-id="' + id + '" data-contrato-id="' + escHtml(ev.id) + '" title="Remover do painel">Painel</button>';
+    card += '</div>';
+    card += '</div>';
+    return card;
+  });
+
+  // Cards de notas manuais
+  var cardsNotas = (_todasNotas || []).map(function(doc) {
     var id        = doc.id;
     var tituloRaw = (doc.titulo || '').trim();
     var titulo    = escHtml(tituloRaw);
@@ -5923,7 +5984,14 @@ function renderNotas(docs) {
     card += '</div>';
     card += '</div>';
     return card;
-  }).join('');
+  });
+
+  var todos = cardsContratos.concat(cardsNotas);
+  if (!todos.length) {
+    lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum evento ainda.</div>';
+  } else {
+    lista.innerHTML = todos.join('');
+  }
 }
 
 function handleNotasClick(e) {
@@ -5962,6 +6030,34 @@ function handleNotasClick(e) {
       db.collection('eventos_campo').doc(painelId).update({ itens_ok: itensOk })
         .catch(function(e) { console.warn('Erro ao sincronizar checklist no painel:', e); });
     }
+
+  } else if (action === 'check-ev') {
+    // Marcar/desmarcar checklist de contrato no painel
+    if (!db) return;
+    var idx = parseInt(btn.getAttribute('data-idx'));
+    var ev = _todosEventosCampo.find(function(e) { return e.id === id; });
+    if (!ev) return;
+    var itensOk = Object.assign({}, ev.itens_ok || {});
+    itensOk[idx] = !itensOk[idx];
+    ev.itens_ok = itensOk;
+    db.collection('eventos_campo').doc(id).update({ itens_ok: itensOk })
+      .catch(function(e) { console.warn('Erro ao marcar ev item:', e); });
+
+  } else if (action === 'remover-ev-painel') {
+    // Remover contrato do painel (de dentro da aba Eventos)
+    if (!db) return;
+    var contratoId = btn.getAttribute('data-contrato-id') || id;
+    db.collection('eventos_campo').doc(contratoId).delete().then(function() {
+      // Atualizar botão Painel no card de contratos se estiver visível
+      delete _etapaMapContratos[contratoId];
+      filtrarContratos();
+      var painelBtnCon = document.querySelector('[data-action="enviar-painel"][data-id="' + contratoId + '"]');
+      if (painelBtnCon) {
+        painelBtnCon.classList.remove('no-painel');
+        painelBtnCon.setAttribute('data-no-painel', '0');
+        painelBtnCon.title = 'Enviar para o painel';
+      }
+    }).catch(function(e) { alert('Erro ao remover do painel: ' + e.message); });
 
   } else if (action === 'painel-nota') {
     if (!db) return;
