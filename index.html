@@ -1804,6 +1804,7 @@ Revestimento</textarea>
     </div>
     <!-- Área de busca eventos -->
     <div class="salvos-search-area" id="busca-ev-area">
+      <input class="salvos-search-input" id="busca-ev-input" placeholder="Buscar por nome, data ou referência..." oninput="renderNotas()" />
       <div class="salvos-filter-btns">
         <button class="salvos-filter-btn active" id="filtro-ev-todos" onclick="setFiltroEv('todos')">Todos</button>
         <button class="salvos-filter-btn" id="filtro-ev-eventos" onclick="setFiltroEv('eventos')">Eventos</button>
@@ -5030,6 +5031,23 @@ function iniciarListenerContratos() {
       if (cardEl) {
         var monRow = cardEl.querySelector('.salvo-montagem-row');
         if (monRow) monRow.style.display = (aprovado && etapa !== 'concluido') ? '' : 'none';
+        // Atualizar cor e clique da referência do contrato
+        var refBtn = cardEl.querySelector('[data-ref-contrato]');
+        if (refBtn) {
+          var temEv = change.type !== 'removed' && !!etapa;
+          refBtn.style.color = temEv ? '#aaa' : '#444';
+          refBtn.style.cursor = temEv ? 'pointer' : 'default';
+          if (temEv) {
+            var refVal = refBtn.getAttribute('data-ref-contrato');
+            refBtn.onclick = function() { irParaEventoRef(refVal); };
+            refBtn.onmouseover = function() { this.style.color = '#C8A94A'; };
+            refBtn.onmouseout  = function() { this.style.color = '#aaa'; };
+          } else {
+            refBtn.onclick = null;
+            refBtn.onmouseover = null;
+            refBtn.onmouseout  = null;
+          }
+        }
       }
     });
   });
@@ -5053,6 +5071,27 @@ function irParaOrcamentoRef(ref) {
       input.focus();
     }
   }, 350);
+}
+
+function irParaEventoRef(ref) {
+  // 1. Navegar para aba Salvos > Eventos
+  if (window._goToVirtual) {
+    window._goToVirtual(1, true);
+    setTimeout(function() { switchSalvosTab('notas'); }, 320);
+  } else {
+    switchMain('salvos');
+    switchSalvosTab('notas');
+  }
+  // 2. Abrir busca e preencher com a referência
+  setTimeout(function() {
+    if (!_buscaAberta) toggleBuscaSalvos();
+    var input = document.getElementById('busca-ev-input');
+    if (input) {
+      input.value = ref;
+      renderNotas();
+      input.focus();
+    }
+  }, 420);
 }
 
 function renderContratos(docs) {
@@ -5129,11 +5168,11 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<span class="salvo-status status-readonly' + statusClass + '" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '">' + statusLabel + '</span>';
     card += '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">';
     if (doc.orc_ref) card += '<button onclick="irParaOrcamentoRef(\'' + escHtml(doc.orc_ref) + '\')" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#aaa;letter-spacing:0.1em;background:transparent;border:none;cursor:pointer;padding:0;transition:color 0.15s" title="Ver orçamento de origem" onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"># ' + escHtml(doc.orc_ref) + '</button>';
-    var linkAss = doc.link_assinatura || '';
-    var refColor = linkAss ? '#aaa' : '#444';
-    var refHover = '#C8A94A';
-    var refTitle = linkAss ? 'Link de assinatura salvo — clique para abrir ou trocar' : 'Colar link de assinatura';
-    card += '<button onclick="abrirModalLinkAssinatura(\'' + id + '\', this)" data-link="' + escHtml(linkAss) + '" title="' + refTitle + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + refColor + ';letter-spacing:0.1em;background:transparent;border:none;cursor:pointer;padding:0;transition:color 0.15s" onmouseover="this.style.color=\'' + refHover + '\'" onmouseout="this.style.color=\'' + refColor + '\'"># ' + ref + '</button>';
+    var _temEvento = !!_etapaMapContratos[id];
+    var refColor = _temEvento ? '#aaa' : '#444';
+    var refCursor = _temEvento ? 'pointer' : 'default';
+    var refOnClick = _temEvento ? 'irParaEventoRef("' + ref + '")' : '';
+    card += '<button' + (_temEvento ? ' onclick="' + refOnClick + '"' : '') + ' data-ref-contrato="' + ref + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + refColor + ';letter-spacing:0.1em;background:transparent;border:none;cursor:' + refCursor + ';padding:0;transition:color 0.15s"' + (_temEvento ? ' onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"' : '') + '># ' + ref + '</button>';
     card += '</span>';
     card += '</div>';
     card += '<div class="salvo-montagem-row" style="' + (aprovado && etapa !== 'concluido' ? '' : 'display:none') + '">';
@@ -6006,9 +6045,15 @@ function renderNotas() {
   });
 
   // Cards de contratos no painel (vêm de eventos_campo sem nota_id) — design idêntico ao painel
+  var termoEv = (document.getElementById('busca-ev-input') ? document.getElementById('busca-ev-input').value.toLowerCase().trim() : '');
   var eventosFiltrados = (_todosEventosCampo || []).filter(function(ev) {
-    if (_filtroEv === 'todos') return true;
-    return (ev.etapa || 'eventos') === _filtroEv;
+    var matchFiltro = _filtroEv === 'todos' || (ev.etapa || 'eventos') === _filtroEv;
+    if (!matchFiltro) return false;
+    if (!termoEv) return true;
+    var nome = (ev.ev_nome || ev.cli_nome || '').toLowerCase();
+    var data = (ev.ev_data || '').split('-').reverse().join('/');
+    var ref = (ev.id || '').substring(0, 8).toLowerCase();
+    return nome.indexOf(termoEv) >= 0 || data.indexOf(termoEv) >= 0 || ref.indexOf(termoEv.replace('#','').trim()) >= 0;
   });
   var cardsContratos = eventosFiltrados.map(function(ev) {
     var id     = ev.id;
@@ -6188,7 +6233,12 @@ function renderNotas() {
 
   // Cards de notas manuais (excluir as que já estão no painel — aparecem como cards de evento)
   var notasFiltradas = (_todasNotas || []).filter(function(doc) {
-    return !doc.no_painel;
+    if (doc.no_painel) return false;
+    if (!termoEv) return true;
+    var nome = (doc.titulo || '').toLowerCase();
+    var data = (doc.ev_data || '').split('-').reverse().join('/');
+    var ref = (doc.id || '').substring(0, 8).toLowerCase();
+    return nome.indexOf(termoEv) >= 0 || data.indexOf(termoEv) >= 0 || ref.indexOf(termoEv.replace('#','').trim()) >= 0;
   });
 
   // Mesclar eventos do painel + notas manuais ordenados por criadoEm desc
@@ -6496,7 +6546,6 @@ function handleNotasClick(e) {
       var evId = btn.getAttribute('data-ev-id') || '';
       db.collection('notas').doc(id).get().then(function(snap) {
         if (!snap.exists) {
-          // Nota não existe mais — deletar direto o doc do eventos_campo
           var p = evId ? db.collection('eventos_campo').doc(evId).delete() : Promise.resolve();
           return p;
         }
