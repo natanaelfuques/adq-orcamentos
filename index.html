@@ -1787,11 +1787,12 @@ Revestimento</textarea>
     <div class="salvos-search-area" id="busca-con-area">
       <input class="salvos-search-input" id="busca-con-input" placeholder="Buscar por nome ou data (dd/mm/aaaa)..." oninput="filtrarContratos()" />
       <div class="salvos-filter-btns">
-        <button class="salvos-filter-btn" id="filtro-con-todos" onclick="setFiltroConStatus('todos')">Todos</button>
+        <button class="salvos-filter-btn" id="filtro-con-sem-painel" onclick="setFiltroConStatus('sem-painel')">- Painel</button>
         <button class="salvos-filter-btn" id="filtro-con-pendente" onclick="setFiltroConStatus('pendente')">Pendentes</button>
         <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
         <button class="salvos-filter-btn" id="filtro-con-andamento" onclick="setFiltroConStatus('andamento')">Em andamento</button>
         <button class="salvos-filter-btn" id="filtro-con-concluido" onclick="setFiltroConStatus('concluido')">Concluídos</button>
+        <button class="salvos-filter-btn" id="filtro-con-todos" onclick="setFiltroConStatus('todos')">Todos</button>
       </div>
     </div>
     <!-- Sub-abas -->
@@ -3046,8 +3047,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var btnOrcTodos = document.getElementById('filtro-orc-todos');
   if (btnOrcTodos) btnOrcTodos.classList.add('active');
-  var btnConTodos = document.getElementById('filtro-con-todos');
-  if (btnConTodos) btnConTodos.classList.add('active');
+  var btnConSemPainel = document.getElementById('filtro-con-sem-painel');
+  if (btnConSemPainel) btnConSemPainel.classList.add('active');
 
   // ── DEEP LINK: ?tab=contratos ──
   (function() {
@@ -5229,7 +5230,7 @@ function baixarContratoJSON(id) {
 
 var _buscaAberta = false;
 var _filtroOrc = 'todos';
-var _filtroConStatus = 'todos';
+var _filtroConStatus = 'sem-painel';
 var _etapaMapContratos = {};
 var _todosOrcamentos = [];
 var _todosContratos = [];
@@ -5305,8 +5306,8 @@ function filtrarContratos() {
     var aprovado = doc.aprovado ? true : false;
     var etapa = _etapaMapContratos[doc.id] || '';
     var noPainel = !!etapa; // se tem etapa, já foi para o painel
-    // Filtro 'todos' mostra apenas contratos que ainda NÃO foram ao painel
-    var matchStatus = (_filtroConStatus === 'todos' && !noPainel) ||
+    var matchStatus = (_filtroConStatus === 'todos') ||
+      (_filtroConStatus === 'sem-painel' && !noPainel) ||
       (_filtroConStatus === 'pendente' && !aprovado && !noPainel) ||
       (_filtroConStatus === 'assinado' && aprovado && etapa === 'eventos') ||
       (_filtroConStatus === 'andamento' && etapa === 'andamento') ||
@@ -5959,21 +5960,24 @@ function renderNotas() {
       itensHtml += '</div>';
     }
 
-    var card = '<div class="ev-painel-card" data-ev-id="'+id+'" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px">';
+    var card = '<div class="ev-painel-card" data-ev-id="'+id+'" style="background:var(--darker);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px">';
 
     // Summary
     card += '<div class="ev-painel-summary" data-ev-toggle="'+id+'" style="display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer">';
     card += '<div style="display:flex;align-items:center;gap:10px;min-width:0">';
-    if (dataEv) card += '<div style="font-size:0.65rem;font-weight:700;color:'+etapaColor+';background:'+badgeBg+';padding:3px 7px;border-radius:3px;white-space:nowrap;flex-shrink:0;letter-spacing:0.06em">'+dataEv+'</div>';
-    card += '<div>'
+    // Coluna esquerda: badge etapa (acima) + badge data (abaixo)
+    card += '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex-shrink:0">';
+    card += '<span style="font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:'+etapaColor+';border:1px solid '+etapaColor+';border-radius:3px;padding:2px 6px;white-space:nowrap">'+etapaLabel+'</span>';
+    if (dataEv) card += '<div style="font-size:0.65rem;font-weight:700;color:'+etapaColor+';background:'+badgeBg+';padding:3px 7px;border-radius:3px;white-space:nowrap;letter-spacing:0.06em">'+dataEv+'</div>';
+    card += '</div>';
+    // Nome + cliente
+    card += '<div style="min-width:0">'
       +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(ev.ev_nome||'Evento')+'</div>';
     if (ev.cli_nome) card += '<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">'+escHtml(ev.cli_nome)+'</div>';
     card += '</div></div>';
-    // Ícone + badge etapa
-    card += '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">';
-    card += '<span style="font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:'+etapaColor+';border:1px solid '+etapaColor+';border-radius:3px;padding:2px 6px;white-space:nowrap">'+etapaLabel+'</span>';
+    // Seta
     card += '<svg class="ev-expand-icon" data-ev-icon="'+id+'" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);flex-shrink:0;transition:transform 0.2s"><polyline points="2,4 6,8 10,4"/></svg>';
-    card += '</div></div>'; // fim summary
+    card += '</div>'; // fim summary
 
     // Body expansível
     card += '<div class="ev-painel-body" data-ev-body="'+id+'" style="overflow:hidden;max-height:0;transition:max-height 0.25s ease,opacity 0.2s;opacity:0">';
@@ -5989,8 +5993,20 @@ function renderNotas() {
           : '')
       +'</div>';
     card += resp + itensHtml;
+    // Formulário para adicionar item/obs
+    card += '<div id="add-form-ev-'+id+'" style="display:none;margin-top:8px;display:none">'
+      +'<input class="ev-add-item-input" data-ev-id="'+id+'" placeholder="Item ou obs: observação..." style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:\'Barlow\',sans-serif;font-size:0.8rem;padding:5px 8px;outline:none;box-sizing:border-box"/>'
+      +'<div style="display:flex;gap:6px;margin-top:6px">'
+      +'<button class="btn-salvo" data-action="add-ev-item-ok" data-id="'+id+'" style="flex:1">OK</button>'
+      +'<button class="btn-salvo" data-action="add-ev-item-cancel" data-id="'+id+'">×</button>'
+      +'</div>'
+      +'</div>';
+    card += '<button class="btn-salvo" data-action="add-ev-item" data-id="'+id+'" style="margin-top:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:5px;border-style:dashed">'
+      +'<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>'
+      +'Adicionar item'
+      +'</button>';
     // Botão Remover do painel
-    card += '<div style="margin-top:12px"><button class="btn-salvo no-painel" data-action="remover-ev-painel" data-id="'+id+'" data-contrato-id="'+escHtml(ev.id)+'" title="Remover do painel" style="width:100%">Remover do painel</button></div>';
+    card += '<div style="margin-top:8px"><button class="btn-salvo no-painel" data-action="remover-ev-painel" data-id="'+id+'" data-contrato-id="'+escHtml(ev.id)+'" title="Remover do painel" style="width:100%">Remover do painel</button></div>';
     card += '</div></div></div>'; // fim body-inner / body / card
     return card;
   });
@@ -6046,7 +6062,6 @@ function renderNotas() {
         var evId = summary.getAttribute('data-ev-toggle');
         var body = lista.querySelector('[data-ev-body="' + evId + '"]');
         var icon = lista.querySelector('[data-ev-icon="' + evId + '"]');
-        var card = lista.querySelector('[data-ev-id="' + evId + '"]');
         if (!body) return;
         var expanded = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
         // Fechar todos os outros
@@ -6059,6 +6074,21 @@ function renderNotas() {
         if (!expanded) {
           body.style.maxHeight = '2000px'; body.style.opacity = '1';
           if (icon) icon.style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+    // Enter nos inputs de adicionar item
+    lista.querySelectorAll('.ev-add-item-input').forEach(function(inp) {
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          var evId = inp.getAttribute('data-ev-id');
+          var okBtn = lista.querySelector('[data-action="add-ev-item-ok"][data-id="' + evId + '"]');
+          if (okBtn) okBtn.click();
+        }
+        if (e.key === 'Escape') {
+          var evId = inp.getAttribute('data-ev-id');
+          var cancelBtn = lista.querySelector('[data-action="add-ev-item-cancel"][data-id="' + evId + '"]');
+          if (cancelBtn) cancelBtn.click();
         }
       });
     });
@@ -6113,6 +6143,38 @@ function handleNotasClick(e) {
     ev.itens_ok = itensOk;
     db.collection('eventos_campo').doc(id).update({ itens_ok: itensOk })
       .catch(function(e) { console.warn('Erro ao marcar ev item:', e); });
+
+  } else if (action === 'add-ev-item') {
+    var lista2 = document.getElementById('notas-lista');
+    if (!lista2) return;
+    var form = lista2.querySelector('#add-form-ev-' + id);
+    var addBtn = lista2.querySelector('[data-action="add-ev-item"][data-id="' + id + '"]');
+    if (!form) return;
+    form.style.display = 'block';
+    if (addBtn) addBtn.style.display = 'none';
+    var inp = form.querySelector('.ev-add-item-input');
+    if (inp) { inp.value = ''; setTimeout(function(){ inp.focus(); }, 50); }
+
+  } else if (action === 'add-ev-item-cancel') {
+    var lista2 = document.getElementById('notas-lista');
+    if (!lista2) return;
+    var form = lista2.querySelector('#add-form-ev-' + id);
+    if (form) form.style.display = 'none';
+    var addBtn2 = lista2.querySelector('[data-action="add-ev-item"][data-id="' + id + '"]');
+    if (addBtn2) addBtn2.style.display = '';
+
+  } else if (action === 'add-ev-item-ok') {
+    if (!db) return;
+    var lista2 = document.getElementById('notas-lista');
+    var form = lista2 ? lista2.querySelector('#add-form-ev-' + id) : null;
+    var inp = form ? form.querySelector('.ev-add-item-input') : null;
+    var texto = inp ? inp.value.trim() : '';
+    if (!texto) return;
+    var ev2 = _todosEventosCampo.find(function(e) { return e.id === id; });
+    if (!ev2) return;
+    var novosServicos = (ev2.servicos || []).concat([texto]);
+    db.collection('eventos_campo').doc(id).update({ servicos: novosServicos })
+      .catch(function(e) { alert('Erro ao adicionar item: ' + e.message); });
 
   } else if (action === 'remover-ev-painel') {
     // Remover contrato do painel (de dentro da aba Eventos)
