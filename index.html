@@ -1301,7 +1301,14 @@ header {
       <div class="grid-2">
         <div>
           <label>Evento</label>
-          <input type="text" id="tipo_evento" placeholder="Ex: Casamento, Formatura, Show" />
+          <input type="text" id="tipo_evento" placeholder="Ex: Casamento, Formatura, Show" list="tipo-evento-sugestoes" autocomplete="off" />
+          <datalist id="tipo-evento-sugestoes">
+            <option value="Aniversário">
+            <option value="Casamento">
+            <option value="Corporativo">
+            <option value="Formatura">
+            <option value="Show">
+          </datalist>
         </div>
         <div>
           <label>Data do Evento</label>
@@ -6014,7 +6021,9 @@ function renderNotas() {
         var isObs   = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
         if (isObs) {
           itensHtml += '<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem">'
-            +'<span style="color:var(--gold);flex:1">'+escHtml(s)+'</span></div>';
+            +'<span style="color:var(--gold);flex:1">'+escHtml(s)+'</span>'
+            +'<button data-action="rem-ev-item" data-id="'+id+'" data-idx="'+i+'" title="Remover" style="background:none;border:none;color:#555;cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>'
+            +'</div>';
         } else {
           var chkStyle = removido
             ? 'pointer-events:none;opacity:0.3;border:1.5px solid var(--border);border-radius:3px;width:16px;height:16px;min-width:16px;flex-shrink:0;position:relative'
@@ -6023,7 +6032,7 @@ function renderNotas() {
                 : 'border:1.5px solid var(--border);border-radius:3px;width:16px;height:16px;min-width:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer');
           var chkMrk = done && !removido ? '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>' : '';
           var remColor = removido ? '#4AC87A' : '#555';
-          var textStyle = removido ? 'text-decoration:line-through;opacity:0.5;color:var(--muted);flex:1;cursor:pointer' : (done ? 'opacity:0.5;flex:1;cursor:pointer' : 'flex:1;cursor:pointer');
+          var textStyle = removido ? 'text-decoration:line-through;opacity:0.5;color:var(--muted);flex:1;cursor:pointer' : 'flex:1;cursor:pointer';
           itensHtml += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;color:var(--text)">'
             +'<div style="'+chkStyle+'" data-action="check-ev" data-id="'+id+'" data-idx="'+i+'">'+chkMrk+'</div>'
             +'<span style="'+textStyle+'" data-action="check-ev" data-id="'+id+'" data-idx="'+i+'">'+escHtml(s)+'</span>'
@@ -6039,13 +6048,14 @@ function renderNotas() {
           itensHtml += '<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem">'
             +'<span style="color:var(--gold);flex:1">'+escHtml(s)+'</span>'
             +'<span style="font-size:0.85rem;font-weight:700;color:#4A90C8;flex-shrink:0;line-height:1">+</span>'
+            +'<button data-action="rem-ev-item-extra" data-id="'+id+'" data-idx="'+i+'" title="Remover" style="background:none;border:none;color:#e05c5c;cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>'
             +'</div>';
         } else {
           var chkStyle2 = done
             ? 'background:#4AC87A;border-color:#4AC87A;border:1.5px solid #4AC87A;border-radius:3px;width:16px;height:16px;min-width:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer'
             : 'border:1.5px solid var(--border);border-radius:3px;width:16px;height:16px;min-width:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer';
           var chkMrk2 = done ? '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>' : '';
-          var textStyle2 = done ? 'flex:1;opacity:0.5;cursor:pointer' : 'flex:1;cursor:pointer';
+          var textStyle2 = 'flex:1;cursor:pointer';
           itensHtml += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;color:var(--text)">'
             +'<div style="'+chkStyle2+'" data-action="check-ev-extra" data-id="'+id+'" data-idx="'+i+'">'+chkMrk2+'</div>'
             +'<span style="'+textStyle2+'" data-action="check-ev-extra" data-id="'+id+'" data-idx="'+i+'">'+escHtml(s)+'</span>'
@@ -6262,8 +6272,7 @@ function handleNotasClick(e) {
         chkEl.innerHTML = '';
       }
     }
-    var textEl = row ? row.querySelector('span[data-action="check-ev"]') : null;
-    if (textEl) textEl.style.opacity = done ? '0.5' : '';
+    // text colour unchanged — only checkbox changes colour
     db.collection('eventos_campo').doc(id).update({ itens_ok: itensOk })
       .catch(function(e) { console.warn('Erro ao marcar ev item:', e); });
 
@@ -6289,8 +6298,7 @@ function handleNotasClick(e) {
         chkEl.innerHTML = '';
       }
     }
-    var textEl = row ? row.querySelector('span[data-action="check-ev-extra"]') : null;
-    if (textEl) textEl.style.opacity = done ? '0.5' : '';
+    // text colour unchanged — only checkbox changes colour
     db.collection('eventos_campo').doc(id).update({ itens_ok: itensOk })
       .catch(function(e) { console.warn('Erro ao marcar ev extra:', e); });
 
