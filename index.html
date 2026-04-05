@@ -1797,8 +1797,8 @@ Revestimento</textarea>
     <!-- Sub-abas -->
     <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px">
       <button id="salvos-tab-orc" onclick="if(window._goToVirtual)_goToVirtual(1,false);else switchSalvosTab('orcamentos')" class="salvos-sub-tab active-sub-tab">Propostas</button>
-      <button id="salvos-tab-con" onclick="if(window._goToVirtual)_goToVirtual(2,false);else switchSalvosTab('contratos')" class="salvos-sub-tab">Eventos</button>
-      <button id="salvos-tab-not" onclick="switchSalvosTab('notas')" class="salvos-sub-tab">Anotações</button>
+      <button id="salvos-tab-con" onclick="if(window._goToVirtual)_goToVirtual(2,false);else switchSalvosTab('contratos')" class="salvos-sub-tab">Contratos</button>
+      <button id="salvos-tab-not" onclick="switchSalvosTab('notas')" class="salvos-sub-tab">Eventos</button>
     </div>
     <div id="salvos-swipe-track" style="overflow:hidden;position:relative">
       <div id="salvos-swipe-inner" style="display:flex;transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);will-change:transform">
@@ -4444,6 +4444,9 @@ function handleSalvosClick(e) {
       painelBtn.classList.add('no-painel');
       painelBtn.setAttribute('data-no-painel', '1');
       painelBtn.title = 'Remover do painel';
+      // Navegar para Salvos → Contratos
+      switchMain('salvos');
+      if (typeof switchSalvosTab === 'function') switchSalvosTab('contratos');
     }
   }
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
@@ -4760,7 +4763,7 @@ function atualizarContadorSalvos() {
     statusEl.textContent = n + ' contrato' + (n !== 1 ? 's' : '');
   } else if (_salvosTab === 'notas') {
     var n = window._countNotas || 0;
-    statusEl.textContent = n + ' anotaç' + (n !== 1 ? 'ões' : 'ão');
+    statusEl.textContent = n + ' evento' + (n !== 1 ? 's' : '');
   } else {
     var n = window._countOrcamentos || 0;
     statusEl.textContent = n + ' orcamento' + (n !== 1 ? 's' : '');
@@ -5819,7 +5822,7 @@ function salvarNota() {
     criadoEm: firebase.firestore.FieldValue.serverTimestamp()
   }).then(function() {
     cancelarNota();
-    // Navegar para Salvos → Anotações
+    // Navegar para Salvos → Eventos
     if (window._goToVirtual) {
       window._goToVirtual(1, true);
       setTimeout(function() { switchSalvosTab('notas'); }, 320);
@@ -5892,9 +5895,10 @@ function renderNotas(docs) {
       card += '<div class="nota-card-itens">';
       itens.forEach(function(item, i) {
         var done = !!itensOk[i];
-        card += '<div class="nota-item-row' + (done ? ' nota-item-done' : '') + '">';
-        card += '<div class="nota-item-check' + (done ? ' checked' : '') + '" data-action="check-item" data-id="' + id + '" data-idx="' + i + '"></div>';
-        card += '<span class="nota-item-text">' + escHtml(item) + '</span>';
+        var isObs = item.toLowerCase().indexOf('obs:') === 0 || item.toLowerCase().indexOf('obs.') === 0;
+        card += '<div class="nota-item-row' + (done && !isObs ? ' nota-item-done' : '') + '" style="' + (isObs ? 'align-items:flex-start' : '') + '">';
+        if (!isObs) card += '<div class="nota-item-check' + (done ? ' checked' : '') + '" data-action="check-item" data-id="' + id + '" data-idx="' + i + '"></div>';
+        card += '<span class="nota-item-text"' + (isObs ? ' style="color:var(--gold);flex:1"' : '') + '>' + escHtml(item) + '</span>';
         card += '</div>';
       });
       card += '</div>';
@@ -5939,6 +5943,12 @@ function handleNotasClick(e) {
     itensOk[idx] = !itensOk[idx];
     db.collection('notas').doc(id).update({ itens_ok: itensOk })
       .catch(function(e) { console.warn('Erro ao marcar item:', e); });
+    // Sincronizar com o painel se a nota estiver lá
+    var painelId = nota.painel_id || null;
+    if (painelId) {
+      db.collection('eventos_campo').doc(painelId).update({ itens_ok: itensOk })
+        .catch(function(e) { console.warn('Erro ao sincronizar checklist no painel:', e); });
+    }
 
   } else if (action === 'painel-nota') {
     if (!db) return;
@@ -5997,6 +6007,11 @@ function handleNotasClick(e) {
   }
 }
 
+function _obsInputColor(inp) {
+  var v = inp.value.toLowerCase();
+  inp.style.color = (v.indexOf('obs:') === 0 || v.indexOf('obs.') === 0) ? '#C8A94A' : '#eee';
+}
+
 function _abrirModalEditarNota(nota) {
   var old = document.getElementById('nota-edit-modal');
   if (old) old.remove();
@@ -6008,8 +6023,9 @@ function _abrirModalEditarNota(nota) {
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
 
   var itensHtml = itens.map(function(item, i) {
+    var obsClr = (item.toLowerCase().indexOf('obs:') === 0 || item.toLowerCase().indexOf('obs.') === 0) ? '#C8A94A' : '#eee';
     return '<div class="nota-edit-item-row" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">' +
-      '<input class="nota-edit-item-input" data-idx="' + i + '" type="text" value="' + escHtml(item) + '" style="flex:1;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:7px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+      '<input class="nota-edit-item-input" data-idx="' + i + '" type="text" value="' + escHtml(item) + '" style="flex:1;background:#111;border:1px solid #444;color:' + obsClr + ';font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:7px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'" oninput="_obsInputColor(this)">' +
       '<button onclick="this.closest(\'.nota-edit-item-row\').remove()" style="background:transparent;border:none;color:#666;font-size:1rem;cursor:pointer;padding:0 4px;flex-shrink:0" onmouseover="this.style.color=\'#e55\'" onmouseout="this.style.color=\'#666\'">×</button>' +
       '</div>';
   }).join('');
@@ -6066,7 +6082,7 @@ function _adicionarItemNota() {
   div.className = 'nota-edit-item-row';
   div.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:6px';
   div.innerHTML =
-    '<input class="nota-edit-item-input" data-idx="' + idx + '" type="text" value="' + escHtml(val) + '" style="flex:1;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:7px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+    '<input class="nota-edit-item-input" data-idx="' + idx + '" type="text" value="' + escHtml(val) + '" style="flex:1;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:7px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'" oninput="_obsInputColor(this)">' +
     '<button onclick="this.closest(\'.nota-edit-item-row\').remove()" style="background:transparent;border:none;color:#666;font-size:1rem;cursor:pointer;padding:0 4px;flex-shrink:0" onmouseover="this.style.color=\'#e55\'" onmouseout="this.style.color=\'#666\'">×</button>';
   if (lista) lista.appendChild(div);
   inp.value = '';
