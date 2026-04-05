@@ -3899,16 +3899,11 @@ function togglePreviaContrato() {
   var label   = document.getElementById('contrato-preview-label');
   if (!iframe) return;
   var hidden = iframe.style.display === 'none';
-  // toggle iframe + botões de ação
-  var area = document.getElementById('preview-area-contrato');
-  var btns = area ? area.querySelectorAll('.btn-download') : [];
   if (hidden) {
     iframe.style.display = '';
-    btns.forEach(function(b){ b.style.display = ''; });
     if (label) label.textContent = '▲ Pré-visualização do contrato';
   } else {
     iframe.style.display = 'none';
-    btns.forEach(function(b){ b.style.display = 'none'; });
     if (label) label.textContent = '▼ Pré-visualização do contrato';
   }
 }
