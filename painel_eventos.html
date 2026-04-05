@@ -318,7 +318,7 @@ header {
 /* Collapsed summary row */
 .card-summary {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   cursor: pointer;
@@ -329,7 +329,6 @@ header {
   align-items: center;
   gap: 10px;
   min-width: 0;
-  flex: 1;
 }
 
 .card-evento {
@@ -338,8 +337,9 @@ header {
   font-weight: 700;
   color: var(--text);
   letter-spacing: 0.03em;
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-data-badge {
@@ -1815,9 +1815,13 @@ function sincronizarPainel() {
       var batch = db.batch();
       var mudou = false;
 
-      // Remove eventos cujo contrato não existe, não está assinado, ou não tem contrato_id
+      // Remove eventos cujo contrato não existe ou não está assinado
+      // Preserva eventos criados por anotações (que têm nota_id em vez de contrato_id)
       eventosSnap.forEach(function(doc) {
-        var cid = doc.data().contrato_id;
+        var d = doc.data();
+        // Se veio de uma nota, não remover
+        if (d.nota_id) return;
+        var cid = d.contrato_id;
         if (!cid || !assinados[cid]) {
           console.log('[Painel] Removendo evento orfao:', doc.id, '| contrato_id:', cid || 'ausente');
           batch.delete(doc.ref);
