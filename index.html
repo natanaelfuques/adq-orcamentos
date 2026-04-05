@@ -1857,11 +1857,10 @@ Revestimento</textarea>
 
   <!-- CONTRATANTE -->
   <div class="collapse-tab" id="tab-contratante">
-    <div class="collapse-header" onclick="toggleTab(this)">
+    <div class="collapse-header">
       <div class="section-title">Dados do Contratante</div>
-      <span class="collapse-arrow">▼</span>
     </div>
-    <div class="collapse-body">
+    <div class="collapse-body open">
       <div style="display:grid;grid-template-columns:1fr 180px;gap:16px;margin-top:16px;margin-bottom:16px">
         <div>
           <label>Nome completo / Razão Social</label>
@@ -1897,11 +1896,10 @@ Revestimento</textarea>
 
   <!-- EVENTO -->
   <div class="collapse-tab">
-    <div class="collapse-header" onclick="toggleTab(this)">
+    <div class="collapse-header">
       <div class="section-title">Dados do Evento</div>
-      <span class="collapse-arrow">▼</span>
     </div>
-    <div class="collapse-body">
+    <div class="collapse-body open">
       <div class="grid-2" style="margin-top:16px;margin-bottom:16px">
         <div>
           <label>Evento</label>
@@ -1935,11 +1933,10 @@ Revestimento</textarea>
 
   <!-- SERVIÇOS -->
   <div class="collapse-tab">
-    <div class="collapse-header" onclick="toggleTab(this)">
+    <div class="collapse-header">
       <div class="section-title">Serviços Contratados</div>
-      <span class="collapse-arrow">▼</span>
     </div>
-    <div class="collapse-body">
+    <div class="collapse-body open">
       <div style="margin-top:16px" id="lista-servicos">
         <div class="servico-item">
           <input type="text" placeholder="Ex: Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som...">
@@ -1952,11 +1949,10 @@ Revestimento</textarea>
 
   <!-- VALOR E PAGAMENTO -->
   <div class="collapse-tab">
-    <div class="collapse-header" onclick="toggleTab(this)">
+    <div class="collapse-header">
       <div class="section-title">Valor e Forma de Pagamento</div>
-      <span class="collapse-arrow">▼</span>
     </div>
-    <div class="collapse-body">
+    <div class="collapse-body open">
       <div style="display:grid;grid-template-columns:220px 1fr;gap:20px;margin-top:16px;margin-bottom:16px;align-items:end">
         <div>
           <label>Valor Total (R$)</label>
@@ -1995,7 +1991,7 @@ Revestimento</textarea>
     </div>
   </div>
 
-  <button class="btn-gerar" onclick="gerarContrato()">Gerar Contrato</button>
+  <button class="btn-gerar" onclick="gerarContratoToggle()">Gerar Contrato</button>
 
   <div id="preview-area-contrato" style="display:none;margin-top:24px">
     <div class="preview-toolbar">
@@ -3898,6 +3894,20 @@ function preencherContratoDados() {
   document.getElementById('tab-contratante').scrollIntoView({ behavior: 'smooth' });
 }
 
+function gerarContratoToggle() {
+  var area = document.getElementById('preview-area-contrato');
+  var btn  = document.querySelector('.btn-gerar');
+  if (area && area.style.display !== 'none') {
+    // já visível → ocultar
+    area.style.display = 'none';
+    if (btn) btn.textContent = 'Gerar Contrato';
+  } else {
+    // gerar e mostrar
+    gerarContrato();
+    if (btn) btn.textContent = 'Ocultar Prévia';
+  }
+}
+
 function gerarContrato() {
   const cliNome  = document.getElementById('cli_nome').value.trim() || 'CONTRATANTE';
   const cliDoc   = formatDoc(document.getElementById('cli_doc').value.trim());
@@ -3929,6 +3939,8 @@ function gerarContrato() {
   iframe.srcdoc = contratoHTML;
   document.getElementById('preview-area-contrato').style.display = 'block';
   document.getElementById('preview-area-contrato').scrollIntoView({ behavior: 'smooth' });
+  var _btn = document.querySelector('.btn-gerar');
+  if (_btn) _btn.textContent = 'Ocultar Prévia';
   window._printContratoHTML = contratoHTML;
 }
 
@@ -4798,6 +4810,11 @@ function atualizarContadorSalvos() {
 
 function switchSalvosTab(tab, animate) {
   _salvosTab = tab;
+  // Sincroniza o índice virtual externo
+  if (window._goToVirtual) {
+    var vMap = { 'orcamentos': 1, 'contratos': 2, 'notas': 3 };
+    if (vMap[tab] !== undefined) window._syncVirtualIdx(vMap[tab]);
+  }
   var inner = document.getElementById('salvos-swipe-inner');
   var btnOrc = document.getElementById('salvos-tab-orc');
   var btnCon = document.getElementById('salvos-tab-con');
@@ -4860,9 +4877,9 @@ function switchSalvosTab(tab, animate) {
       } else if (dx > 0 && _salvosTab === 'contratos') {
         switchSalvosTab('orcamentos');
       } else if (dx > 0 && _salvosTab === 'orcamentos') {
-        if (window._goToVirtual) window._goToVirtual(0, true);
+        if (window._goToVirtual) window._goToVirtual(0, true);  // volta para orçamento
       } else if (dx < 0 && _salvosTab === 'notas') {
-        if (window._goToVirtual) window._goToVirtual(3, true);
+        if (window._goToVirtual) window._goToVirtual(4, true);  // vai para contrato
       }
     }, { passive: true });
   }
@@ -5352,13 +5369,17 @@ function filtrarContratos() {
 
 
 // ═══ SWIPE NAVIGATION (Instagram style) ═══
-// Fluxo virtual: 0=orcamento | 1=salvos(orcamentos) | 2=salvos(contratos) | 3=contrato
+// Fluxo virtual: 0=orcamento | 1=salvos(orcamentos) | 2=salvos(contratos) | 3=salvos(eventos) | 4=contrato
+// O swipe dentro do painel salvos é gerenciado pelo salvos-swipe-track interno.
+// O swipe externo (swipe-track) só navega entre orçamento ↔ salvos ↔ contrato (físico).
+// As sub-abas dentro de salvos são controladas internamente — o swipe externo ignora toques em salvos.
 (function(){
   var VIRTUAL = [
-    { phys: 0, salvosTab: null         },
-    { phys: 1, salvosTab: 'orcamentos' },
-    { phys: 1, salvosTab: 'contratos'  },
-    { phys: 2, salvosTab: null         }
+    { phys: 0, salvosTab: null          },  // 0 = orçamento
+    { phys: 1, salvosTab: 'orcamentos'  },  // 1 = salvos(propostas)   — só via switchMain
+    { phys: 1, salvosTab: 'contratos'   },  // 2 = salvos(contratos)   — entrada pelo swipe de orçamento
+    { phys: 1, salvosTab: 'notas'       },  // 3 = salvos(eventos)
+    { phys: 2, salvosTab: null          }   // 4 = contrato
   ];
   var PHYS_TABS = ['orcamento', 'salvos', 'contrato'];
   var TOTAL_VIRTUAL = VIRTUAL.length;
@@ -5457,12 +5478,18 @@ function filtrarContratos() {
     track.addEventListener('touchend', function(e) {
       if (!isDragging || !isHorizontal) { isDragging = false; return; }
       isDragging = false;
+      // Se estamos no painel salvos (phys=1), o swipe interno já cuidou da navegação
+      if (VIRTUAL[currentIdx].phys === 1) return;
       var dx = e.changedTouches[0].clientX - touchStartX;
       var threshold = getTrackWidth() * 0.3;
       if (dx < -threshold && currentIdx < TOTAL_VIRTUAL - 1) {
-        goToVirtual(currentIdx + 1, true);
+        // avançar: orçamento→salvos/contratos, salvos→contrato
+        var next = currentIdx === 0 ? 2 : 4;  // pula propostas (1) e eventos (3)
+        goToVirtual(next, true);
       } else if (dx > threshold && currentIdx > 0) {
-        goToVirtual(currentIdx - 1, true);
+        // voltar: contrato→salvos/contratos, salvos→orçamento
+        var prev = currentIdx === 4 ? 2 : 0;  // pula eventos (3) e propostas (1)
+        goToVirtual(prev, true);
       } else {
         goToVirtual(currentIdx, true);
       }
@@ -5472,13 +5499,13 @@ function filtrarContratos() {
   window._switchMainOriginal = window.switchMain;
   window.switchMain = function(name) {
     if (name === 'orcamento') { goToVirtual(0, true); }
-    else if (name === 'salvos') {
-      var target = (typeof _salvosTab !== 'undefined' && _salvosTab === 'contratos') ? 2 : 1;
-      goToVirtual(target, true);
-    }
-    else if (name === 'contrato') { goToVirtual(3, true); }
+    else if (name === 'salvos') { goToVirtual(2, true); }  // entra em salvos pela aba contratos
+    else if (name === 'contrato') { goToVirtual(4, true); }
   };
   window._goToVirtual = goToVirtual;
+  window._syncVirtualIdx = function(vIdx) {
+    if (vIdx >= 0 && vIdx < TOTAL_VIRTUAL) currentIdx = vIdx;
+  };
 })();
 
 // ═══ SINCRONIZAÇÃO PAINEL ═══
@@ -6515,15 +6542,18 @@ function _abrirModalEditarNota(nota) {
 
     '<div style="margin-bottom:10px">' +
       '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Data &amp; Horário</label>' +
-      '<div style="display:flex;gap:6px;align-items:center">' +
-        '<input id="nota-edit-data" type="date" value="' + escHtml(nota.ev_data || '') + '" style="flex:1;min-width:0;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 8px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
-        '<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0">' +
-          '<span style="font-size:0.55rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.06em;line-height:1">Início</span>' +
-          '<input id="nota-edit-inicio" type="time" value="' + escHtml(nota.ev_inicio || '') + '" style="width:78px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 6px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+      '<div style="display:flex;gap:6px;align-items:flex-end">' +
+        '<div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">' +
+          '<span style="font-size:0.55rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.06em;line-height:1">Data</span>' +
+          '<input id="nota-edit-data" type="date" value="' + escHtml(nota.ev_data || '') + '" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 6px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
         '</div>' +
-        '<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0">' +
-          '<span style="font-size:0.55rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.06em;line-height:1">Término</span>' +
-          '<input id="nota-edit-fim" type="time" value="' + escHtml(nota.ev_fim || '') + '" style="width:78px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 6px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '<div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">' +
+          '<span style="font-size:0.55rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.06em;line-height:1;text-align:center">Início</span>' +
+          '<input id="nota-edit-inicio" type="time" value="' + escHtml(nota.ev_inicio || '') + '" style="width:68px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 4px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">' +
+          '<span style="font-size:0.55rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.06em;line-height:1;text-align:center">Término</span>' +
+          '<input id="nota-edit-fim" type="time" value="' + escHtml(nota.ev_fim || '') + '" style="width:68px;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.82rem;padding:7px 4px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;color-scheme:dark;accent-color:#C8A94A" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
         '</div>' +
       '</div>' +
     '</div>' +
