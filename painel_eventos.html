@@ -1830,10 +1830,13 @@ function sincronizarPainel() {
 
       // Remove eventos cujo contrato não existe ou não está assinado
       // Preserva eventos criados por anotações (que têm nota_id em vez de contrato_id)
+      // Preserva eventos marcados como removido_manualmente
       eventosSnap.forEach(function(doc) {
         var d = doc.data();
         // Se veio de uma nota, não remover
         if (d.nota_id) return;
+        // Se foi removido manualmente pelo usuário, não remover (já não está)
+        if (d.removido_manualmente) return;
         var cid = d.contrato_id;
         if (!cid || !assinados[cid]) {
           console.log('[Painel] Removendo evento orfao:', doc.id, '| contrato_id:', cid || 'ausente');
@@ -1843,6 +1846,7 @@ function sincronizarPainel() {
       });
 
       // Adiciona contratos assinados que ainda não estão no painel
+      // (respeita removido_manualmente: true — não recria eventos removidos pelo usuário)
       var eventosExistentes = {};
       eventosSnap.forEach(function(doc) {
         var cid = doc.data().contrato_id;
@@ -1850,7 +1854,7 @@ function sincronizarPainel() {
       });
 
       Object.keys(assinados).forEach(function(cid) {
-        if (!eventosExistentes[cid]) {
+        if (!eventosExistentes[cid] && !assinados[cid].removido_manualmente) {
           console.log('[Painel] Adicionando contrato assinado ausente:', cid);
           var d = assinados[cid];
           var ref = db.collection('eventos_campo').doc(cid);

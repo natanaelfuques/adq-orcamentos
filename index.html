@@ -5575,6 +5575,8 @@ function adicionarAoPainel(contratoId) {
       var evento = buildEventoFromContrato(d, contratoId);
       evento.etapa = 'eventos';
       evento.itens_ok = {};
+      // Limpar flag de remoção manual ao re-adicionar ao painel
+      db.collection('contratos').doc(contratoId).update({ removido_manualmente: false }).catch(function() {});
       ref.set(evento).then(function() {
         console.log('[AdQ] Evento adicionado ao painel:', d.ev_nome);
       }).catch(function(e) {
@@ -5901,48 +5903,95 @@ function renderNotas() {
   var lista = document.getElementById('notas-lista');
   if (!lista) return;
 
-  // Cards de contratos no painel (vêm de eventos_campo sem nota_id)
+  // Cards de contratos no painel (vêm de eventos_campo sem nota_id) — design idêntico ao painel
   var cardsContratos = (_todosEventosCampo || []).map(function(ev) {
-    var id       = ev.id;
-    var nome     = escHtml(ev.ev_nome || 'Contrato');
-    var local    = ev.ev_local ? escHtml(ev.ev_local) : '';
-    var dataEv   = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
-    var itens    = Array.isArray(ev.servicos) ? ev.servicos : [];
-    var itensOk  = ev.itens_ok || {};
-    var etapa    = ev.etapa || 'eventos';
-    var etapaLabels = { eventos: 'No painel', andamento: 'Em andamento', concluido: 'Concluído' };
-    var etapaColors = { eventos: 'var(--gold)', andamento: '#4A90C8', concluido: '#4AC87A' };
-    var etapaLabel = etapaLabels[etapa] || etapa;
-    var etapaColor = etapaColors[etapa] || 'var(--muted)';
+    var id     = ev.id;
+    var etapa  = ev.etapa || 'eventos';
+    var etapaColor = etapa === 'andamento' ? '#4A90C8' : etapa === 'concluido' ? '#4AC87A' : 'var(--gold)';
+    var badgeBg    = etapa === 'andamento' ? 'rgba(74,144,200,0.12)' : etapa === 'concluido' ? 'rgba(74,200,122,0.12)' : 'rgba(200,169,74,0.15)';
+    var etapaLabel = etapa === 'andamento' ? 'Em andamento' : etapa === 'concluido' ? 'Concluído' : 'No painel';
 
-    var card = '<div class="nota-card">';
-    card += '<div class="nota-card-titulo" style="display:flex;align-items:center;justify-content:space-between;gap:8px">';
-    card += '<span>' + nome + '</span>';
-    card += '<span style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:' + etapaColor + ';border:1px solid ' + etapaColor + ';border-radius:3px;padding:2px 6px;white-space:nowrap">' + etapaLabel + '</span>';
-    card += '</div>';
-    if (local || dataEv) {
-      card += '<div class="nota-card-meta" style="margin-top:4px">';
-      if (local) card += escHtml(local);
-      if (local && dataEv) card += ' · ';
-      if (dataEv) card += dataEv;
-      card += '</div>';
+    var dataEv = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
+
+    function fmtHora(v) {
+      if (!v) return '';
+      var pts = v.replace(/[hH]/g,':').split(':');
+      var h = pts[0]||'0', m = pts[1]||'';
+      var hf = h.padStart(2,'0')+':'+(m||'00').padStart(2,'0');
+      var sn = v.replace(/[\d:hH]/g,'').trim().replace(/[-–]/g,'').trim();
+      return sn ? sn+' '+hf : hf;
     }
-    if (itens.length) {
-      card += '<div class="nota-card-itens">';
-      itens.forEach(function(item, i) {
-        var done = !!itensOk[i];
-        var isObs = item.toLowerCase().indexOf('obs:') === 0 || item.toLowerCase().indexOf('obs.') === 0;
-        card += '<div class="nota-item-row' + (done && !isObs ? ' nota-item-done' : '') + '" style="' + (isObs ? 'align-items:flex-start' : '') + '">';
-        if (!isObs) card += '<div class="nota-item-check' + (done ? ' checked' : '') + '" data-action="check-ev" data-id="' + id + '" data-idx="' + i + '"></div>';
-        card += '<span class="nota-item-text"' + (isObs ? ' style="color:var(--gold);flex:1"' : '') + '>' + escHtml(item) + '</span>';
-        card += '</div>';
+    var horarioBlock = '', horarioInline = '';
+    if (ev.ev_montagem || ev.ev_inicio || ev.ev_fim || ev.ev_desmontagem) {
+      var bp = [];
+      if (ev.ev_montagem) bp.push('Mont. '+fmtHora(ev.ev_montagem));
+      bp.push(ev.ev_desmontagem ? 'Desm. '+fmtHora(ev.ev_desmontagem) : 'Desm. ao término');
+      horarioBlock = bp.join(' · ');
+      if (ev.ev_inicio || ev.ev_fim)
+        horarioInline = (ev.ev_inicio ? fmtHora(ev.ev_inicio) : '')+(ev.ev_fim ? ' – '+fmtHora(ev.ev_fim) : '');
+    }
+
+    var resp = ev.ev_resp
+      ? '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:10px">Resp: <span style="color:var(--text)">'+escHtml(ev.ev_resp)+'</span></div>'
+      : '';
+
+    var itensOk  = ev.itens_ok || {};
+    var servicos = Array.isArray(ev.servicos) ? ev.servicos : [];
+    var itensHtml = '';
+    if (servicos.length) {
+      itensHtml += '<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px">';
+      itensHtml += '<div style="font-size:0.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Itens</div>';
+      servicos.forEach(function(s, i) {
+        var done  = !!(itensOk[i]);
+        var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
+        if (isObs) {
+          itensHtml += '<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem">'
+            +'<span style="color:var(--gold);flex:1">'+escHtml(s)+'</span></div>';
+        } else {
+          var chkBg  = done ? 'background:#4AC87A;border-color:#4AC87A' : '';
+          var chkMrk = done ? '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>' : '';
+          itensHtml += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;color:var(--text)">'
+            +'<div style="width:16px;height:16px;min-width:16px;border:1.5px solid var(--border);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;'+chkBg+'" data-action="check-ev" data-id="'+id+'" data-idx="'+i+'">'+chkMrk+'</div>'
+            +'<span'+(done ? ' style="opacity:0.5"' : '')+'>'+escHtml(s)+'</span>'
+            +'</div>';
+        }
       });
-      card += '</div>';
+      itensHtml += '</div>';
     }
-    card += '<div class="salvo-card-actions">';
-    card += '<button class="btn-salvo no-painel" data-action="remover-ev-painel" data-id="' + id + '" data-contrato-id="' + escHtml(ev.id) + '" title="Remover do painel">Painel</button>';
-    card += '</div>';
-    card += '</div>';
+
+    var card = '<div class="ev-painel-card" data-ev-id="'+id+'" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px">';
+
+    // Summary
+    card += '<div class="ev-painel-summary" data-ev-toggle="'+id+'" style="display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer">';
+    card += '<div style="display:flex;align-items:center;gap:10px;min-width:0">';
+    if (dataEv) card += '<div style="font-size:0.65rem;font-weight:700;color:'+etapaColor+';background:'+badgeBg+';padding:3px 7px;border-radius:3px;white-space:nowrap;flex-shrink:0;letter-spacing:0.06em">'+dataEv+'</div>';
+    card += '<div>'
+      +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(ev.ev_nome||'Evento')+'</div>';
+    if (ev.cli_nome) card += '<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">'+escHtml(ev.cli_nome)+'</div>';
+    card += '</div></div>';
+    // Ícone + badge etapa
+    card += '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">';
+    card += '<span style="font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:'+etapaColor+';border:1px solid '+etapaColor+';border-radius:3px;padding:2px 6px;white-space:nowrap">'+etapaLabel+'</span>';
+    card += '<svg class="ev-expand-icon" data-ev-icon="'+id+'" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);flex-shrink:0;transition:transform 0.2s"><polyline points="2,4 6,8 10,4"/></svg>';
+    card += '</div></div>'; // fim summary
+
+    // Body expansível
+    card += '<div class="ev-painel-body" data-ev-body="'+id+'" style="overflow:hidden;max-height:0;transition:max-height 0.25s ease,opacity 0.2s;opacity:0">';
+    card += '<div style="padding-top:12px">';
+    if (horarioBlock) card += '<div style="font-size:0.78rem;color:var(--text);font-weight:600;margin-bottom:4px">'+escHtml(horarioBlock)+'</div>';
+    card += '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px">'
+      +'<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>'
+      +' '+escHtml(ev.ev_local||'')
+      +(horarioInline
+          ? '<span style="color:var(--border);margin:0 4px">·</span>'
+            +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;opacity:0.5"><circle cx="6" cy="6" r="5"/><polyline points="6,3 6,6 8,7.5"/></svg>'
+            +'<span style="font-size:0.78rem;color:var(--text);font-weight:600;white-space:nowrap">'+escHtml(horarioInline)+'</span>'
+          : '')
+      +'</div>';
+    card += resp + itensHtml;
+    // Botão Remover do painel
+    card += '<div style="margin-top:12px"><button class="btn-salvo no-painel" data-action="remover-ev-painel" data-id="'+id+'" data-contrato-id="'+escHtml(ev.id)+'" title="Remover do painel" style="width:100%">Remover do painel</button></div>';
+    card += '</div></div></div>'; // fim body-inner / body / card
     return card;
   });
 
@@ -5991,6 +6040,28 @@ function renderNotas() {
     lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum evento ainda.</div>';
   } else {
     lista.innerHTML = todos.join('');
+    // Listeners de toggle (expandir/colapsar) para os cards do painel
+    lista.querySelectorAll('.ev-painel-summary').forEach(function(summary) {
+      summary.addEventListener('click', function() {
+        var evId = summary.getAttribute('data-ev-toggle');
+        var body = lista.querySelector('[data-ev-body="' + evId + '"]');
+        var icon = lista.querySelector('[data-ev-icon="' + evId + '"]');
+        var card = lista.querySelector('[data-ev-id="' + evId + '"]');
+        if (!body) return;
+        var expanded = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
+        // Fechar todos os outros
+        lista.querySelectorAll('.ev-painel-body').forEach(function(b) {
+          b.style.maxHeight = '0px'; b.style.opacity = '0';
+        });
+        lista.querySelectorAll('.ev-expand-icon').forEach(function(ic) {
+          ic.style.transform = '';
+        });
+        if (!expanded) {
+          body.style.maxHeight = '2000px'; body.style.opacity = '1';
+          if (icon) icon.style.transform = 'rotate(180deg)';
+        }
+      });
+    });
   }
 }
 
@@ -6047,17 +6118,25 @@ function handleNotasClick(e) {
     // Remover contrato do painel (de dentro da aba Eventos)
     if (!db) return;
     var contratoId = btn.getAttribute('data-contrato-id') || id;
-    db.collection('eventos_campo').doc(contratoId).delete().then(function() {
-      // Atualizar botão Painel no card de contratos se estiver visível
-      delete _etapaMapContratos[contratoId];
-      filtrarContratos();
-      var painelBtnCon = document.querySelector('[data-action="enviar-painel"][data-id="' + contratoId + '"]');
-      if (painelBtnCon) {
-        painelBtnCon.classList.remove('no-painel');
-        painelBtnCon.setAttribute('data-no-painel', '0');
-        painelBtnCon.title = 'Enviar para o painel';
-      }
-    }).catch(function(e) { alert('Erro ao remover do painel: ' + e.message); });
+    // Marca o contrato como removido_manualmente para que sincronizarPainel não o recrie
+    db.collection('contratos').doc(contratoId).update({ removido_manualmente: true })
+      .catch(function() {})
+      .then(function() {
+        return db.collection('eventos_campo').doc(contratoId).delete();
+      }).then(function() {
+        // Atualizar botão Painel no card de contratos se estiver visível
+        delete _etapaMapContratos[contratoId];
+        filtrarContratos();
+        var painelBtnCon = document.querySelector('[data-action="enviar-painel"][data-id="' + contratoId + '"]');
+        if (painelBtnCon) {
+          painelBtnCon.classList.remove('no-painel');
+          painelBtnCon.setAttribute('data-no-painel', '0');
+          painelBtnCon.title = 'Enviar para o painel';
+        }
+        // Navegar para aba Contratos após remover do painel
+        switchMain('salvos');
+        if (typeof switchSalvosTab === 'function') switchSalvosTab('contratos');
+      }).catch(function(e) { alert('Erro ao remover do painel: ' + e.message); });
 
   } else if (action === 'painel-nota') {
     if (!db) return;
