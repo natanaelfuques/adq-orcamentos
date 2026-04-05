@@ -1783,6 +1783,15 @@ Revestimento</textarea>
         <button class="salvos-filter-btn" id="filtro-orc-pendente" onclick="setFiltroOrc('pendente')">Pendentes</button>
       </div>
     </div>
+    <!-- Área de busca eventos -->
+    <div class="salvos-search-area" id="busca-ev-area">
+      <div class="salvos-filter-btns">
+        <button class="salvos-filter-btn active" id="filtro-ev-todos" onclick="setFiltroEv('todos')">Todos</button>
+        <button class="salvos-filter-btn" id="filtro-ev-eventos" onclick="setFiltroEv('eventos')">Eventos</button>
+        <button class="salvos-filter-btn" id="filtro-ev-andamento" onclick="setFiltroEv('andamento')">Em Andamento</button>
+        <button class="salvos-filter-btn" id="filtro-ev-concluido" onclick="setFiltroEv('concluido')">Concluído</button>
+      </div>
+    </div>
     <!-- Área de busca contratos -->
     <div class="salvos-search-area" id="busca-con-area">
       <input class="salvos-search-input" id="busca-con-input" placeholder="Buscar por nome ou data (dd/mm/aaaa)..." oninput="filtrarContratos()" />
@@ -5231,6 +5240,7 @@ function baixarContratoJSON(id) {
 var _buscaAberta = false;
 var _filtroOrc = 'todos';
 var _filtroConStatus = 'sem-painel';
+var _filtroEv = 'todos';
 var _etapaMapContratos = {};
 var _todosOrcamentos = [];
 var _todosContratos = [];
@@ -5247,6 +5257,7 @@ function toggleBuscaSalvos() {
     if (conInput) { conInput.value = ''; }
     setFiltroOrc('todos');
     setFiltroConStatus('sem-painel');
+    setFiltroEv('todos');
   }
   atualizarAreaBusca();
 }
@@ -5254,12 +5265,16 @@ function toggleBuscaSalvos() {
 function atualizarAreaBusca() {
   var orcArea = document.getElementById('busca-orc-area');
   var conArea = document.getElementById('busca-con-area');
+  var evArea  = document.getElementById('busca-ev-area');
   // Reset all
   if (orcArea) { orcArea.classList.remove('open', 'tab-active'); orcArea.style.display = ''; }
   if (conArea) { conArea.classList.remove('open', 'tab-active'); conArea.style.display = ''; }
+  if (evArea)  { evArea.classList.remove('open', 'tab-active');  evArea.style.display = ''; }
   // Mark active tab area
   if (_salvosTab === 'orcamentos') {
     if (orcArea) { orcArea.classList.add('tab-active'); if (_buscaAberta) orcArea.classList.add('open'); }
+  } else if (_salvosTab === 'notas') {
+    if (evArea) { evArea.classList.add('tab-active'); if (_buscaAberta) evArea.classList.add('open'); }
   } else {
     if (conArea) { conArea.classList.add('tab-active'); if (_buscaAberta) conArea.classList.add('open'); }
   }
@@ -5279,6 +5294,14 @@ function setFiltroConStatus(f) {
   var btn = document.getElementById('filtro-con-' + f);
   if (btn) btn.classList.add('active');
   filtrarContratos();
+}
+
+function setFiltroEv(f) {
+  _filtroEv = f;
+  document.querySelectorAll('[id^="filtro-ev-"]').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('filtro-ev-' + f);
+  if (btn) btn.classList.add('active');
+  renderNotas();
 }
 
 function filtrarSalvos() {
@@ -5913,17 +5936,21 @@ function renderNotas() {
   });
 
   // Cards de contratos no painel (vêm de eventos_campo sem nota_id) — design idêntico ao painel
-  var cardsContratos = (_todosEventosCampo || []).map(function(ev) {
+  var eventosFiltrados = (_todosEventosCampo || []).filter(function(ev) {
+    if (_filtroEv === 'todos') return true;
+    return (ev.etapa || 'eventos') === _filtroEv;
+  });
+  var cardsContratos = eventosFiltrados.map(function(ev) {
     var id     = ev.id;
     var etapa  = ev.etapa || 'eventos';
-    var etapaColor = etapa === 'andamento' ? '#4A90C8' : etapa === 'concluido' ? '#4AC87A' : 'var(--gold)';
+    var etapaColor = etapa === 'andamento' ? 'var(--gold)' : etapa === 'concluido' ? '#4AC87A' : '#4A90C8';
     var etapaLabel = etapa === 'andamento' ? 'Em Andamento' : etapa === 'concluido' ? 'Concluído' : 'Eventos';
 
     // Cor do badge de data igual ao painel (buildCard): por coluna e proximidade
     var badgeDateColor = '';
     var badgeDateBg = '';
     if (etapa === 'andamento') {
-      badgeDateColor = '#4A90C8'; badgeDateBg = 'rgba(74,144,200,0.12)';
+      badgeDateColor = 'var(--gold)'; badgeDateBg = 'rgba(200,169,74,0.15)';
     } else if (etapa === 'concluido') {
       badgeDateColor = '#4AC87A'; badgeDateBg = 'rgba(74,200,122,0.12)';
     } else {
@@ -5972,24 +5999,58 @@ function renderNotas() {
       ? '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:10px">Resp: <span style="color:var(--text)">'+escHtml(ev.ev_resp)+'</span></div>'
       : '';
 
-    var itensOk  = ev.itens_ok || {};
-    var servicos = Array.isArray(ev.servicos) ? ev.servicos : [];
+    var itensOk      = ev.itens_ok || {};
+    var itensRem     = ev.itens_removidos || {};
+    var servicos     = Array.isArray(ev.servicos) ? ev.servicos : [];
+    var itensExtras  = Array.isArray(ev.itens_extras) ? ev.itens_extras : [];
     var itensHtml = '';
-    if (servicos.length) {
+    if (servicos.length || itensExtras.length) {
       itensHtml += '<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px">';
       itensHtml += '<div style="font-size:0.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Itens</div>';
+      // Itens originais (servicos)
       servicos.forEach(function(s, i) {
-        var done  = !!(itensOk[i]);
-        var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
+        var done    = !!(itensOk[i]);
+        var removido = !!(itensRem[i]);
+        var isObs   = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
         if (isObs) {
           itensHtml += '<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem">'
             +'<span style="color:var(--gold);flex:1">'+escHtml(s)+'</span></div>';
         } else {
-          var chkBg  = done ? 'background:#4AC87A;border-color:#4AC87A' : '';
-          var chkMrk = done ? '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>' : '';
+          var chkStyle = removido
+            ? 'pointer-events:none;opacity:0.3;border:1.5px solid var(--border);border-radius:3px;width:16px;height:16px;min-width:16px;flex-shrink:0;position:relative'
+            : (done
+                ? 'background:#4AC87A;border-color:#4AC87A;border:1.5px solid #4AC87A;border-radius:3px;width:16px;height:16px;min-width:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer'
+                : 'border:1.5px solid var(--border);border-radius:3px;width:16px;height:16px;min-width:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer');
+          var chkMrk = done && !removido ? '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>' : '';
+          var remColor = removido ? '#4AC87A' : '#555';
+          var textStyle = removido ? 'text-decoration:line-through;opacity:0.5;color:var(--muted);flex:1;cursor:pointer' : (done ? 'opacity:0.5;flex:1;cursor:pointer' : 'flex:1;cursor:pointer');
           itensHtml += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;color:var(--text)">'
-            +'<div style="width:16px;height:16px;min-width:16px;border:1.5px solid var(--border);border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;'+chkBg+'" data-action="check-ev" data-id="'+id+'" data-idx="'+i+'">'+chkMrk+'</div>'
-            +'<span'+(done ? ' style="opacity:0.5"' : '')+'>'+escHtml(s)+'</span>'
+            +'<div style="'+chkStyle+'" data-action="check-ev" data-id="'+id+'" data-idx="'+i+'">'+chkMrk+'</div>'
+            +'<span style="'+textStyle+'" data-action="check-ev" data-id="'+id+'" data-idx="'+i+'">'+escHtml(s)+'</span>'
+            +'<button data-action="rem-ev-item" data-id="'+id+'" data-idx="'+i+'" title="'+(removido?'Restaurar':'Remover')+'" style="margin-left:auto;background:none;border:none;color:'+remColor+';cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>'
+            +'</div>';
+        }
+      });
+      // Itens extras (adicionados pelo painel)
+      itensExtras.forEach(function(s, i) {
+        var done  = !!(itensOk['extra_' + i]);
+        var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
+        if (isObs) {
+          itensHtml += '<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem">'
+            +'<span style="color:var(--gold);flex:1">'+escHtml(s)+'</span>'
+            +'<span style="font-size:0.85rem;font-weight:700;color:#4A90C8;flex-shrink:0;line-height:1">+</span>'
+            +'</div>';
+        } else {
+          var chkStyle2 = done
+            ? 'background:#4AC87A;border-color:#4AC87A;border:1.5px solid #4AC87A;border-radius:3px;width:16px;height:16px;min-width:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer'
+            : 'border:1.5px solid var(--border);border-radius:3px;width:16px;height:16px;min-width:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer';
+          var chkMrk2 = done ? '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>' : '';
+          var textStyle2 = done ? 'flex:1;opacity:0.5;cursor:pointer' : 'flex:1;cursor:pointer';
+          itensHtml += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;color:var(--text)">'
+            +'<div style="'+chkStyle2+'" data-action="check-ev-extra" data-id="'+id+'" data-idx="'+i+'">'+chkMrk2+'</div>'
+            +'<span style="'+textStyle2+'" data-action="check-ev-extra" data-id="'+id+'" data-idx="'+i+'">'+escHtml(s)+'</span>'
+            +'<span style="font-size:0.85rem;font-weight:700;color:#4A90C8;flex-shrink:0;line-height:1">+</span>'
+            +'<button data-action="rem-ev-item-extra" data-id="'+id+'" data-idx="'+i+'" title="Remover" style="background:none;border:none;color:#e05c5c;cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>'
             +'</div>';
         }
       });
@@ -6181,25 +6242,94 @@ function handleNotasClick(e) {
     var idx = parseInt(btn.getAttribute('data-idx'));
     var ev = _todosEventosCampo.find(function(e) { return e.id === id; });
     if (!ev) return;
+    var itensRem2 = ev.itens_removidos || {};
+    if (itensRem2[idx]) return; // item removido — não marcar
     var itensOk = Object.assign({}, ev.itens_ok || {});
     itensOk[idx] = !itensOk[idx];
     ev.itens_ok = itensOk;
     // Update DOM directly (avoid full re-render that collapses the card)
     var done = itensOk[idx];
-    var chkEl = btn; // btn IS the check div
-    if (done) {
-      chkEl.style.background = '#4AC87A';
-      chkEl.style.borderColor = '#4AC87A';
-      chkEl.innerHTML = '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>';
-    } else {
-      chkEl.style.background = '';
-      chkEl.style.borderColor = '';
-      chkEl.innerHTML = '';
+    // btn may be the checkbox div or the text span — find the checkbox div
+    var row = btn.closest('[style*="display:flex"]') || btn.parentElement;
+    var chkEl = row ? row.querySelector('[data-action="check-ev"][data-idx="'+idx+'"]') : null;
+    if (!chkEl || chkEl.tagName === 'SPAN') chkEl = row ? row.querySelector('div[data-action="check-ev"]') : null;
+    if (chkEl && chkEl.tagName === 'DIV') {
+      if (done) {
+        chkEl.style.background = '#4AC87A'; chkEl.style.borderColor = '#4AC87A';
+        chkEl.innerHTML = '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>';
+      } else {
+        chkEl.style.background = ''; chkEl.style.borderColor = '';
+        chkEl.innerHTML = '';
+      }
     }
-    var textEl = chkEl.nextElementSibling;
+    var textEl = row ? row.querySelector('span[data-action="check-ev"]') : null;
     if (textEl) textEl.style.opacity = done ? '0.5' : '';
     db.collection('eventos_campo').doc(id).update({ itens_ok: itensOk })
       .catch(function(e) { console.warn('Erro ao marcar ev item:', e); });
+
+  } else if (action === 'check-ev-extra') {
+    // Marcar/desmarcar item extra
+    if (!db) return;
+    var idx = parseInt(btn.getAttribute('data-idx'));
+    var ev = _todosEventosCampo.find(function(e) { return e.id === id; });
+    if (!ev) return;
+    var itensOk = Object.assign({}, ev.itens_ok || {});
+    var key = 'extra_' + idx;
+    itensOk[key] = !itensOk[key];
+    ev.itens_ok = itensOk;
+    var done = itensOk[key];
+    var row = btn.closest('[style*="display:flex"]') || btn.parentElement;
+    var chkEl = row ? row.querySelector('div[data-action="check-ev-extra"]') : null;
+    if (chkEl) {
+      if (done) {
+        chkEl.style.background = '#4AC87A'; chkEl.style.borderColor = '#4AC87A';
+        chkEl.innerHTML = '<span style="position:absolute;width:9px;height:5px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block"></span>';
+      } else {
+        chkEl.style.background = ''; chkEl.style.borderColor = '';
+        chkEl.innerHTML = '';
+      }
+    }
+    var textEl = row ? row.querySelector('span[data-action="check-ev-extra"]') : null;
+    if (textEl) textEl.style.opacity = done ? '0.5' : '';
+    db.collection('eventos_campo').doc(id).update({ itens_ok: itensOk })
+      .catch(function(e) { console.warn('Erro ao marcar ev extra:', e); });
+
+  } else if (action === 'rem-ev-item') {
+    // Riscar/restaurar item original com ×
+    if (!db) return;
+    var idx = parseInt(btn.getAttribute('data-idx'));
+    var ev = _todosEventosCampo.find(function(e) { return e.id === id; });
+    if (!ev) return;
+    var removidos = Object.assign({}, ev.itens_removidos || {});
+    removidos[idx] = !removidos[idx];
+    ev.itens_removidos = removidos;
+    var removido = removidos[idx];
+    // Update DOM directly
+    var row = btn.parentElement;
+    var chkEl = row ? row.querySelector('div[data-action="check-ev"]') : null;
+    var textEl = row ? row.querySelector('span[data-action="check-ev"]') : null;
+    if (chkEl) { chkEl.style.pointerEvents = removido ? 'none' : ''; chkEl.style.opacity = removido ? '0.3' : ''; }
+    if (textEl) {
+      textEl.style.textDecoration = removido ? 'line-through' : '';
+      textEl.style.opacity = removido ? '0.5' : '';
+      textEl.style.color = removido ? 'var(--muted)' : '';
+    }
+    btn.style.color = removido ? '#4AC87A' : '#555';
+    btn.title = removido ? 'Restaurar' : 'Remover';
+    db.collection('eventos_campo').doc(id).update({ itens_removidos: removidos })
+      .catch(function(e) { console.warn('Erro ao remover ev item:', e); });
+
+  } else if (action === 'rem-ev-item-extra') {
+    // Remover item extra com confirmação
+    if (!db) return;
+    var idx = parseInt(btn.getAttribute('data-idx'));
+    var ev = _todosEventosCampo.find(function(e) { return e.id === id; });
+    if (!ev) return;
+    var texto = ev.itens_extras ? ev.itens_extras[idx] : 'este item';
+    if (!confirm('Excluir "' + texto + '"?')) return;
+    var novosExtras = (ev.itens_extras || []).filter(function(_, i) { return i !== idx; });
+    db.collection('eventos_campo').doc(id).update({ itens_extras: novosExtras })
+      .catch(function(e) { alert('Erro ao remover: ' + e.message); });
 
   } else if (action === 'add-ev-item') {
     var lista2 = document.getElementById('notas-lista');
@@ -6229,8 +6359,8 @@ function handleNotasClick(e) {
     if (!texto) return;
     var ev2 = _todosEventosCampo.find(function(e) { return e.id === id; });
     if (!ev2) return;
-    var novosServicos = (ev2.servicos || []).concat([texto]);
-    db.collection('eventos_campo').doc(id).update({ servicos: novosServicos })
+    var novosExtras = (ev2.itens_extras || []).concat([texto]);
+    db.collection('eventos_campo').doc(id).update({ itens_extras: novosExtras })
       .catch(function(e) { alert('Erro ao adicionar item: ' + e.message); });
 
   } else if (action === 'remover-ev-painel') {
