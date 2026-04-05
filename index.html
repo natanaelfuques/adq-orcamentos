@@ -1816,12 +1816,12 @@ Revestimento</textarea>
     <div class="salvos-search-area" id="busca-con-area">
       <input class="salvos-search-input" id="busca-con-input" placeholder="Buscar por nome ou data (dd/mm/aaaa)..." oninput="filtrarContratos()" />
       <div class="salvos-filter-btns">
-        <button class="salvos-filter-btn" id="filtro-con-sem-painel" onclick="setFiltroConStatus('sem-painel')">- Painel</button>
+        <button class="salvos-filter-btn active" id="filtro-con-todos" onclick="setFiltroConStatus('todos')">Todos</button>
         <button class="salvos-filter-btn" id="filtro-con-pendente" onclick="setFiltroConStatus('pendente')">Pendentes</button>
         <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
         <button class="salvos-filter-btn" id="filtro-con-andamento" onclick="setFiltroConStatus('andamento')">Em andamento</button>
         <button class="salvos-filter-btn" id="filtro-con-concluido" onclick="setFiltroConStatus('concluido')">Concluídos</button>
-        <button class="salvos-filter-btn" id="filtro-con-todos" onclick="setFiltroConStatus('todos')">Todos</button>
+        <button class="salvos-filter-btn" id="filtro-con-sem-painel" onclick="setFiltroConStatus('sem-painel')">- Painel</button>
       </div>
     </div>
     <!-- Sub-abas -->
@@ -3072,8 +3072,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var btnOrcTodos = document.getElementById('filtro-orc-todos');
   if (btnOrcTodos) btnOrcTodos.classList.add('active');
-  var btnConSemPainel = document.getElementById('filtro-con-sem-painel');
-  if (btnConSemPainel) btnConSemPainel.classList.add('active');
+  var btnConTodos = document.getElementById('filtro-con-todos');
+  if (btnConTodos) btnConTodos.classList.add('active');
 
   // ── DEEP LINK: ?tab=contratos ──
   (function() {
@@ -5170,8 +5170,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var _temEvento = !!_etapaMapContratos[id];
     var refColor = _temEvento ? '#aaa' : '#444';
     var refCursor = _temEvento ? 'pointer' : 'default';
-    var refOnClick = _temEvento ? 'irParaEventoRef("' + ref + '")' : '';
-    card += '<button' + (_temEvento ? ' onclick="' + refOnClick + '"' : '') + ' data-ref-contrato="' + ref + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + refColor + ';letter-spacing:0.1em;background:transparent;border:none;cursor:' + refCursor + ';padding:0;transition:color 0.15s"' + (_temEvento ? ' onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"' : '') + '># ' + ref + '</button>';
+    card += '<button' + (_temEvento ? ' onclick="irParaEventoRef(\'' + ref + '\')"' : '') + ' data-ref-contrato="' + ref + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + refColor + ';letter-spacing:0.1em;background:transparent;border:none;cursor:' + refCursor + ';padding:0;transition:color 0.15s"' + (_temEvento ? ' onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"' : '') + '># ' + ref + '</button>';
     card += '</span>';
     card += '</div>';
     card += '<div class="salvo-montagem-row" style="' + (aprovado && etapa !== 'concluido' ? '' : 'display:none') + '">';
@@ -5333,7 +5332,7 @@ function baixarContratoJSON(id) {
 
 var _buscaAberta = false;
 var _filtroOrc = 'todos';
-var _filtroConStatus = 'sem-painel';
+var _filtroConStatus = 'todos';
 var _filtroEv = 'todos';
 var _etapaMapContratos = {};
 var _todosOrcamentos = [];
@@ -5350,7 +5349,7 @@ function toggleBuscaSalvos() {
     if (orcInput) { orcInput.value = ''; }
     if (conInput) { conInput.value = ''; }
     setFiltroOrc('todos');
-    setFiltroConStatus('sem-painel');
+    setFiltroConStatus('todos');
     setFiltroEv('todos');
   }
   atualizarAreaBusca();
