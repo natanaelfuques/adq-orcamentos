@@ -5304,8 +5304,10 @@ function filtrarContratos() {
     var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0;
     var aprovado = doc.aprovado ? true : false;
     var etapa = _etapaMapContratos[doc.id] || '';
-    var matchStatus = _filtroConStatus === 'todos' ||
-      (_filtroConStatus === 'pendente' && !aprovado) ||
+    var noPainel = !!etapa; // se tem etapa, já foi para o painel
+    // Filtro 'todos' mostra apenas contratos que ainda NÃO foram ao painel
+    var matchStatus = (_filtroConStatus === 'todos' && !noPainel) ||
+      (_filtroConStatus === 'pendente' && !aprovado && !noPainel) ||
       (_filtroConStatus === 'assinado' && aprovado && etapa === 'eventos') ||
       (_filtroConStatus === 'andamento' && etapa === 'andamento') ||
       (_filtroConStatus === 'concluido' && etapa === 'concluido');
