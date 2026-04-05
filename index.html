@@ -1130,8 +1130,8 @@ header {
 .nota-card.borda-azul:hover { border-top-color: #4A90C8 !important; }
 .nota-card.borda-rosa { border-top: 3px solid #E85CA0 !important; }
 .nota-card.borda-rosa:hover { border-top-color: #E85CA0 !important; }
-.ev-painel-card.borda-azul { border-top: 3px solid #4A90C8 !important; }
-.ev-painel-card.borda-rosa { border-top: 3px solid #E85CA0 !important; }
+.ev-painel-card.borda-azul { border: 1px solid var(--border) !important; border-top: 3px solid #4A90C8 !important; }
+.ev-painel-card.borda-rosa { border: 1px solid var(--border) !important; border-top: 3px solid #E85CA0 !important; }
 .nota-card-titulo {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 0.95rem;
@@ -4289,6 +4289,7 @@ function initFirebase(config) {
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     var ALLOWED = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
     auth.onAuthStateChanged(function(user) {
+      window._currentUser = (user && ALLOWED.indexOf(user.email) !== -1) ? user : null;
       if (user && ALLOWED.indexOf(user.email) !== -1) {
         document.getElementById('gerador-login-screen').style.display = 'none';
         document.getElementById('gerador-app').style.display = 'block';
@@ -4656,7 +4657,7 @@ function salvarNaNuvem() {
 
   const dados = coletarDadosOrcamento();
   dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
-  var _userAtual = firebase.auth().currentUser;
+  var _userAtual = window._currentUser || firebase.auth().currentUser;
   if (_userAtual) dados.criador = _userAtual.email;
 
   db.collection('orcamentos').add(dados)
@@ -4956,7 +4957,7 @@ function salvarContratoNaNuvem() {
   if (btn) { btn.textContent = 'Salvando...'; btn.disabled = true; }
   var dados = coletarDadosContrato();
   dados.criadoEm = firebase.firestore.FieldValue.serverTimestamp();
-  var _userAtualC = firebase.auth().currentUser;
+  var _userAtualC = window._currentUser || firebase.auth().currentUser;
   if (_userAtualC) dados.criador = _userAtualC.email;
   db.collection('contratos').add(dados)
     .then(function(docRef) {
@@ -5922,7 +5923,7 @@ function salvarNota() {
     ev_data:  dataHoje,
     ev_local: '',
     no_painel: false,
-    criador: (firebase.auth().currentUser ? firebase.auth().currentUser.email : ''),
+    criador: ((window._currentUser || firebase.auth().currentUser) ? (window._currentUser || firebase.auth().currentUser).email : ''),
     criadoEm: firebase.firestore.FieldValue.serverTimestamp()
   }).then(function() {
     cancelarNota();
@@ -6129,8 +6130,7 @@ function renderNotas() {
 
     var _criadorEv = ev.criador || '';
     var _classeBordaEv = _criadorEv === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorEv === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
-    var _bordaEv = _criadorEv === 'natanael.fuques@gmail.com' ? '2px solid #4A90C8' : _criadorEv === 'karielenmoreira@gmail.com' ? '2px solid #E85CA0' : '1px solid var(--border)';
-    var card = '<div class="ev-painel-card' + _classeBordaEv + '" data-ev-id="'+id+'" style="background:var(--darker);border:'+_bordaEv+';border-radius:6px;padding:12px 16px;margin-bottom:8px">';
+    var card = '<div class="ev-painel-card' + _classeBordaEv + '" data-ev-id="'+id+'" style="background:var(--darker);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:8px">';
 
     // Summary
     card += '<div class="ev-painel-summary" data-ev-toggle="'+id+'" style="display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer">';
