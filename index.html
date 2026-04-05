@@ -4439,14 +4439,17 @@ function handleSalvosClick(e) {
       painelBtn.classList.remove('no-painel');
       painelBtn.setAttribute('data-no-painel', '0');
       painelBtn.title = 'Enviar para o painel';
+      // Removido do painel → ir para aba Contratos
+      switchMain('salvos');
+      if (typeof switchSalvosTab === 'function') switchSalvosTab('contratos');
     } else {
       adicionarAoPainel(id);
       painelBtn.classList.add('no-painel');
       painelBtn.setAttribute('data-no-painel', '1');
       painelBtn.title = 'Remover do painel';
-      // Navegar para Salvos → Contratos
+      // Adicionado ao painel → ir para aba Eventos (notas)
       switchMain('salvos');
-      if (typeof switchSalvosTab === 'function') switchSalvosTab('contratos');
+      if (typeof switchSalvosTab === 'function') switchSalvosTab('notas');
     }
   }
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
