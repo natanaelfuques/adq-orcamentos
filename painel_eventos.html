@@ -1300,6 +1300,12 @@ function buildCard(ev, past, col) {
     var itensHtml = (ev.servicos || []).map(function(s, i) {
       var done = ev.itens_ok && ev.itens_ok[i];
       var removido = removidos[i];
+      var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
+      if (isObs) {
+        return '<div class="card-item" style="align-items:flex-start">' +
+          '<span class="item-text" style="color:var(--gold);flex:1">' + esc(s) + '</span>' +
+          '</div>';
+      }
       return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '">' +
         '<div class="item-check' + (done && !removido ? ' checked' : '') + (removido ? '' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
@@ -1498,7 +1504,14 @@ function toggleItem(evId, idx) {
   if (!ev) return;
   var itensOk = Object.assign({}, ev.itens_ok || {});
   itensOk[idx] = !itensOk[idx];
+  // Atualizar estado local imediatamente (evita estado antigo em cliques rápidos)
+  ev.itens_ok = itensOk;
   db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
+  // Sincronizar de volta com nota de origem, se houver
+  if (ev.nota_id) {
+    db.collection('notas').doc(ev.nota_id).update({ itens_ok: itensOk })
+      .catch(function(e) { console.warn('Erro ao sincronizar checklist na nota:', e); });
+  }
   registrarLog('checklist_preencheu', '', ev.ev_nome || evId);
 }
 

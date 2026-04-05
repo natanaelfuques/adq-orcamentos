@@ -4436,20 +4436,26 @@ function handleSalvosClick(e) {
     var jaNoPainel = painelBtn.getAttribute('data-no-painel') === '1';
     if (jaNoPainel) {
       removerDoPainel(id);
+      // Atualizar mapa otimisticamente para o card sair da lista imediatamente
+      delete _etapaMapContratos[id];
       painelBtn.classList.remove('no-painel');
       painelBtn.setAttribute('data-no-painel', '0');
       painelBtn.title = 'Enviar para o painel';
       // Removido do painel → ir para aba Contratos
       switchMain('salvos');
       if (typeof switchSalvosTab === 'function') switchSalvosTab('contratos');
+      filtrarContratos();
     } else {
       adicionarAoPainel(id);
+      // Atualizar mapa otimisticamente para o card sair da lista imediatamente
+      _etapaMapContratos[id] = 'eventos';
       painelBtn.classList.add('no-painel');
       painelBtn.setAttribute('data-no-painel', '1');
       painelBtn.title = 'Remover do painel';
       // Adicionado ao painel → ir para aba Eventos (notas)
       switchMain('salvos');
       if (typeof switchSalvosTab === 'function') switchSalvosTab('notas');
+      filtrarContratos();
     }
   }
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
@@ -5944,6 +5950,8 @@ function handleNotasClick(e) {
     if (!nota) return;
     var itensOk = Object.assign({}, nota.itens_ok || {});
     itensOk[idx] = !itensOk[idx];
+    // Atualizar _todasNotas localmente de imediato (evita estado antigo em cliques rápidos)
+    nota.itens_ok = itensOk;
     db.collection('notas').doc(id).update({ itens_ok: itensOk })
       .catch(function(e) { console.warn('Erro ao marcar item:', e); });
     // Sincronizar com o painel se a nota estiver lá
@@ -5982,6 +5990,9 @@ function handleNotasClick(e) {
         var evLocal = nota.ev_local || '';
         var evData  = nota.ev_data  || '';
         var itens   = Array.isArray(nota.itens) ? nota.itens : [];
+        var itensTipo = itens.map(function(item) {
+          return (item.toLowerCase().indexOf('obs:') === 0 || item.toLowerCase().indexOf('obs.') === 0) ? 'obs' : 'item';
+        });
         return db.collection('eventos_campo').add({
           ev_nome:        evNome,
           ev_local:       evLocal,
@@ -5993,6 +6004,7 @@ function handleNotasClick(e) {
           ev_resp:        '',
           cli_nome:       '',
           servicos:       itens,
+          itens_tipo:     itensTipo,
           itens_ok:       {},
           itens_extras:   [],
           etapa:          'eventos',
@@ -6115,11 +6127,15 @@ function _salvarEdicaoNota(id) {
     var nota = _todasNotas.find(function(n) { return n.id === id; });
     var painelId = nota && nota.painel_id ? nota.painel_id : null;
     if (painelId && db) {
+      var itensTipoUpd = itens.map(function(item) {
+        return (item.toLowerCase().indexOf('obs:') === 0 || item.toLowerCase().indexOf('obs.') === 0) ? 'obs' : 'item';
+      });
       db.collection('eventos_campo').doc(painelId).update({
-        ev_nome:  titulo.trim() || 'Anotação',
-        ev_local: evLocal.trim(),
-        ev_data:  evData.trim(),
-        servicos: itens
+        ev_nome:    titulo.trim() || 'Anotação',
+        ev_local:   evLocal.trim(),
+        ev_data:    evData.trim(),
+        servicos:   itens,
+        itens_tipo: itensTipoUpd
       }).catch(function(e) { console.warn('Erro ao atualizar painel:', e); });
     }
   }).catch(function(e) { alert('Erro ao salvar: ' + e.message); });
