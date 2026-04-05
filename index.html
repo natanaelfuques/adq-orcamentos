@@ -5921,7 +5921,7 @@ function iniciarListenerNotas() {
       var docs = [];
       snap.forEach(function(doc) {
         var d = Object.assign({ id: doc.id }, doc.data());
-        if (!d.nota_id) docs.push(d); // só contratos (notas já aparecem pelo listener acima)
+        docs.push(d); // tudo que está no painel (contratos e notas)
       });
       _todosEventosCampo = docs;
       renderNotas();
@@ -6117,8 +6117,10 @@ function renderNotas() {
     return card;
   });
 
-  // Cards de notas manuais
-  var cardsNotas = (_todasNotas || []).map(function(doc) {
+  // Cards de notas manuais (excluir as que já estão no painel — aparecem como cards de evento)
+  var cardsNotas = (_todasNotas || []).filter(function(doc) {
+    return !doc.no_painel;
+  }).map(function(doc) {
     var id        = doc.id;
     var tituloRaw = (doc.titulo || '').trim();
     var titulo    = escHtml(tituloRaw);
