@@ -4574,7 +4574,6 @@ function iniciarListenerSalvos() {
   if (statusEl) statusEl.textContent = 'Sincronizando...';
   salvosListener = db.collection('orcamentos')
     .orderBy('criadoEm', 'desc')
-    .limit(200)
     .onSnapshot(function(snap) {
       const docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
@@ -4777,6 +4776,11 @@ function gerarContratoSalvo(id) {
   db.collection('orcamentos').doc(id).get().then(function(doc) {
     if (!doc.exists) return;
     var d = doc.data();
+    // Marcar como aprovado automaticamente ao gerar contrato
+    if (!d.aprovado) {
+      db.collection('orcamentos').doc(id).update({ aprovado: true })
+        .catch(function(e) { console.warn('[AdQ] Erro ao aprovar ao gerar contrato:', e); });
+    }
     _currentOrcRef = id.substring(0, 8).toUpperCase();
     switchMain('contrato');
     setTimeout(function() {
@@ -5002,7 +5006,6 @@ function iniciarListenerContratos() {
   if (!db) return;
   db.collection('contratos')
     .orderBy('criadoEm', 'desc')
-    .limit(200)
     .onSnapshot(function(snap) {
       var docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
@@ -6027,7 +6030,6 @@ function iniciarListenerNotas() {
   // Listener de notas (anotações manuais)
   db.collection('notas')
     .orderBy('criadoEm', 'desc')
-    .limit(200)
     .onSnapshot(function(snap) {
       var docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({ id: doc.id }, doc.data())); });
@@ -6042,7 +6044,6 @@ function iniciarListenerNotas() {
   // Listener de eventos_campo — contratos enviados ao painel (nota_id ausente = veio de contrato)
   db.collection('eventos_campo')
     .orderBy('criadoEm', 'desc')
-    .limit(200)
     .onSnapshot(function(snap) {
       var docs = [];
       snap.forEach(function(doc) {
