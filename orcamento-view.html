@@ -1156,15 +1156,16 @@ function renderOrcamento(doc) {
     const NOMES = { 1: 'Essencial', 2: 'Mais Escolhido', 3: 'Experiência Completa' };
 
     lista.innerHTML = pOpcoes.map((op, i) => {
-      const idx = op.idx || (i + 1);
-      const isMaisEscolhido = idx === 2;
+      const num = i + 1; // sempre sequencial: 1, 2, 3...
+      const titulo = op.titulo || NOMES[op.idx] || 'Pacote';
+      const isMaisEscolhido = (titulo.toLowerCase().indexOf('escolhido') !== -1) || (titulo.toLowerCase().indexOf('mais') !== -1 && titulo.toLowerCase().indexOf('escolhido') !== -1) || titulo === 'Mais Escolhido';
       const linhas = (op.desc || '').split('\n').filter(l => l.trim());
       return `
         <div class="opcao-card${isMaisEscolhido ? ' opcao-card--destaque' : ''}">
           <div class="opcao-head">
             <div class="opcao-head-left">
-              <span class="opcao-num">Opção ${idx}</span>
-              <span class="opcao-titulo">${escHtml(op.titulo || NOMES[idx] || 'Pacote')}</span>
+              <span class="opcao-num">Opção ${num}</span>
+              <span class="opcao-titulo">${escHtml(titulo)}</span>
             </div>
             ${isMaisEscolhido ? '<span class="opcao-titulo-star">★</span>' : ''}
           </div>
@@ -1389,8 +1390,9 @@ function preencherSelects(d) {
   if (opcoes.length) {
     _orcData.isDetalhado = false;
     opcoes.forEach(function(op, i) {
-      var idx = op.idx || (i+1);
-      var nome = 'Opcao ' + idx + ' - ' + (op.titulo || NOMES[idx] || 'Pacote');
+      var num = i + 1; // sempre sequencial
+      var titulo = op.titulo || NOMES[op.idx] || 'Pacote';
+      var nome = 'Opção ' + num + ' — ' + titulo;
       var desc = op.valor ? 'R$ ' + op.valor : '';
       var card = criarCardRadio(nome, desc, 'opcao', i);
       if (op.valor) card.dataset.valorBrl = op.valor;
@@ -1480,8 +1482,9 @@ function preencherSelects(d) {
   var detOpc = (d.opcoes||[]).find(function(o){ return o.tipo==='detalhado'; });
   if (opcoesPacote.length) {
     opcoesPacote.forEach(function(op, i) {
-      var idx = op.idx || (i+1);
-      var nome = 'Opcao ' + idx + ' - ' + (op.titulo || NOMES2[idx] || 'Pacote');
+      var num = i + 1;
+      var titulo = op.titulo || NOMES2[op.idx] || 'Pacote';
+      var nome = 'Opção ' + num + ' — ' + titulo;
       if (op.valor) _orcData.opcaoValores[nome] = op.valor;
     });
   } else if (detOpc && detOpc.valor) {
@@ -1757,7 +1760,7 @@ function enviarDadosReserva(e) {
         (fim     ? 'Termino: '             + fim     : ''),
         (resp    ? 'Responsavel no local: '+ resp    : ''),
         '',
-        (opcaoSel ? 'Opcao: ' + opcaoSel : ''),
+        (opcaoSel ? 'Opção: ' + opcaoSel : ''),
         (pgtoSel  ? 'Pagamento: ' + pgtoSel : ''),
         (function() {
           var el = document.getElementById('entrada-data-input');
