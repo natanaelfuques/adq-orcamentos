@@ -1883,7 +1883,7 @@ function sincronizarPainel() {
             itens_ok:    {},
             etapa:       'eventos',
             contrato_id: cid,
-            criadoEm:    firebase.firestore.FieldValue.serverTimestamp()
+            criadoEm:    new Date()
           });
           mudou = true;
         }

@@ -702,7 +702,7 @@
     margin-top: 8px;
   }
   .salvo-status.aprovado   { border-color: #25D366; color: #25D366; }
-  .salvo-status.enviado    { border-color: #4A90C8; color: #4A90C8; }
+  .salvo-status.enviado    { border-color: #C8A94A; color: #C8A94A; }
   .salvo-status.andamento  { border-color: var(--gold); color: var(--gold); cursor: default; }
   .salvo-status.concluido  { border-color: #25D366; color: #25D366; cursor: default; }
   .salvo-status.cancelado  { border-color: #e05c5c; color: #e05c5c; }
@@ -4496,8 +4496,7 @@ function handleSalvosClick(e) {
   else if (action === 'excluir') excluirSalvo(id, nome);
   else if (action === 'abrir-contrato') { registrarLogGerador('abrir-contrato', nome); abrirContrato(id); }
   else if (action === 'link-contrato') {
-    var lnk = btn.getAttribute('data-link') || '';
-    if (lnk) { window.open(lnk, '_blank'); } else { abrirModalLinkAssinatura(id, btn); }
+    abrirModalLinkAssinatura(id, btn);
   }
   else if (action === 'enviar-painel') {
     registrarLogGerador('enviar-painel', nome);
@@ -4568,24 +4567,6 @@ function handleSalvosClick(e) {
   }
 }
 
-function _adicionarLongPressLinkContrato(el) {
-  var _lpTimer = null;
-  var _lpFired = false;
-  el.addEventListener('touchstart', function(e) {
-    var btn = e.target.closest('[data-action="link-contrato"]');
-    if (!btn || !btn.getAttribute('data-link')) return;
-    _lpFired = false;
-    _lpTimer = setTimeout(function() {
-      _lpFired = true;
-      abrirModalLinkAssinatura(btn.getAttribute('data-id'), btn);
-    }, 500);
-  }, { passive: true });
-  el.addEventListener('touchend', function(e) {
-    clearTimeout(_lpTimer);
-    if (_lpFired) { e.preventDefault(); }
-  });
-  el.addEventListener('touchmove', function() { clearTimeout(_lpTimer); }, { passive: true });
-}
 
 function iniciarListenerSalvos() {
   var lista = document.getElementById('salvos-lista');
@@ -4593,7 +4574,6 @@ function iniciarListenerSalvos() {
   var listaC = document.getElementById('contratos-lista');
   if (listaC) {
     listaC.addEventListener('click', handleSalvosClick);
-    _adicionarLongPressLinkContrato(listaC);
     listaC.addEventListener('change', function(e) {
       var inp = e.target.closest('.salvo-montagem-input');
       if (!inp) return;
@@ -5661,7 +5641,7 @@ function buildEventoFromContrato(d, contratoId) {
     servicos:       d.servicos       || [],
     criador:        d.criador        || '',
     contrato_id:    contratoId,
-    criadoEm:       firebase.firestore.FieldValue.serverTimestamp()
+    criadoEm:       new Date()
   };
 }
 
@@ -5876,11 +5856,11 @@ function abrirModalLinkAssinatura(id, btnEl) {
   if (linkAtual) {
     // Modo: link já existe — opções de abrir ou trocar
     modal.innerHTML = [
-      '<div style="background:#1e1e1e;border:1px solid #C8A94A;border-radius:8px;padding:24px 22px;width:100%;max-width:380px;box-sizing:border-box">',
-        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:14px">Link de Assinatura</div>',
+      '<div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:380px;box-sizing:border-box">',
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:14px">Link de Assinatura</div>',
         '<div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">' + escHtml(linkAtual) + '</div>',
         '<div style="display:flex;gap:8px;flex-wrap:wrap">',
-          '<a href="' + escHtml(linkAtual) + '" target="_blank" onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:#C8A94A;border:1px solid #C8A94A;color:#111;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
+          '<a href="' + escHtml(linkAtual) + '" target="_blank" onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:#4A90C8;border:1px solid #4A90C8;color:#111;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
           '<button onclick="_trocarLinkAssinatura(\'' + id + '\')" style="flex:1;min-width:80px;background:transparent;border:1px solid #555;color:#aaa;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Trocar</button>',
           '<button onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
         '</div>',
@@ -5889,11 +5869,11 @@ function abrirModalLinkAssinatura(id, btnEl) {
   } else {
     // Modo: sem link — colar novo link
     modal.innerHTML = [
-      '<div style="background:#1e1e1e;border:1px solid #C8A94A;border-radius:8px;padding:24px 22px;width:100%;max-width:380px;box-sizing:border-box">',
-        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px">Link de Assinatura</div>',
-        '<input id="adq-link-ass-input" type="url" placeholder="Cole o link aqui..." style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">',
+      '<div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:380px;box-sizing:border-box">',
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px">Link de Assinatura</div>',
+        '<input id="adq-link-ass-input" type="url" placeholder="Cole o link aqui..." style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'">',
         '<div style="display:flex;gap:8px">',
-          '<button onclick="_salvarLinkAssinatura(\'' + id + '\')" style="flex:1;background:#C8A94A;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">OK</button>',
+          '<button onclick="_salvarLinkAssinatura(\'' + id + '\')" style="flex:1;background:#4A90C8;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">OK</button>',
           '<button onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
         '</div>',
       '</div>'
