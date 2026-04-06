@@ -765,6 +765,9 @@
     display: flex; align-items: center; justify-content: center;
   }
   .salvos-search-toggle:hover, .salvos-search-toggle.active { border-color: var(--gold); color: var(--gold); }
+  .salvos-search-toggle.spinning { border-color: var(--gold); color: var(--gold); pointer-events: none; }
+  .salvos-search-toggle.spinning svg { animation: _adq-spin 0.8s linear infinite; }
+  @keyframes _adq-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .salvos-search-area {
     display: none;
     background: var(--darker);
@@ -1786,6 +1789,14 @@ Revestimento</textarea>
         <button id="salvos-carregar-btn" class="salvos-search-toggle" onclick="document.getElementById('orc_carregar_input').click()" title="Carregar orçamento / contrato" style="padding:6px 8px">
           <svg width="17" height="15" viewBox="0 0 20 17" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M1.5 3C1.5 2.17 2.17 1.5 3 1.5H7.38L9.38 3.5H17C17.83 3.5 18.5 4.17 18.5 5V14C18.5 14.83 17.83 15.5 17 15.5H3C2.17 15.5 1.5 14.83 1.5 14V3ZM3 0C1.34 0 0 1.34 0 3V14C0 15.66 1.34 17 3 17H17C18.66 17 20 15.66 20 14V5C20 3.34 18.66 2 17 2H10L8 0H3Z"/>
+          </svg>
+        </button>
+        <button class="salvos-search-toggle" id="salvos-verificar-btn" onclick="onVerificarAutentique()" title="Verificar assinaturas" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1,4 1,1 4,1"/>
+            <polyline points="13,10 13,13 10,13"/>
+            <path d="M1,1 C3,0 10,0 12,5"/>
+            <path d="M13,13 C11,14 4,14 2,9"/>
           </svg>
         </button>
         <button class="salvos-search-toggle" id="salvos-search-btn" onclick="toggleBuscaSalvos()" title="Buscar">
@@ -4921,6 +4932,8 @@ function switchSalvosTab(tab, animate) {
   if (btnNot) btnNot.classList.toggle('active-sub-tab', isNot);
   var carregarBtn = document.getElementById('salvos-carregar-btn');
   if (carregarBtn) carregarBtn.style.display = isOrc ? '' : 'none';
+  var verificarBtn = document.getElementById('salvos-verificar-btn');
+  if (verificarBtn) verificarBtn.style.display = (tab === 'contratos') ? '' : 'none';
   if (tab === 'contratos') { iniciarPollingAutentique(); } else { pararPollingAutentique(); }
   atualizarContadorSalvos();
   atualizarAreaBusca();
@@ -6038,6 +6051,15 @@ function _pollingAutentique() {
       });
     })
     .catch(function(e) { console.warn('[AdQ] Polling query erro:', e); });
+}
+
+function onVerificarAutentique() {
+  var btn = document.getElementById('salvos-verificar-btn');
+  if (btn) btn.classList.add('spinning');
+  _pollingAutentique();
+  setTimeout(function() {
+    if (btn) btn.classList.remove('spinning');
+  }, 2000);
 }
 
 function iniciarPollingAutentique() {
