@@ -2412,10 +2412,12 @@ function salvarOrcamentoCompleto() {
   // ── Dados para preencher contrato (opcoes selecionadas) ──
   const opcoes = [];
   if (base.inc_opcoes) {
+    let _seqOpc = 0;
     [1,2,3].forEach(i => {
       if (document.getElementById('inc_op'+i).checked) {
+        _seqOpc++;
         opcoes.push({
-          tipo: 'pacote', idx: i,
+          tipo: 'pacote', idx: _seqOpc,
           titulo: ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
           desc:  document.getElementById('desc'+i).value.trim(),
           valor: formatBRL(parseBRL(document.getElementById('valor'+i).value))
@@ -2665,12 +2667,13 @@ function baixarDadosOrcamento() {
 
   const opcoes = [];
   if (incOpcoes) {
+    let _seqOpc = 0;
     [1,2,3].forEach(i => {
       if (document.getElementById('inc_op'+i).checked) {
-        const tituloEl = document.querySelector('.opcao-label:nth-child(' + i + ')');
+        _seqOpc++;
         opcoes.push({
           tipo: 'pacote',
-          idx: i,
+          idx: _seqOpc,
           titulo: ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
           desc: document.getElementById('desc'+i).value.trim(),
           valor: formatBRL(parseBRL(document.getElementById('valor'+i).value))
@@ -2765,11 +2768,14 @@ function renderOpcoesList(dados) {
     const descPreview = isDetalhado
       ? op.itens.map(it => it.titulo + ': ' + it.desc).join('\n')
       : op.desc;
+    const tituloExibido = isDetalhado
+      ? op.titulo
+      : 'Opção ' + (op.idx || (idx+1)) + ' — ' + op.titulo;
     div.innerHTML = `
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
         <input type="radio" name="orc_opcao_sel" value="${idx}" style="width:auto;accent-color:var(--gold);margin-top:3px">
         <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:var(--gold);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:4px">${op.titulo}</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:var(--gold);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:4px">${tituloExibido}</div>
           <div style="font-size:0.78rem;color:var(--muted);white-space:pre-line;line-height:1.5">${descPreview}</div>
           <div style="font-size:0.85rem;color:var(--text);font-weight:700;margin-top:6px">R$ ${op.valor || (op.itens ? op.itens.reduce((s,it)=>s+parseBRL(it.valor),0).toLocaleString('pt-BR',{minimumFractionDigits:2}) : '—')}</div>
         </div>
@@ -4677,10 +4683,12 @@ function coletarDadosOrcamento() {
 
   const opcoes = [];
   if (base.inc_opcoes) {
+    var _seqOpc = 0;
     [1,2,3].forEach(function(i) {
       if (document.getElementById('inc_op'+i) && document.getElementById('inc_op'+i).checked) {
+        _seqOpc++;
         opcoes.push({
-          tipo: 'pacote', idx: i,
+          tipo: 'pacote', idx: _seqOpc,
           titulo: ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
           desc:  document.getElementById('desc'+i) ? document.getElementById('desc'+i).value.trim() : '',
           valor: formatBRL(parseBRL(document.getElementById('valor'+i) ? document.getElementById('valor'+i).value : '0'))
