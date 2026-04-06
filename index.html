@@ -5014,7 +5014,66 @@ function iniciarListenerContratos() {
       console.warn('[AdQ] Contratos listener erro:', err);
     });
 
-
+  // Listener em tempo real para atualizar status dos botões conforme mudança de coluna no painel
+  db.collection('eventos_campo').onSnapshot(function(snap) {
+    // Manter mapa global de etapas para uso nos filtros
+    snap.forEach(function(doc) { _etapaMapContratos[doc.id] = doc.data().etapa || 'eventos'; });
+    snap.docChanges().forEach(function(change) {
+      if (change.type === 'removed') delete _etapaMapContratos[change.doc.id];
+      var id = change.doc.id;
+      var etapa = change.type === 'removed' ? '' : (change.doc.data().etapa || 'eventos');
+      var btn = document.querySelector('.salvo-card span.salvo-status[data-id="' + id + '"]');
+      if (!btn) return;
+      var aprovado = btn.getAttribute('data-aprovado') === 'true';
+      var statusClass, statusLabel, clickable;
+      if (!aprovado && etapa !== '') {
+        // foi re-adicionado ao painel sem aprovado — improvável, ignorar
+        return;
+      }
+      if (etapa === 'andamento') {
+        statusClass = 'andamento'; statusLabel = 'Em andamento'; clickable = false;
+      } else if (etapa === 'concluido') {
+        statusClass = 'concluido'; statusLabel = 'Concluído'; clickable = false;
+      } else if (etapa === 'eventos' && aprovado) {
+        statusClass = 'aprovado'; statusLabel = 'Assinado'; clickable = true;
+      } else {
+        statusClass = ''; statusLabel = 'Pendente'; clickable = true;
+      }
+      btn.className = 'salvo-status status-readonly' + (statusClass ? ' ' + statusClass : '');
+      btn.textContent = statusLabel;
+      btn.setAttribute('data-etapa', etapa);
+      // Atualizar botão Painel do mesmo card
+      var painelBtnRT = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('[data-action="enviar-painel"][data-id="' + id + '"]');
+      if (painelBtnRT) {
+        var noPanel = change.type !== 'removed' && !!etapa;
+        if (noPanel) { painelBtnRT.classList.add('no-painel'); painelBtnRT.setAttribute('data-no-painel','1'); painelBtnRT.title='Remover do painel'; }
+        else { painelBtnRT.classList.remove('no-painel'); painelBtnRT.setAttribute('data-no-painel','0'); painelBtnRT.title='Enviar para o painel'; }
+      }
+      // Montagem/desmontagem
+      var cardEl = btn.closest('.salvo-card');
+      if (cardEl) {
+        var monRow = cardEl.querySelector('.salvo-montagem-row');
+        if (monRow) monRow.style.display = (aprovado && etapa !== 'concluido') ? '' : 'none';
+        // Atualizar cor e clique da referência do contrato
+        var refBtn = cardEl.querySelector('[data-ref-contrato]');
+        if (refBtn) {
+          var temEv = change.type !== 'removed' && !!etapa;
+          refBtn.style.color = temEv ? '#aaa' : '#444';
+          refBtn.style.cursor = temEv ? 'pointer' : 'default';
+          if (temEv) {
+            var refVal = refBtn.getAttribute('data-ref-contrato');
+            refBtn.onclick = function() { irParaEventoRef(refVal); };
+            refBtn.onmouseover = function() { this.style.color = '#C8A94A'; };
+            refBtn.onmouseout  = function() { this.style.color = '#aaa'; };
+          } else {
+            refBtn.onclick = null;
+            refBtn.onmouseover = null;
+            refBtn.onmouseout  = null;
+          }
+        }
+      }
+    });
+  });
 }
 
 function irParaOrcamentoRef(ref) {
@@ -5980,75 +6039,15 @@ function iniciarListenerNotas() {
       console.warn('[AdQ] Notas listener erro:', err);
     });
 
-  // Listener unificado de eventos_campo — atualiza painel, etapas e botões de contratos
+  // Listener de eventos_campo — contratos enviados ao painel (nota_id ausente = veio de contrato)
   db.collection('eventos_campo')
     .orderBy('criadoEm', 'desc')
     .limit(200)
     .onSnapshot(function(snap) {
-      // ── Atualizar mapa de etapas (usado nos cards de contratos) ──
-      // Manter mapa global de etapas para uso nos filtros
-      snap.forEach(function(doc) { _etapaMapContratos[doc.id] = doc.data().etapa || 'eventos'; });
-      snap.docChanges().forEach(function(change) {
-        if (change.type === 'removed') delete _etapaMapContratos[change.doc.id];
-        var id = change.doc.id;
-        var etapa = change.type === 'removed' ? '' : (change.doc.data().etapa || 'eventos');
-        var btn = document.querySelector('.salvo-card span.salvo-status[data-id="' + id + '"]');
-        if (!btn) return;
-        var aprovado = btn.getAttribute('data-aprovado') === 'true';
-        var statusClass, statusLabel, clickable;
-        if (!aprovado && etapa !== '') {
-          // foi re-adicionado ao painel sem aprovado — improvável, ignorar
-          return;
-        }
-        if (etapa === 'andamento') {
-          statusClass = 'andamento'; statusLabel = 'Em andamento'; clickable = false;
-        } else if (etapa === 'concluido') {
-          statusClass = 'concluido'; statusLabel = 'Concluído'; clickable = false;
-        } else if (etapa === 'eventos' && aprovado) {
-          statusClass = 'aprovado'; statusLabel = 'Assinado'; clickable = true;
-        } else {
-          statusClass = ''; statusLabel = 'Pendente'; clickable = true;
-        }
-        btn.className = 'salvo-status status-readonly' + (statusClass ? ' ' + statusClass : '');
-        btn.textContent = statusLabel;
-        btn.setAttribute('data-etapa', etapa);
-        // Atualizar botão Painel do mesmo card
-        var painelBtnRT = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('[data-action="enviar-painel"][data-id="' + id + '"]');
-        if (painelBtnRT) {
-          var noPanel = change.type !== 'removed' && !!etapa;
-          if (noPanel) { painelBtnRT.classList.add('no-painel'); painelBtnRT.setAttribute('data-no-painel','1'); painelBtnRT.title='Remover do painel'; }
-          else { painelBtnRT.classList.remove('no-painel'); painelBtnRT.setAttribute('data-no-painel','0'); painelBtnRT.title='Enviar para o painel'; }
-        }
-        // Montagem/desmontagem
-        var cardEl = btn.closest('.salvo-card');
-        if (cardEl) {
-          var monRow = cardEl.querySelector('.salvo-montagem-row');
-          if (monRow) monRow.style.display = (aprovado && etapa !== 'concluido') ? '' : 'none';
-          // Atualizar cor e clique da referência do contrato
-          var refBtn = cardEl.querySelector('[data-ref-contrato]');
-          if (refBtn) {
-            var temEv = change.type !== 'removed' && !!etapa;
-            refBtn.style.color = temEv ? '#aaa' : '#444';
-            refBtn.style.cursor = temEv ? 'pointer' : 'default';
-            if (temEv) {
-              var refVal = refBtn.getAttribute('data-ref-contrato');
-              refBtn.onclick = function() { irParaEventoRef(refVal); };
-              refBtn.onmouseover = function() { this.style.color = '#C8A94A'; };
-              refBtn.onmouseout  = function() { this.style.color = '#aaa'; };
-            } else {
-              refBtn.onclick = null;
-              refBtn.onmouseover = null;
-              refBtn.onmouseout  = null;
-            }
-          }
-        }
-      });
-
-      // ── Atualizar lista do painel ──
       var docs = [];
       snap.forEach(function(doc) {
         var d = Object.assign({ id: doc.id }, doc.data());
-        docs.push(d);
+        docs.push(d); // tudo que está no painel (contratos e notas)
       });
       _todosEventosCampo = docs;
       renderNotas();
