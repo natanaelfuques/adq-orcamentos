@@ -1824,7 +1824,7 @@ Revestimento</textarea>
     </div>
     <!-- Sub-abas -->
     <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px">
-      <button id="salvos-tab-orc" onclick="if(window._goToVirtual)_goToVirtual(1,false);else switchSalvosTab('orcamentos')" class="salvos-sub-tab active-sub-tab">Propostas</button>
+      <button id="salvos-tab-orc" onclick="if(window._goToVirtual)_goToVirtual(1,false);else switchSalvosTab('orcamentos')" class="salvos-sub-tab active-sub-tab">Orçamentos</button>
       <button id="salvos-tab-con" onclick="if(window._goToVirtual)_goToVirtual(2,false);else switchSalvosTab('contratos')" class="salvos-sub-tab">Contratos</button>
       <button id="salvos-tab-not" onclick="switchSalvosTab('notas')" class="salvos-sub-tab">Eventos</button>
     </div>
@@ -4854,7 +4854,7 @@ function atualizarContadorSalvos() {
     statusEl.textContent = n + ' evento' + (n !== 1 ? 's' : '');
   } else {
     var n = window._countOrcamentos || 0;
-    statusEl.textContent = n + ' orcamento' + (n !== 1 ? 's' : '');
+    statusEl.textContent = n + ' orçamento' + (n !== 1 ? 's' : '');
   }
 }
 
