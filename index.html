@@ -4526,6 +4526,16 @@ function handleSalvosClick(e) {
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
   else if (action === 'json-con') baixarContratoJSON(id);
+  else if (action === 'toggle-aprovado-contrato') {
+    if (!db) return;
+    var aprovadoAtual = btn.getAttribute('data-aprovado') === 'true';
+    var novoAprovado = !aprovadoAtual;
+    db.collection('contratos').doc(id).update({ aprovado: novoAprovado })
+      .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
+    btn.textContent = novoAprovado ? 'Aprovado' : 'Pendente';
+    btn.setAttribute('data-aprovado', novoAprovado);
+    if (novoAprovado) { btn.classList.add('aprovado'); } else { btn.classList.remove('aprovado'); }
+  }
   else if (action === 'toggle-aprovado') {
     if (!db) return;
     var aprovadoAtual = btn.getAttribute('data-aprovado') === 'true';
@@ -5143,17 +5153,9 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var nomeEsc = escHtml(nome);
     var etapa = etapaMap[id]; // 'eventos','andamento','concluido' ou undefined
     // Determinar estado visual do botão
-    var statusClass, statusLabel, statusClickable;
-    if (!aprovado) {
-      statusClass = ''; statusLabel = 'Pendente'; statusClickable = true;
-    } else if (etapa === 'andamento') {
-      statusClass = ' andamento'; statusLabel = 'Em andamento'; statusClickable = false;
-    } else if (etapa === 'concluido') {
-      statusClass = ' concluido'; statusLabel = 'Concluído'; statusClickable = false;
-    } else {
-      // aprovado e etapa === 'eventos' (ou ausente) → Assinado
-      statusClass = ' aprovado'; statusLabel = 'Assinado'; statusClickable = true;
-    }
+    var statusClass = aprovado ? ' aprovado' : '';
+    var statusLabel = aprovado ? 'Aprovado' : 'Pendente';
+    var statusClickable = true;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
     var card = '<div class="salvo-card' + _classeBordaCon + '">';
@@ -5177,7 +5179,11 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     if (doc.autentique_id) {
       card += '<button class="salvo-status btn-autentique-check" data-action="verificar-autentique" data-id="' + id + '" data-aut-id="' + escHtml(doc.autentique_id) + '" title="Verificar assinatura no Autentique">Verificar</button>';
     }
-    card += '<span class="salvo-status status-readonly' + statusClass + '" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '">' + statusLabel + '</span>';
+    if (statusClickable) {
+      card += '<button class="salvo-status' + statusClass + '" data-action="toggle-aprovado-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '" style="cursor:pointer;background:transparent">' + statusLabel + '</button>';
+    } else {
+      card += '<span class="salvo-status status-readonly' + statusClass + '" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '">' + statusLabel + '</span>';
+    }
     card += '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">';
     if (doc.orc_ref) card += '<button onclick="irParaOrcamentoRef(\'' + escHtml(doc.orc_ref) + '\')" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#aaa;letter-spacing:0.1em;background:transparent;border:none;cursor:pointer;padding:0;transition:color 0.15s" title="Ver orçamento de origem" onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"># ' + escHtml(doc.orc_ref) + '</button>';
     var _temEvento = !!_etapaMapContratos[id];
