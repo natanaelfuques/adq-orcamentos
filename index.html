@@ -6030,7 +6030,7 @@ function iniciarListenerNotas() {
       snap.forEach(function(doc) { docs.push(Object.assign({ id: doc.id }, doc.data())); });
       _todasNotas = docs;
       renderNotas();
-      window._countNotas = docs.length;
+      window._countNotas = docs.filter(function(d) { return !d.no_painel; }).length + (_todosEventosCampo || []).length;
       if (_salvosTab === 'notas') atualizarContadorSalvos();
     }, function(err) {
       console.warn('[AdQ] Notas listener erro:', err);
@@ -6047,6 +6047,8 @@ function iniciarListenerNotas() {
       });
       _todosEventosCampo = docs;
       renderNotas();
+      window._countNotas = (_todasNotas || []).filter(function(d) { return !d.no_painel; }).length + docs.length;
+      if (_salvosTab === 'notas') atualizarContadorSalvos();
     }, function(err) {
       console.warn('[AdQ] EventosCampo listener erro:', err);
     });
