@@ -4796,7 +4796,19 @@ function renderSalvos(docs) {
     card += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">';
     card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="toggle-aprovado" data-id="' + id + '" data-aprovado="' + aprovado + '" style="cursor:pointer;background:transparent;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase">';
     card += (aprovado ? 'Aprovado' : 'Pendente') + '</button>';
-    card += '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#444;letter-spacing:0.1em"># ' + ref + '</span>';
+    // Contadores de interação
+    var intSim = (doc.interacoes && doc.interacoes.sim) ? doc.interacoes.sim : 0;
+    var intNao = (doc.interacoes && doc.interacoes.nao) ? doc.interacoes.nao : 0;
+    var _intHtml = '<div style="display:flex;align-items:center;gap:6px">';
+    _intHtml += '<span title="Sim, quero reservar" style="display:inline-flex;align-items:center;gap:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + (intSim > 0 ? '#5cb85c' : '#444') + ';letter-spacing:0.06em">';
+    _intHtml += '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 6.5L5 9.5L10 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    _intHtml += intSim + '</span>';
+    _intHtml += '<span title="Quero modificações" style="display:inline-flex;align-items:center;gap:3px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + (intNao > 0 ? '#e55' : '#444') + ';letter-spacing:0.06em">';
+    _intHtml += '<svg width="11" height="11" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 3L9 9M9 3L3 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    _intHtml += intNao + '</span>';
+    _intHtml += '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#444;letter-spacing:0.1em"># ' + ref + '</span>';
+    _intHtml += '</div>';
+    card += _intHtml;
     card += '</div>';
     card += '</div>';
     return card;

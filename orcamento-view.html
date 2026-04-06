@@ -1109,6 +1109,7 @@ function renderOrcamento(doc) {
     'Emitido em ' + (emissaoDate ? emissaoDate.toLocaleDateString('pt-BR') : '—');
   document.getElementById('hero-ref').textContent = id.substring(0, 8).toUpperCase();
   _orcData.ref = id.substring(0, 8).toUpperCase();
+  _orcData.orcId = id;
 
   // Contador de validade (7 dias a partir da emissão)
   if (emissaoDate) {
@@ -1235,8 +1236,25 @@ function showError(msg) {
 
 
 // ── PROPOSTA FEEDBACK ──
-var _orcData = { nome: '', ref: '' };
+var _orcData = { nome: '', ref: '', orcId: '' };
 var _painelAtivo = null;
+
+// ── REGISTRO DE INTERAÇÕES ──
+var _interacoesRegistradas = {};
+function registrarInteracao(tipo) {
+  var db = window._db;
+  var id = _orcData.orcId;
+  if (!db || !id) return;
+  // Evita registrar a mesma interação mais de uma vez por sessão
+  if (_interacoesRegistradas[tipo]) return;
+  _interacoesRegistradas[tipo] = true;
+  var inc = {};
+  inc['interacoes.' + tipo] = firebase.firestore.FieldValue.increment(1);
+  inc['interacoes.ultima_' + tipo] = firebase.firestore.FieldValue.serverTimestamp();
+  db.collection('orcamentos').doc(id).update(inc).catch(function(e) {
+    console.warn('[AdQ] Erro ao registrar interação:', e);
+  });
+}
 
 function abrirResposta(tipo) {
   var painelSim = document.getElementById('painel-sim');
@@ -1256,10 +1274,12 @@ function abrirResposta(tipo) {
   btnNao.classList.remove('proposta-btn--ativo');
 
   if (tipo === 'sim') {
+    registrarInteracao('sim');
     painelSim.style.display = 'block';
     btnSim.classList.add('proposta-btn--ativo');
     painelSim.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } else {
+    registrarInteracao('nao');
     // Fechar formulário de dados se estiver aberto
     var dadosForm = document.getElementById('dados-reserva-form');
     var btnDados = document.getElementById('btn-dados-reserva');
