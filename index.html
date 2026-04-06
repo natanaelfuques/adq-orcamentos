@@ -702,6 +702,7 @@
     margin-top: 8px;
   }
   .salvo-status.aprovado   { border-color: #25D366; color: #25D366; }
+  .salvo-status.enviado    { border-color: #4A90C8; color: #4A90C8; }
   .salvo-status.andamento  { border-color: var(--gold); color: var(--gold); cursor: default; }
   .salvo-status.concluido  { border-color: #25D366; color: #25D366; cursor: default; }
   .salvo-status.cancelado  { border-color: #e05c5c; color: #e05c5c; }
@@ -4531,13 +4532,18 @@ function handleSalvosClick(e) {
   else if (action === 'json-con') baixarContratoJSON(id);
   else if (action === 'toggle-aprovado-contrato') {
     if (!db) return;
-    var aprovadoAtual = btn.getAttribute('data-aprovado') === 'true';
-    var novoAprovado = !aprovadoAtual;
-    db.collection('contratos').doc(id).update({ aprovado: novoAprovado })
+    var statusAtual = btn.getAttribute('data-status') || (btn.getAttribute('data-aprovado') === 'true' ? 'assinado' : 'pendente');
+    var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : 'pendente';
+    var novoAprovado = novoStatus === 'assinado';
+    var novoLabel = novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado' : 'Pendente';
+    var novaClasse = novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : '';
+    db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
-    btn.textContent = novoAprovado ? 'Assinado' : 'Pendente';
+    btn.textContent = novoLabel;
+    btn.setAttribute('data-status', novoStatus);
     btn.setAttribute('data-aprovado', novoAprovado);
-    if (novoAprovado) { btn.classList.add('aprovado'); } else { btn.classList.remove('aprovado'); }
+    btn.className = 'salvo-status' + (novaClasse ? ' ' + novaClasse : '');
+    btn.style.cssText = 'cursor:pointer;background:transparent';
   }
   else if (action === 'toggle-aprovado') {
     if (!db) return;
@@ -4915,6 +4921,7 @@ function switchSalvosTab(tab, animate) {
   if (btnNot) btnNot.classList.toggle('active-sub-tab', isNot);
   var carregarBtn = document.getElementById('salvos-carregar-btn');
   if (carregarBtn) carregarBtn.style.display = isOrc ? '' : 'none';
+  if (tab === 'contratos') { iniciarPollingAutentique(); } else { pararPollingAutentique(); }
   atualizarContadorSalvos();
   atualizarAreaBusca();
 }
@@ -5180,8 +5187,9 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var nomeEsc = escHtml(nome);
     var etapa = etapaMap[id]; // 'eventos','andamento','concluido' ou undefined
     // Determinar estado visual do botão
-    var statusClass = aprovado ? ' aprovado' : '';
-    var statusLabel = aprovado ? 'Assinado' : 'Pendente';
+    var _statusCon = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
+    var statusClass = _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : '';
+    var statusLabel = _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado' : 'Pendente';
     var statusClickable = true;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
@@ -5209,9 +5217,9 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
       card += '<button class="salvo-status btn-autentique-check" data-action="verificar-autentique" data-id="' + id + '" data-aut-id="' + escHtml(doc.autentique_id) + '" title="Verificar assinatura no Autentique">Verificar</button>';
     }
     if (statusClickable) {
-      card += '<button class="salvo-status' + statusClass + '" data-action="toggle-aprovado-contrato" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '" style="cursor:pointer;background:transparent">' + statusLabel + '</button>';
+      card += '<button class="salvo-status' + statusClass + '" data-action="toggle-aprovado-contrato" data-id="' + id + '" data-status="' + _statusCon + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '" style="cursor:pointer;background:transparent">' + statusLabel + '</button>';
     } else {
-      card += '<span class="salvo-status status-readonly' + statusClass + '" data-id="' + id + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '">' + statusLabel + '</span>';
+      card += '<span class="salvo-status status-readonly' + statusClass + '" data-id="' + id + '" data-status="' + _statusCon + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '">' + statusLabel + '</span>';
     }
     card += '<span style="margin-left:auto;display:flex;align-items:center;gap:10px">';
     if (doc.orc_ref) card += '<button onclick="irParaOrcamentoRef(\'' + escHtml(doc.orc_ref) + '\')" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#aaa;letter-spacing:0.1em;background:transparent;border:none;cursor:pointer;padding:0;transition:color 0.15s" title="Ver orçamento de origem" onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"># ' + escHtml(doc.orc_ref) + '</button>';
@@ -5470,12 +5478,13 @@ function filtrarContratos() {
     var dataEvt = (doc.ev_data || '').split('-').reverse().join('/'); // dd/mm/aaaa
     var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0;
     var aprovado = doc.aprovado ? true : false;
+    var sc = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
     var etapa = _etapaMapContratos[doc.id] || '';
-    var noPainel = !!etapa; // se tem etapa, já foi para o painel
+    var noPainel = !!etapa;
     var matchStatus = (_filtroConStatus === 'todos') ||
       (_filtroConStatus === 'sem-painel' && !noPainel) ||
-      (_filtroConStatus === 'pendente' && !aprovado) ||
-      (_filtroConStatus === 'assinado' && aprovado);
+      (_filtroConStatus === 'pendente' && sc === 'pendente') ||
+      (_filtroConStatus === 'assinado' && sc === 'assinado');
     return matchTexto && matchStatus;
   });
   renderContratos(filtrados);
@@ -5952,22 +5961,23 @@ function verificarAssinaturaAutentique(contratoId, btn) {
     var assinado = sigs.length > 0 && sigs.every(function(s) { return s.signed_at && s.signed_at.date; });
     if (assinado) {
       var dataAssinatura = sigs[0].signed_at.date.split(' ')[0].split('-').reverse().join('/');
-      btn.textContent = '✓ Assinado ' + dataAssinatura;
+      btn.textContent = '✓ ' + dataAssinatura;
       btn.className = 'salvo-status btn-autentique-check assinado-aut';
-      // Atualiza status do contrato automaticamente para Assinado
       if (db) {
-        db.collection('contratos').doc(contratoId).update({ aprovado: true })
+        db.collection('contratos').doc(contratoId).update({ status_contrato: 'assinado', aprovado: true })
           .then(function() { adicionarAoPainel(contratoId); })
           .catch(function(e) { console.warn('[AdQ] Erro ao atualizar status:', e); });
-        var statusBtn = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + contratoId + '"]');
-        if (statusBtn && statusBtn.getAttribute('data-aprovado') !== 'true') {
+        var statusBtn = document.querySelector('[data-action="toggle-aprovado-contrato"][data-id="' + contratoId + '"]');
+        if (statusBtn && statusBtn.getAttribute('data-status') !== 'assinado') {
           statusBtn.textContent = 'Assinado';
           statusBtn.className = 'salvo-status aprovado';
+          statusBtn.style.cssText = 'cursor:pointer;background:transparent';
+          statusBtn.setAttribute('data-status', 'assinado');
           statusBtn.setAttribute('data-aprovado', 'true');
         }
       }
     } else {
-      btn.textContent = 'Pendente';
+      btn.textContent = 'Verificar';
       btn.className = 'salvo-status btn-autentique-check';
     }
   })
@@ -5977,6 +5987,67 @@ function verificarAssinaturaAutentique(contratoId, btn) {
     btn.className = 'salvo-status btn-autentique-check';
     alert('Erro ao verificar: ' + err.message);
   });
+}
+
+// ═══ POLLING AUTOMÁTICO AUTENTIQUE ═══
+
+var _autentiquePollingTimer = null;
+
+function _pollingAutentique() {
+  if (!db || !AUTENTIQUE_TOKEN) return;
+  db.collection('contratos')
+    .where('autentique_id', '>', '')
+    .get()
+    .then(function(snap) {
+      snap.forEach(function(docSnap) {
+        var dados = docSnap.data();
+        var sc = dados.status_contrato || (dados.aprovado ? 'assinado' : 'pendente');
+        if (sc === 'assinado') return;
+        var autId = dados.autentique_id;
+        var cid = docSnap.id;
+        var query = 'query { document(id: "' + autId + '") { signatures { signed_at { date } } } }';
+        fetch('https://autentique.natanael-fuques.workers.dev/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Autentique-Token': AUTENTIQUE_TOKEN },
+          body: JSON.stringify({ query: query })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var sigs = (data.data && data.data.document && data.data.document.signatures) || [];
+          var assinado = sigs.length > 0 && sigs.every(function(s) { return s.signed_at && s.signed_at.date; });
+          if (!assinado) return;
+          db.collection('contratos').doc(cid).update({ status_contrato: 'assinado', aprovado: true })
+            .then(function() { adicionarAoPainel(cid); })
+            .catch(function(e) { console.warn('[AdQ] Polling erro update:', e); });
+          var statusBtn = document.querySelector('[data-action="toggle-aprovado-contrato"][data-id="' + cid + '"]');
+          if (statusBtn) {
+            statusBtn.textContent = 'Assinado';
+            statusBtn.className = 'salvo-status aprovado';
+            statusBtn.style.cssText = 'cursor:pointer;background:transparent';
+            statusBtn.setAttribute('data-status', 'assinado');
+            statusBtn.setAttribute('data-aprovado', 'true');
+          }
+          var autBtn = document.querySelector('[data-action="verificar-autentique"][data-id="' + cid + '"]');
+          if (autBtn) {
+            var dataSig = sigs[0].signed_at.date.split(' ')[0].split('-').reverse().join('/');
+            autBtn.textContent = '\u2713 ' + dataSig;
+            autBtn.className = 'salvo-status btn-autentique-check assinado-aut';
+          }
+        })
+        .catch(function(e) { console.warn('[AdQ] Polling Autentique erro:', e); });
+      });
+    })
+    .catch(function(e) { console.warn('[AdQ] Polling query erro:', e); });
+}
+
+function iniciarPollingAutentique() {
+  if (_autentiquePollingTimer) clearInterval(_autentiquePollingTimer);
+  _pollingAutentique();
+  _autentiquePollingTimer = setInterval(_pollingAutentique, 5 * 60 * 1000);
+}
+
+function pararPollingAutentique() {
+  if (_autentiquePollingTimer) { clearInterval(_autentiquePollingTimer); _autentiquePollingTimer = null; }
 }
 
 // ═══ BLOCO NOVO EVENTO (anotação rápida) ═══
@@ -6891,7 +6962,8 @@ function _confirmarAutentique() {
       if (db && _ultimoContratoSalvoId && autentiqueId && !sandbox) {
         db.collection('contratos').doc(_ultimoContratoSalvoId).update({
           autentique_id:   autentiqueId,
-          link_assinatura: linkAssinatura
+          link_assinatura: linkAssinatura,
+          status_contrato: 'enviado'
         }).catch(function(e) { console.warn('[AdQ] Erro ao gravar autentique_id:', e); });
       }
 
