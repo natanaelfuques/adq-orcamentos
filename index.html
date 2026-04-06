@@ -1335,6 +1335,12 @@ header {
           <input type="date" id="data_evento" onchange="validarDataEvento(this)" />
         </div>
       </div>
+      <div class="grid-2" style="margin-top:16px">
+        <div>
+          <label>WhatsApp do Cliente</label>
+          <input type="tel" id="whatsapp_cliente" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="15" />
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2380,6 +2386,7 @@ function salvarOrcamentoCompleto() {
     tipo_evento:   document.getElementById('tipo_evento').value,
     local_evento:  document.getElementById('local_evento').value,
     data_evento:   document.getElementById('data_evento').value,
+    whatsapp_cliente: document.getElementById('whatsapp_cliente')?.value || '',
     inc_cliente:   document.getElementById('inc_cliente').checked,
     inc_opcoes:    document.getElementById('inc_opcoes').checked,
     inc_detalhado: document.getElementById('inc_detalhado').checked,
@@ -2506,7 +2513,7 @@ function resetFormularioOrcamento() {
   var bannerOrc = document.getElementById('adq-draft-orc-banner');
   if (bannerOrc) bannerOrc.remove();
   // Dados do cliente / evento
-  ['nome_cliente','tipo_evento','local_evento','data_evento'].forEach(id => {
+  ['nome_cliente','tipo_evento','local_evento','data_evento','whatsapp_cliente'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   // Pacotes
@@ -2620,6 +2627,7 @@ carregarOrcamentoEditavel._processar = function(d) {
       set('tipo_evento',  d.tipo_evento);
       set('local_evento', d.local_evento);
       set('data_evento',  d.data_evento);
+      set('whatsapp_cliente', d.whatsapp_cliente || '');
       setChk('inc_cliente',   d.inc_cliente);
       setChk('inc_op1', d.inc_op1);
       setChk('inc_op2', d.inc_op2);
@@ -2805,6 +2813,7 @@ function aplicarOpcaoSelecionada() {
   setVal('ev_nome',  d.evento || d.tipo_evento || '');
   setVal('ev_local', d.local || '');
   setVal('ev_data',  d.dataEvt || '');
+  if (d.whatsapp_cliente) setVal('cli_fone', d.whatsapp_cliente);
 
   // ── Serviços ──
   const lista = document.getElementById('lista-servicos');
@@ -4564,10 +4573,10 @@ function handleSalvosClick(e) {
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
   else if (action === 'calendar') { btn.blur(); registrarLogGerador('calendar', nome); gerarLinkCalendar(id); }
   else if (action === 'verificar-autentique') { verificarAssinaturaAutentique(id, btn); }
-  else if (action === 'whatsapp') {
+  else if (action === 'whatsapp' || action === 'whatsapp-orc') {
     var fone = btn.getAttribute('data-fone') || '';
     var numero = fone.replace(/\D/g, '');
-    if (!numero) { alert('Número de telefone não encontrado.'); return; }
+    if (!numero) { alert('Número de WhatsApp não encontrado neste orçamento.'); return; }
     if (numero.length <= 11) numero = '55' + numero;
     btn.blur();
     registrarLogGerador('whatsapp', nome);
@@ -4652,6 +4661,7 @@ function coletarDadosOrcamento() {
     tipo_evento:  document.getElementById('tipo_evento')  ? document.getElementById('tipo_evento').value  : '',
     local_evento: document.getElementById('local_evento') ? document.getElementById('local_evento').value : '',
     data_evento:  document.getElementById('data_evento')  ? document.getElementById('data_evento').value  : '',
+    whatsapp_cliente: document.getElementById('whatsapp_cliente') ? document.getElementById('whatsapp_cliente').value : '',
     inc_cliente:   document.getElementById('inc_cliente')   ? document.getElementById('inc_cliente').checked   : false,
     inc_opcoes:    document.getElementById('inc_opcoes')    ? document.getElementById('inc_opcoes').checked    : false,
     inc_detalhado: document.getElementById('inc_detalhado') ? document.getElementById('inc_detalhado').checked : false,
@@ -4774,8 +4784,12 @@ function renderSalvos(docs) {
     var nomeEsc = escHtml(nome);
     var _criadorOrc = doc.criador || '';
     var _classeBordaOrc = _criadorOrc === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorOrc === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
+    var _waSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:1.15em;height:1.15em;vertical-align:middle"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.856L.057 23.428a.75.75 0 0 0 .921.921l5.573-1.476A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.523-5.188-1.432l-.372-.22-3.862 1.023 1.023-3.861-.22-.373A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
+    var _waOrc = (doc.whatsapp_cliente || '').replace(/\D/g,'');
+    var _waOrcTemFone = _waOrc.length === 10 || _waOrc.length === 11;
     var card = '<div class="salvo-card' + _classeBordaOrc + '">';
     card += '<div class="salvo-card-top">';
+    card += '<button class="salvo-status btn-whatsapp' + (_waOrcTemFone ? ' tem-fone' : '') + '" data-action="whatsapp-orc" data-id="' + id + '" data-fone="' + escHtml(doc.whatsapp_cliente || '') + '" title="WhatsApp do cliente" style="flex-shrink:0;margin-right:8px">' + _waSvg + '</button>';
     card += '<div style="min-width:0;flex:1"><div class="salvo-card-nome">' + nomeEsc + '</div>';
     card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' · ' : '') + dataFmt + '</div></div>';
     card += '<div style="flex-shrink:0">';
@@ -5234,8 +5248,12 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var statusClickable = true;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
+    var _wFone = (doc.cli_fone || '').replace(/\D/g,'');
+    var _wTemFone = _wFone.length === 10 || _wFone.length === 11;
+    var _waSvgCon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:1.15em;height:1.15em;vertical-align:middle"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.856L.057 23.428a.75.75 0 0 0 .921.921l5.573-1.476A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.523-5.188-1.432l-.372-.22-3.862 1.023 1.023-3.861-.22-.373A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
     var card = '<div class="salvo-card' + _classeBordaCon + '">';
     card += '<div class="salvo-card-top">';
+    card += '<button class="salvo-status btn-whatsapp' + (_wTemFone ? ' tem-fone' : '') + '" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '" title="WhatsApp" style="flex-shrink:0;margin-right:8px">' + _waSvgCon + '</button>';
     card += '<div><div class="salvo-card-nome">' + nomeEsc + '</div>';
     card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div></div>';
     card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
@@ -5249,9 +5267,6 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<div class="salvo-status-row">';
-    var _wFone = (doc.cli_fone || '').replace(/\D/g,'');
-    var _wTemFone = _wFone.length === 10 || _wFone.length === 11;
-    card += '<button class="salvo-status btn-whatsapp' + (_wTemFone ? ' tem-fone' : '') + '" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '" title="WhatsApp"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"currentColor\" style=\"width:1.15em;height:1.15em;vertical-align:middle\"><path d=\"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z\"/><path d=\"M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.856L.057 23.428a.75.75 0 0 0 .921.921l5.573-1.476A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.523-5.188-1.432l-.372-.22-3.862 1.023 1.023-3.861-.22-.373A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z\"/></svg></button>';
     var calClass = doc.calendar_adicionado ? 'salvo-status btn-calendar btn-calendar-ok' : 'salvo-status btn-calendar';
     card += '<button class="' + calClass + '" data-action="calendar" data-id="' + id + '">Google Calendar</button>';
 
