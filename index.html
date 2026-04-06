@@ -4503,6 +4503,8 @@ function handleSalvosClick(e) {
     var painelBtn = btn;
     var jaNoPainel = painelBtn.getAttribute('data-no-painel') === '1';
     if (jaNoPainel) {
+      // Marcar como removido manualmente para sincronizarPainel não recriar
+      db.collection('contratos').doc(id).update({ removido_manualmente: true }).catch(function(){});
       removerDoPainel(id);
       // Atualizar mapa otimisticamente para o card sair da lista imediatamente
       delete _etapaMapContratos[id];
@@ -5053,16 +5055,12 @@ function iniciarListenerContratos() {
       if (!btn) return;
       var aprovado = btn.getAttribute('data-aprovado') === 'true';
       var statusClass, statusLabel, clickable;
-      if (!aprovado && etapa !== '') {
-        // foi re-adicionado ao painel sem aprovado — improvável, ignorar
-        return;
-      }
       if (etapa === 'andamento') {
         statusClass = 'andamento'; statusLabel = 'Em andamento'; clickable = false;
       } else if (etapa === 'concluido') {
         statusClass = 'concluido'; statusLabel = 'Concluído'; clickable = false;
-      } else if (etapa === 'eventos' && aprovado) {
-        statusClass = 'aprovado'; statusLabel = 'Assinado'; clickable = true;
+      } else if (etapa === 'eventos') {
+        statusClass = aprovado ? 'aprovado' : ''; statusLabel = aprovado ? 'Assinado' : 'No Painel'; clickable = true;
       } else {
         statusClass = ''; statusLabel = 'Pendente'; clickable = true;
       }

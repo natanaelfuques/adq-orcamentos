@@ -1827,10 +1827,12 @@ function sincronizarPainel() {
   if (!db) return;
   console.log('[Painel] Sincronizando...');
 
-  // 1. Busca todos os contratos assinados
+  // 1. Busca TODOS os contratos (não só aprovados)
   db.collection('contratos').get().then(function(contratosSnap) {
+    var todosContratos = {};
     var assinados = {};
     contratosSnap.forEach(function(doc) {
+      todosContratos[doc.id] = doc.data();
       if (doc.data().aprovado) assinados[doc.id] = doc.data();
     });
 
@@ -1839,18 +1841,16 @@ function sincronizarPainel() {
       var batch = db.batch();
       var mudou = false;
 
-      // Remove eventos cujo contrato não existe ou não está assinado
-      // Preserva eventos criados por anotações (que têm nota_id em vez de contrato_id)
-      // Preserva eventos marcados como removido_manualmente
+      // Remove APENAS eventos cujo contrato foi EXCLUÍDO do banco
+      // Eventos adicionados manualmente pelo botão Painel permanecem independente do status
       eventosSnap.forEach(function(doc) {
         var d = doc.data();
         // Se veio de uma nota, não remover
         if (d.nota_id) return;
-        // Se foi removido manualmente pelo usuário, não remover (já não está)
-        if (d.removido_manualmente) return;
         var cid = d.contrato_id;
-        if (!cid || !assinados[cid]) {
-          console.log('[Painel] Removendo evento orfao:', doc.id, '| contrato_id:', cid || 'ausente');
+        // Só remove se o contrato não existe mais no banco
+        if (cid && !todosContratos[cid]) {
+          console.log('[Painel] Removendo evento orfao (contrato excluido):', doc.id);
           batch.delete(doc.ref);
           mudou = true;
         }
