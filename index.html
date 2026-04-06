@@ -702,7 +702,7 @@
     margin-top: 8px;
   }
   .salvo-status.aprovado   { border-color: #25D366; color: #25D366; }
-  .salvo-status.enviado    { border-color: #C8A94A; color: #C8A94A; }
+  .salvo-status.enviado    { border-color: #4A90C8; color: #4A90C8; }
   .salvo-status.andamento  { border-color: var(--gold); color: var(--gold); cursor: default; }
   .salvo-status.concluido  { border-color: #25D366; color: #25D366; cursor: default; }
   .salvo-status.cancelado  { border-color: #e05c5c; color: #e05c5c; }
@@ -5150,7 +5150,21 @@ function renderContratos(docs) {
     lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum contrato salvo ainda.</div>';
     return;
   }
-  _renderContratosComEtapa(lista, docs, _etapaMapContratos);
+  // Buscar etapas do painel para todos os contratos
+  var ids = docs.map(function(d) { return d.id; });
+  var etapaMap = {};
+  var pending = ids.length;
+  if (pending === 0) { lista.innerHTML = ''; return; }
+  ids.forEach(function(cid) {
+    db.collection('eventos_campo').doc(cid).get().then(function(snap) {
+      if (snap.exists) etapaMap[cid] = snap.data().etapa || 'eventos';
+      pending--;
+      if (pending === 0) _renderContratosComEtapa(lista, docs, etapaMap);
+    }).catch(function() {
+      pending--;
+      if (pending === 0) _renderContratosComEtapa(lista, docs, etapaMap);
+    });
+  });
 }
 
 function _renderContratosComEtapa(lista, docs, etapaMap) {
