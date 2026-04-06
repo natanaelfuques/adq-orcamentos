@@ -1819,8 +1819,6 @@ Revestimento</textarea>
         <button class="salvos-filter-btn active" id="filtro-con-todos" onclick="setFiltroConStatus('todos')">Todos</button>
         <button class="salvos-filter-btn" id="filtro-con-pendente" onclick="setFiltroConStatus('pendente')">Pendentes</button>
         <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
-        <button class="salvos-filter-btn" id="filtro-con-andamento" onclick="setFiltroConStatus('andamento')">Em andamento</button>
-        <button class="salvos-filter-btn" id="filtro-con-concluido" onclick="setFiltroConStatus('concluido')">Concluídos</button>
         <button class="salvos-filter-btn" id="filtro-con-sem-painel" onclick="setFiltroConStatus('sem-painel')">- Painel</button>
       </div>
     </div>
@@ -4532,7 +4530,7 @@ function handleSalvosClick(e) {
     var novoAprovado = !aprovadoAtual;
     db.collection('contratos').doc(id).update({ aprovado: novoAprovado })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
-    btn.textContent = novoAprovado ? 'Aprovado' : 'Pendente';
+    btn.textContent = novoAprovado ? 'Assinado' : 'Pendente';
     btn.setAttribute('data-aprovado', novoAprovado);
     if (novoAprovado) { btn.classList.add('aprovado'); } else { btn.classList.remove('aprovado'); }
   }
@@ -5154,7 +5152,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var etapa = etapaMap[id]; // 'eventos','andamento','concluido' ou undefined
     // Determinar estado visual do botão
     var statusClass = aprovado ? ' aprovado' : '';
-    var statusLabel = aprovado ? 'Aprovado' : 'Pendente';
+    var statusLabel = aprovado ? 'Assinado' : 'Pendente';
     var statusClickable = true;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
@@ -5445,10 +5443,8 @@ function filtrarContratos() {
     var noPainel = !!etapa; // se tem etapa, já foi para o painel
     var matchStatus = (_filtroConStatus === 'todos') ||
       (_filtroConStatus === 'sem-painel' && !noPainel) ||
-      (_filtroConStatus === 'pendente' && !aprovado && !noPainel) ||
-      (_filtroConStatus === 'assinado' && aprovado && etapa === 'eventos') ||
-      (_filtroConStatus === 'andamento' && etapa === 'andamento') ||
-      (_filtroConStatus === 'concluido' && etapa === 'concluido');
+      (_filtroConStatus === 'pendente' && !aprovado) ||
+      (_filtroConStatus === 'assinado' && aprovado);
     return matchTexto && matchStatus;
   });
   renderContratos(filtrados);
