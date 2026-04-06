@@ -4526,6 +4526,16 @@ function handleSalvosClick(e) {
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
   else if (action === 'json-con') baixarContratoJSON(id);
+  else if (action === 'toggle-aprovado') {
+    if (!db) return;
+    var aprovadoAtual = btn.getAttribute('data-aprovado') === 'true';
+    var novoAprovado = !aprovadoAtual;
+    btn.setAttribute('data-aprovado', novoAprovado);
+    btn.textContent = novoAprovado ? 'Aprovado' : 'Pendente';
+    if (novoAprovado) { btn.classList.add('aprovado'); } else { btn.classList.remove('aprovado'); }
+    db.collection('orcamentos').doc(id).update({ aprovado: novoAprovado })
+      .catch(function(e) { console.warn('[AdQ] Toggle aprovado erro:', e); });
+  }
 }
 
 function iniciarListenerSalvos() {
@@ -4700,7 +4710,15 @@ function renderSalvos(docs) {
     card += '<div style="min-width:0;flex:1"><div class="salvo-card-nome">' + nomeEsc + '</div>';
     card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' · ' : '') + dataFmt + '</div></div>';
     card += '<div style="flex-shrink:0">';
-    card += '<div class="salvo-card-valor">' + escHtml(valor ? 'R$ ' + valor : '') + '</div>';
+    var _tagValor = '';
+    if (valor) {
+      _tagValor = '<div class="salvo-card-valor">R$ ' + escHtml(valor) + '</div>';
+    } else if (doc.inc_detalhado) {
+      _tagValor = '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;color:#888;border:1px solid #444;border-radius:3px;padding:2px 7px;white-space:nowrap">(Detalhado)</div>';
+    } else {
+      _tagValor = '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;color:#888;border:1px solid #444;border-radius:3px;padding:2px 7px;white-space:nowrap">(Pacotes)</div>';
+    }
+    card += _tagValor;
     card += '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
@@ -4711,8 +4729,8 @@ function renderSalvos(docs) {
     card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">';
-    card += '<span class="salvo-status status-readonly' + (aprovado ? ' aprovado' : '') + '">';
-    card += (aprovado ? 'Aprovado' : 'Pendente') + '</span>';
+    card += '<button class="salvo-status' + (aprovado ? ' aprovado' : '') + '" data-action="toggle-aprovado" data-id="' + id + '" data-aprovado="' + aprovado + '" style="cursor:pointer;background:transparent;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase">';
+    card += (aprovado ? 'Aprovado' : 'Pendente') + '</button>';
     card += '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#444;letter-spacing:0.1em"># ' + ref + '</span>';
     card += '</div>';
     card += '</div>';
