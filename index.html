@@ -4546,7 +4546,7 @@ function handleSalvosClick(e) {
     var statusAtual = btn.getAttribute('data-status') || (btn.getAttribute('data-aprovado') === 'true' ? 'assinado' : 'pendente');
     var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : 'pendente';
     var novoAprovado = novoStatus === 'assinado';
-    var novoLabel = novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado' : 'Pendente';
+    var novoLabel = novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : 'Pendente';
     var novaClasse = novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : '';
     db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
@@ -5202,7 +5202,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     // Determinar estado visual do botão
     var _statusCon = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
     var statusClass = _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : '';
-    var statusLabel = _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado' : 'Pendente';
+    var statusLabel = _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado...' : 'Pendente';
     var statusClickable = true;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
@@ -5751,11 +5751,18 @@ function gerarLinkCalendar(id) {
       '&details=' + details +
       '&location=' + loc;
 
+    var calBtn = document.querySelector('.salvo-card [data-action="calendar"][data-id="' + id + '"]');
+    if (calBtn && calBtn.classList.contains('btn-calendar-ok')) {
+      // Segundo clique: desmarcar e voltar ao cinza
+      calBtn.classList.remove('btn-calendar-ok');
+      db.collection('contratos').doc(id).update({ calendar_adicionado: false })
+        .catch(function(e) { console.warn('[AdQ] Erro ao salvar calendar_adicionado:', e); });
+      return;
+    }
     window.open(url, '_blank');
     // Marcar como adicionado ao calendário
     db.collection('contratos').doc(id).update({ calendar_adicionado: true })
       .catch(function(e) { console.warn('[AdQ] Erro ao salvar calendar_adicionado:', e); });
-    var calBtn = document.querySelector('.salvo-card [data-action="calendar"][data-id="' + id + '"]');
     if (calBtn) calBtn.classList.add('btn-calendar-ok');
   });
 }
