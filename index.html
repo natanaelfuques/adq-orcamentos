@@ -5150,21 +5150,7 @@ function renderContratos(docs) {
     lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum contrato salvo ainda.</div>';
     return;
   }
-  // Buscar etapas do painel para todos os contratos
-  var ids = docs.map(function(d) { return d.id; });
-  var etapaMap = {};
-  var pending = ids.length;
-  if (pending === 0) { lista.innerHTML = ''; return; }
-  ids.forEach(function(cid) {
-    db.collection('eventos_campo').doc(cid).get().then(function(snap) {
-      if (snap.exists) etapaMap[cid] = snap.data().etapa || 'eventos';
-      pending--;
-      if (pending === 0) _renderContratosComEtapa(lista, docs, etapaMap);
-    }).catch(function() {
-      pending--;
-      if (pending === 0) _renderContratosComEtapa(lista, docs, etapaMap);
-    });
-  });
+  _renderContratosComEtapa(lista, docs, _etapaMapContratos);
 }
 
 function _renderContratosComEtapa(lista, docs, etapaMap) {
