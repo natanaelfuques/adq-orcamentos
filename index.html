@@ -1354,7 +1354,7 @@ header {
         <div class="opcao-header">
           <span class="opcao-label">Opção 1 — Essencial</span>
           <label class="include-toggle" onclick="event.stopPropagation()">
-            <input type="checkbox" id="inc_op1" checked />
+            <input type="checkbox" id="inc_op1" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
           </label>
         </div>
@@ -1381,7 +1381,7 @@ Técnica: montagem, desmontagem.</textarea>
         <div class="opcao-header">
           <span class="opcao-label">Opção 2 — Mais Escolhido ⭐</span>
           <label class="include-toggle" onclick="event.stopPropagation()">
-            <input type="checkbox" id="inc_op2" checked />
+            <input type="checkbox" id="inc_op2" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
           </label>
         </div>
@@ -1409,7 +1409,7 @@ Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
         <div class="opcao-header">
           <span class="opcao-label">Opção 3 — Experiência Completa</span>
           <label class="include-toggle" onclick="event.stopPropagation()">
-            <input type="checkbox" id="inc_op3" checked />
+            <input type="checkbox" id="inc_op3" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
           </label>
         </div>
@@ -1715,7 +1715,7 @@ Revestimento</textarea>
             <div class="pay-num-badge">1</div>
             <label>À Vista</label>
             <label class="include-toggle" onclick="event.stopPropagation()" style="margin-left:auto">
-              <input type="checkbox" id="inc_pg1" checked />
+              <input type="checkbox" id="inc_pg1" checked onchange="renumerarPagamentos()" />
               <span>Incluir</span>
             </label>
           </div>
@@ -1727,7 +1727,7 @@ Revestimento</textarea>
             <div class="pay-num-badge">2</div>
             <label>Entrada + Boletos</label>
             <label class="include-toggle" onclick="event.stopPropagation()" style="margin-left:auto">
-              <input type="checkbox" id="inc_pg2" checked />
+              <input type="checkbox" id="inc_pg2" checked onchange="renumerarPagamentos()" />
               <span>Incluir</span>
             </label>
           </div>
@@ -1739,7 +1739,7 @@ Revestimento</textarea>
             <div class="pay-num-badge">3</div>
             <label>50% + 50%</label>
             <label class="include-toggle" onclick="event.stopPropagation()" style="margin-left:auto">
-              <input type="checkbox" id="inc_pg3" checked />
+              <input type="checkbox" id="inc_pg3" checked onchange="renumerarPagamentos()" />
               <span>Incluir</span>
             </label>
           </div>
@@ -1751,7 +1751,7 @@ Revestimento</textarea>
             <div class="pay-num-badge">4</div>
             <label>Parcelado</label>
             <label class="include-toggle" onclick="event.stopPropagation()" style="margin-left:auto">
-              <input type="checkbox" id="inc_pg4" checked />
+              <input type="checkbox" id="inc_pg4" checked onchange="renumerarPagamentos()" />
               <span>Incluir</span>
             </label>
           </div>
@@ -2337,6 +2337,31 @@ function toggleTab(header) {
   body.classList.toggle('open');
 }
 
+function renumerarPagamentos() {
+  var num = 1;
+  [1,2,3,4].forEach(function(i) {
+    var badge = document.querySelector('#tab-pagamento .pay-edit-item:nth-child(' + i + ') .pay-num-badge');
+    var cb    = document.getElementById('inc_pg' + i);
+    if (badge && cb) badge.textContent = cb.checked ? num++ : '–';
+  });
+}
+
+function renumerarOpcoes() {
+  var subtitulos = ['Essencial','Mais Escolhido ⭐','Experiência Completa'];
+  var num = 1;
+  [1,2,3].forEach(function(i) {
+    var cb    = document.getElementById('inc_op' + i);
+    var label = cb && cb.closest('.opcao-box') && cb.closest('.opcao-box').querySelector('.opcao-label');
+    if (label && cb) {
+      if (cb.checked) {
+        label.textContent = 'Opção ' + (num++) + ' — ' + subtitulos[i-1];
+      } else {
+        label.textContent = '– — ' + subtitulos[i-1];
+      }
+    }
+  });
+}
+
 function toggleDisabled(tabId, checkbox) {
   const tab = document.getElementById(tabId);
   if (checkbox.checked) {
@@ -2625,6 +2650,8 @@ carregarOrcamentoEditavel._processar = function(d) {
       if (d.cenica_preco) set('cenica_preco', d.cenica_preco);
   recalcDetTotal();
   document.querySelectorAll('#det-itens-wrap textarea').forEach(ta => autoResize(ta));
+  renumerarOpcoes();
+  renumerarPagamentos();
 };
 
 function baixarDadosOrcamento() {
@@ -3001,21 +3028,19 @@ function buildDocHTML({ nome, evento, local, dataFmt, dataEvento, incCliente, in
 
   ${incOpcoes ? `
   <div class="options">
-    ${incOp1 ? `<div class="option-block">
-      <div class="option-head"><span>Opção 1 — Essencial</span></div>
-      <div class="option-body"><ul>${linhas(desc1)}</ul></div>
-      <div class="option-price">Investimento: <strong>R$ ${v1}</strong></div>
-    </div>` : ''}
-    ${incOp2 ? `<div class="option-block">
-      <div class="option-head"><span>Opção 2 — Mais Escolhido ⭐</span></div>
-      <div class="option-body"><ul>${linhas(desc2)}</ul></div>
-      <div class="option-price">Investimento: <strong>R$ ${v2}</strong></div>
-    </div>` : ''}
-    ${incOp3 ? `<div class="option-block">
-      <div class="option-head"><span>Opção 3 — Experiência Completa</span></div>
-      <div class="option-body"><ul>${linhas(desc3)}</ul></div>
-      <div class="option-price">Investimento: <strong>R$ ${v3}</strong></div>
-    </div>` : ''}
+    ${(() => {
+      const subtitulos = ['Essencial','Mais Escolhido ⭐','Experiência Completa'];
+      const ativas = [
+        incOp1 ? { sub: subtitulos[0], desc: desc1, v: v1 } : null,
+        incOp2 ? { sub: subtitulos[1], desc: desc2, v: v2 } : null,
+        incOp3 ? { sub: subtitulos[2], desc: desc3, v: v3 } : null,
+      ].filter(Boolean);
+      return ativas.map((op, idx) => `<div class="option-block">
+      <div class="option-head"><span>Opção ${idx+1} — ${op.sub}</span></div>
+      <div class="option-body"><ul>${linhas(op.desc)}</ul></div>
+      <div class="option-price">Investimento: <strong>R$ ${op.v}</strong></div>
+    </div>`).join('');
+    })()}
   </div>` : ''}
 
   ${incDetalhado && detItens.length > 0 ? `
