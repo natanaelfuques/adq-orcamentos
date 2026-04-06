@@ -4483,7 +4483,10 @@ function handleSalvosClick(e) {
   else if (action === 'link') { copiarLinkOrcamento(id); }
   else if (action === 'excluir') excluirSalvo(id, nome);
   else if (action === 'abrir-contrato') { registrarLogGerador('abrir-contrato', nome); abrirContrato(id); }
-  else if (action === 'link-contrato') { abrirModalLinkAssinatura(id, btn); }
+  else if (action === 'link-contrato') {
+    var lnk = btn.getAttribute('data-link') || '';
+    if (lnk) { window.open(lnk, '_blank'); } else { abrirModalLinkAssinatura(id, btn); }
+  }
   else if (action === 'enviar-painel') {
     registrarLogGerador('enviar-painel', nome);
     var painelBtn = btn;
@@ -4548,12 +4551,32 @@ function handleSalvosClick(e) {
   }
 }
 
+function _adicionarLongPressLinkContrato(el) {
+  var _lpTimer = null;
+  var _lpFired = false;
+  el.addEventListener('touchstart', function(e) {
+    var btn = e.target.closest('[data-action="link-contrato"]');
+    if (!btn || !btn.getAttribute('data-link')) return;
+    _lpFired = false;
+    _lpTimer = setTimeout(function() {
+      _lpFired = true;
+      abrirModalLinkAssinatura(btn.getAttribute('data-id'), btn);
+    }, 500);
+  }, { passive: true });
+  el.addEventListener('touchend', function(e) {
+    clearTimeout(_lpTimer);
+    if (_lpFired) { e.preventDefault(); }
+  });
+  el.addEventListener('touchmove', function() { clearTimeout(_lpTimer); }, { passive: true });
+}
+
 function iniciarListenerSalvos() {
   var lista = document.getElementById('salvos-lista');
   if (lista) lista.addEventListener('click', handleSalvosClick);
   var listaC = document.getElementById('contratos-lista');
   if (listaC) {
     listaC.addEventListener('click', handleSalvosClick);
+    _adicionarLongPressLinkContrato(listaC);
     listaC.addEventListener('change', function(e) {
       var inp = e.target.closest('.salvo-montagem-input');
       if (!inp) return;
