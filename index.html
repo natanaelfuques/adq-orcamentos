@@ -6992,6 +6992,19 @@ function _confirmarAutentique() {
           link_assinatura: linkAssinatura,
           status_contrato: 'enviado'
         }).catch(function(e) { console.warn('[AdQ] Erro ao gravar autentique_id:', e); });
+
+        // Atualizar botão Link e status do card em tempo real
+        var linkBtn = document.querySelector('.salvo-card button[data-action="link-contrato"][data-id="' + _ultimoContratoSalvoId + '"]');
+        if (linkBtn && linkAssinatura) {
+          linkBtn.setAttribute('data-link', linkAssinatura);
+          linkBtn.classList.add('primary');
+        }
+        var statusBtn = document.querySelector('.salvo-card [data-action="toggle-aprovado-contrato"][data-id="' + _ultimoContratoSalvoId + '"]');
+        if (statusBtn) {
+          statusBtn.textContent = 'Enviado...';
+          statusBtn.className = statusBtn.className.replace(/\baprova[^\s]*/g, '').replace(/\benviado\b/g, '').trim() + ' enviado';
+          statusBtn.setAttribute('data-status', 'enviado');
+        }
       }
 
       if (linkAssinatura) {
