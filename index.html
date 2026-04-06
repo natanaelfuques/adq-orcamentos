@@ -5629,7 +5629,7 @@ function gerarLinkCalendar(id) {
     var montagem  = d.montagem   || '';
     var desm      = d.desmontagem|| '';
     var total     = d.val_total  || '';
-    var pgtoSel   = d.pgto_sel   || 'vista';
+    var pgtoSel   = d.pgto_tipo || d.pgto_sel || 'vista';
     var nparcelas = d.nparcelas  || '';
     var pgtoCustom= d.pgto_custom|| '';
     var servicos  = d.servicos   || [];
