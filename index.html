@@ -3812,6 +3812,17 @@ function formatDoc(val) {
   return val;
 }
 
+function _resolverHora(val) {
+  var v = (val || '').trim();
+  if (!v) return '___h___';
+  // Texto livre (tem letras além de 'h') — retorna como está
+  var semH = v.replace(/h/gi, '');
+  if (/[a-zA-Z]/.test(semH)) return v;
+  // Numérico — formata
+  if (/\d/.test(v)) return formatHora(v);
+  return v;
+}
+
 function _autoFormatHora(input) {
   var v = (input.value || '').trim();
   if (!v) return;
@@ -4117,8 +4128,8 @@ function gerarContrato() {
   const evResp   = document.getElementById('ev_resp').value.trim()  || '—';
   const evLocal  = document.getElementById('ev_local').value.trim() || '—';
   const evData   = document.getElementById('ev_data').value;
-  const evIni    = formatHora(document.getElementById('ev_inicio').value);
-  const evFim    = formatHora(document.getElementById('ev_fim').value);
+  const evIni    = _resolverHora(document.getElementById('ev_inicio').value);
+  const evFim    = _resolverHora(document.getElementById('ev_fim').value);
   const valTotal = formatBRL(parseBRL(document.getElementById('val_total').value)) || '—';
   const servInputs = document.querySelectorAll('#lista-servicos .servico-item input');
   // Split items by bullet '•' — each bullet = new service item
