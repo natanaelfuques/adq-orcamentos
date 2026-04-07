@@ -1288,17 +1288,15 @@ header {
 
 
   <!-- BLOCO NOVO EVENTO -->
-  <div class="nota-bloco">
-    <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anotações / Evento rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()"></textarea>
-    <div class="nota-bloco-actions" id="nota-bloco-actions" style="display:none">
+  <div class="nota-bloco" style="border:1px solid var(--border);border-radius:6px;background:var(--surface);padding:10px 12px;">
+    <div style="display:flex;align-items:flex-start;gap:8px">
+      <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anotações / Evento rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()" style="border:none;background:transparent;padding:2px 0;flex:1;height:36px;min-height:36px;"></textarea>
+      <button onclick="abrirModalIA()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:transparent;border:1px dashed #C8A94A;color:#C8A94A;border-radius:4px;padding:6px 10px;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;margin-top:1px">✦ IA</button>
+    </div>
+    <div class="nota-bloco-actions" id="nota-bloco-actions" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
       <button class="nota-bloco-ok" onclick="salvarNota()">OK</button>
       <button class="nota-bloco-cancel" onclick="cancelarNota()">&#x2715;</button>
     </div>
-  </div>
-
-  <!-- BOTÃO IA -->
-  <div style="margin-bottom:18px;display:flex;justify-content:flex-end">
-    <button onclick="abrirModalIA()" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px dashed #C8A94A;color:#C8A94A;border-radius:4px;padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(200,169,74,0.08)'" onmouseout="this.style.background='transparent'">✦ Preencher via IA</button>
   </div>
 
   <!-- ABA DADOS DO CLIENTE -->
@@ -2216,7 +2214,7 @@ function abrirModalPreset(btn, tipo, id1, kit) {
 
   var bFechar = document.createElement('button');
   bFechar.textContent = '×';
-  bFechar.style.cssText = btnStyle + 'background:transparent;color:#666;border:1px solid #333;padding:6px 8px;';
+  bFechar.style.cssText = btnStyle + 'background:transparent;color:#888;border:1px solid #444;padding:6px 14px;font-size:1.1rem;line-height:1;';
   bFechar.onclick = function() { modal.remove(); };
 
   modal.appendChild(bCarregar);
