@@ -1058,7 +1058,28 @@ function _getValTotalAtual() {
   }
 }
 
+function _atualizarBannerBotoes() {
+  var pgtoCard = document.querySelector('.opcao-card-radio[data-grupo="pgto"].selected');
+  var opcaoSel = _orcData.isDetalhado
+    ? document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"].selected').length > 0
+    : !!document.querySelector('.opcao-card-radio[data-grupo="opcao"].selected');
+  var pgtoSel = !!pgtoCard;
+  var resumo = document.getElementById('selecao-resumo');
+  var btnWA = document.getElementById('wa-link-sim');
+  var btnCont = document.getElementById('btn-dados-reserva');
+  if (opcaoSel && pgtoSel) {
+    if (resumo) { resumo.innerHTML = '✓ Tudo certo! Opção e pagamento selecionados — escolha como prosseguir abaixo.'; resumo.style.display = 'block'; }
+    if (btnWA) btnWA.classList.add('pronto');
+    if (btnCont) btnCont.classList.add('pronto');
+  } else {
+    if (resumo) resumo.style.display = 'none';
+    if (btnWA) btnWA.classList.remove('pronto');
+    if (btnCont) btnCont.classList.remove('pronto');
+  }
+}
+
 function calcPgtoPreview() {
+  _atualizarBannerBotoes();
   var box = document.getElementById('pgto-preview');
   if (!box) return;
   var pgtoCard = document.querySelector('.opcao-card-radio[data-grupo="pgto"].selected');
@@ -1116,26 +1137,6 @@ function calcPgtoPreview() {
     box.style.display = 'block';
   } else {
     box.style.display = 'none';
-  }
-
-  // ── Resumo de seleção + habilitar botões ──
-  var pgtoNome = pgtoCard ? (pgtoCard.dataset.valor === '__outro__' ? 'Personalizado' : pgtoCard.dataset.valor) : '';
-  var opcaoSel = _orcData.isDetalhado
-    ? document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"].selected').length > 0
-    : !!document.querySelector('.opcao-card-radio[data-grupo="opcao"].selected');
-  var pgtoSel = !!pgtoCard;
-  var resumo = document.getElementById('selecao-resumo');
-  var btnWA = document.getElementById('wa-link-sim');
-  var btnCont = document.getElementById('btn-dados-reserva');
-  if (opcaoSel && pgtoSel && resumo) {
-    resumo.innerHTML = '✓ Tudo certo! Opção e pagamento selecionados — escolha como prosseguir abaixo.';
-    resumo.style.display = 'block';
-    if (btnWA) btnWA.classList.add('pronto');
-    if (btnCont) btnCont.classList.add('pronto');
-  } else {
-    if (resumo) resumo.style.display = 'none';
-    if (btnWA) btnWA.classList.remove('pronto');
-    if (btnCont) btnCont.classList.remove('pronto');
   }
 }
 
@@ -1429,7 +1430,7 @@ function criarCardRadio(nome, desc, grupo, idx) {
         if (box) box.style.display = 'none';
         if (entWrap) entWrap.style.display = 'none';
         if (entInput) entInput.value = '';
-        calcPgtoPreview(); // atualiza banner e botões
+        _atualizarBannerBotoes();
         return;
       }
       // Ao trocar de opção, esconder campo de entrada (será reaberto só se for boleto)
