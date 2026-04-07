@@ -4466,6 +4466,15 @@ function initFirebase(config) {
         iniciarListenerSalvos();
         iniciarConnIndicator();
         carregarPresetsFirestore();
+        // Carregar chave Anthropic do Firestore (fallback: localStorage)
+        if (db) {
+          db.collection('config').doc('ia').get().then(function(doc) {
+            if (doc.exists && doc.data().anthropic_key && doc.data().anthropic_key.startsWith('sk-')) {
+              ANTHROPIC_KEY = doc.data().anthropic_key;
+              localStorage.setItem('adq_anthropic_key', ANTHROPIC_KEY);
+            }
+          }).catch(function(){});
+        }
       } else {
         if (user) auth.signOut();
         document.getElementById('gerador-login-screen').style.display = 'flex';
@@ -7580,10 +7589,23 @@ function _salvarConfigIA() {
     if (st) { st.style.display='block'; st.style.color='#e55'; st.textContent='Chave inválida. Deve começar com sk-'; }
     return;
   }
-  localStorage.setItem('adq_anthropic_key', val.trim());
-  ANTHROPIC_KEY = val.trim();
-  if (st) { st.style.display='block'; st.style.color='#25D366'; st.textContent='✓ Chave salva neste dispositivo!'; }
-  setTimeout(function() { var m = document.getElementById('modal-ia-config'); if (m) m.remove(); }, 900);
+  var chave = val.trim();
+  localStorage.setItem('adq_anthropic_key', chave);
+  ANTHROPIC_KEY = chave;
+  if (st) { st.style.display='block'; st.style.color='#C8A94A'; st.textContent='Salvando...'; }
+  if (db) {
+    db.collection('config').doc('ia').set({ anthropic_key: chave }, { merge: true })
+      .then(function() {
+        if (st) { st.style.color='#25D366'; st.textContent='✓ Chave salva na nuvem!'; }
+        setTimeout(function() { var m = document.getElementById('modal-ia-config'); if (m) m.remove(); }, 900);
+      })
+      .catch(function(e) {
+        if (st) { st.style.color='#e55'; st.textContent='Erro ao salvar na nuvem: ' + e.message; }
+      });
+  } else {
+    if (st) { st.style.color='#25D366'; st.textContent='✓ Chave salva localmente!'; }
+    setTimeout(function() { var m = document.getElementById('modal-ia-config'); if (m) m.remove(); }, 900);
+  }
 }
 
 function _limparConfigIA() {
@@ -7593,6 +7615,7 @@ function _limparConfigIA() {
   if (el) el.value = '';
   var st = document.getElementById('ia-config-status');
   if (st) { st.style.display='block'; st.style.color='#C8A94A'; st.textContent='Chave removida.'; }
+  if (db) db.collection('config').doc('ia').set({ anthropic_key: '' }, { merge: true }).catch(function(){});
 }
 
 function _calendarNota(nota, btn) {
