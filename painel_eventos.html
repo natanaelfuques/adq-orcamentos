@@ -337,9 +337,11 @@ header {
   font-weight: 700;
   color: var(--text);
   letter-spacing: 0.03em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  word-break: break-word;
+  min-width: 0;
+  flex: 1;
 }
 
 .card-data-badge {
