@@ -7332,7 +7332,7 @@ function interpretarComIA() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 1000,
       system: `Você é um assistente que interpreta mensagens de clientes de uma empresa de sonorização e iluminação para eventos (Áudio de Qualidade, Brusque/SC).
 
@@ -7385,8 +7385,8 @@ Regras:
     try { d = JSON.parse(clean); }
     catch(pe) {
       var m = clean.match(/\{[\s\S]*\}/);
-      if (m) { try { d = JSON.parse(m[0]); } catch(e2) { throw new Error('Resposta da IA nao e JSON valido.'); } }
-      else { throw new Error('Resposta da IA nao e JSON valido.'); }
+      if (m) { try { d = JSON.parse(m[0]); } catch(e2) { throw new Error('JSON invalido: ' + clean.substring(0,120)); } }
+      else { throw new Error('Resposta inesperada: ' + clean.substring(0,120)); }
     }
     if (btn) { btn.disabled = false; btn.textContent = 'Interpretar'; }
     if (status) status.style.display = 'none';
