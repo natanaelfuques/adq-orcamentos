@@ -518,8 +518,9 @@
     letter-spacing: 0.06em; text-transform: uppercase;
     padding: 10px 18px; cursor: pointer;
     transition: border-color 0.15s, color 0.15s;
-    flex: 1;
+    flex: 0 0 auto;
   }
+  .cta-btn--full { flex: 1 1 100% !important; }
   .resposta-cancel:hover { border-color: #444; color: #aaa; }
   .cta-btn {
     background: var(--darker); color: #4A90C8;
@@ -642,6 +643,30 @@
   .opcao-card { transition: border-color 0.22s, box-shadow 0.22s, transform 0.18s; }
   .det-card   { transition: border-color 0.22s, box-shadow 0.22s, transform 0.18s; }
   .pgto-item  { transition: border-color 0.22s, box-shadow 0.22s, background 0.22s, transform 0.18s; }
+  .pgto-item.selected {
+    border-color: var(--gold);
+    background: rgba(200,169,74,0.07);
+    box-shadow: 0 0 0 1px rgba(200,169,74,0.15);
+  }
+  .pgto-item.selected .pgto-num {
+    background: var(--gold);
+    color: var(--dark);
+    border-color: var(--gold);
+  }
+  .pgto-item.selected .pgto-text strong { color: var(--gold); }
+
+  /* Botões de ação — estado desabilitado / pronto */
+  .resposta-actions-row .cta-btn { opacity: 0.38; pointer-events: none; transition: opacity 0.25s; }
+  .resposta-actions-row .cta-btn.pronto { opacity: 1; pointer-events: auto; }
+
+  /* Banner de confirmação de seleção */
+  #selecao-resumo {
+    display: none; margin-top: 10px;
+    background: rgba(200,169,74,0.08); border: 1px solid rgba(200,169,74,0.3);
+    border-radius: 3px; padding: 10px 14px;
+    font-size: 0.78rem; color: var(--gold); line-height: 1.5;
+    animation: fadeSlideIn 0.2s ease;
+  }
   .obs-box    { transition: border-color 0.22s, box-shadow 0.22s; }
   .info-strip { transition: border-color 0.22s, background 0.22s; }
 
@@ -822,22 +847,21 @@
           </div>
         </div>
       </div>
+      <div id="selecao-resumo"></div>
       <div class="resposta-actions">
         <div class="resposta-actions-row">
           <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
-        </div>
-        <div class="resposta-actions-row">
           <a id="wa-link-sim" href="#" class="cta-btn cta-btn--blue" target="_blank" onclick="return enviarSim(event)">
             ▶ Confirmar pelo WhatsApp
           </a>
-          <button class="cta-btn" id="btn-dados-reserva" onclick="toggleDadosReserva()">
+        </div>
+        <div class="resposta-actions-row">
+          <button class="cta-btn cta-btn--full" id="btn-dados-reserva" onclick="toggleDadosReserva()">
             ▶ Solicitar Contrato
           </button>
         </div>
       </div>
     </div>
-
-    <!-- FORMULÁRIO DADOS PARA RESERVA -->
     <div id="dados-reserva-form" class="dados-form" style="display:none">
       <div class="dados-form-header">
         <div class="dados-form-icon" style="font-size:1rem;letter-spacing:-1px;line-height:1">☰</div>
@@ -1090,6 +1114,26 @@ function calcPgtoPreview() {
   } else {
     box.style.display = 'none';
   }
+
+  // ── Resumo de seleção + habilitar botões ──
+  var pgtoNome = pgtoCard ? (pgtoCard.dataset.valor === '__outro__' ? 'Personalizado' : pgtoCard.dataset.valor) : '';
+  var opcaoSel = _orcData.isDetalhado
+    ? document.querySelectorAll('.opcao-card-radio[data-grupo="opcao"].selected').length > 0
+    : !!document.querySelector('.opcao-card-radio[data-grupo="opcao"].selected');
+  var pgtoSel = !!pgtoCard;
+  var resumo = document.getElementById('selecao-resumo');
+  var btnWA = document.getElementById('wa-link-sim');
+  var btnCont = document.getElementById('btn-dados-reserva');
+  if (opcaoSel && pgtoSel && resumo) {
+    resumo.innerHTML = '✓ Tudo certo! Opção e pagamento selecionados — escolha como prosseguir abaixo.';
+    resumo.style.display = 'block';
+    if (btnWA) btnWA.classList.add('pronto');
+    if (btnCont) btnCont.classList.add('pronto');
+  } else {
+    if (resumo) resumo.style.display = 'none';
+    if (btnWA) btnWA.classList.remove('pronto');
+    if (btnCont) btnCont.classList.remove('pronto');
+  }
 }
 
 // ── RENDER ──
@@ -1277,6 +1321,15 @@ function abrirResposta(tipo) {
     registrarInteracao('sim');
     painelSim.style.display = 'block';
     btnSim.classList.add('proposta-btn--ativo');
+    // Resetar estado dos botões e resumo
+    var resumo = document.getElementById('selecao-resumo');
+    if (resumo) resumo.style.display = 'none';
+    var btnWA = document.getElementById('wa-link-sim');
+    var btnCont = document.getElementById('btn-dados-reserva');
+    if (btnWA) btnWA.classList.remove('pronto');
+    if (btnCont) btnCont.classList.remove('pronto');
+    // Recalcular caso já haja seleção
+    calcPgtoPreview();
     painelSim.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } else {
     registrarInteracao('nao');
