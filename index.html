@@ -6590,7 +6590,7 @@ function renderNotas() {
     var noPainel = !!(doc.no_painel);
     var calNotaClass = doc.calendar_adicionado ? 'btn-salvo btn-calendar btn-calendar-ok' : 'btn-salvo btn-calendar';
     card += '<div class="salvo-card-actions">';
-    card += '<button class="btn-salvo' + (noPainel ? ' no-painel' : '') + '" data-action="painel-nota" data-id="' + id + '" data-no-painel="' + (noPainel ? '1' : '0') + '" title="' + (noPainel ? 'Remover do painel' : 'Enviar para o painel') + '">Painel</button>';
+    card += '<button class="btn-salvo" data-action="editar-nota" data-id="' + id + '">Editar</button>';
     card += '<button class="' + calNotaClass + '" data-action="calendar-nota" data-id="' + id + '" title="Adicionar ao Google Calendar" style="padding:6px 9px;min-width:unset;flex:unset">'
       + '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'
       + '<rect x="1" y="2" width="11" height="10" rx="1.5"/>'
@@ -6599,8 +6599,8 @@ function renderNotas() {
       + '<line x1="9" y1="0.5" x2="9" y2="3.5"/>'
       + '</svg>'
       + '</button>';
-    card += '<button class="btn-salvo" data-action="editar-nota" data-id="' + id + '">Editar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-nota" data-id="' + id + '" data-nome="' + (titulo || 'esta anotação') + '">Excluir</button>';
+    card += '<button class="btn-salvo' + (noPainel ? ' no-painel' : '') + '" data-action="painel-nota" data-id="' + id + '" data-no-painel="' + (noPainel ? '1' : '0') + '" title="' + (noPainel ? 'Remover do painel' : 'Enviar para o painel') + '">Painel</button>';
     card += '</div>';
     card += '</div>';
     return card;
@@ -7046,8 +7046,16 @@ function _salvarEdicaoNota(id) {
   db.collection('notas').doc(id).update(updateData).then(function() {
     var modal = document.getElementById('nota-edit-modal');
     if (modal) modal.remove();
-    // Se a nota está no painel, atualizar o card lá também
+    // Atualizar objeto local em _todasNotas para que _calendarNota use dados atualizados
     var nota = _todasNotas.find(function(n) { return n.id === id; });
+    if (nota) {
+      nota.titulo    = updateData.titulo;
+      nota.itens     = updateData.itens;
+      nota.ev_data   = updateData.ev_data;
+      nota.ev_local  = updateData.ev_local;
+      nota.ev_inicio = updateData.ev_inicio;
+      nota.ev_fim    = updateData.ev_fim;
+    }
     var painelId = nota && nota.painel_id ? nota.painel_id : null;
     if (painelId && db) {
       var itensTipoUpd = itens.map(function(item) {
@@ -7605,18 +7613,23 @@ function _calendarNota(nota, btn) {
   // Título = campo titulo da nota
   var titulo = (nota.titulo || 'Evento Rápido').trim();
 
-  // Descrição = itens da lista + horários se tiver
+  // Descrição: título repetido + data + horário + local + itens
   var lines = [];
-  var itens = Array.isArray(nota.itens) ? nota.itens : [];
-  if (itens.length) {
-    itens.forEach(function(item) { lines.push('• ' + item); });
+  lines.push(titulo);
+  if (nota.ev_data) {
+    var _pts = nota.ev_data.split('-');
+    if (_pts.length === 3) lines.push('Data: ' + _pts[2] + '/' + _pts[1] + '/' + _pts[0]);
   }
   if (nota.ev_inicio || nota.ev_fim) {
-    lines.push('');
     lines.push('Horário: ' + (nota.ev_inicio || '') + (nota.ev_fim ? ' – ' + nota.ev_fim : ''));
   }
   if (nota.ev_local) {
     lines.push('Local: ' + nota.ev_local);
+  }
+  var itens = Array.isArray(nota.itens) ? nota.itens : [];
+  if (itens.length) {
+    lines.push('');
+    itens.forEach(function(item) { lines.push('• ' + item); });
   }
 
   var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
