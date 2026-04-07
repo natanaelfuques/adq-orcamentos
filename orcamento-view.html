@@ -1854,15 +1854,16 @@ function drValidarCep(input) {
 function drValidarFone(input) {
   var d = input.value.replace(/\D/g, '');
   if (!d) { input.style.borderColor = ''; return; }
-  // mascara
-  var m = d.slice(0,11);
+  // Remove DDI 55 para máscara local
+  var local = (d.length === 12 || d.length === 13) && d.startsWith('55') ? d.slice(2) : d;
+  var m = local.slice(0, 11);
   if (m.length > 6) {
     if (m.length > 10) input.value = '(' + m.slice(0,2) + ') ' + m.slice(2,7) + '-' + m.slice(7,11);
     else input.value = '(' + m.slice(0,2) + ') ' + m.slice(2,6) + '-' + m.slice(6,10);
-  } else {
-    input.value = input.value;
   }
-  input.style.borderColor = (d.length === 10 || d.length === 11) ? 'rgba(74,144,200,0.6)' : '#e55';
+  var valido = d.length === 10 || d.length === 11 ||
+    ((d.length === 12 || d.length === 13) && d.startsWith('55'));
+  input.style.borderColor = valido ? 'rgba(74,144,200,0.6)' : '#e55';
 }
 
 // ── INIT ──

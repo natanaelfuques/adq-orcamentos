@@ -3860,7 +3860,10 @@ function validarCep(input) {
 function validarFone(input) {
   const d = input.value.replace(/\D/g, '');
   if (!d) { input.classList.remove('doc-invalido'); return; }
-  input.classList.toggle('doc-invalido', d.length !== 10 && d.length !== 11);
+  // Aceita: 10-11 dígitos (local) ou 12-13 (com DDI 55)
+  const valido = d.length === 10 || d.length === 11 ||
+    ((d.length === 12 || d.length === 13) && d.startsWith('55'));
+  input.classList.toggle('doc-invalido', !valido);
 }
 
 function formatCep(val) {
