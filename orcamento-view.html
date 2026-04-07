@@ -655,9 +655,12 @@
   }
   .pgto-item.selected .pgto-text strong { color: var(--gold); }
 
-  /* Botões de ação — estado desabilitado / pronto */
-  .resposta-actions-row .cta-btn { opacity: 0.38; pointer-events: none; transition: opacity 0.25s; }
-  .resposta-actions-row .cta-btn.pronto { opacity: 1; pointer-events: auto; }
+  /* Botões de ação — estado desabilitado / pronto (só painel SIM) */
+  #painel-sim .resposta-actions-row .cta-btn { opacity: 0.38; pointer-events: none; transition: opacity 0.25s; }
+  #painel-sim .resposta-actions-row .cta-btn.pronto { opacity: 1; pointer-events: auto; }
+
+  /* Voltar ocupa metade da linha junto com confirmar */
+  #painel-sim .resposta-actions-row .resposta-cancel { flex: 1; }
 
   /* Banner de confirmação de seleção */
   #selecao-resumo {
@@ -955,7 +958,7 @@
       </div>
       <div class="resposta-actions">
         <div class="resposta-actions-row">
-          <button class="resposta-cancel" onclick="fecharPainel()">Voltar</button>
+          <button class="resposta-cancel" style="flex:1" onclick="fecharPainel()">Voltar</button>
           <a id="wa-link-nao" href="#" class="cta-btn cta-btn--blue" target="_blank" onclick="return enviarNao(event)">
             ▶ Enviar pelo WhatsApp
           </a>
@@ -1426,6 +1429,7 @@ function criarCardRadio(nome, desc, grupo, idx) {
         if (box) box.style.display = 'none';
         if (entWrap) entWrap.style.display = 'none';
         if (entInput) entInput.value = '';
+        calcPgtoPreview(); // atualiza banner e botões
         return;
       }
       // Ao trocar de opção, esconder campo de entrada (será reaberto só se for boleto)
