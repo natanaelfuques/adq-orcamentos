@@ -7322,7 +7322,7 @@ function interpretarComIA() {
 
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1000,
@@ -7366,21 +7366,30 @@ Regras:
       messages: [{ role: 'user', content: texto }]
     })
   })
-  .then(function(r) { return r.json(); })
+  .then(function(r) {
+    if (!r.ok) { return r.json().then(function(e){ throw new Error('API ' + r.status + ': ' + (e.error && e.error.message || r.statusText)); }); }
+    return r.json();
+  })
   .then(function(data) {
     var raw = (data.content && data.content[0] && data.content[0].text) || '{}';
-    var clean = raw.replace(/```json|```/g, '').trim();
-    var d = JSON.parse(clean);
+    var clean = raw.replace(/```json[\s\S]*?```|```/g, '').trim();
+    var d;
+    try { d = JSON.parse(clean); }
+    catch(pe) {
+      var m = clean.match(/\{[\s\S]*\}/);
+      if (m) { try { d = JSON.parse(m[0]); } catch(e2) { throw new Error('Resposta da IA nao e JSON valido.'); } }
+      else { throw new Error('Resposta da IA nao e JSON valido.'); }
+    }
     if (btn) { btn.disabled = false; btn.textContent = 'Interpretar'; }
     if (status) status.style.display = 'none';
-    document.getElementById('modal-ia').remove();
+    var mIA = document.getElementById('modal-ia');
+    if (mIA) mIA.remove();
     _abrirModalDestinoIA(d);
   })
   .catch(function(err) {
-    console.error('[IA] Erro:', err);
     if (btn) { btn.disabled = false; btn.textContent = 'Interpretar'; }
     if (status) status.style.display = 'none';
-    alert('Erro ao interpretar: ' + err.message);
+    alert('Erro ao interpretar:\n' + (err.message || err));
   });
 }
 
@@ -7395,9 +7404,10 @@ function _abrirModalDestinoIA(d) {
   modal.id = 'modal-ia-destino';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px';
 
+  window._iaData = d;
   var botoesHTML = ['evento_rapido','orcamento','contrato'].map(function(dest) {
     var ativo = dest === sugerido;
-    return '<button onclick="_aplicarIA(' + JSON.stringify(d) + ',\'' + dest + '\')" style="flex:1;padding:11px 8px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border:' + (ativo ? '2px solid #C8A94A;background:#C8A94A;color:#111' : '1px solid #444;background:transparent;color:#aaa') + '">' + labels[dest] + (ativo ? ' ✦' : '') + '</button>';
+    return '<button onclick="_aplicarIA(window._iaData,\'' + dest + '\')" style="flex:1;padding:11px 8px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border:' + (ativo ? '2px solid #C8A94A;background:#C8A94A;color:#111' : '1px solid #444;background:transparent;color:#aaa') + '">' + labels[dest] + (ativo ? ' ✦' : '') + '</button>';
   }).join('');
 
   modal.innerHTML = `
