@@ -6588,8 +6588,17 @@ function renderNotas() {
     }
     if (dataFmt) card += '<div class="nota-card-meta">' + dataFmt + '</div>';
     var noPainel = !!(doc.no_painel);
+    var calNotaClass = doc.calendar_adicionado ? 'btn-salvo btn-calendar btn-calendar-ok' : 'btn-salvo btn-calendar';
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo' + (noPainel ? ' no-painel' : '') + '" data-action="painel-nota" data-id="' + id + '" data-no-painel="' + (noPainel ? '1' : '0') + '" title="' + (noPainel ? 'Remover do painel' : 'Enviar para o painel') + '">Painel</button>';
+    card += '<button class="' + calNotaClass + '" data-action="calendar-nota" data-id="' + id + '" title="Adicionar ao Google Calendar" style="padding:6px 9px;min-width:unset;flex:unset">'
+      + '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'
+      + '<rect x="1" y="2" width="11" height="10" rx="1.5"/>'
+      + '<line x1="1" y1="5.5" x2="12" y2="5.5"/>'
+      + '<line x1="4" y1="0.5" x2="4" y2="3.5"/>'
+      + '<line x1="9" y1="0.5" x2="9" y2="3.5"/>'
+      + '</svg>'
+      + '</button>';
     card += '<button class="btn-salvo" data-action="editar-nota" data-id="' + id + '">Editar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-nota" data-id="' + id + '" data-nome="' + (titulo || 'esta anotação') + '">Excluir</button>';
     card += '</div>';
@@ -6675,6 +6684,11 @@ function handleNotasClick(e) {
     var nota = _todasNotas.find(function(n) { return n.id === id; });
     if (!nota) return;
     _abrirModalEditarNota(nota);
+
+  } else if (action === 'calendar-nota') {
+    var nota = _todasNotas.find(function(n) { return n.id === id; });
+    if (!nota) return;
+    _calendarNota(nota, btn);
 
   } else if (action === 'check-item') {
     // Marcar/desmarcar item da lista
@@ -7571,6 +7585,57 @@ function _limparConfigIA() {
   if (el) el.value = '';
   var st = document.getElementById('ia-config-status');
   if (st) { st.style.display='block'; st.style.color='#C8A94A'; st.textContent='Chave removida.'; }
+}
+
+function _calendarNota(nota, btn) {
+  // Monta data para dia inteiro (YYYYMMDD/YYYYMMDD+1)
+  var dateStr = '';
+  if (nota.ev_data) {
+    var pts = nota.ev_data.split('-');
+    if (pts.length === 3) dateStr = pts[0] + pts[1] + pts[2];
+  }
+  var dates = '';
+  if (dateStr) {
+    var _d = new Date(parseInt(dateStr.substring(0,4)), parseInt(dateStr.substring(4,6))-1, parseInt(dateStr.substring(6,8)));
+    _d.setDate(_d.getDate() + 1);
+    var _next = String(_d.getFullYear()) + String(_d.getMonth()+1).padStart(2,'0') + String(_d.getDate()).padStart(2,'0');
+    dates = dateStr + '/' + _next;
+  }
+
+  // Título = campo titulo da nota
+  var titulo = (nota.titulo || 'Evento Rápido').trim();
+
+  // Descrição = itens da lista + horários se tiver
+  var lines = [];
+  var itens = Array.isArray(nota.itens) ? nota.itens : [];
+  if (itens.length) {
+    itens.forEach(function(item) { lines.push('• ' + item); });
+  }
+  if (nota.ev_inicio || nota.ev_fim) {
+    lines.push('');
+    lines.push('Horário: ' + (nota.ev_inicio || '') + (nota.ev_fim ? ' – ' + nota.ev_fim : ''));
+  }
+  if (nota.ev_local) {
+    lines.push('Local: ' + nota.ev_local);
+  }
+
+  var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    + '&text=' + encodeURIComponent(titulo)
+    + (dates ? '&dates=' + dates : '')
+    + (lines.length ? '&details=' + encodeURIComponent(lines.join('\n')) : '')
+    + (nota.ev_local ? '&location=' + encodeURIComponent(nota.ev_local) : '');
+
+  // Toggle visual do botão (igual ao de contrato)
+  if (btn && btn.classList.contains('btn-calendar-ok')) {
+    btn.classList.remove('btn-calendar-ok');
+    if (db) db.collection('notas').doc(nota.id).update({ calendar_adicionado: false })
+      .catch(function(){});
+    return;
+  }
+  window.open(url, '_blank');
+  if (btn) btn.classList.add('btn-calendar-ok');
+  if (db) db.collection('notas').doc(nota.id).update({ calendar_adicionado: true })
+    .catch(function(){});
 }
 
 function _montarNotaLivre(d) {
