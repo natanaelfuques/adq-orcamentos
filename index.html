@@ -1262,6 +1262,7 @@ header {
       <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico">
         <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="3" r="2.2"/><circle cx="9.5" cy="3" r="2.2"/><path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/><path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/></svg>
       </button>
+      <button id="btn-ia-config" onclick="abrirModalConfigIA()" title="Configurar IA" style="background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;width:28px;height:28px;cursor:pointer;font-size:0.85rem;display:none;align-items:center;justify-content:center;padding:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'">⚙</button>
       <button id="btn-gerador-sair" onclick="geradorSair()">Sair</button>
       <button id="pwa-install-btn" onclick="adqInstall()">&#8659; Instalar</button>
     </div>
@@ -4461,6 +4462,8 @@ function initFirebase(config) {
         if (bs) bs.style.display = 'inline-block';
         var ba = document.getElementById('btn-gerador-acessos');
         if (ba) ba.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'inline-flex' : 'none';
+        var bic = document.getElementById('btn-ia-config');
+        if (bic) bic.style.display = 'inline-flex';
         registrarAcessoGerador(user);
         iniciarListenerSalvos();
         iniciarConnIndicator();
@@ -7055,6 +7058,10 @@ function _salvarEdicaoNota(id) {
 
 var AUTENTIQUE_TOKEN = '8b5f17b0484b1d67752fa6d30c059b590decb430f782fa8443a806b814ffd1b0';  // ← cole seu token de API aqui
 
+// ── CHAVE ANTHROPIC (IA) ──────────────────────────────────────────────────────
+var ANTHROPIC_KEY = localStorage.getItem('adq_anthropic_key') || '';  // chave salva localmente no device
+// ─────────────────────────────────────────────────────────────────────────────
+
 function _abrirModalAutentique(onConfirm) {
   var old = document.getElementById('adq-autentique-modal');
   if (old) old.remove();
@@ -7314,6 +7321,7 @@ function abrirModalIA() {
 function interpretarComIA() {
   var texto = (document.getElementById('ia-input-texto') || {}).value || '';
   if (!texto.trim()) { alert('Cole o texto do cliente antes de interpretar.'); return; }
+  if (!ANTHROPIC_KEY || !ANTHROPIC_KEY.startsWith('sk-')) { abrirModalConfigIA(); return; }
 
   var btn = document.getElementById('ia-btn-ok');
   var status = document.getElementById('ia-status');
@@ -7322,7 +7330,7 @@ function interpretarComIA() {
 
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+    headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1000,
@@ -7499,6 +7507,60 @@ function _aplicarIA(d, destino) {
     }, 200);
     return;
   }
+}
+
+function abrirModalConfigIA() {
+  var old = document.getElementById('modal-ia-config');
+  if (old) old.remove();
+  var chaveSalva = localStorage.getItem('adq_anthropic_key') || '';
+  var modal = document.createElement('div');
+  modal.id = 'modal-ia-config';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:#1e1e1e;border:1px solid #C8A94A;border-radius:8px;padding:24px 22px;width:100%;max-width:460px;box-sizing:border-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em">⚙ Configurar IA</span>
+        <button onclick="document.getElementById('modal-ia-config').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1">×</button>
+      </div>
+      <p style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.5">A chave fica salva <strong style="color:#ccc">apenas neste dispositivo</strong> (localStorage) e nunca vai para o repositório.</p>
+      <label style="display:block;font-size:0.7rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Chave Anthropic (sk-ant-...)</label>
+      <input id="ia-config-key-input" type="password" value="\${chaveSalva}" placeholder="sk-ant-api03-..." style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.88rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:6px" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'" />
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <input type="checkbox" id="ia-config-show" onchange="document.getElementById('ia-config-key-input').type=this.checked?'text':'password'" style="accent-color:#C8A94A;cursor:pointer" />
+        <label for="ia-config-show" style="font-size:0.72rem;color:#888;cursor:pointer;text-transform:none;letter-spacing:normal;font-weight:400;margin:0">Mostrar chave</label>
+      </div>
+      <div id="ia-config-status" style="display:none;font-size:0.75rem;margin-bottom:10px;text-align:center"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="_salvarConfigIA()" style="flex:1;background:#C8A94A;border:none;color:#111;padding:11px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Salvar</button>
+        <button onclick="_limparConfigIA()" style="background:transparent;border:1px solid #555;color:#888;padding:11px 16px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Limpar</button>
+      </div>
+    </div>
+  `;
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+  setTimeout(function() { var el = document.getElementById('ia-config-key-input'); if (el) el.focus(); }, 60);
+}
+
+function _salvarConfigIA() {
+  var val = (document.getElementById('ia-config-key-input') || {}).value || '';
+  var st = document.getElementById('ia-config-status');
+  if (!val.trim() || !val.startsWith('sk-')) {
+    if (st) { st.style.display='block'; st.style.color='#e55'; st.textContent='Chave inválida. Deve começar com sk-'; }
+    return;
+  }
+  localStorage.setItem('adq_anthropic_key', val.trim());
+  ANTHROPIC_KEY = val.trim();
+  if (st) { st.style.display='block'; st.style.color='#25D366'; st.textContent='✓ Chave salva neste dispositivo!'; }
+  setTimeout(function() { var m = document.getElementById('modal-ia-config'); if (m) m.remove(); }, 900);
+}
+
+function _limparConfigIA() {
+  localStorage.removeItem('adq_anthropic_key');
+  ANTHROPIC_KEY = '';
+  var el = document.getElementById('ia-config-key-input');
+  if (el) el.value = '';
+  var st = document.getElementById('ia-config-status');
+  if (st) { st.style.display='block'; st.style.color='#C8A94A'; st.textContent='Chave removida.'; }
 }
 
 function _montarNotaLivre(d) {
