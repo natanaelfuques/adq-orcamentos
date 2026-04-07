@@ -7379,14 +7379,26 @@ Regras:
     return r.json();
   })
   .then(function(data) {
-    var raw = (data.content && data.content[0] && data.content[0].text) || '{}';
-    var clean = raw.replace(/```json[\s\S]*?```|```/g, '').trim();
+    // Extrai texto da resposta — suporta estrutura normal e erros da API
+    var raw = '';
+    if (data.content && data.content.length > 0) {
+      for (var i = 0; i < data.content.length; i++) {
+        if (data.content[i].type === 'text' && data.content[i].text) {
+          raw = data.content[i].text; break;
+        }
+      }
+    }
+    if (!raw) {
+      // Mostra estrutura bruta para diagnóstico
+      throw new Error('Sem texto na resposta. Estrutura: ' + JSON.stringify(data).substring(0, 200));
+    }
+    var clean = raw.replace(/```json|```/g, '').trim();
     var d;
     try { d = JSON.parse(clean); }
     catch(pe) {
       var m = clean.match(/\{[\s\S]*\}/);
-      if (m) { try { d = JSON.parse(m[0]); } catch(e2) { throw new Error('JSON invalido: ' + clean.substring(0,120)); } }
-      else { throw new Error('Resposta inesperada: ' + clean.substring(0,120)); }
+      if (m) { try { d = JSON.parse(m[0]); } catch(e2) { throw new Error('JSON invalido:\n' + clean.substring(0,200)); } }
+      else { throw new Error('Resposta nao JSON:\n' + clean.substring(0,200)); }
     }
     if (btn) { btn.disabled = false; btn.textContent = 'Interpretar'; }
     if (status) status.style.display = 'none';
