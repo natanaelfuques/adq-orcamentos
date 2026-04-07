@@ -1099,7 +1099,7 @@ function renderOrcamento(doc) {
 
   // Cliente
   document.getElementById('cb-nome').textContent = d.nome_cliente || d.nome || '—';
-  document.getElementById('cb-evento').textContent = d.tipo_evento || d.evento || '';
+  document.getElementById('cb-evento').textContent = [d.tipo_evento || d.evento || '', d.qtd_pessoas || ''].filter(Boolean).join(' · ');
   document.getElementById('cb-local').textContent = d.local_evento || d.local || '—';
   document.getElementById('cb-data').textContent = fmtData(d.data_evento || d.dataEvt || '');
 

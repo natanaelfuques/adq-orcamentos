@@ -1318,7 +1318,7 @@ header {
           <input type="text" id="local_evento" placeholder="Ex: Salão Espaço Nobre, Brusque/SC" />
         </div>
       </div>
-      <div class="grid-2">
+      <div class="grid-2" style="margin-bottom:16px">
         <div>
           <label>Evento</label>
           <input type="text" id="tipo_evento" placeholder="Ex: Casamento, Formatura, Show" list="tipo-evento-sugestoes" autocomplete="off" />
@@ -1331,11 +1331,15 @@ header {
           </datalist>
         </div>
         <div>
+          <label>Quantidade de Pessoas</label>
+          <input type="text" id="qtd_pessoas" placeholder="Ex: 120 convidados" />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div>
           <label>Data do Evento</label>
           <input type="date" id="data_evento" onchange="validarDataEvento(this)" />
         </div>
-      </div>
-      <div class="grid-2" style="margin-top:16px">
         <div>
           <label>WhatsApp do Cliente</label>
           <input type="tel" id="whatsapp_cliente" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="15" />
@@ -1367,7 +1371,7 @@ header {
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <label style="margin:0;cursor:pointer" onclick="resetPacote(1)">Descrição dos itens</label>
             <div class="det-presets" style="margin:0">
-              <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,1,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,1,1)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(1,1)})" onmouseup="_presetUp(function(){aplicarPresetPacote(1,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,1,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,1,2)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(1,2)})" onmouseup="_presetUp(function(){aplicarPresetPacote(1,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,1,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,1,3)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(1,3)})" onmouseup="_presetUp(function(){aplicarPresetPacote(1,3)})" ontouchcancel="_presetCancel()"># Kit 3</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,1,4)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,1,4)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(1,4)})" onmouseup="_presetUp(function(){aplicarPresetPacote(1,4)})" ontouchcancel="_presetCancel()"># Kit 4</button>
+              <button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,3)"># Kit 3</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,4)"># Kit 4</button>
             </div>
           </div>
           <textarea id="desc1" rows="3">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
@@ -1394,7 +1398,7 @@ Técnica: montagem, desmontagem.</textarea>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <label style="margin:0;cursor:pointer" onclick="resetPacote(2)">Descrição dos itens</label>
             <div class="det-presets" style="margin:0">
-              <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,2,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,2,1)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(2,1)})" onmouseup="_presetUp(function(){aplicarPresetPacote(2,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,2,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,2,2)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(2,2)})" onmouseup="_presetUp(function(){aplicarPresetPacote(2,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,2,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,2,3)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(2,3)})" onmouseup="_presetUp(function(){aplicarPresetPacote(2,3)})" ontouchcancel="_presetCancel()"># Kit 3</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,2,4)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,2,4)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(2,4)})" onmouseup="_presetUp(function(){aplicarPresetPacote(2,4)})" ontouchcancel="_presetCancel()"># Kit 4</button>
+              <button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,3)"># Kit 3</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,4)"># Kit 4</button>
             </div>
           </div>
           <textarea id="desc2" rows="4">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
@@ -1422,7 +1426,7 @@ Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <label style="margin:0;cursor:pointer" onclick="resetPacote(3)">Descrição dos itens</label>
             <div class="det-presets" style="margin:0">
-              <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,3,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,3,1)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(3,1)})" onmouseup="_presetUp(function(){aplicarPresetPacote(3,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,3,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,3,2)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(3,2)})" onmouseup="_presetUp(function(){aplicarPresetPacote(3,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,3,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,3,3)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(3,3)})" onmouseup="_presetUp(function(){aplicarPresetPacote(3,3)})" ontouchcancel="_presetCancel()"># Kit 3</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetPacote(b,3,4)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetPacote(b,3,4)})})(this)" ontouchend="_presetUp(function(){aplicarPresetPacote(3,4)})" onmouseup="_presetUp(function(){aplicarPresetPacote(3,4)})" ontouchcancel="_presetCancel()"># Kit 4</button>
+              <button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,3)"># Kit 3</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,4)"># Kit 4</button>
             </div>
           </div>
           <textarea id="desc3" rows="5">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
@@ -1458,7 +1462,7 @@ Técnica: montagem, desmontagem, suporte durante o evento, operação das luzes.
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                 <label style="margin:0;cursor:pointer" onclick="resetDetItem(1)">Descrição</label>
                 <div class="det-presets" style="margin:0">
-                  <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,1,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,1,1)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(1,1)})" onmouseup="_presetUp(function(){aplicarPreset(1,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,1,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,1,2)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(1,2)})" onmouseup="_presetUp(function(){aplicarPreset(1,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,1,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,1,3)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(1,3)})" onmouseup="_presetUp(function(){aplicarPreset(1,3)})" ontouchcancel="_presetCancel()"># Kit 3</button>
+                  <button class="btn-preset" onclick="abrirModalPreset(this,'det',1,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',1,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',1,3)"># Kit 3</button>
                 </div>
               </div>
               <textarea id="det_desc1" rows="3">2x Caixa alta
@@ -1491,7 +1495,7 @@ Cabos e acessórios</textarea>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                 <label style="margin:0;cursor:pointer" onclick="resetDetItem(2)">Descrição</label>
                 <div class="det-presets" style="margin:0">
-                  <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,2,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,2,1)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(2,1)})" onmouseup="_presetUp(function(){aplicarPreset(2,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,2,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,2,2)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(2,2)})" onmouseup="_presetUp(function(){aplicarPreset(2,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,2,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,2,3)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(2,3)})" onmouseup="_presetUp(function(){aplicarPreset(2,3)})" ontouchcancel="_presetCancel()"># Kit 3</button>
+                  <button class="btn-preset" onclick="abrirModalPreset(this,'det',2,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',2,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',2,3)"># Kit 3</button>
                 </div>
               </div>
               <textarea id="det_desc2" rows="3">2x Torres com Spider Beam
@@ -1523,7 +1527,7 @@ Cabos e acessórios</textarea>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                 <label style="margin:0;cursor:pointer" onclick="resetDetItem(3)">Descrição</label>
                 <div class="det-presets" style="margin:0">
-                  <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,3,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,3,1)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(3,1)})" onmouseup="_presetUp(function(){aplicarPreset(3,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,3,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,3,2)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(3,2)})" onmouseup="_presetUp(function(){aplicarPreset(3,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,3,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,3,3)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(3,3)})" onmouseup="_presetUp(function(){aplicarPreset(3,3)})" ontouchcancel="_presetCancel()"># Kit 3</button>
+                  <button class="btn-preset" onclick="abrirModalPreset(this,'det',3,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',3,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',3,3)"># Kit 3</button>
                 </div>
               </div>
               <textarea id="det_desc3" rows="2">Pista de LED Paris Slim 4x4</textarea>
@@ -1551,7 +1555,7 @@ Cabos e acessórios</textarea>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                 <label style="margin:0;cursor:pointer" onclick="resetCenica()">Descrição</label>
                 <div class="det-presets" style="margin:0">
-                  <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,4,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,4,1)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(4,1)})" onmouseup="_presetUp(function(){aplicarPreset(4,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,4,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,4,2)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(4,2)})" onmouseup="_presetUp(function(){aplicarPreset(4,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,4,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,4,3)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(4,3)})" onmouseup="_presetUp(function(){aplicarPreset(4,3)})" ontouchcancel="_presetCancel()"># Kit 3</button>
+                  <button class="btn-preset" onclick="abrirModalPreset(this,'det',4,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',4,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',4,3)"># Kit 3</button>
                 </div>
               </div>
               <textarea id="det_desc4" rows="2" oninput="calcCenica(event)">6x pontos cênicos</textarea>
@@ -1585,7 +1589,7 @@ Cabos e acessórios</textarea>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                 <label style="margin:0;cursor:pointer" onclick="resetDetItem(5)">Descrição</label>
                 <div class="det-presets" style="margin:0">
-                  <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,5,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,5,1)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(5,1)})" onmouseup="_presetUp(function(){aplicarPreset(5,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,5,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,5,2)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(5,2)})" onmouseup="_presetUp(function(){aplicarPreset(5,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,5,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,5,3)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(5,3)})" onmouseup="_presetUp(function(){aplicarPreset(5,3)})" ontouchcancel="_presetCancel()"># Kit 3</button>
+                  <button class="btn-preset" onclick="abrirModalPreset(this,'det',5,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',5,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',5,3)"># Kit 3</button>
                 </div>
               </div>
               <textarea id="det_desc5" rows="3">Painel LED 3x2 traseiro
@@ -1616,7 +1620,7 @@ Suporte Técnico</textarea>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                 <label style="margin:0;cursor:pointer" onclick="resetDetItem(6)">Descrição</label>
                 <div class="det-presets" style="margin:0">
-                  <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,6,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,6,1)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(6,1)})" onmouseup="_presetUp(function(){aplicarPreset(6,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,6,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,6,2)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(6,2)})" onmouseup="_presetUp(function(){aplicarPreset(6,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,6,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,6,3)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(6,3)})" onmouseup="_presetUp(function(){aplicarPreset(6,3)})" ontouchcancel="_presetCancel()"># Kit 3</button>
+                  <button class="btn-preset" onclick="abrirModalPreset(this,'det',6,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',6,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',6,3)"># Kit 3</button>
                 </div>
               </div>
               <textarea id="det_desc6" rows="2">6x Gerb 15s
@@ -1645,7 +1649,7 @@ Acionamento</textarea>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                 <label style="margin:0;cursor:pointer" onclick="resetDetItem(7)">Descrição</label>
                 <div class="det-presets" style="margin:0">
-                  <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,7,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,7,1)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(7,1)})" onmouseup="_presetUp(function(){aplicarPreset(7,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,7,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,7,2)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(7,2)})" onmouseup="_presetUp(function(){aplicarPreset(7,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,7,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,7,3)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(7,3)})" onmouseup="_presetUp(function(){aplicarPreset(7,3)})" ontouchcancel="_presetCancel()"># Kit 3</button>
+                  <button class="btn-preset" onclick="abrirModalPreset(this,'det',7,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',7,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',7,3)"># Kit 3</button>
                 </div>
               </div>
               <textarea id="det_desc7" rows="2">Palco praticável 3x2m
@@ -1674,7 +1678,7 @@ Revestimento</textarea>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                 <label style="margin:0;cursor:pointer" onclick="resetDetItem(8)">Descrição</label>
                 <div class="det-presets" style="margin:0">
-                  <button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,8,1)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,8,1)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(8,1)})" onmouseup="_presetUp(function(){aplicarPreset(8,1)})" ontouchcancel="_presetCancel()"># Kit 1</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,8,2)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,8,2)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(8,2)})" onmouseup="_presetUp(function(){aplicarPreset(8,2)})" ontouchcancel="_presetCancel()"># Kit 2</button><button class="btn-preset" ontouchstart="(function(b){_presetDown(b,function(){salvarPresetDet(b,8,3)})})(this)" onmousedown="(function(b){_presetDown(b,function(){salvarPresetDet(b,8,3)})})(this)" ontouchend="_presetUp(function(){aplicarPreset(8,3)})" onmouseup="_presetUp(function(){aplicarPreset(8,3)})" ontouchcancel="_presetCancel()"># Kit 3</button>
+                  <button class="btn-preset" onclick="abrirModalPreset(this,'det',8,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',8,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',8,3)"># Kit 3</button>
                 </div>
               </div>
               <textarea id="det_desc8" rows="2">Montagem, desmontagem, suporte durante o evento.</textarea>
@@ -2112,21 +2116,122 @@ const PRESETS = {
   8: { 1:{desc:'',val:''}, 2:{desc:'',val:''}, 3:{desc:'',val:''}, 4:{desc:'',val:''} }
 };
 
-// ── CARREGAR PRESETS DO LOCALSTORAGE ──
-(function() {
-  function _load(obj, prefix) {
-    Object.keys(obj).forEach(function(item) {
-      Object.keys(obj[item]).forEach(function(kit) {
-        try {
-          var s = localStorage.getItem(prefix + item + '_kit' + kit);
-          if (s) obj[item][kit] = JSON.parse(s);
-        } catch(e) {}
+// ── CARREGAR PRESETS DO FIRESTORE ──
+function carregarPresetsFirestore() {
+  if (!db) return;
+  db.collection('presets_gerador').doc('presets').get().then(function(doc) {
+    if (!doc.exists) return;
+    var d = doc.data();
+    if (d.pacotes) {
+      Object.keys(d.pacotes).forEach(function(op) {
+        Object.keys(d.pacotes[op]).forEach(function(kit) {
+          if (PRESETS_PACOTES[op] && d.pacotes[op][kit]) {
+            PRESETS_PACOTES[op][kit] = d.pacotes[op][kit];
+          }
+        });
       });
+    }
+    if (d.detalhado) {
+      Object.keys(d.detalhado).forEach(function(item) {
+        Object.keys(d.detalhado[item]).forEach(function(kit) {
+          if (PRESETS[item] && d.detalhado[item][kit]) {
+            PRESETS[item][kit] = d.detalhado[item][kit];
+          }
+        });
+      });
+    }
+  }).catch(function(e) { console.warn('[AdQ] Erro ao carregar presets:', e); });
+}
+
+// ── SALVAR PRESETS NO FIRESTORE ──
+function _salvarPresetsFirestore() {
+  if (!db) return;
+  db.collection('presets_gerador').doc('presets').set({
+    pacotes:   JSON.parse(JSON.stringify(PRESETS_PACOTES)),
+    detalhado: JSON.parse(JSON.stringify(PRESETS)),
+    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(function(e) { console.warn('[AdQ] Erro ao salvar presets:', e); });
+}
+
+// ── FEEDBACK VISUAL ──
+function _presetFeedback(btn, ok) {
+  var orig = btn.textContent;
+  btn.textContent = ok ? '✓ Salvo' : orig;
+  btn.style.borderColor = ok ? 'var(--gold)' : '';
+  btn.style.color       = ok ? 'var(--gold)' : '';
+  setTimeout(function() { btn.textContent = orig; btn.style.borderColor = ''; btn.style.color = ''; }, 1200);
+}
+
+// ── MODAL PRESET ──
+function abrirModalPreset(btn, tipo, id1, kit) {
+  var old = document.getElementById('adq-preset-modal');
+  if (old) { old.remove(); return; }
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-preset-modal';
+
+  // Posicionar acima do botão
+  var rect = btn.getBoundingClientRect();
+  var scrollY = window.scrollY || window.pageYOffset;
+  modal.style.cssText = 'position:absolute;z-index:600;background:#1e1e1e;border:1px solid #444;border-top:2px solid var(--gold);border-radius:5px;padding:8px;display:flex;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,0.6)';
+  modal.style.top  = (rect.top + scrollY - 54) + 'px';
+  modal.style.left = Math.max(8, rect.left + window.scrollX) + 'px';
+
+  var btnStyle = 'font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;padding:6px 12px;cursor:pointer;border:none;';
+
+  var bCarregar = document.createElement('button');
+  bCarregar.textContent = 'Carregar';
+  bCarregar.style.cssText = btnStyle + 'background:var(--surface);color:var(--text);border:1px solid #444;';
+  bCarregar.onmouseenter = function() { this.style.borderColor='var(--gold)'; this.style.color='var(--gold)'; };
+  bCarregar.onmouseleave = function() { this.style.borderColor='#444'; this.style.color='var(--text)'; };
+  bCarregar.onclick = function() {
+    if (tipo === 'pacote') aplicarPresetPacote(id1, kit);
+    else aplicarPreset(id1, kit);
+    modal.remove();
+  };
+
+  var bSalvar = document.createElement('button');
+  bSalvar.textContent = 'Salvar';
+  bSalvar.style.cssText = btnStyle + 'background:var(--gold);color:#111;';
+  bSalvar.onmouseenter = function() { this.style.opacity='0.85'; };
+  bSalvar.onmouseleave = function() { this.style.opacity='1'; };
+  bSalvar.onclick = function() {
+    var descId = tipo === 'pacote' ? 'desc' + id1 : 'det_desc' + id1;
+    var valId  = tipo === 'pacote' ? 'valor' + id1 : 'det_val' + id1;
+    var descEl = document.getElementById(descId);
+    var valEl  = document.getElementById(valId);
+    var data = { desc: descEl ? descEl.value : '', val: valEl ? valEl.value : '' };
+    if (tipo === 'pacote') PRESETS_PACOTES[id1][kit] = data;
+    else PRESETS[id1][kit] = data;
+    _salvarPresetsFirestore();
+    _presetFeedback(btn, true);
+    modal.remove();
+  };
+
+  var bFechar = document.createElement('button');
+  bFechar.textContent = '×';
+  bFechar.style.cssText = btnStyle + 'background:transparent;color:#666;border:1px solid #333;padding:6px 8px;';
+  bFechar.onclick = function() { modal.remove(); };
+
+  modal.appendChild(bCarregar);
+  modal.appendChild(bSalvar);
+  modal.appendChild(bFechar);
+  document.body.appendChild(modal);
+
+  // Fechar ao clicar fora
+  setTimeout(function() {
+    document.addEventListener('click', function _close(e) {
+      if (!modal.contains(e.target) && e.target !== btn) {
+        modal.remove();
+        document.removeEventListener('click', _close);
+      }
     });
-  }
-  _load(PRESETS_PACOTES, 'adq_pst_op');
-  _load(PRESETS, 'adq_pst_det');
-})();
+  }, 10);
+}
+
+// ── SALVAR PRESET PACOTE / DET (compat) ──
+function salvarPresetPacote(btn, opcao, kit) { abrirModalPreset(btn, 'pacote', opcao, kit); }
+function salvarPresetDet(btn, item, kit)     { abrirModalPreset(btn, 'det',    item,  kit); }
 
 // ── FORMATAÇÃO AUTOMÁTICA DE VALOR NO BLUR ──
 function _formatarValorBlur(input) {
@@ -2143,44 +2248,6 @@ document.addEventListener('blur', function(e) {
     _formatarValorBlur(el);
   }
 }, true);
-var _lpTimer = null, _lpFired = false;
-function _presetDown(btn, onLong) {
-  _lpFired = false;
-  _lpTimer = setTimeout(function() { _lpFired = true; onLong(); }, 600);
-}
-function _presetUp(onShort) { clearTimeout(_lpTimer); if (!_lpFired) { _lpFired = true; onShort(); } }
-function _presetCancel()    { clearTimeout(_lpTimer); }
-
-// ── FEEDBACK VISUAL ──
-function _presetFeedback(btn, ok) {
-  var orig = btn.textContent;
-  btn.textContent = ok ? '✓ Salvo' : '! Vazio';
-  btn.style.borderColor = ok ? 'var(--gold)' : '#e55';
-  btn.style.color       = ok ? 'var(--gold)' : '#e55';
-  setTimeout(function() { btn.textContent = orig; btn.style.borderColor = ''; btn.style.color = ''; }, 1200);
-}
-
-// ── SALVAR PRESET PACOTE ──
-function salvarPresetPacote(btn, opcao, kit) {
-  var desc = document.getElementById('desc' + opcao);
-  var val  = document.getElementById('valor' + opcao);
-  var data = { desc: desc ? desc.value : '', val: val ? val.value : '' };
-  if (!data.desc && !data.val) { _presetFeedback(btn, false); return; }
-  PRESETS_PACOTES[opcao][kit] = data;
-  try { localStorage.setItem('adq_pst_op' + opcao + '_kit' + kit, JSON.stringify(data)); } catch(e) {}
-  _presetFeedback(btn, true);
-}
-
-// ── SALVAR PRESET DETALHADO ──
-function salvarPresetDet(btn, item, kit) {
-  var desc = document.getElementById('det_desc' + item);
-  var val  = document.getElementById('det_val' + item);
-  var data = { desc: desc ? desc.value : '', val: val ? val.value : '' };
-  if (!data.desc && !data.val) { _presetFeedback(btn, false); return; }
-  PRESETS[item][kit] = data;
-  try { localStorage.setItem('adq_pst_det' + item + '_kit' + kit, JSON.stringify(data)); } catch(e) {}
-  _presetFeedback(btn, true);
-}
 
 const PACOTE_DEFAULTS = {
   1: { desc: `Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
@@ -2408,6 +2475,7 @@ function salvarOrcamentoCompleto() {
     local_evento:  document.getElementById('local_evento').value,
     data_evento:   document.getElementById('data_evento').value,
     whatsapp_cliente: document.getElementById('whatsapp_cliente')?.value || '',
+    qtd_pessoas: document.getElementById('qtd_pessoas')?.value || '',
     inc_cliente:   document.getElementById('inc_cliente').checked,
     inc_opcoes:    document.getElementById('inc_opcoes').checked,
     inc_detalhado: document.getElementById('inc_detalhado').checked,
@@ -2534,7 +2602,7 @@ function resetFormularioOrcamento() {
   var bannerOrc = document.getElementById('adq-draft-orc-banner');
   if (bannerOrc) bannerOrc.remove();
   // Dados do cliente / evento
-  ['nome_cliente','tipo_evento','local_evento','data_evento','whatsapp_cliente'].forEach(id => {
+  ['nome_cliente','tipo_evento','local_evento','data_evento','whatsapp_cliente','qtd_pessoas'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   // Pacotes
@@ -2649,6 +2717,7 @@ carregarOrcamentoEditavel._processar = function(d) {
       set('local_evento', d.local_evento);
       set('data_evento',  d.data_evento);
       set('whatsapp_cliente', d.whatsapp_cliente || '');
+      set('qtd_pessoas', d.qtd_pessoas || '');
       setChk('inc_cliente',   d.inc_cliente);
       setChk('inc_op1', d.inc_op1);
       setChk('inc_op2', d.inc_op2);
@@ -2868,6 +2937,7 @@ function gerarOrcamento() {
   const nome    = document.getElementById('nome_cliente').value.trim() || 'Cliente';
   const evento  = document.getElementById('tipo_evento').value.trim() || 'Evento';
   const local   = document.getElementById('local_evento').value.trim() || 'Brusque/SC';
+  const pessoas = (document.getElementById('qtd_pessoas') ? document.getElementById('qtd_pessoas').value.trim() : '') || '';
   const dataEvt    = document.getElementById('data_evento').value;
   const dataFmt    = new Date().toLocaleDateString('pt-BR');   // data de hoje (orçamento)
   const dataEvento = dataEvt ? formatarData(dataEvt) : dataFmt; // data do evento
@@ -2906,7 +2976,7 @@ function gerarOrcamento() {
     }
   }
 
-  const html = buildDocHTML({ nome, evento, local, dataFmt, dataEvento,
+  const html = buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento,
     incCliente, incOpcoes, incPagamento,
     incOp1, incOp2, incOp3,
     incDetalhado, detItens, detValor,
@@ -2945,7 +3015,7 @@ function imprimirPDF() {
   }
 }
 
-function buildDocHTML({ nome, evento, local, dataFmt, dataEvento, incCliente, incOpcoes, incPagamento, incOp1, incOp2, incOp3, incDetalhado, detItens, detValor, desc1, desc2, desc3, v1, v2, v3, pg }) {
+function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, incCliente, incOpcoes, incPagamento, incOp1, incOp2, incOp3, incDetalhado, detItens, detValor, desc1, desc2, desc3, v1, v2, v3, pg }) {
   const linhas = (txt) => txt.split('\n')
     .filter(l => l.trim())
     .map(l => `<li>${l.replace(/^[•\-]\s*/, '')}</li>`)
@@ -3053,6 +3123,7 @@ function buildDocHTML({ nome, evento, local, dataFmt, dataEvento, incCliente, in
       <div class="label">Cliente / Evento</div>
       <p><strong>Para:</strong> ${nome}</p>
       <p><strong>Evento:</strong> ${evento}</p>
+      ${pessoas ? `<p><strong>Pessoas:</strong> ${pessoas}</p>` : ''}
     </div>
     <div class="client-right">
       <div class="label">&nbsp;</div>
@@ -4378,6 +4449,7 @@ function initFirebase(config) {
         registrarAcessoGerador(user);
         iniciarListenerSalvos();
         iniciarConnIndicator();
+        carregarPresetsFirestore();
       } else {
         if (user) auth.signOut();
         document.getElementById('gerador-login-screen').style.display = 'flex';
@@ -4683,6 +4755,7 @@ function coletarDadosOrcamento() {
     local_evento: document.getElementById('local_evento') ? document.getElementById('local_evento').value : '',
     data_evento:  document.getElementById('data_evento')  ? document.getElementById('data_evento').value  : '',
     whatsapp_cliente: document.getElementById('whatsapp_cliente') ? document.getElementById('whatsapp_cliente').value : '',
+    qtd_pessoas: document.getElementById('qtd_pessoas') ? document.getElementById('qtd_pessoas').value : '',
     inc_cliente:   document.getElementById('inc_cliente')   ? document.getElementById('inc_cliente').checked   : false,
     inc_opcoes:    document.getElementById('inc_opcoes')    ? document.getElementById('inc_opcoes').checked    : false,
     inc_detalhado: document.getElementById('inc_detalhado') ? document.getElementById('inc_detalhado').checked : false,
@@ -4798,6 +4871,8 @@ function renderSalvos(docs) {
     var evento  = doc.tipo_evento  || doc.evento || '';
     var data    = doc.data_evento  || doc.dataEvt || '';
     var dataFmt = data ? data.split('-').reverse().join('/') : '';
+    var pessoas = doc.qtd_pessoas || '';
+    var metaParts = [evento, pessoas, dataFmt].filter(Boolean);
     var valor = doc.valorTotal || '';
     var aprovado = doc.aprovado ? true : false;
     var id = doc.id;
@@ -4811,7 +4886,7 @@ function renderSalvos(docs) {
     var card = '<div class="salvo-card' + _classeBordaOrc + '">';
     card += '<div class="salvo-card-top">';
     card += '<div style="min-width:0;flex:1"><div class="salvo-card-nome">' + nomeEsc + '</div>';
-    card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' · ' : '') + dataFmt + '</div></div>';
+    card += '<div class="salvo-card-meta">' + metaParts.map(escHtml).join(' · ') + '</div></div>';
     var _tagValor = doc.inc_detalhado
       ? '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;color:#888;border:1px solid #444;border-radius:3px;padding:2px 7px;white-space:nowrap;flex-shrink:0">Detalhado</div>'
       : '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;color:#888;border:1px solid #444;border-radius:3px;padding:2px 7px;white-space:nowrap;flex-shrink:0">Pacotes</div>';
