@@ -1295,6 +1295,11 @@ header {
     </div>
   </div>
 
+  <!-- BOTÃO IA -->
+  <div style="margin-bottom:18px;display:flex;justify-content:flex-end">
+    <button onclick="abrirModalIA()" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px dashed #C8A94A;color:#C8A94A;border-radius:4px;padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(200,169,74,0.08)'" onmouseout="this.style.background='transparent'">✦ Preencher via IA</button>
+  </div>
+
   <!-- ABA DADOS DO CLIENTE -->
   <div class="collapse-tab" id="tab-cliente">
     <div class="collapse-header" onclick="toggleTab(this)">
@@ -7273,6 +7278,232 @@ function enviarParaAutentique() {
     return;
   }
   _abrirModalAutentique();
+}
+
+/* ═══════════════════════════════════════════
+   PREENCHER VIA IA
+═══════════════════════════════════════════ */
+function abrirModalIA() {
+  var old = document.getElementById('modal-ia');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'modal-ia';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  modal.innerHTML = `
+    <div style="background:#1e1e1e;border:1px solid #C8A94A;border-radius:8px;padding:24px 22px;width:100%;max-width:480px;box-sizing:border-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em">✦ Preencher via IA</span>
+        <button onclick="document.getElementById('modal-ia').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#666'">×</button>
+      </div>
+      <textarea id="ia-input-texto" placeholder="Cole aqui a mensagem do cliente..." rows="7" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;resize:vertical;margin-bottom:14px" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'"></textarea>
+      <div id="ia-status" style="display:none;font-size:0.75rem;color:#C8A94A;margin-bottom:12px;text-align:center">⏳ Interpretando...</div>
+      <button onclick="interpretarComIA()" id="ia-btn-ok" style="width:100%;background:#C8A94A;border:none;color:#111;padding:11px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Interpretar</button>
+    </div>
+  `;
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+  setTimeout(function() {
+    var el = document.getElementById('ia-input-texto');
+    if (el) el.focus();
+  }, 60);
+}
+
+function interpretarComIA() {
+  var texto = (document.getElementById('ia-input-texto') || {}).value || '';
+  if (!texto.trim()) { alert('Cole o texto do cliente antes de interpretar.'); return; }
+
+  var btn = document.getElementById('ia-btn-ok');
+  var status = document.getElementById('ia-status');
+  if (btn) { btn.disabled = true; btn.textContent = 'Interpretando...'; }
+  if (status) status.style.display = 'block';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: `Você é um assistente que interpreta mensagens de clientes de uma empresa de sonorização e iluminação para eventos (Áudio de Qualidade, Brusque/SC).
+
+Extraia as informações e retorne SOMENTE um JSON válido, sem texto extra, sem markdown, sem explicações.
+
+Campos possíveis:
+- tipo_destino: "evento_rapido" | "orcamento" | "contrato"
+- nome_cliente: string
+- local_evento: string
+- tipo_evento: string (ex: Aniversário, Casamento, Formatura, Show, Corporativo)
+- qtd_pessoas: string
+- data_evento: string no formato YYYY-MM-DD
+- whatsapp_cliente: string
+- ev_inicio: string (ex: "19:00")
+- ev_fim: string (ex: "02:00")
+- servicos: array de strings (itens de serviço mencionados)
+- val_total: string (ex: "600,00")
+- nota_livre: string (texto resumido para evento rápido)
+- cli_nome: string (nome completo para contrato)
+- cli_doc: string (CPF ou CNPJ)
+- cli_end: string (endereço)
+- cli_cep: string
+- cli_email: string
+- cli_fone: string
+- ev_nome: string (nome do evento para contrato, ex: "15 Anos da Laura")
+- ev_resp: string (responsável que receberá a equipe)
+- ev_local: string (local para contrato)
+
+Regras:
+- Se vier um bloco estruturado com Nome/CPF/Endereço/Email → tipo_destino = "contrato"
+- Se vier mensagem curta com data, local e itens de equipamento → tipo_destino = "evento_rapido"
+- Se vier pedido de orçamento sem dados de CPF/contrato → tipo_destino = "orcamento"
+- Para evento_rapido, monte nota_livre como resumo compacto: "Nome – Tipo – DD/MM – Local – itens – R$ valor"
+- Omita campos que não foram mencionados
+- Datas relativas como "7 de junho" → use o ano atual (2026) → "2026-06-07"
+- "BC" = Balneário Camboriú, "Brusque" = Brusque/SC, "Guabiruba" = Guabiruba/SC
+- Horários como "19 hrs" → "19:00", "02 hrs" → "02:00"
+- CEP sem traço → adicionar traço (ex: 88360-000)`,
+      messages: [{ role: 'user', content: texto }]
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var raw = (data.content && data.content[0] && data.content[0].text) || '{}';
+    var clean = raw.replace(/```json|```/g, '').trim();
+    var d = JSON.parse(clean);
+    if (btn) { btn.disabled = false; btn.textContent = 'Interpretar'; }
+    if (status) status.style.display = 'none';
+    document.getElementById('modal-ia').remove();
+    _abrirModalDestinoIA(d);
+  })
+  .catch(function(err) {
+    console.error('[IA] Erro:', err);
+    if (btn) { btn.disabled = false; btn.textContent = 'Interpretar'; }
+    if (status) status.style.display = 'none';
+    alert('Erro ao interpretar: ' + err.message);
+  });
+}
+
+function _abrirModalDestinoIA(d) {
+  var old = document.getElementById('modal-ia-destino');
+  if (old) old.remove();
+
+  var sugerido = d.tipo_destino || 'evento_rapido';
+  var labels = { evento_rapido: 'Evento Rápido', orcamento: 'Orçamento', contrato: 'Contrato' };
+
+  var modal = document.createElement('div');
+  modal.id = 'modal-ia-destino';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var botoesHTML = ['evento_rapido','orcamento','contrato'].map(function(dest) {
+    var ativo = dest === sugerido;
+    return '<button onclick="_aplicarIA(' + JSON.stringify(d) + ',\'' + dest + '\')" style="flex:1;padding:11px 8px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border:' + (ativo ? '2px solid #C8A94A;background:#C8A94A;color:#111' : '1px solid #444;background:transparent;color:#aaa') + '">' + labels[dest] + (ativo ? ' ✦' : '') + '</button>';
+  }).join('');
+
+  modal.innerHTML = `
+    <div style="background:#1e1e1e;border:1px solid #555;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em">Destino</span>
+        <button onclick="document.getElementById('modal-ia-destino').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#666'">×</button>
+      </div>
+      <div style="font-size:0.78rem;color:#888;margin-bottom:18px;line-height:1.5">IA sugeriu <strong style="color:#eee">${labels[sugerido]}</strong>. Confirme ou escolha outro destino:</div>
+      <div style="display:flex;gap:8px">${botoesHTML}</div>
+    </div>
+  `;
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+function _aplicarIA(d, destino) {
+  var modal = document.getElementById('modal-ia-destino');
+  if (modal) modal.remove();
+
+  function setVal(id, val) {
+    var el = document.getElementById(id);
+    if (el && val !== undefined && val !== null && val !== '') {
+      el.value = val;
+      el.dispatchEvent(new Event('input'));
+    }
+  }
+
+  if (destino === 'evento_rapido') {
+    var nota = d.nota_livre || _montarNotaLivre(d);
+    var tx = document.getElementById('nota-bloco-texto-input');
+    if (tx) {
+      tx.value = nota;
+      tx.dispatchEvent(new Event('input'));
+      document.getElementById('nota-bloco-actions').style.display = 'flex';
+      tx.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return;
+  }
+
+  if (destino === 'orcamento') {
+    // Garantir que estamos na aba orçamento
+    var btnOrc = document.querySelector('.main-tab-btn[onclick*="orcamento"]') || document.querySelector('.main-tab-btn');
+    if (btnOrc) btnOrc.click();
+    setTimeout(function() {
+      setVal('nome_cliente', d.nome_cliente || d.cli_nome);
+      setVal('local_evento', d.local_evento || d.ev_local);
+      setVal('tipo_evento', d.tipo_evento);
+      setVal('qtd_pessoas', d.qtd_pessoas);
+      setVal('data_evento', d.data_evento);
+      setVal('whatsapp_cliente', d.whatsapp_cliente || d.cli_fone);
+    }, 120);
+    return;
+  }
+
+  if (destino === 'contrato') {
+    // Ir para aba contrato
+    var btnCont = document.querySelector('.main-tab-btn[onclick*="contrato"]');
+    if (btnCont) btnCont.click();
+    setTimeout(function() {
+      setVal('cli_nome',  d.cli_nome  || d.nome_cliente);
+      setVal('cli_doc',   d.cli_doc);
+      setVal('cli_end',   d.cli_end);
+      setVal('cli_cep',   d.cli_cep);
+      setVal('cli_email', d.cli_email);
+      setVal('cli_fone',  d.cli_fone  || d.whatsapp_cliente);
+      setVal('ev_nome',   d.ev_nome   || d.tipo_evento);
+      setVal('ev_resp',   d.ev_resp   || d.nome_cliente || d.cli_nome);
+      setVal('ev_local',  d.ev_local  || d.local_evento);
+      setVal('ev_data',   d.data_evento);
+      setVal('ev_inicio', d.ev_inicio);
+      setVal('ev_fim',    d.ev_fim);
+      setVal('val_total', d.val_total);
+
+      // Serviços
+      if (d.servicos && d.servicos.length) {
+        var lista = document.getElementById('lista-servicos');
+        if (lista) {
+          lista.innerHTML = '';
+          d.servicos.forEach(function(s) {
+            var div = document.createElement('div');
+            div.className = 'servico-item';
+            div.innerHTML = '<input type="text" value="' + s.replace(/"/g,'&quot;') + '" placeholder="Item de serviço"><button class="btn-rem" onclick="this.parentElement.remove()">×</button>';
+            lista.appendChild(div);
+          });
+        }
+      }
+    }, 200);
+    return;
+  }
+}
+
+function _montarNotaLivre(d) {
+  var partes = [];
+  if (d.nome_cliente || d.cli_nome) partes.push(d.nome_cliente || d.cli_nome);
+  if (d.tipo_evento) partes.push(d.tipo_evento);
+  if (d.data_evento) {
+    var p = d.data_evento.split('-');
+    if (p.length === 3) partes.push(p[2] + '/' + p[1]);
+  }
+  if (d.local_evento || d.ev_local) partes.push(d.local_evento || d.ev_local);
+  if (d.qtd_pessoas) partes.push(d.qtd_pessoas + ' pessoas');
+  if (d.servicos && d.servicos.length) partes.push(d.servicos.join(', '));
+  if (d.val_total) partes.push('R$ ' + d.val_total);
+  return partes.join(' – ');
 }
 </script>
 </div>
