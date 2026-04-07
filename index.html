@@ -4143,7 +4143,8 @@ function gerarContrato() {
   if (cliCep) cliLinha += `, CEP: ${cliCep}`;
   if (cliEmail) cliLinha += `, e-mail: ${cliEmail}`;
   if (cliFone) cliLinha += `, contato: ${cliFone}`;
-  const contratoHTML = buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evIni, evFim, valTotal, servicos, pgto: pgtoTexto() });
+  const dataEntradaVal = document.getElementById('data_entrada') ? document.getElementById('data_entrada').value : '';
+  const contratoHTML = buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evIni, evFim, valTotal, servicos, pgto: pgtoTexto(), dataEntrada: dataEntradaVal });
   const iframe = document.getElementById('pdf-frame-contrato');
   iframe.srcdoc = contratoHTML;
   document.getElementById('preview-area-contrato').style.display = 'block';
@@ -4164,7 +4165,7 @@ function imprimirContrato() {
   }
 }
 
-function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evIni, evFim, valTotal, servicos, pgto }) {
+function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evIni, evFim, valTotal, servicos, pgto, dataEntrada }) {
   const itensLi = servicos.length
     ? servicos.map(s => `<li>${s}</li>`).join('')
     : '<li>—</li>';
@@ -4293,6 +4294,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
         <div class="cl1-inciso">
         <p class="valor-linha">§ 3º — O presente serviço será remunerado pela quantia total de <u>R$ ${valTotal}</u> sendo realizado da seguinte forma:</p>
         <p class="cl-par indent">— ${pgto}</p>
+        ${dataEntrada ? '<p class="cl-par indent" style="margin-top:4px">Data de pagamento da entrada: <strong>' + fmtData(dataEntrada) + '</strong></p>' : ''}
         <p class="pix-linha">Chave PIX CNPJ: <strong>49.276.147/0001-06</strong> — NF SOLUÇÕES PARA EVENTOS</p>
         </div>
       </div>
