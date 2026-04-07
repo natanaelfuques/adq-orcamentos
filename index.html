@@ -1962,11 +1962,11 @@ Revestimento</textarea>
         </div>
         <div>
           <label>Hora Início</label>
-          <input type="text" id="ev_inicio" placeholder="Ex: 18:00">
+          <input type="text" id="ev_inicio" placeholder="Ex: 18:00 ou segue horário do DJ" list="sugestoes-hora-inicio" onblur="_autoFormatHora(this)" autocomplete="off"><datalist id="sugestoes-hora-inicio"><option value="Segue horário do DJ"><option value="Segue programação"><option value="A definir"></datalist>
         </div>
         <div>
           <label>Hora Término</label>
-          <input type="text" id="ev_fim" placeholder="Ex: 23:00">
+          <input type="text" id="ev_fim" placeholder="Ex: 23:00 ou segue horário do DJ" list="sugestoes-hora-fim" onblur="_autoFormatHora(this)" autocomplete="off"><datalist id="sugestoes-hora-fim"><option value="Segue horário do DJ"><option value="Segue programação"><option value="A definir"></datalist>
         </div>
       </div>
     </div>
@@ -3810,6 +3810,18 @@ function formatDoc(val) {
   }
   // Unknown format — return original
   return val;
+}
+
+function _autoFormatHora(input) {
+  var v = (input.value || '').trim();
+  if (!v) return;
+  // Se contém letra além de 'h' como separador, é texto livre — não formata
+  var semH = v.replace(/h/gi, '');
+  if (/[a-zA-Z]/.test(semH)) return;
+  // Tem dígitos — formata como hora
+  if (/\d/.test(v)) {
+    input.value = formatHora(v);
+  }
 }
 
 function formatHora(val) {
