@@ -1856,6 +1856,8 @@ function drValidarFone(input) {
   if (!raw) { input.style.borderColor = ''; return; }
   // Remove DDI 55 se presente (13 dígitos = 55 + 11, ou 12 = 55 + 10)
   var local = ((raw.length === 12 || raw.length === 13) && raw.startsWith('55')) ? raw.slice(2) : raw;
+  // Se veio com DDI e tem 10 dígitos locais (celular sem o 9), insere o 9 após o DDD
+  if (local.length === 10 && raw !== local) local = local.slice(0,2) + '9' + local.slice(2);
   var m = local.slice(0, 11);
   if (m.length > 6) {
     if (m.length > 10) input.value = '(' + m.slice(0,2) + ') ' + m.slice(2,7) + '-' + m.slice(7,11);
