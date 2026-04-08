@@ -768,6 +768,7 @@
   .salvos-search-toggle.spinning { border-color: var(--gold); color: var(--gold); pointer-events: none; }
   .salvos-search-toggle.spinning svg { animation: _adq-spin 0.8s linear infinite; }
   @keyframes _adq-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes metaPulse { from { box-shadow: 0 0 8px rgba(200,169,74,0.15); } to { box-shadow: 0 0 18px rgba(200,169,74,0.35); } }
   .salvos-search-area {
     display: none;
     background: var(--darker);
@@ -4499,6 +4500,7 @@ function initFirebase(config) {
               localStorage.setItem('adq_anthropic_key', ANTHROPIC_KEY);
             }
           }).catch(function(){});
+          _carregarTokensAPIs();
         }
       } else {
         if (user) auth.signOut();
@@ -7723,7 +7725,8 @@ function abrirModalConfiguracoes() {
       <!-- Abas -->
       <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">
         <button id="cfg-tab-config" onclick="_cfgAba(0)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">IP</button>
-        <button id="cfg-tab-metas" onclick="_cfgAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Metas</button>
+        <button id="cfg-tab-metas" onclick="_cfgAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Metas</button>
+        <button id="cfg-tab-apis" onclick="_cfgAba(2)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">APIs</button>
       </div>
       <!-- Slider de abas -->
       <div id="cfg-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">
@@ -7747,11 +7750,113 @@ function abrirModalConfiguracoes() {
       </div>
       <!-- Aba Metas -->
       <div id="cfg-panel-metas" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
-        <div style="text-align:center;padding:32px 0 24px 0">
-          <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C8A94A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">Em breve</div>
-          <div style="font-size:0.78rem;color:#555;line-height:1.6">Definição de metas mensais,<br>acompanhamento de receita e eventos.</div>
+
+        <!-- Banner de celebração (hidden by default) -->
+        <div id="meta-banner-conquista" style="display:none;background:linear-gradient(135deg,#2a1f0a,#1a1a0a);border:1px solid #C8A94A;border-radius:8px;padding:14px 18px;margin-bottom:14px;text-align:center;animation:metaPulse 1.5s ease-in-out infinite alternate">
+          <div style="font-size:1.4rem;margin-bottom:4px">🏆</div>
+          <div id="meta-banner-texto" style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em"></div>
         </div>
+
+        <!-- Seletor de mês -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px">
+          <button onclick="_metaMesNav(-1)" style="background:transparent;border:1px solid #2a2a2a;color:#666;border-radius:4px;width:28px;height:28px;cursor:pointer;font-size:0.9rem;line-height:1">‹</button>
+          <span id="meta-mes-label" style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;min-width:120px;text-align:center"></span>
+          <button onclick="_metaMesNav(1)" style="background:transparent;border:1px solid #2a2a2a;color:#666;border-radius:4px;width:28px;height:28px;cursor:pointer;font-size:0.9rem;line-height:1">›</button>
+        </div>
+
+        <!-- Meta de Receita -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Receita</div>
+            <div id="meta-receita-pct" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#555"></div>
+          </div>
+          <div style="font-size:0.68rem;color:#555;margin-bottom:10px">Valor dos contratos assinados no mês</div>
+          <!-- Barra de progresso -->
+          <div style="background:#1a1a1a;border-radius:4px;height:22px;overflow:hidden;position:relative;margin-bottom:10px">
+            <div id="meta-receita-bar" style="height:100%;background:linear-gradient(90deg,#C8A94A,#d4b85a);border-radius:4px;transition:width 0.6s ease;width:0%"></div>
+            <div id="meta-receita-valor" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)"></div>
+          </div>
+          <!-- Input da meta -->
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:0.7rem;color:#555;white-space:nowrap">Meta R$</span>
+            <input id="meta-receita-input" type="text" inputmode="numeric" placeholder="Ex: 15000" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
+            <button onclick="_salvarMeta('receita')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">✓</button>
+          </div>
+        </div>
+
+        <!-- Meta de Eventos -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Eventos</div>
+            <div id="meta-eventos-pct" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#555"></div>
+          </div>
+          <div style="font-size:0.68rem;color:#555;margin-bottom:10px">Contratos assinados no mês</div>
+          <!-- Barra de progresso -->
+          <div style="background:#1a1a1a;border-radius:4px;height:22px;overflow:hidden;position:relative;margin-bottom:10px">
+            <div id="meta-eventos-bar" style="height:100%;background:linear-gradient(90deg,#4A90C8,#5aa0d8);border-radius:4px;transition:width 0.6s ease;width:0%"></div>
+            <div id="meta-eventos-valor" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)"></div>
+          </div>
+          <!-- Input da meta -->
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:0.7rem;color:#555;white-space:nowrap">Meta qtd</span>
+            <input id="meta-eventos-input" type="text" inputmode="numeric" placeholder="Ex: 10" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
+            <button onclick="_salvarMeta('eventos')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">✓</button>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div id="meta-status" style="display:none;text-align:center;font-size:0.7rem;margin-top:4px"></div>
+
+      </div>
+      <!-- Aba APIs -->
+      <div id="cfg-panel-apis" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
+
+        <!-- Firebase (somente leitura) -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Firebase</div>
+              <div style="font-size:0.68rem;color:#555">Somente leitura — configuração fixa no código.</div>
+            </div>
+            <span style="font-size:0.6rem;color:#333;border:1px solid #2a2a2a;border-radius:3px;padding:2px 6px;text-transform:uppercase;letter-spacing:0.08em">Read-only</span>
+          </div>
+          <div id="cfg-firebase-fields" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+
+        <!-- Autentique -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="margin-bottom:10px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Autentique</div>
+            <div style="font-size:0.68rem;color:#555">Token de API para assinatura digital de contratos.</div>
+          </div>
+          <div style="position:relative">
+            <input id="cfg-api-autentique" type="password" value="" placeholder="Cole seu token aqui" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:9px 36px 9px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
+            <button onclick="_toggleApiVis('cfg-api-autentique',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#555;cursor:pointer;font-size:0.82rem;padding:4px" title="Mostrar/ocultar">👁</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button onclick="_salvarApiAutentique()" style="flex:1;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">✓ Salvar</button>
+            <button onclick="_limparApiAutentique()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#555'">✕</button>
+          </div>
+          <div id="cfg-api-autentique-status" style="display:none;margin-top:8px;font-size:0.7rem;text-align:center"></div>
+        </div>
+
+        <!-- Anthropic (IA) -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="margin-bottom:10px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Anthropic (IA)</div>
+            <div style="font-size:0.68rem;color:#555">Chave de API para funções de inteligência artificial.</div>
+          </div>
+          <div style="position:relative">
+            <input id="cfg-api-anthropic" type="password" value="" placeholder="sk-ant-..." style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:9px 36px 9px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
+            <button onclick="_toggleApiVis('cfg-api-anthropic',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#555;cursor:pointer;font-size:0.82rem;padding:4px" title="Mostrar/ocultar">👁</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button onclick="_salvarApiAnthropic()" style="flex:1;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">✓ Salvar</button>
+            <button onclick="_limparApiAnthropic()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#555'">✕</button>
+          </div>
+          <div id="cfg-api-anthropic-status" style="display:none;margin-top:8px;font-size:0.7rem;text-align:center"></div>
+        </div>
+
       </div>
       </div><!-- /cfg-slider -->
     </div>
@@ -7769,10 +7874,12 @@ function abrirModalConfiguracoes() {
     }, { passive: true });
   }, 80);
   _carregarHistoricoIP();
+  _initAbaAPIs();
+  _initAbaMetas();
 }
 
 function _cfgAba(idx, fromScroll) {
-  var keys = ['config','metas'];
+  var keys = ['config','metas','apis'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('cfg-tab-' + k);
     if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
@@ -7932,6 +8039,304 @@ function _carregarHistoricoIP() {
       hist.appendChild(container);
     })
     .catch(function() { hist.textContent = 'Erro ao carregar histórico.'; });
+}
+
+// ── ABA METAS ─────────────────────────────────────────────────────────────────
+
+var _metaMesAtual = new Date().getMonth(); // 0-11
+var _metaAnoAtual = new Date().getFullYear();
+var _metasConfig = { receita: 0, eventos: 0 }; // valores-alvo
+var _metaNotificado = {}; // controle p/ não repetir banner no mesmo mês
+
+function _metaMesNav(dir) {
+  _metaMesAtual += dir;
+  if (_metaMesAtual > 11) { _metaMesAtual = 0; _metaAnoAtual++; }
+  if (_metaMesAtual < 0) { _metaMesAtual = 11; _metaAnoAtual--; }
+  _atualizarMetaLabel();
+  _calcularProgressoMetas();
+}
+
+function _atualizarMetaLabel() {
+  var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var el = document.getElementById('meta-mes-label');
+  if (el) el.textContent = meses[_metaMesAtual] + ' ' + _metaAnoAtual;
+}
+
+function _initAbaMetas() {
+  _atualizarMetaLabel();
+  // Carregar metas do Firestore
+  if (db) {
+    db.collection('config').doc('metas').get().then(function(doc) {
+      if (doc.exists) {
+        var d = doc.data();
+        _metasConfig.receita = parseFloat(d.receita) || 0;
+        _metasConfig.eventos = parseInt(d.eventos) || 0;
+        var inpR = document.getElementById('meta-receita-input');
+        var inpE = document.getElementById('meta-eventos-input');
+        if (inpR && _metasConfig.receita > 0) inpR.value = _metasConfig.receita;
+        if (inpE && _metasConfig.eventos > 0) inpE.value = _metasConfig.eventos;
+      }
+      _calcularProgressoMetas();
+    }).catch(function() { _calcularProgressoMetas(); });
+  } else {
+    _calcularProgressoMetas();
+  }
+}
+
+function _salvarMeta(tipo) {
+  var inp = document.getElementById('meta-' + tipo + '-input');
+  if (!inp) return;
+  var val = parseFloat(inp.value.replace(/[^\d.,]/g,'').replace(',','.')) || 0;
+  if (val <= 0) { _metaStatus('Valor inválido.', '#e55'); return; }
+  _metasConfig[tipo] = val;
+  _metaStatus('Salvando...', '#C8A94A');
+  if (db) {
+    var upd = {};
+    upd[tipo] = val;
+    db.collection('config').doc('metas').set(upd, { merge: true })
+      .then(function() {
+        _metaStatus('✓ Meta salva!', '#25D366');
+        _calcularProgressoMetas();
+      })
+      .catch(function(e) { _metaStatus('Erro: ' + e.message, '#e55'); });
+  } else {
+    _metaStatus('✓ Meta salva na sessão.', '#C8A94A');
+    _calcularProgressoMetas();
+  }
+}
+
+function _metaStatus(msg, color) {
+  var el = document.getElementById('meta-status');
+  if (!el) return;
+  el.style.display = 'block'; el.style.color = color; el.textContent = msg;
+  setTimeout(function() { if (el) el.style.display = 'none'; }, 3000);
+}
+
+function _calcularProgressoMetas() {
+  if (!db) return;
+
+  // Determinar range do mês selecionado
+  var inicioMes = new Date(_metaAnoAtual, _metaMesAtual, 1);
+  var fimMes = new Date(_metaAnoAtual, _metaMesAtual + 1, 0, 23, 59, 59);
+
+  // Buscar contratos assinados no mês
+  db.collection('contratos')
+    .where('status_assinatura', '==', 'Assinado')
+    .get()
+    .then(function(snap) {
+      var totalReceita = 0;
+      var totalEventos = 0;
+
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        // Determinar data do contrato (data_evento ou criadoEm)
+        var dataRef = null;
+        if (d.data_evento) {
+          var pts = d.data_evento.split('/');
+          if (pts.length === 3) {
+            dataRef = new Date(pts[2], parseInt(pts[1]) - 1, pts[0]);
+          } else {
+            // Formato YYYY-MM-DD
+            dataRef = new Date(d.data_evento);
+          }
+        } else if (d.criadoEm && d.criadoEm.toDate) {
+          dataRef = d.criadoEm.toDate();
+        }
+
+        if (dataRef && dataRef >= inicioMes && dataRef <= fimMes) {
+          totalEventos++;
+          // Somar valor total do contrato
+          var valor = 0;
+          if (d.total_geral) {
+            valor = parseFloat(String(d.total_geral).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
+          } else if (d.valor_total) {
+            valor = parseFloat(String(d.valor_total).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
+          }
+          totalReceita += valor;
+        }
+      });
+
+      _renderProgressoMeta('receita', totalReceita, _metasConfig.receita, true);
+      _renderProgressoMeta('eventos', totalEventos, _metasConfig.eventos, false);
+      _verificarConquistas(totalReceita, totalEventos);
+    })
+    .catch(function(e) {
+      console.warn('Erro ao calcular metas:', e);
+    });
+}
+
+function _renderProgressoMeta(tipo, atual, meta, isCurrency) {
+  var bar = document.getElementById('meta-' + tipo + '-bar');
+  var valor = document.getElementById('meta-' + tipo + '-valor');
+  var pct = document.getElementById('meta-' + tipo + '-pct');
+
+  if (!bar || !valor || !pct) return;
+
+  if (meta <= 0) {
+    bar.style.width = '0%';
+    valor.textContent = isCurrency ? _formatarRS(atual) + ' (sem meta)' : atual + ' (sem meta)';
+    pct.textContent = '';
+    return;
+  }
+
+  var percent = Math.min((atual / meta) * 100, 100);
+  bar.style.width = percent.toFixed(1) + '%';
+
+  if (percent >= 100) {
+    bar.style.background = 'linear-gradient(90deg,#25D366,#30e876)';
+  } else if (percent >= 70) {
+    bar.style.background = tipo === 'receita'
+      ? 'linear-gradient(90deg,#C8A94A,#d4b85a)'
+      : 'linear-gradient(90deg,#4A90C8,#5aa0d8)';
+  } else {
+    bar.style.background = tipo === 'receita'
+      ? 'linear-gradient(90deg,#C8A94A,#d4b85a)'
+      : 'linear-gradient(90deg,#4A90C8,#5aa0d8)';
+  }
+
+  var atualStr = isCurrency ? _formatarRS(atual) : atual;
+  var metaStr = isCurrency ? _formatarRS(meta) : meta;
+  valor.textContent = atualStr + ' / ' + metaStr;
+  pct.textContent = percent.toFixed(0) + '%';
+  pct.style.color = percent >= 100 ? '#25D366' : percent >= 70 ? '#C8A94A' : '#555';
+}
+
+function _formatarRS(v) {
+  return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function _verificarConquistas(receita, eventos) {
+  var banner = document.getElementById('meta-banner-conquista');
+  var texto = document.getElementById('meta-banner-texto');
+  if (!banner || !texto) return;
+
+  var chave = _metaMesAtual + '-' + _metaAnoAtual;
+  var msgs = [];
+
+  if (_metasConfig.receita > 0 && receita >= _metasConfig.receita) {
+    msgs.push('Meta de receita atingida!');
+  }
+  if (_metasConfig.eventos > 0 && eventos >= _metasConfig.eventos) {
+    msgs.push('Meta de eventos atingida!');
+  }
+
+  if (msgs.length > 0) {
+    texto.textContent = msgs.join(' • ');
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// ── ABA APIs ──────────────────────────────────────────────────────────────────
+
+function _initAbaAPIs() {
+  // Firebase read-only fields
+  var fbContainer = document.getElementById('cfg-firebase-fields');
+  if (fbContainer && typeof firebaseConfig !== 'undefined') {
+    var fields = [
+      { label: 'apiKey', val: firebaseConfig.apiKey },
+      { label: 'authDomain', val: firebaseConfig.authDomain },
+      { label: 'projectId', val: firebaseConfig.projectId },
+      { label: 'storageBucket', val: firebaseConfig.storageBucket },
+      { label: 'messagingSenderId', val: firebaseConfig.messagingSenderId },
+      { label: 'appId', val: firebaseConfig.appId }
+    ];
+    fbContainer.innerHTML = fields.map(function(f) {
+      return '<div>' +
+        '<div style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px">' + f.label + '</div>' +
+        '<div style="background:#0e0e0e;border:1px solid #1e1e1e;border-radius:3px;padding:7px 10px;font-family:monospace;font-size:0.68rem;color:#666;word-break:break-all;user-select:all;-webkit-user-select:all;cursor:text">' + (f.val || '–') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  // Autentique: load current value
+  var autInp = document.getElementById('cfg-api-autentique');
+  if (autInp && typeof AUTENTIQUE_TOKEN !== 'undefined' && AUTENTIQUE_TOKEN) {
+    autInp.value = AUTENTIQUE_TOKEN;
+  }
+  // Anthropic: load current value
+  var antInp = document.getElementById('cfg-api-anthropic');
+  if (antInp && typeof ANTHROPIC_KEY !== 'undefined' && ANTHROPIC_KEY) {
+    antInp.value = ANTHROPIC_KEY;
+  }
+}
+
+function _toggleApiVis(inputId, btn) {
+  var inp = document.getElementById(inputId);
+  if (!inp) return;
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🔒'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+function _salvarApiAutentique() {
+  var inp = document.getElementById('cfg-api-autentique');
+  var st = document.getElementById('cfg-api-autentique-status');
+  if (!inp) return;
+  var val = inp.value.trim();
+  if (!val) { _apiStatus(st, 'Token vazio.', '#e55'); return; }
+  AUTENTIQUE_TOKEN = val;
+  _apiStatus(st, 'Salvando...', '#C8A94A');
+  if (db) {
+    db.collection('config').doc('apis').set({ autentique_token: val }, { merge: true })
+      .then(function() { _apiStatus(st, '✓ Token salvo na nuvem!', '#25D366'); })
+      .catch(function(e) { _apiStatus(st, 'Erro: ' + e.message, '#e55'); });
+  } else {
+    _apiStatus(st, '✓ Token salvo na sessão.', '#C8A94A');
+  }
+}
+
+function _limparApiAutentique() {
+  var inp = document.getElementById('cfg-api-autentique');
+  var st = document.getElementById('cfg-api-autentique-status');
+  if (inp) inp.value = '';
+  AUTENTIQUE_TOKEN = '';
+  if (db) db.collection('config').doc('apis').set({ autentique_token: '' }, { merge: true }).catch(function(){});
+  _apiStatus(st, 'Token removido.', '#C8A94A');
+}
+
+function _salvarApiAnthropic() {
+  var inp = document.getElementById('cfg-api-anthropic');
+  var st = document.getElementById('cfg-api-anthropic-status');
+  if (!inp) return;
+  var val = inp.value.trim();
+  if (!val || !val.startsWith('sk-')) { _apiStatus(st, 'Chave inválida. Deve começar com sk-', '#e55'); return; }
+  ANTHROPIC_KEY = val;
+  localStorage.setItem('adq_anthropic_key', val);
+  _apiStatus(st, 'Salvando...', '#C8A94A');
+  if (db) {
+    db.collection('config').doc('ia').set({ anthropic_key: val }, { merge: true })
+      .then(function() { _apiStatus(st, '✓ Chave salva na nuvem!', '#25D366'); })
+      .catch(function(e) { _apiStatus(st, 'Erro: ' + e.message, '#e55'); });
+  } else {
+    _apiStatus(st, '✓ Chave salva localmente.', '#C8A94A');
+  }
+}
+
+function _limparApiAnthropic() {
+  var inp = document.getElementById('cfg-api-anthropic');
+  var st = document.getElementById('cfg-api-anthropic-status');
+  if (inp) inp.value = '';
+  ANTHROPIC_KEY = '';
+  localStorage.removeItem('adq_anthropic_key');
+  if (db) db.collection('config').doc('ia').set({ anthropic_key: '' }, { merge: true }).catch(function(){});
+  _apiStatus(st, 'Chave removida.', '#C8A94A');
+}
+
+function _apiStatus(el, msg, color) {
+  if (!el) return;
+  el.style.display = 'block'; el.style.color = color; el.textContent = msg;
+  setTimeout(function() { if (el) el.style.display = 'none'; }, 3500);
+}
+
+// Carregar token Autentique do Firestore ao logar
+function _carregarTokensAPIs() {
+  if (!db) return;
+  db.collection('config').doc('apis').get().then(function(doc) {
+    if (doc.exists) {
+      var d = doc.data();
+      if (d.autentique_token) AUTENTIQUE_TOKEN = d.autentique_token;
+    }
+  }).catch(function(){});
 }
 
 // Mantida para chamadas internas legadas
