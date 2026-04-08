@@ -4697,6 +4697,7 @@ function handleSalvosClick(e) {
           var linkQuery = 'mutation { createLinkToSignature(public_id: "' + d.autentique_public_id + '") { short_link } }';
           var _fdLink = new FormData();
           _fdLink.append('operations', JSON.stringify({ query: linkQuery, variables: {} }));
+          _fdLink.append('map', '{}');
           fetch('https://autentique.natanael-fuques.workers.dev/', {
             method: 'POST',
             headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
@@ -6196,6 +6197,7 @@ function verificarAssinaturaAutentique(contratoId, btn) {
 
   var _fdVerif = new FormData();
   _fdVerif.append('operations', JSON.stringify({ query: query, variables: {} }));
+  _fdVerif.append('map', '{}');
   fetch('https://autentique.natanael-fuques.workers.dev/', {
     method: 'POST',
     headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
@@ -6257,6 +6259,7 @@ function _pollingAutentique() {
         var query = 'query { document(id: "' + autId + '") { signatures { signed_at { date } } } }';
         var _fdPoll = new FormData();
         _fdPoll.append('operations', JSON.stringify({ query: query, variables: {} }));
+        _fdPoll.append('map', '{}');
         fetch('https://autentique.natanael-fuques.workers.dev/', {
           method: 'POST',
           headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
@@ -7358,6 +7361,7 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
       var linkQuery = 'mutation { createLinkToSignature(public_id: "' + publicId + '") { short_link } }';
       var linkFormData = new FormData();
       linkFormData.append('operations', JSON.stringify({ query: linkQuery, variables: {} }));
+      linkFormData.append('map', '{}');
       return fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
