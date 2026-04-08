@@ -7602,10 +7602,10 @@ function abrirModalConfiguracoes() {
               <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">IP do Cliente</div>
               <div style="font-size:0.72rem;color:#666">Rastreia o IP de cada acesso.</div>
             </div>
-            <div id="cfg-ip-badge" style="font-size:0.7rem;color:#888;text-align:right">Carregando...</div>
+            <div id="cfg-ip-badge" style="font-size:0.7rem;color:#888;text-align:right"></div>
           </div>
           <button onclick="_rastrearIPAgora()" style="width:100%;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">↻ Verificar agora</button>
-          <div id="cfg-ip-resultado" style="display:none;margin-top:12px;padding:12px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;font-size:0.75rem;line-height:1.8;color:#ccc"></div>
+          <div id="cfg-ip-resultado" style="display:none;margin-top:12px;padding:12px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;font-size:0.72rem;line-height:2;color:#ccc;word-break:break-all"></div>
           <div style="margin-top:12px">
             <div style="font-size:0.68rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Últimos acessos registrados</div>
             <div id="cfg-ip-historico" style="font-size:0.72rem;color:#666;font-style:italic">Carregando...</div>
@@ -7640,15 +7640,21 @@ function _cfgAba(aba) {
 }
 
 function _buscarDadosIP() {
+  // ipify: IP only, CORS total. ipinfo: geo, CORS liberado, sem key necessária
   return fetch('https://api64.ipify.org?format=json')
     .then(function(r) { return r.json(); })
     .then(function(d) {
       var ip = d.ip;
       if (!ip) throw new Error('sem ip');
-      return fetch('https://ip-api.com/json/' + ip + '?fields=city,regionName,country,isp&lang=pt')
+      return fetch('https://ipinfo.io/' + ip + '/json')
         .then(function(r) { return r.json(); })
         .then(function(g) {
-          return { ip: ip, cidade: g.city || '–', estado: g.regionName || '–', pais: g.country || '–', isp: g.isp || '–' };
+          var loc = g.loc ? g.loc.split(',') : [];
+          var cidade = g.city || '–';
+          var estado = g.region || '–';
+          var pais = g.country || '–';
+          var isp = g.org || '–';
+          return { ip: ip, cidade: cidade, estado: estado, pais: pais, isp: isp };
         })
         .catch(function() {
           return { ip: ip, cidade: '–', estado: '–', pais: '–', isp: '–' };
@@ -7667,9 +7673,9 @@ function _rastrearIPAgora() {
       if (resultado) {
         resultado.style.display = 'block';
         resultado.innerHTML =
-          '<div><span style="color:#555;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">IP</span> &nbsp;<span style="color:#eee">' + d.ip + '</span></div>' +
-          '<div><span style="color:#555;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">Local</span> &nbsp;<span style="color:#ccc">' + d.cidade + ', ' + d.estado + ' – ' + d.pais + '</span></div>' +
-          '<div><span style="color:#555;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">ISP</span> &nbsp;<span style="color:#888">' + d.isp + '</span></div>';
+          '<div style="margin-bottom:6px"><span style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px">IP</span><span style="color:#C8A94A;font-family:monospace;font-size:0.78rem;word-break:break-all;display:block">' + d.ip + '</span></div>' +
+          '<div style="margin-bottom:6px"><span style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px">Local</span><span style="color:#ccc">' + d.cidade + ', ' + d.estado + ' – ' + d.pais + '</span></div>' +
+          '<div><span style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px">ISP</span><span style="color:#888">' + d.isp + '</span></div>';
       }
       var emailAtual = (firebase && firebase.auth().currentUser) ? firebase.auth().currentUser.email : 'desconhecido';
       if (db) {

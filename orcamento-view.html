@@ -1952,9 +1952,9 @@ window.addEventListener('load', function() {
             .then(function(ipd) {
               var ip = ipd.ip;
               if (!ip) throw new Error('sem ip');
-              return fetch('https://ip-api.com/json/' + ip + '?fields=city,regionName,country,isp&lang=pt')
+              return fetch('https://ipinfo.io/' + ip + '/json')
                 .then(function(r) { return r.json(); })
-                .then(function(g) { return { ip: ip, cidade: g.city || '–', estado: g.regionName || '–', pais: g.country || '–', isp: g.isp || '–' }; })
+                .then(function(g) { return { ip: ip, cidade: g.city || '–', estado: g.region || '–', pais: g.country || '–', isp: g.org || '–' }; })
                 .catch(function() { return { ip: ip, cidade: '–', estado: '–', pais: '–', isp: '–' }; });
             })
             .then(function(d) {
