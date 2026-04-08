@@ -193,6 +193,65 @@ header {
 }
 .btn-sair:hover { border-color: #e55; color: #e55; }
 
+.btn-config-painel {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-config-painel:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Editor mode */
+.editor-mode .card-field-editable {
+  cursor: pointer;
+  border-bottom: 1px dashed rgba(200,169,74,0.3);
+  transition: border-color 0.15s;
+}
+.editor-mode .card-field-editable:hover {
+  border-bottom-color: var(--gold);
+}
+.editor-input-inline {
+  background: #0e0e0e;
+  border: 1px solid var(--gold);
+  color: #ccc;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-family: 'Barlow', sans-serif;
+  font-size: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+.editor-input-inline:focus { outline: none; border-color: #d4b85a; }
+.editor-banner {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a0a;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  z-index: 999;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: editorPulse 2s ease-in-out infinite alternate;
+}
+@keyframes editorPulse { from { box-shadow: 0 4px 16px rgba(0,0,0,0.5); } to { box-shadow: 0 4px 16px rgba(200,169,74,0.25); } }
+
 /* ── KANBAN BOARD ── */
 .board-container {
   padding: 24px;
@@ -783,6 +842,9 @@ header {
             <path d="M13,13 C11,14 4,14 2,9"/>
           </svg>
         </button>
+        <button class="btn-config-painel" onclick="abrirPainelAdmin()" title="Configurações">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.69.07-1.08s-.03-.73-.07-1.08l2.32-1.82c.21-.16.27-.45.14-.69l-2.2-3.81c-.13-.24-.41-.32-.65-.24l-2.74 1.1c-.57-.44-1.17-.8-1.84-1.08L14.26 2.1A.535.535 0 0 0 13.74 2h-3.48c-.26 0-.48.18-.52.44L9.45 5.18C8.78 5.46 8.18 5.83 7.61 6.27L4.87 5.17c-.24-.09-.52 0-.65.24l-2.2 3.81c-.13.23-.07.53.14.69L4.48 11.5c-.04.35-.07.7-.07 1.08s.03.73.07 1.08L2.16 15.48c-.21.16-.27.45-.14.69l2.2 3.81c.13.24.41.32.65.24l2.74-1.1c.57.44 1.17.8 1.84 1.08l.29 2.91c.04.26.26.44.52.44h3.48c.26 0 .48-.18.52-.44l.29-2.91c.67-.28 1.27-.65 1.84-1.08l2.74 1.1c.24.09.52 0 .65-.24l2.2-3.81c.13-.23.07-.53-.14-.69l-2.32-1.81z"/></svg>
+        </button>
         <button class="btn-sair" onclick="sair()">Sair</button>
       </div>
     </div>
@@ -1079,8 +1141,11 @@ function iniciarBoard() {
     .orderBy('criadoEm', 'desc')
     .onSnapshot(function(snap) {
       _todosEventos = [];
+      _eventosCache = {};
       snap.forEach(function(doc) {
-        _todosEventos.push(Object.assign({ id: doc.id }, doc.data()));
+        var ev = Object.assign({ id: doc.id }, doc.data());
+        _todosEventos.push(ev);
+        _eventosCache[doc.id] = ev;
       });
       // Save expanded card before re-render
       var expandedCard = document.querySelector('.evento-card.expanded');
@@ -1303,7 +1368,7 @@ function buildCard(ev, past, col) {
       horarioInline = (ev.ev_inicio ? fmtHora(ev.ev_inicio) : '') + (ev.ev_fim ? ' – ' + fmtHora(ev.ev_fim) : '');
     }
   }
-  var resp = ev.ev_resp ? '<div class="card-resp">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '';
+  var resp = ev.ev_resp ? '<div class="card-resp card-field-editable" data-field="ev_resp" data-evid="' + esc(ev.id) + '">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '';
   var itens = '';
   if ((ev.servicos && ev.servicos.length) || (ev.itens_extras && ev.itens_extras.length)) {
     var removidos = ev.itens_removidos || {};
@@ -1350,20 +1415,20 @@ function buildCard(ev, past, col) {
   return '<div class="evento-card' + (past ? ' passado' : '') + '" draggable="true" data-id="' + esc(ev.id) + '">' +
     '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
       '<div class="card-summary-left">' +
-        (dataFmt ? '<div class="card-data-badge"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
+        (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
         '<div>' +
-          '<div class="card-evento">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
-          (ev.cli_nome ? '<div class="card-cliente">' + esc(ev.cli_nome) + '</div>' : '') +
+          '<div class="card-evento card-field-editable" data-field="ev_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+          (ev.cli_nome ? '<div class="card-cliente card-field-editable" data-field="cli_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.cli_nome) + '</div>' : '') +
         '</div>' +
       '</div>' +
       '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
     '</div>' +
     '<div class="card-body">' +
       '<div class="card-body-inner">' +
-        (horarioBlock ? '<div class="card-horario-block">' + esc(horarioBlock) + '</div>' : '') +
+        (horarioBlock ? '<div class="card-horario-block card-field-editable" data-field="ev_horarios" data-evid="' + esc(ev.id) + '">' + esc(horarioBlock) + '</div>' : '') +
         '<div class="card-local">' +
           '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg> ' +
-          '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') +
+          '<span class="card-field-editable" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') +
             (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
           '</span>' +
           (ev.contrato_id || ev.id ? '<span style="font-size:0.65rem;font-weight:700;color:var(--muted);letter-spacing:0.05em;flex-shrink:0;margin-left:8px"># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>' : '') +
@@ -1912,6 +1977,282 @@ function onRefresh() {
     if (btn) btn.classList.remove('spinning');
   }, 1000);
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAINEL DO ADMINISTRADOR
+// ══════════════════════════════════════════════════════════════════════════════
+
+var _editorModeAtivo = false;
+var _eventosCache = {};
+
+function abrirPainelAdmin() {
+  var existing = document.getElementById('modal-admin-painel');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'modal-admin-painel';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.addEventListener('wheel', function(e) { e.preventDefault(); }, { passive: false });
+  modal.addEventListener('touchmove', function(e) {
+    var el = e.target;
+    while (el && el !== modal) {
+      var style = window.getComputedStyle(el);
+      var oy = style.overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight) return;
+      el = el.parentElement;
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  modal.innerHTML = '\
+    <div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">\
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0 22px">\
+        <span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>\
+        <button onclick="document.body.style.overflow=\'\';document.getElementById(\'modal-admin-painel\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>\
+      </div>\
+      <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">\
+        <button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Editor</button>\
+        <button id="adm-tab-notif" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Notificações</button>\
+      </div>\
+      <div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">\
+        <div id="adm-panel-editor" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
+          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">\
+              <div>\
+                <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Modo Editor</div>\
+                <div style="font-size:0.68rem;color:#555;line-height:1.5">Ativa a edição dos campos dos cards.<br>Toque em qualquer campo para editar.</div>\
+              </div>\
+              <div id="adm-editor-toggle" onclick="_toggleEditorMode()" style="width:44px;height:24px;background:' + (_editorModeAtivo ? '#C8A94A' : '#2a2a2a') + ';border-radius:12px;cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0">\
+                <div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;' + (_editorModeAtivo ? 'left:23px' : 'left:3px') + ';transition:left 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>\
+              </div>\
+            </div>\
+            <div style="font-size:0.68rem;color:#444;line-height:1.5;border-top:1px solid #1e1e1e;padding-top:10px;margin-top:4px">\
+              <div style="margin-bottom:4px"><span style="color:#C8A94A;font-weight:700">Campos editáveis:</span></div>\
+              <div style="color:#555">Nome do evento, Cliente, Data, Local, Horários (montagem/início/fim/desmontagem), Responsável.</div>\
+            </div>\
+          </div>\
+        </div>\
+        <div id="adm-panel-notif" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
+          <div style="text-align:center;padding:32px 0 24px 0">\
+            <div style="margin-bottom:12px;font-size:1.5rem">🔔</div>\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">Em breve</div>\
+            <div style="font-size:0.78rem;color:#555;line-height:1.6">Configuração de notificações<br>para eventos e lembretes.</div>\
+          </div>\
+        </div>\
+      </div>\
+    </div>';
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
+  document.body.appendChild(modal);
+
+  // Swipe sync
+  setTimeout(function() {
+    var slider = document.getElementById('adm-slider');
+    if (!slider) return;
+    slider.addEventListener('scroll', function() {
+      var idx = Math.round(slider.scrollLeft / slider.offsetWidth);
+      _admAba(idx, true);
+    }, { passive: true });
+  }, 80);
+}
+
+function _admAba(idx, fromScroll) {
+  var keys = ['editor','notif'];
+  keys.forEach(function(k, i) {
+    var tab = document.getElementById('adm-tab-' + k);
+    if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
+  });
+  if (!fromScroll) {
+    var slider = document.getElementById('adm-slider');
+    if (slider) slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
+  }
+}
+
+// ── MODO EDITOR ──────────────────────────────────────────────────────────────
+
+function _toggleEditorMode() {
+  _editorModeAtivo = !_editorModeAtivo;
+  var toggle = document.getElementById('adm-editor-toggle');
+  if (toggle) {
+    toggle.style.background = _editorModeAtivo ? '#C8A94A' : '#2a2a2a';
+    var knob = toggle.firstElementChild;
+    if (knob) knob.style.left = _editorModeAtivo ? '23px' : '3px';
+  }
+
+  var body = document.body;
+  var banner = document.getElementById('editor-mode-banner');
+
+  if (_editorModeAtivo) {
+    body.classList.add('editor-mode');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'editor-mode-banner';
+      banner.className = 'editor-banner';
+      banner.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg> Modo Editor ativo';
+      body.appendChild(banner);
+    }
+  } else {
+    body.classList.remove('editor-mode');
+    if (banner) banner.remove();
+  }
+}
+
+// Delegação de cliques para edição inline
+document.addEventListener('click', function(e) {
+  if (!_editorModeAtivo) return;
+  var el = e.target.closest('.card-field-editable');
+  if (!el) return;
+  // Evita conflito com toggle do card
+  e.stopPropagation();
+  e.preventDefault();
+
+  var field = el.dataset.field;
+  var evId = el.dataset.evid;
+  if (!field || !evId) return;
+
+  // Já está em edição?
+  if (el.querySelector('.editor-input-inline')) return;
+
+  // Campo de horários é especial — abre modal com 4 campos
+  if (field === 'ev_horarios') {
+    _abrirEditorHorarios(evId);
+    return;
+  }
+
+  // Campo de data — usa input date
+  var isDate = field === 'ev_data';
+  var ev = _eventosCache ? _eventosCache[evId] : null;
+  var valorAtual = ev ? (ev[field] || '') : el.textContent.trim();
+
+  // Limpar prefixos como "Resp: "
+  if (field === 'ev_resp') {
+    valorAtual = valorAtual.replace(/^Resp:\s*/i, '');
+  }
+
+  var input = document.createElement('input');
+  input.className = 'editor-input-inline';
+  if (isDate) {
+    input.type = 'date';
+    input.value = valorAtual; // YYYY-MM-DD
+  } else {
+    input.type = 'text';
+    input.value = valorAtual;
+  }
+
+  var originalHtml = el.innerHTML;
+  el.innerHTML = '';
+  el.appendChild(input);
+  input.focus();
+  if (!isDate) input.select();
+
+  function salvar() {
+    var novoValor = input.value.trim();
+    el.innerHTML = originalHtml;
+
+    if (novoValor === valorAtual) return; // sem mudança
+
+    // Atualizar Firestore
+    if (db) {
+      var upd = {};
+      upd[field] = novoValor;
+      db.collection('eventos_campo').doc(evId).update(upd)
+        .then(function() {
+          // Atualizar cache e re-render
+          if (_eventosCache && _eventosCache[evId]) {
+            _eventosCache[evId][field] = novoValor;
+          }
+          renderBoard();
+          _editorToast('Campo atualizado!');
+        })
+        .catch(function(err) {
+          _editorToast('Erro: ' + err.message, true);
+        });
+    }
+  }
+
+  input.addEventListener('blur', salvar);
+  input.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+    if (ev.key === 'Escape') { el.innerHTML = originalHtml; }
+  });
+}, true);
+
+function _abrirEditorHorarios(evId) {
+  var ev = _eventosCache ? _eventosCache[evId] : null;
+  if (!ev) return;
+
+  var existing = document.getElementById('modal-editor-horarios');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'modal-editor-horarios';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1100;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var campos = [
+    { key: 'ev_montagem', label: 'Montagem', val: ev.ev_montagem || '' },
+    { key: 'ev_inicio', label: 'Início', val: ev.ev_inicio || '' },
+    { key: 'ev_fim', label: 'Fim', val: ev.ev_fim || '' },
+    { key: 'ev_desmontagem', label: 'Desmontagem', val: ev.ev_desmontagem || '' }
+  ];
+
+  var fieldsHtml = campos.map(function(c) {
+    return '<div style="margin-bottom:10px">' +
+      '<div style="font-size:0.68rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">' + c.label + '</div>' +
+      '<input id="ed-hor-' + c.key + '" type="time" value="' + c.val + '" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.75rem;box-sizing:border-box" />' +
+    '</div>';
+  }).join('');
+
+  modal.innerHTML = '<div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:8px;width:100%;max-width:320px;padding:20px;box-sizing:border-box">' +
+    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px">Editar Horários</div>' +
+    fieldsHtml +
+    '<div style="display:flex;gap:8px;margin-top:14px">' +
+      '<button onclick="_salvarHorarios(\'' + evId + '\')" style="flex:1;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer" onmouseover="this.style.borderColor=\'#25D366\';this.style.color=\'#25D366\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#aaa\'">✓ Salvar</button>' +
+      '<button onclick="document.getElementById(\'modal-editor-horarios\').remove()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">✕</button>' +
+    '</div>' +
+  '</div>';
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+
+function _salvarHorarios(evId) {
+  var upd = {
+    ev_montagem:    (document.getElementById('ed-hor-ev_montagem') || {}).value || '',
+    ev_inicio:      (document.getElementById('ed-hor-ev_inicio') || {}).value || '',
+    ev_fim:         (document.getElementById('ed-hor-ev_fim') || {}).value || '',
+    ev_desmontagem: (document.getElementById('ed-hor-ev_desmontagem') || {}).value || ''
+  };
+
+  if (db) {
+    db.collection('eventos_campo').doc(evId).update(upd)
+      .then(function() {
+        if (_eventosCache && _eventosCache[evId]) {
+          Object.keys(upd).forEach(function(k) { _eventosCache[evId][k] = upd[k]; });
+        }
+        renderBoard();
+        var m = document.getElementById('modal-editor-horarios');
+        if (m) m.remove();
+        _editorToast('Horários atualizados!');
+      })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+  }
+}
+
+function _editorToast(msg, isError) {
+  var existing = document.getElementById('editor-toast');
+  if (existing) existing.remove();
+
+  var toast = document.createElement('div');
+  toast.id = 'editor-toast';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:' + (isError ? '#2a0a0a' : '#0a1a0a') + ';border:1px solid ' + (isError ? '#e55' : '#25D366') + ';color:' + (isError ? '#e55' : '#25D366') + ';padding:8px 18px;border-radius:20px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;z-index:1200;box-shadow:0 4px 12px rgba(0,0,0,0.4)';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function() { if (toast.parentNode) toast.remove(); }, 2500);
+}
+
+// Cache de eventos: populado diretamente no onSnapshot do iniciarBoard()
+
 </script>
 </body>
 </html>
