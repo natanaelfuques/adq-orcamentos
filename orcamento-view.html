@@ -1954,14 +1954,18 @@ window.addEventListener('load', function() {
               if (!ip) throw new Error('sem ip');
               return fetch('https://ipinfo.io/' + ip + '/json')
                 .then(function(r) { return r.json(); })
-                .then(function(g) { return { ip: ip, cidade: g.city || '–', estado: g.region || '–', pais: g.country || '–', isp: g.org || '–' }; })
-                .catch(function() { return { ip: ip, cidade: '–', estado: '–', pais: '–', isp: '–' }; });
+                .then(function(g) {
+                  var loc = g.loc ? g.loc.split(',') : [];
+                  return { ip: ip, cidade: g.city || '–', estado: g.region || '–', pais: g.country || '–', isp: g.org || '–', lat: loc[0]||'', lng: loc[1]||'', postal: g.postal||'' };
+                })
+                .catch(function() { return { ip: ip, cidade: '–', estado: '–', pais: '–', isp: '–', lat: '', lng: '', postal: '' }; });
             })
             .then(function(d) {
             db.collection('logs_ip').add({
               origem: 'orcamento-view',
               orcamento_id: orcDocId,
               ip: d.ip, cidade: d.cidade, estado: d.estado, pais: d.pais, isp: d.isp,
+              lat: d.lat || '', lng: d.lng || '', postal: d.postal || '',
               user_agent: navigator.userAgent || '–',
               data: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(function(){});

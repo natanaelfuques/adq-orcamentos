@@ -7590,11 +7590,13 @@ function abrirModalConfiguracoes() {
       </div>
       <!-- Abas -->
       <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">
-        <button id="cfg-tab-config" onclick="_cfgAba('config')" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">IP</button>
-        <button id="cfg-tab-metas" onclick="_cfgAba('metas')" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Metas</button>
+        <button id="cfg-tab-config" onclick="_cfgAba(0)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">IP</button>
+        <button id="cfg-tab-metas" onclick="_cfgAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Metas</button>
       </div>
-      <!-- Aba Configurações -->
-      <div id="cfg-panel-config" style="padding:20px 22px 22px 22px">
+      <!-- Slider de abas -->
+      <div id="cfg-slider" style="display:flex;overflow-x:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch">
+      <!-- Aba IP -->
+      <div id="cfg-panel-config" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start">
         <!-- Item: IP do Cliente -->
         <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
           <div style="margin-bottom:10px">
@@ -7612,29 +7614,40 @@ function abrirModalConfiguracoes() {
         <!-- Mais configurações futuras aqui -->
       </div>
       <!-- Aba Metas -->
-      <div id="cfg-panel-metas" style="padding:20px 22px 22px 22px;display:none">
+      <div id="cfg-panel-metas" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start">
         <div style="text-align:center;padding:32px 0 24px 0">
           <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C8A94A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">Em breve</div>
           <div style="font-size:0.78rem;color:#555;line-height:1.6">Definição de metas mensais,<br>acompanhamento de receita e eventos.</div>
         </div>
       </div>
+      </div><!-- /cfg-slider -->
     </div>
   `;
   modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
   document.body.appendChild(modal);
+  // Swipe: sync tabs on scroll
+  setTimeout(function() {
+    var slider = document.getElementById('cfg-slider');
+    if (!slider) return;
+    slider.addEventListener('scroll', function() {
+      var idx = Math.round(slider.scrollLeft / slider.offsetWidth);
+      _cfgAba(idx, true);
+    }, { passive: true });
+  }, 80);
   _carregarHistoricoIP();
 }
 
-function _cfgAba(aba) {
-  var abas = ['config','metas'];
-  abas.forEach(function(a) {
-    var tab = document.getElementById('cfg-tab-' + a);
-    var panel = document.getElementById('cfg-panel-' + a);
-    var ativo = (a === aba);
-    if (tab) { tab.style.borderBottomColor = ativo ? '#C8A94A' : 'transparent'; tab.style.color = ativo ? '#C8A94A' : '#555'; }
-    if (panel) panel.style.display = ativo ? 'block' : 'none';
+function _cfgAba(idx, fromScroll) {
+  var keys = ['config','metas'];
+  keys.forEach(function(k, i) {
+    var tab = document.getElementById('cfg-tab-' + k);
+    if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
   });
+  if (!fromScroll) {
+    var slider = document.getElementById('cfg-slider');
+    if (slider) slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
+  }
 }
 
 function _buscarDadosIP() {
@@ -7648,14 +7661,17 @@ function _buscarDadosIP() {
         .then(function(r) { return r.json(); })
         .then(function(g) {
           var loc = g.loc ? g.loc.split(',') : [];
+          var lat = loc[0] || '';
+          var lng = loc[1] || '';
           var cidade = g.city || '–';
           var estado = g.region || '–';
           var pais = g.country || '–';
           var isp = g.org || '–';
-          return { ip: ip, cidade: cidade, estado: estado, pais: pais, isp: isp };
+          var postal = g.postal || '';
+          return { ip: ip, cidade: cidade, estado: estado, pais: pais, isp: isp, lat: lat, lng: lng, postal: postal };
         })
         .catch(function() {
-          return { ip: ip, cidade: '–', estado: '–', pais: '–', isp: '–' };
+          return { ip: ip, cidade: '–', estado: '–', pais: '–', isp: '–', lat: '', lng: '', postal: '' };
         });
     });
 }
@@ -7670,9 +7686,11 @@ function _rastrearIPAgora() {
       if (badge) badge.innerHTML = '<span style="color:#C8A94A;font-weight:700">' + d.ip + '</span>';
       if (resultado) {
         resultado.style.display = 'block';
+        var mapsLink = (d.lat && d.lng) ? '<a href="https://maps.google.com/?q=' + d.lat + ',' + d.lng + '" target="_blank" style="color:#4a90c8;font-size:0.68rem;text-decoration:none;display:inline-block;margin-top:4px">⇒ Ver no Maps (' + parseFloat(d.lat).toFixed(4) + ', ' + parseFloat(d.lng).toFixed(4) + ')</a>' : '';
+        var postalStr = d.postal ? ' – CEP ' + d.postal : '';
         resultado.innerHTML =
-          '<div style="margin-bottom:6px"><span style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px">IP</span><span style="color:#C8A94A;font-family:monospace;font-size:0.78rem;word-break:break-all;display:block">' + d.ip + '</span></div>' +
-          '<div style="margin-bottom:6px"><span style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px">Local</span><span style="color:#ccc">' + d.cidade + ', ' + d.estado + ' – ' + d.pais + '</span></div>' +
+          '<div style="margin-bottom:8px"><span style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px">IP</span><span style="color:#C8A94A;font-family:monospace;font-size:0.78rem;word-break:break-all;display:block">' + d.ip + '</span></div>' +
+          '<div style="margin-bottom:8px"><span style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px">Local</span><span style="color:#ccc">' + d.cidade + postalStr + ', ' + d.estado + ' – ' + d.pais + '</span>' + mapsLink + '</div>' +
           '<div><span style="color:#555;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:2px">ISP</span><span style="color:#888">' + d.isp + '</span></div>';
       }
       var emailAtual = (firebase && firebase.auth().currentUser) ? firebase.auth().currentUser.email : 'desconhecido';
@@ -7680,6 +7698,7 @@ function _rastrearIPAgora() {
         db.collection('logs_ip').add({
           email: emailAtual, origem: 'index',
           ip: d.ip, cidade: d.cidade, estado: d.estado, pais: d.pais, isp: d.isp,
+          lat: d.lat || '', lng: d.lng || '', postal: d.postal || '',
           data: firebase.firestore.FieldValue.serverTimestamp()
         }).catch(function(){});
       }
