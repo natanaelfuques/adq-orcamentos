@@ -1947,23 +1947,17 @@ window.addEventListener('load', function() {
         renderOrcamento(doc);
         // Rastrear IP do cliente
         (function(orcDocId) {
-          var apis = [
-            { url: 'https://ipapi.co/json/', map: function(d) { return { ip: d.ip, cidade: d.city, estado: d.region, pais: d.country_name, isp: d.org }; } },
-            { url: 'https://ipwho.is/', map: function(d) { return { ip: d.ip, cidade: d.city, estado: d.region, pais: d.country, isp: (d.connection && d.connection.isp) ? d.connection.isp : d.org }; } },
-            { url: 'https://freeipapi.com/api/json', map: function(d) { return { ip: d.ipAddress, cidade: d.cityName, estado: d.regionName, pais: d.countryName, isp: '–' }; } }
-          ];
-          function tentarAPI(idx) {
-            if (idx >= apis.length) return Promise.reject(new Error('falhou'));
-            return fetch(apis[idx].url)
-              .then(function(r) { return r.json(); })
-              .then(function(d) {
-                var m = apis[idx].map(d);
-                if (!m.ip) throw new Error('sem ip');
-                return { ip: m.ip || '–', cidade: m.cidade || '–', estado: m.estado || '–', pais: m.pais || '–', isp: m.isp || '–' };
-              })
-              .catch(function() { return tentarAPI(idx + 1); });
-          }
-          tentarAPI(0).then(function(d) {
+          fetch('https://api64.ipify.org?format=json')
+            .then(function(r) { return r.json(); })
+            .then(function(ipd) {
+              var ip = ipd.ip;
+              if (!ip) throw new Error('sem ip');
+              return fetch('https://ip-api.com/json/' + ip + '?fields=city,regionName,country,isp&lang=pt')
+                .then(function(r) { return r.json(); })
+                .then(function(g) { return { ip: ip, cidade: g.city || '–', estado: g.regionName || '–', pais: g.country || '–', isp: g.isp || '–' }; })
+                .catch(function() { return { ip: ip, cidade: '–', estado: '–', pais: '–', isp: '–' }; });
+            })
+            .then(function(d) {
             db.collection('logs_ip').add({
               origem: 'orcamento-view',
               orcamento_id: orcDocId,

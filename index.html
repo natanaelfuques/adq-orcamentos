@@ -7590,7 +7590,7 @@ function abrirModalConfiguracoes() {
       </div>
       <!-- Abas -->
       <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">
-        <button id="cfg-tab-config" onclick="_cfgAba('config')" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Configurações</button>
+        <button id="cfg-tab-config" onclick="_cfgAba('config')" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">IP</button>
         <button id="cfg-tab-metas" onclick="_cfgAba('metas')" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Metas</button>
       </div>
       <!-- Aba Configurações -->
@@ -7600,7 +7600,7 @@ function abrirModalConfiguracoes() {
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div>
               <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">IP do Cliente</div>
-              <div style="font-size:0.72rem;color:#666">Rastreia o IP de cada acesso ao gerador</div>
+              <div style="font-size:0.72rem;color:#666">Rastreia o IP de cada acesso.</div>
             </div>
             <div id="cfg-ip-badge" style="font-size:0.7rem;color:#888;text-align:right">Carregando...</div>
           </div>
@@ -7640,24 +7640,20 @@ function _cfgAba(aba) {
 }
 
 function _buscarDadosIP() {
-  // Tenta 3 APIs em sequência até uma responder
-  var apis = [
-    { url: 'https://ipapi.co/json/', map: function(d) { return { ip: d.ip, cidade: d.city, estado: d.region, pais: d.country_name, isp: d.org }; } },
-    { url: 'https://ipwho.is/', map: function(d) { return { ip: d.ip, cidade: d.city, estado: d.region, pais: d.country, isp: (d.connection && d.connection.isp) ? d.connection.isp : d.org }; } },
-    { url: 'https://freeipapi.com/api/json', map: function(d) { return { ip: d.ipAddress, cidade: d.cityName, estado: d.regionName, pais: d.countryName, isp: '–' }; } }
-  ];
-  function tentarAPI(idx) {
-    if (idx >= apis.length) return Promise.reject(new Error('Todas as APIs falharam'));
-    return fetch(apis[idx].url, { signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined })
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        var m = apis[idx].map(d);
-        if (!m.ip || m.ip === 'undefined') throw new Error('IP inválido');
-        return { ip: m.ip || '–', cidade: m.cidade || '–', estado: m.estado || '–', pais: m.pais || '–', isp: m.isp || '–' };
-      })
-      .catch(function() { return tentarAPI(idx + 1); });
-  }
-  return tentarAPI(0);
+  return fetch('https://api64.ipify.org?format=json')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var ip = d.ip;
+      if (!ip) throw new Error('sem ip');
+      return fetch('https://ip-api.com/json/' + ip + '?fields=city,regionName,country,isp&lang=pt')
+        .then(function(r) { return r.json(); })
+        .then(function(g) {
+          return { ip: ip, cidade: g.city || '–', estado: g.regionName || '–', pais: g.country || '–', isp: g.isp || '–' };
+        })
+        .catch(function() {
+          return { ip: ip, cidade: '–', estado: '–', pais: '–', isp: '–' };
+        });
+    });
 }
 
 function _rastrearIPAgora() {
