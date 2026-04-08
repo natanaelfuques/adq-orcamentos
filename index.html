@@ -4681,7 +4681,44 @@ function handleSalvosClick(e) {
   else if (action === 'excluir') excluirSalvo(id, nome);
   else if (action === 'abrir-contrato') { registrarLogGerador('abrir-contrato', nome); abrirContrato(id); }
   else if (action === 'link-contrato') {
-    abrirModalLinkAssinatura(id, btn);
+    var existingLink = btn.getAttribute('data-link') || '';
+    if (existingLink) {
+      abrirModalLinkAssinatura(id, btn);
+    } else if (db) {
+      // Tenta buscar link via createLinkToSignature se tiver public_id
+      db.collection('contratos').doc(id).get().then(function(snap) {
+        var d = snap.data() || {};
+        if (d.link_assinatura) {
+          btn.setAttribute('data-link', d.link_assinatura);
+          btn.classList.add('primary');
+          abrirModalLinkAssinatura(id, btn);
+        } else if (d.autentique_public_id && AUTENTIQUE_TOKEN) {
+          btn.textContent = '...';
+          var linkQuery = 'mutation { createLinkToSignature(public_id: "' + d.autentique_public_id + '") { short_link } }';
+          fetch('https://autentique.natanael-fuques.workers.dev/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Autentique-Token': AUTENTIQUE_TOKEN },
+            body: JSON.stringify({ query: linkQuery })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            var sl = (data.data && data.data.createLinkToSignature && data.data.createLinkToSignature.short_link) || '';
+            if (sl) {
+              db.collection('contratos').doc(id).update({ link_assinatura: sl }).catch(function(){});
+              btn.setAttribute('data-link', sl);
+              btn.classList.add('primary');
+            }
+            btn.textContent = 'Link';
+            abrirModalLinkAssinatura(id, btn);
+          })
+          .catch(function() { btn.textContent = 'Link'; abrirModalLinkAssinatura(id, btn); });
+        } else {
+          abrirModalLinkAssinatura(id, btn);
+        }
+      }).catch(function() { abrirModalLinkAssinatura(id, btn); });
+    } else {
+      abrirModalLinkAssinatura(id, btn);
+    }
   }
   else if (action === 'enviar-painel') {
     registrarLogGerador('enviar-painel', nome);
@@ -7201,15 +7238,19 @@ function _confirmarAutentique() {
 
       var linkAssinatura = resultado.link || '';
       var autentiqueId   = resultado.id   || '';
+      var publicId       = resultado.public_id || '';
       console.log('[AdQ] Autentique — documento criado' + (sandbox ? ' (SANDBOX)' : '') + ':', resultado);
 
-      // Gravar autentique_id e link no contrato salvo, se existir
+      // Gravar autentique_id, public_id e link no contrato salvo
       if (db && _ultimoContratoSalvoId && autentiqueId && !sandbox) {
-        db.collection('contratos').doc(_ultimoContratoSalvoId).update({
+        var updateData = {
           autentique_id:   autentiqueId,
           link_assinatura: linkAssinatura,
           status_contrato: 'enviado'
-        }).catch(function(e) { console.warn('[AdQ] Erro ao gravar autentique_id:', e); });
+        };
+        if (publicId) updateData.autentique_public_id = publicId;
+        db.collection('contratos').doc(_ultimoContratoSalvoId).update(updateData)
+          .catch(function(e) { console.warn('[AdQ] Erro ao gravar autentique_id:', e); });
 
         // Atualizar botão Link e status do card em tempo real
         var linkBtn = document.querySelector('.salvo-card button[data-action="link-contrato"][data-id="' + _ultimoContratoSalvoId + '"]');
@@ -7225,11 +7266,8 @@ function _confirmarAutentique() {
         }
       }
 
-      if (linkAssinatura) {
-        _exibirSucessoAutentique(linkAssinatura, email, sandbox);
-      } else {
-        alert('Documento enviado com sucesso ao Autentique' + (sandbox ? ' (modo sandbox)' : '') + '!');
-      }
+      // Sempre exibe modal de sucesso (com ou sem link)
+      _exibirSucessoAutentique(linkAssinatura, email, sandbox, _ultimoContratoSalvoId);
     })
     .catch(function(err) {
       console.error('[AdQ] Erro Autentique:', err);
@@ -7294,16 +7332,52 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
     }
     var doc = data.data && data.data.createDocument;
     if (!doc) throw new Error('Resposta inesperada da API Autentique');
-    // Pega o link do primeiro signatário
-    var link = '';
-    if (doc.signatures && doc.signatures[0] && doc.signatures[0].link) {
-      link = doc.signatures[0].link.short_link || '';
+
+    var sig = (doc.signatures && doc.signatures[0]) || {};
+    var publicId = sig.public_id || '';
+    var link = (sig.link && sig.link.short_link) ? sig.link.short_link : '';
+
+    // Se já veio o link direto, retorna
+    if (link) {
+      return { id: doc.id, name: doc.name, link: link, public_id: publicId };
     }
-    return { id: doc.id, name: doc.name, link: link };
+
+    // Se não veio link mas temos public_id, chama createLinkToSignature
+    if (publicId) {
+      console.log('[AdQ] Link não veio no createDocument, chamando createLinkToSignature com public_id:', publicId);
+      var linkQuery = 'mutation { createLinkToSignature(public_id: "' + publicId + '") { short_link } }';
+      return fetch(ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Autentique-Token': AUTENTIQUE_TOKEN
+        },
+        body: JSON.stringify({ query: linkQuery })
+      })
+      .then(function(r2) { return r2.json(); })
+      .then(function(d2) {
+        var shortLink = '';
+        if (d2.data && d2.data.createLinkToSignature && d2.data.createLinkToSignature.short_link) {
+          shortLink = d2.data.createLinkToSignature.short_link;
+        }
+        if (!shortLink) {
+          console.warn('[AdQ] createLinkToSignature não retornou link:', JSON.stringify(d2));
+        }
+        return { id: doc.id, name: doc.name, link: shortLink, public_id: publicId };
+      })
+      .catch(function(err) {
+        console.warn('[AdQ] Erro ao gerar link via createLinkToSignature:', err);
+        return { id: doc.id, name: doc.name, link: '', public_id: publicId };
+      });
+    }
+
+    // Sem link e sem public_id
+    console.warn('[AdQ] Nenhum public_id retornado pelo createDocument');
+    return { id: doc.id, name: doc.name, link: '', public_id: '' };
   });
 }
 
-function _exibirSucessoAutentique(link, email, sandbox) {
+function _exibirSucessoAutentique(link, email, sandbox, contratoId) {
   var old = document.getElementById('adq-autentique-modal');
   if (old) old.remove();
 
@@ -7311,10 +7385,30 @@ function _exibirSucessoAutentique(link, email, sandbox) {
   modal.id = 'adq-autentique-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
 
+  var linkSection = '';
+  if (link) {
+    linkSection = `
+      <div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">${escHtml(link)}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="navigator.clipboard&&navigator.clipboard.writeText('${link.replace(/'/g, "\\'")}');this.textContent='Copiado!'" style="flex:1;min-width:80px;background:#4A90C8;border:none;color:#111;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Copiar Link</button>
+        <a href="${escHtml(link)}" target="_blank" style="flex:1;min-width:80px;text-align:center;background:transparent;border:1px solid #4A90C8;color:#4A90C8;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>
+        <button onclick="document.getElementById('adq-autentique-modal').remove();document.body.style.overflow=''" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#666'">×</button>
+      </div>`;
+  } else {
+    linkSection = `
+      <div style="font-size:0.78rem;color:#888;line-height:1.6;margin-bottom:14px;background:#2a1a0a;border:1px solid #c8752a;border-radius:4px;padding:10px 12px">
+        ⚠ O link de assinatura não foi retornado pela API.<br>
+        <span style="color:#aaa">O signatário receberá o convite por e-mail.</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="document.getElementById('adq-autentique-modal').remove();document.body.style.overflow=''" style="flex:1;background:#4A90C8;border:none;color:#111;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">OK</button>
+      </div>`;
+  }
+
   modal.innerHTML = `
     <div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em">Enviado com sucesso!</span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em">✓ Enviado com sucesso!</span>
         ${sandbox ? '<span style="font-size:0.62rem;font-weight:700;color:#888;background:#222;border:1px solid #555;border-radius:3px;padding:2px 6px;letter-spacing:0.06em;text-transform:uppercase">Sandbox</span>' : ''}
       </div>
       <div style="font-size:0.8rem;color:#aaa;margin-bottom:14px;line-height:1.6">
@@ -7322,18 +7416,22 @@ function _exibirSucessoAutentique(link, email, sandbox) {
         O signatário receberá um e-mail em <strong style="color:#eee">${escHtml(email)}</strong>.
         ${sandbox ? '<br><span style="color:#888;font-size:0.75rem">Documento de teste — será excluído automaticamente.</span>' : ''}
       </div>
-      <div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">${escHtml(link)}</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="navigator.clipboard&&navigator.clipboard.writeText('${link.replace(/'/g, "\\'")}');this.textContent='Copiado!'" style="flex:1;min-width:80px;background:#4A90C8;border:none;color:#111;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Copiar Link</button>
-        <a href="${escHtml(link)}" target="_blank" onclick="document.getElementById('adq-autentique-modal').remove()" style="flex:1;min-width:80px;text-align:center;background:transparent;border:1px solid #4A90C8;color:#4A90C8;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>
-        <button onclick="document.getElementById('adq-autentique-modal').remove()" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#666'">×</button>
-      </div>
+      ${linkSection}
     </div>
   `;
 
   modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
   document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
+
+  // Também atualiza o modal de link nos Contratos Salvos (data-link do botão)
+  if (link && contratoId) {
+    var salvosLinkBtn = document.querySelector('.salvo-card button[data-action="link-contrato"][data-id="' + contratoId + '"]');
+    if (salvosLinkBtn) {
+      salvosLinkBtn.setAttribute('data-link', link);
+      salvosLinkBtn.classList.add('primary');
+    }
+  }
 }
 
 function enviarParaAutentique() {
