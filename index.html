@@ -1262,7 +1262,7 @@ header {
       <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico">
         <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="3" r="2.2"/><circle cx="9.5" cy="3" r="2.2"/><path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/><path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/></svg>
       </button>
-      <button id="btn-ia-config" onclick="abrirModalConfigIA()" title="Configurar IA" style="background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 6px;cursor:pointer;display:none;align-items:center;justify-content:center;align-self:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.69.07-1.08s-.03-.73-.07-1.08l2.32-1.82c.21-.16.27-.45.14-.69l-2.2-3.81c-.13-.24-.41-.32-.65-.24l-2.74 1.1c-.57-.44-1.17-.8-1.84-1.08L14.26 2.1A.535.535 0 0 0 13.74 2h-3.48c-.26 0-.48.18-.52.44L9.45 5.18C8.78 5.46 8.18 5.83 7.61 6.27L4.87 5.17c-.24-.09-.52 0-.65.24l-2.2 3.81c-.13.23-.07.53.14.69L4.48 11.5c-.04.35-.07.7-.07 1.08s.03.73.07 1.08L2.16 15.48c-.21.16-.27.45-.14.69l2.2 3.81c.13.24.41.32.65.24l2.74-1.1c.57.44 1.17.8 1.84 1.08l.29 2.91c.04.26.26.44.52.44h3.48c.26 0 .48-.18.52-.44l.29-2.91c.67-.28 1.27-.65 1.84-1.08l2.74 1.1c.24.09.52 0 .65-.24l2.2-3.81c.13-.23.07-.53-.14-.69l-2.32-1.81z"/></svg></button>
+      <button id="btn-ia-config" onclick="abrirModalConfiguracoes()" title="Configurações" style="background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 6px;cursor:pointer;display:none;align-items:center;justify-content:center;align-self:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.69.07-1.08s-.03-.73-.07-1.08l2.32-1.82c.21-.16.27-.45.14-.69l-2.2-3.81c-.13-.24-.41-.32-.65-.24l-2.74 1.1c-.57-.44-1.17-.8-1.84-1.08L14.26 2.1A.535.535 0 0 0 13.74 2h-3.48c-.26 0-.48.18-.52.44L9.45 5.18C8.78 5.46 8.18 5.83 7.61 6.27L4.87 5.17c-.24-.09-.52 0-.65.24l-2.2 3.81c-.13.23-.07.53.14.69L4.48 11.5c-.04.35-.07.7-.07 1.08s.03.73.07 1.08L2.16 15.48c-.21.16-.27.45-.14.69l2.2 3.81c.13.24.41.32.65.24l2.74-1.1c.57.44 1.17.8 1.84 1.08l.29 2.91c.04.26.26.44.52.44h3.48c.26 0 .48-.18.52-.44l.29-2.91c.67-.28 1.27-.65 1.84-1.08l2.74 1.1c.24.09.52 0 .65-.24l2.2-3.81c.13-.23.07-.53-.14-.69l-2.32-1.81z"/></svg></button>
       <button id="btn-gerador-sair" onclick="geradorSair()">Sair</button>
       <button id="pwa-install-btn" onclick="adqInstall()">&#8659; Instalar</button>
     </div>
@@ -4486,7 +4486,7 @@ function initFirebase(config) {
         var ba = document.getElementById('btn-gerador-acessos');
         if (ba) ba.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'inline-flex' : 'none';
         var bic = document.getElementById('btn-ia-config');
-        if (bic) bic.style.display = 'inline-flex';
+        if (bic) bic.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'inline-flex' : 'none';
         registrarAcessoGerador(user);
         iniciarListenerSalvos();
         iniciarConnIndicator();
@@ -7575,37 +7575,136 @@ function _aplicarIA(d, destino) {
   }
 }
 
-function abrirModalConfigIA() {
-  var old = document.getElementById('modal-ia-config');
+function abrirModalConfiguracoes() {
+  var old = document.getElementById('modal-configuracoes');
   if (old) old.remove();
-  var chaveSalva = localStorage.getItem('adq_anthropic_key') || '';
   var modal = document.createElement('div');
-  modal.id = 'modal-ia-config';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.id = 'modal-configuracoes';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.innerHTML = `
-    <div style="background:#1e1e1e;border:1px solid #C8A94A;border-radius:8px;padding:24px 22px;width:100%;max-width:460px;box-sizing:border-box">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em">⚙ Configurar IA</span>
-        <button onclick="document.getElementById('modal-ia-config').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1">×</button>
+    <div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0 22px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>
+        <button onclick="document.getElementById('modal-configuracoes').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>
       </div>
-      <p style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.5">A chave fica salva <strong style="color:#ccc">apenas neste dispositivo</strong> (localStorage) e nunca vai para o repositório.</p>
-      <label style="display:block;font-size:0.7rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Chave Anthropic (sk-ant-...)</label>
-      <input id="ia-config-key-input" type="password" value="\${chaveSalva}" placeholder="sk-ant-api03-..." style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.88rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:6px" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#444'" />
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-        <input type="checkbox" id="ia-config-show" onchange="document.getElementById('ia-config-key-input').type=this.checked?'text':'password'" style="accent-color:#C8A94A;cursor:pointer" />
-        <label for="ia-config-show" style="font-size:0.72rem;color:#888;cursor:pointer;text-transform:none;letter-spacing:normal;font-weight:400;margin:0">Mostrar chave</label>
+      <!-- Abas -->
+      <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">
+        <button id="cfg-tab-config" onclick="_cfgAba('config')" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Configurações</button>
+        <button id="cfg-tab-metas" onclick="_cfgAba('metas')" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Metas</button>
       </div>
-      <div id="ia-config-status" style="display:none;font-size:0.75rem;margin-bottom:10px;text-align:center"></div>
-      <div style="display:flex;gap:8px">
-        <button onclick="_salvarConfigIA()" style="flex:1;background:#C8A94A;border:none;color:#111;padding:11px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Salvar</button>
-        <button onclick="_limparConfigIA()" style="background:transparent;border:1px solid #555;color:#888;padding:11px 16px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Limpar</button>
+      <!-- Aba Configurações -->
+      <div id="cfg-panel-config" style="padding:20px 22px 22px 22px">
+        <!-- Item: IP do Cliente -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">IP do Cliente</div>
+              <div style="font-size:0.72rem;color:#666">Rastreia o IP de cada acesso ao gerador</div>
+            </div>
+            <div id="cfg-ip-badge" style="font-size:0.7rem;color:#888;text-align:right">Carregando...</div>
+          </div>
+          <button onclick="_rastrearIPAgora()" style="width:100%;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">↻ Verificar agora</button>
+          <div id="cfg-ip-resultado" style="display:none;margin-top:12px;padding:12px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;font-size:0.75rem;line-height:1.8;color:#ccc"></div>
+          <div style="margin-top:12px">
+            <div style="font-size:0.68rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Últimos acessos registrados</div>
+            <div id="cfg-ip-historico" style="font-size:0.72rem;color:#666;font-style:italic">Carregando...</div>
+          </div>
+        </div>
+        <!-- Mais configurações futuras aqui -->
+      </div>
+      <!-- Aba Metas -->
+      <div id="cfg-panel-metas" style="padding:20px 22px 22px 22px;display:none">
+        <div style="text-align:center;padding:32px 0 24px 0">
+          <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C8A94A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">Em breve</div>
+          <div style="font-size:0.78rem;color:#555;line-height:1.6">Definição de metas mensais,<br>acompanhamento de receita e eventos.</div>
+        </div>
       </div>
     </div>
   `;
   modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
   document.body.appendChild(modal);
-  setTimeout(function() { var el = document.getElementById('ia-config-key-input'); if (el) el.focus(); }, 60);
+  _carregarHistoricoIP();
 }
+
+function _cfgAba(aba) {
+  var abas = ['config','metas'];
+  abas.forEach(function(a) {
+    var tab = document.getElementById('cfg-tab-' + a);
+    var panel = document.getElementById('cfg-panel-' + a);
+    var ativo = (a === aba);
+    if (tab) { tab.style.borderBottomColor = ativo ? '#C8A94A' : 'transparent'; tab.style.color = ativo ? '#C8A94A' : '#555'; }
+    if (panel) panel.style.display = ativo ? 'block' : 'none';
+  });
+}
+
+function _rastrearIPAgora() {
+  var badge = document.getElementById('cfg-ip-badge');
+  var resultado = document.getElementById('cfg-ip-resultado');
+  if (badge) badge.textContent = 'Consultando...';
+  if (resultado) { resultado.style.display = 'none'; resultado.innerHTML = ''; }
+  fetch('https://ipapi.co/json/')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var ip = d.ip || '–';
+      var cidade = d.city || '–';
+      var estado = d.region || '–';
+      var pais = d.country_name || '–';
+      var isp = d.org || '–';
+      if (badge) badge.innerHTML = '<span style="color:#C8A94A;font-weight:700">' + ip + '</span>';
+      if (resultado) {
+        resultado.style.display = 'block';
+        resultado.innerHTML =
+          '<div><span style="color:#555;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">IP</span> &nbsp;<span style="color:#eee">' + ip + '</span></div>' +
+          '<div><span style="color:#555;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">Local</span> &nbsp;<span style="color:#ccc">' + cidade + ', ' + estado + ' – ' + pais + '</span></div>' +
+          '<div><span style="color:#555;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em">ISP</span> &nbsp;<span style="color:#888">' + isp + '</span></div>';
+      }
+      // Salvar no Firestore
+      var emailAtual = (firebase && firebase.auth().currentUser) ? firebase.auth().currentUser.email : 'desconhecido';
+      if (db) {
+        db.collection('logs_ip').add({
+          email: emailAtual,
+          ip: ip,
+          cidade: cidade,
+          estado: estado,
+          pais: pais,
+          isp: isp,
+          data: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(function(){});
+      }
+      _carregarHistoricoIP();
+    })
+    .catch(function(e) {
+      if (badge) badge.textContent = 'Erro';
+      if (resultado) { resultado.style.display = 'block'; resultado.innerHTML = '<span style="color:#e55">Erro ao consultar IP: ' + e.message + '</span>'; }
+    });
+}
+
+function _carregarHistoricoIP() {
+  var hist = document.getElementById('cfg-ip-historico');
+  if (!hist || !db) return;
+  db.collection('logs_ip').orderBy('data','desc').limit(8).get()
+    .then(function(snap) {
+      if (snap.empty) { hist.textContent = 'Nenhum registro ainda.'; return; }
+      var html = '<div style="display:flex;flex-direction:column;gap:4px">';
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        var dataStr = d.data && d.data.toDate ? d.data.toDate().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '–';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1e1e1e">' +
+          '<span style="color:#888">' + dataStr + '</span>' +
+          '<span style="color:#C8A94A;font-family:monospace">' + (d.ip||'–') + '</span>' +
+          '<span style="color:#555">' + (d.cidade||'–') + '/' + (d.estado||'–') + '</span>' +
+          '</div>';
+      });
+      html += '</div>';
+      hist.innerHTML = html;
+    })
+    .catch(function() { hist.textContent = 'Erro ao carregar histórico.'; });
+}
+
+// Mantida para chamadas internas legadas
+function abrirModalConfigIA() { abrirModalConfiguracoes(); }
 
 function _salvarConfigIA() {
   var val = (document.getElementById('ia-config-key-input') || {}).value || '';
