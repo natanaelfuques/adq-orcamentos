@@ -6094,7 +6094,8 @@ function abrirModalLinkAssinatura(id, btnEl) {
     return;
   }
 
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
 }
 
@@ -7026,7 +7027,8 @@ function _abrirModalEditarNota(nota) {
     '</div>' +
   '</div>';
 
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
   setTimeout(function() {
     var inp = document.getElementById('nota-edit-titulo');
@@ -7155,7 +7157,8 @@ function _abrirModalAutentique(onConfirm) {
     </div>
   `;
 
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
   setTimeout(function() {
     var inp = document.getElementById('adq-aut-email');
@@ -7328,7 +7331,8 @@ function _exibirSucessoAutentique(link, email, sandbox) {
     </div>
   `;
 
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
 }
 
@@ -7364,7 +7368,8 @@ function abrirModalIA() {
     </div>
   `;
 
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
   setTimeout(function() {
     var el = document.getElementById('ia-input-texto');
@@ -7495,7 +7500,8 @@ function _abrirModalDestinoIA(d) {
     </div>
   `;
 
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
 }
 
@@ -7581,14 +7587,27 @@ function abrirModalConfiguracoes() {
   var modal = document.createElement('div');
   modal.id = 'modal-configuracoes';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
-  modal.addEventListener('wheel', function(e) { e.stopPropagation(); }, { passive: false });
-  modal.addEventListener('touchmove', function(e) { e.stopPropagation(); }, { passive: false });
+  // Bloqueia scroll da página de fundo — permite scroll dentro do modal
+  function _modalScrollGuard(e) {
+    var el = e.target;
+    // Sobe na árvore procurando um elemento com scroll próprio dentro do modal
+    while (el && el !== modal) {
+      var style = window.getComputedStyle(el);
+      var overflowY = style.overflowY;
+      var canScroll = (overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
+      if (canScroll) return; // deixa o scroll acontecer normalmente
+      el = el.parentElement;
+    }
+    e.preventDefault(); // bloqueia scroll da página de fundo
+  }
+  modal.addEventListener('wheel', _modalScrollGuard, { passive: false });
+  modal.addEventListener('touchmove', _modalScrollGuard, { passive: false });
   modal.innerHTML = `
     <div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">
       <!-- Header -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0 22px">
         <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>
-        <button onclick="document.getElementById('modal-configuracoes').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>
+        <button onclick="document.body.style.overflow='';document.getElementById('modal-configuracoes').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>
       </div>
       <!-- Abas -->
       <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">
@@ -7626,7 +7645,8 @@ function abrirModalConfiguracoes() {
       </div><!-- /cfg-slider -->
     </div>
   `;
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
   // Swipe: sync tabs on scroll
   setTimeout(function() {
@@ -7775,10 +7795,14 @@ function _carregarHistoricoIP() {
         }
         detail.innerHTML = detailHTML;
 
-        header.addEventListener('click', function() {
-          var el = document.getElementById(this.dataset.uid);
-          if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
-        });
+        (function(uidLocal) {
+          function toggle() {
+            var el = document.getElementById(uidLocal);
+            if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+          }
+          header.addEventListener('click', toggle);
+          header.addEventListener('touchend', function(e) { e.preventDefault(); toggle(); });
+        })(uid);
 
         wrap.appendChild(header);
         wrap.appendChild(detail);
