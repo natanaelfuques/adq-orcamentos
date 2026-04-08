@@ -7644,14 +7644,14 @@ function _rastrearIPAgora() {
   var resultado = document.getElementById('cfg-ip-resultado');
   if (badge) badge.textContent = 'Consultando...';
   if (resultado) { resultado.style.display = 'none'; resultado.innerHTML = ''; }
-  fetch('https://ipapi.co/json/')
+  fetch('https://ipwho.is/')
     .then(function(r) { return r.json(); })
     .then(function(d) {
       var ip = d.ip || '–';
       var cidade = d.city || '–';
       var estado = d.region || '–';
-      var pais = d.country_name || '–';
-      var isp = d.org || '–';
+      var pais = d.country || '–';
+      var isp = (d.connection && d.connection.isp) ? d.connection.isp : (d.org || '–');
       if (badge) badge.innerHTML = '<span style="color:#C8A94A;font-weight:700">' + ip + '</span>';
       if (resultado) {
         resultado.style.display = 'block';
