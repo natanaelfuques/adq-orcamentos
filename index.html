@@ -7333,9 +7333,13 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
     var doc = data.data && data.data.createDocument;
     if (!doc) throw new Error('Resposta inesperada da API Autentique');
 
+    console.log('[AdQ] createDocument response completo:', JSON.stringify(doc));
+
     var sig = (doc.signatures && doc.signatures[0]) || {};
     var publicId = sig.public_id || '';
     var link = (sig.link && sig.link.short_link) ? sig.link.short_link : '';
+
+    console.log('[AdQ] public_id:', publicId, '| link direto:', link);
 
     // Se já veio o link direto, retorna
     if (link) {
@@ -7356,6 +7360,7 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
       })
       .then(function(r2) { return r2.json(); })
       .then(function(d2) {
+        console.log('[AdQ] createLinkToSignature response completo:', JSON.stringify(d2));
         var shortLink = '';
         if (d2.data && d2.data.createLinkToSignature && d2.data.createLinkToSignature.short_link) {
           shortLink = d2.data.createLinkToSignature.short_link;
