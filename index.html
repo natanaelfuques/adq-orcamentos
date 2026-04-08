@@ -7804,6 +7804,68 @@ function abrirModalConfiguracoes() {
           </div>
         </div>
 
+        <!-- Meta Ticket Médio -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Ticket Médio</div>
+            <div id="meta-ticket-pct" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#555"></div>
+          </div>
+          <div style="font-size:0.68rem;color:#555;margin-bottom:10px">Valor médio por contrato assinado no mês</div>
+          <div style="background:#1a1a1a;border-radius:4px;height:22px;overflow:hidden;position:relative;margin-bottom:10px">
+            <div id="meta-ticket-bar" style="height:100%;background:linear-gradient(90deg,#8B5CF6,#a78bfa);border-radius:4px;transition:width 0.6s ease;width:0%"></div>
+            <div id="meta-ticket-valor" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:0.7rem;color:#555;white-space:nowrap">Meta R$</span>
+            <input id="meta-ticket-input" type="text" inputmode="numeric" placeholder="Ex: 3000" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
+            <button onclick="_salvarMeta('ticket')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L5 9.5L10 3"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Meta Anual -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Faturamento Anual</div>
+            <div id="meta-anual-pct" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#555"></div>
+          </div>
+          <div id="meta-anual-ano" style="font-size:0.68rem;color:#555;margin-bottom:10px"></div>
+          <div style="background:#1a1a1a;border-radius:4px;height:22px;overflow:hidden;position:relative;margin-bottom:10px">
+            <div id="meta-anual-bar" style="height:100%;background:linear-gradient(90deg,#E8A838,#f0c060);border-radius:4px;transition:width 0.6s ease;width:0%"></div>
+            <div id="meta-anual-valor" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:0.7rem;color:#555;white-space:nowrap">Meta R$</span>
+            <input id="meta-anual-input" type="text" inputmode="numeric" placeholder="Ex: 150000" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
+            <button onclick="_salvarMeta('anual')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L5 9.5L10 3"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Sequência de meses -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Sequência de Metas</div>
+          <div style="font-size:0.68rem;color:#555;margin-bottom:12px">Meses consecutivos batendo a meta de receita</div>
+          <div id="meta-sequencia-display" style="display:flex;align-items:center;gap:12px">
+            <div id="meta-sequencia-num" style="font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:#C8A94A;line-height:1">0</div>
+            <div style="flex:1">
+              <div id="meta-sequencia-label" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em">meses</div>
+              <div id="meta-sequencia-detalhe" style="font-size:0.65rem;color:#444;margin-top:2px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Checklist 100% -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Checklist Completo</div>
+            <div id="meta-checklist-pct" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#555"></div>
+          </div>
+          <div style="font-size:0.68rem;color:#555;margin-bottom:10px">Eventos do mês com todos os itens marcados</div>
+          <div style="background:#1a1a1a;border-radius:4px;height:22px;overflow:hidden;position:relative;margin-bottom:4px">
+            <div id="meta-checklist-bar" style="height:100%;background:linear-gradient(90deg,#25D366,#30e876);border-radius:4px;transition:width 0.6s ease;width:0%"></div>
+            <div id="meta-checklist-valor" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)"></div>
+          </div>
+        </div>
+
         <!-- Status -->
         <div id="meta-status" style="display:none;text-align:center;font-size:0.7rem;margin-top:4px"></div>
 
@@ -8045,7 +8107,7 @@ function _carregarHistoricoIP() {
 
 var _metaMesAtual = new Date().getMonth(); // 0-11
 var _metaAnoAtual = new Date().getFullYear();
-var _metasConfig = { receita: 0, eventos: 0 }; // valores-alvo
+var _metasConfig = { receita: 0, eventos: 0, ticket: 0, anual: 0 }; // valores-alvo
 var _metaNotificado = {}; // controle p/ não repetir banner no mesmo mês
 
 function _metaMesNav(dir) {
@@ -8064,17 +8126,22 @@ function _atualizarMetaLabel() {
 
 function _initAbaMetas() {
   _atualizarMetaLabel();
-  // Carregar metas do Firestore
   if (db) {
     db.collection('config').doc('metas').get().then(function(doc) {
       if (doc.exists) {
         var d = doc.data();
         _metasConfig.receita = parseFloat(d.receita) || 0;
         _metasConfig.eventos = parseInt(d.eventos) || 0;
+        _metasConfig.ticket = parseFloat(d.ticket) || 0;
+        _metasConfig.anual = parseFloat(d.anual) || 0;
         var inpR = document.getElementById('meta-receita-input');
         var inpE = document.getElementById('meta-eventos-input');
+        var inpT = document.getElementById('meta-ticket-input');
+        var inpA = document.getElementById('meta-anual-input');
         if (inpR && _metasConfig.receita > 0) inpR.value = _metasConfig.receita;
         if (inpE && _metasConfig.eventos > 0) inpE.value = _metasConfig.eventos;
+        if (inpT && _metasConfig.ticket > 0) inpT.value = _metasConfig.ticket;
+        if (inpA && _metasConfig.anual > 0) inpA.value = _metasConfig.anual;
       }
       _calcularProgressoMetas();
     }).catch(function() { _calcularProgressoMetas(); });
@@ -8115,54 +8182,178 @@ function _metaStatus(msg, color) {
 function _calcularProgressoMetas() {
   if (!db) return;
 
-  // Determinar range do mês selecionado
   var inicioMes = new Date(_metaAnoAtual, _metaMesAtual, 1);
   var fimMes = new Date(_metaAnoAtual, _metaMesAtual + 1, 0, 23, 59, 59);
+  var inicioAno = new Date(_metaAnoAtual, 0, 1);
+  var fimAno = new Date(_metaAnoAtual, 11, 31, 23, 59, 59);
 
-  // Buscar contratos assinados no mês
+  // Atualizar label do ano
+  var anoEl = document.getElementById('meta-anual-ano');
+  if (anoEl) anoEl.textContent = 'Acumulado do ano ' + _metaAnoAtual;
+
   db.collection('contratos')
     .where('status_assinatura', '==', 'Assinado')
     .get()
     .then(function(snap) {
       var totalReceita = 0;
       var totalEventos = 0;
+      var totalAnual = 0;
+      var receitaPorMes = {}; // chave: "YYYY-MM"
 
       snap.forEach(function(doc) {
         var d = doc.data();
-        // Determinar data do contrato (data_evento ou criadoEm)
-        var dataRef = null;
-        if (d.data_evento) {
-          var pts = d.data_evento.split('/');
-          if (pts.length === 3) {
-            dataRef = new Date(pts[2], parseInt(pts[1]) - 1, pts[0]);
-          } else {
-            // Formato YYYY-MM-DD
-            dataRef = new Date(d.data_evento);
-          }
-        } else if (d.criadoEm && d.criadoEm.toDate) {
-          dataRef = d.criadoEm.toDate();
-        }
+        var dataRef = _parseDataContrato(d);
+        if (!dataRef) return;
 
-        if (dataRef && dataRef >= inicioMes && dataRef <= fimMes) {
+        var valor = _extrairValor(d);
+
+        // Acumular por mês para sequência
+        var chave = dataRef.getFullYear() + '-' + String(dataRef.getMonth() + 1).padStart(2, '0');
+        receitaPorMes[chave] = (receitaPorMes[chave] || 0) + valor;
+
+        // Mês selecionado
+        if (dataRef >= inicioMes && dataRef <= fimMes) {
           totalEventos++;
-          // Somar valor total do contrato
-          var valor = 0;
-          if (d.total_geral) {
-            valor = parseFloat(String(d.total_geral).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
-          } else if (d.valor_total) {
-            valor = parseFloat(String(d.valor_total).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
-          }
           totalReceita += valor;
+        }
+        // Ano selecionado
+        if (dataRef >= inicioAno && dataRef <= fimAno) {
+          totalAnual += valor;
         }
       });
 
+      var ticketMedio = totalEventos > 0 ? totalReceita / totalEventos : 0;
+
       _renderProgressoMeta('receita', totalReceita, _metasConfig.receita, true);
       _renderProgressoMeta('eventos', totalEventos, _metasConfig.eventos, false);
-      _verificarConquistas(totalReceita, totalEventos);
+      _renderProgressoMeta('ticket', ticketMedio, _metasConfig.ticket, true);
+      _renderProgressoMeta('anual', totalAnual, _metasConfig.anual, true);
+      _calcularSequenciaMetas(receitaPorMes);
+      _verificarConquistas(totalReceita, totalEventos, ticketMedio, totalAnual);
+
+      // Checklist: buscar eventos_campo do mês
+      _calcularChecklist(inicioMes, fimMes);
     })
     .catch(function(e) {
       console.warn('Erro ao calcular metas:', e);
     });
+}
+
+function _parseDataContrato(d) {
+  var dataRef = null;
+  if (d.data_evento) {
+    var pts = d.data_evento.split('/');
+    if (pts.length === 3) {
+      dataRef = new Date(pts[2], parseInt(pts[1]) - 1, pts[0]);
+    } else {
+      dataRef = new Date(d.data_evento);
+    }
+  } else if (d.criadoEm && d.criadoEm.toDate) {
+    dataRef = d.criadoEm.toDate();
+  }
+  return dataRef;
+}
+
+function _extrairValor(d) {
+  var valor = 0;
+  if (d.total_geral) {
+    valor = parseFloat(String(d.total_geral).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
+  } else if (d.valor_total) {
+    valor = parseFloat(String(d.valor_total).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
+  }
+  return valor;
+}
+
+function _calcularSequenciaMetas(receitaPorMes) {
+  var numEl = document.getElementById('meta-sequencia-num');
+  var labelEl = document.getElementById('meta-sequencia-label');
+  var detalheEl = document.getElementById('meta-sequencia-detalhe');
+  if (!numEl || !_metasConfig.receita) {
+    if (numEl) numEl.textContent = '–';
+    if (labelEl) labelEl.textContent = 'defina a meta de receita';
+    return;
+  }
+
+  // Contar meses consecutivos batendo meta, de trás pra frente a partir do mês atual
+  var hoje = new Date();
+  var seq = 0;
+  var m = hoje.getMonth();
+  var a = hoje.getFullYear();
+
+  for (var i = 0; i < 36; i++) { // até 3 anos pra trás
+    var chave = a + '-' + String(m + 1).padStart(2, '0');
+    var rec = receitaPorMes[chave] || 0;
+    if (rec >= _metasConfig.receita) {
+      seq++;
+    } else {
+      break;
+    }
+    m--;
+    if (m < 0) { m = 11; a--; }
+  }
+
+  numEl.textContent = seq;
+  numEl.style.color = seq >= 3 ? '#25D366' : seq >= 1 ? '#C8A94A' : '#555';
+  labelEl.textContent = seq === 1 ? 'mês consecutivo' : 'meses consecutivos';
+  if (detalheEl) {
+    if (seq >= 6) detalheEl.textContent = 'Excelente consistência!';
+    else if (seq >= 3) detalheEl.textContent = 'Boa sequência!';
+    else if (seq === 0) detalheEl.textContent = 'Bata a meta este mês para iniciar';
+    else detalheEl.textContent = '';
+  }
+}
+
+function _calcularChecklist(inicioMes, fimMes) {
+  if (!db) return;
+
+  db.collection('eventos_campo').get().then(function(snap) {
+    var totalEventosMes = 0;
+    var eventosCompletos = 0;
+
+    snap.forEach(function(doc) {
+      var ev = doc.data();
+      var dataRef = null;
+      if (ev.ev_data) {
+        var pts = ev.ev_data.split('-');
+        if (pts.length === 3) dataRef = new Date(pts[0], parseInt(pts[1]) - 1, pts[2]);
+      }
+      if (!dataRef || dataRef < inicioMes || dataRef > fimMes) return;
+      if (!ev.servicos || !ev.servicos.length) return;
+
+      totalEventosMes++;
+      var itensOk = ev.itens_ok || {};
+      var removidos = ev.itens_removidos || {};
+      var todosMarcados = true;
+
+      for (var i = 0; i < ev.servicos.length; i++) {
+        var isObs = ev.servicos[i].toLowerCase().indexOf('obs:') === 0 || ev.servicos[i].toLowerCase().indexOf('obs.') === 0;
+        if (isObs || removidos[i]) continue;
+        if (!itensOk[i]) { todosMarcados = false; break; }
+      }
+      if (todosMarcados) eventosCompletos++;
+    });
+
+    var bar = document.getElementById('meta-checklist-bar');
+    var valor = document.getElementById('meta-checklist-valor');
+    var pctEl = document.getElementById('meta-checklist-pct');
+
+    if (!bar || !valor) return;
+
+    if (totalEventosMes === 0) {
+      bar.style.width = '0%';
+      valor.textContent = 'Sem eventos no mês';
+      if (pctEl) pctEl.textContent = '';
+      return;
+    }
+
+    var pct = (eventosCompletos / totalEventosMes) * 100;
+    bar.style.width = pct.toFixed(1) + '%';
+    valor.textContent = eventosCompletos + ' / ' + totalEventosMes + ' eventos';
+    if (pctEl) {
+      pctEl.textContent = pct.toFixed(0) + '%';
+      pctEl.style.color = pct >= 100 ? '#25D366' : pct >= 70 ? '#C8A94A' : '#555';
+    }
+  }).catch(function() {});
 }
 
 function _renderProgressoMeta(tipo, atual, meta, isCurrency) {
@@ -8205,23 +8396,30 @@ function _formatarRS(v) {
   return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function _verificarConquistas(receita, eventos) {
+function _verificarConquistas(receita, eventos, ticket, anual) {
   var banner = document.getElementById('meta-banner-conquista');
   var texto = document.getElementById('meta-banner-texto');
   if (!banner || !texto) return;
 
-  var chave = _metaMesAtual + '-' + _metaAnoAtual;
   var msgs = [];
 
   if (_metasConfig.receita > 0 && receita >= _metasConfig.receita) {
-    msgs.push('Meta de receita atingida!');
+    msgs.push('Receita mensal');
   }
   if (_metasConfig.eventos > 0 && eventos >= _metasConfig.eventos) {
-    msgs.push('Meta de eventos atingida!');
+    msgs.push('Eventos');
+  }
+  if (_metasConfig.ticket > 0 && ticket >= _metasConfig.ticket) {
+    msgs.push('Ticket médio');
+  }
+  if (_metasConfig.anual > 0 && anual >= _metasConfig.anual) {
+    msgs.push('Faturamento anual');
   }
 
   if (msgs.length > 0) {
-    texto.textContent = msgs.join(' • ');
+    texto.textContent = msgs.length === 1
+      ? 'Meta de ' + msgs[0] + ' atingida!'
+      : msgs.length + ' metas atingidas: ' + msgs.join(' · ');
     banner.style.display = 'block';
   } else {
     banner.style.display = 'none';
