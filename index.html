@@ -7588,19 +7588,27 @@ function abrirModalConfiguracoes() {
   modal.id = 'modal-configuracoes';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
   // Bloqueia scroll da página de fundo — permite scroll dentro do modal
+  var _touchStartX = 0, _touchStartY = 0;
+  modal.addEventListener('touchstart', function(e) {
+    _touchStartX = e.touches[0].clientX;
+    _touchStartY = e.touches[0].clientY;
+  }, { passive: true });
   function _modalScrollGuard(e) {
+    var dx = Math.abs(e.touches[0].clientX - _touchStartX);
+    var dy = Math.abs(e.touches[0].clientY - _touchStartY);
+    // Se movimento principalmente horizontal, deixa passar (swipe de aba)
+    if (dx > dy) return;
+    // Movimento vertical: verifica se há elemento scrollável no caminho
     var el = e.target;
-    // Sobe na árvore procurando um elemento com scroll próprio dentro do modal
     while (el && el !== modal) {
       var style = window.getComputedStyle(el);
-      var overflowY = style.overflowY;
-      var canScroll = (overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
-      if (canScroll) return; // deixa o scroll acontecer normalmente
+      var oy = style.overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight) return;
       el = el.parentElement;
     }
-    e.preventDefault(); // bloqueia scroll da página de fundo
+    e.preventDefault();
   }
-  modal.addEventListener('wheel', _modalScrollGuard, { passive: false });
+  modal.addEventListener('wheel', function(e) { e.preventDefault(); }, { passive: false });
   modal.addEventListener('touchmove', _modalScrollGuard, { passive: false });
   modal.innerHTML = `
     <div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">
@@ -7615,7 +7623,7 @@ function abrirModalConfiguracoes() {
         <button id="cfg-tab-metas" onclick="_cfgAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Metas</button>
       </div>
       <!-- Slider de abas -->
-      <div id="cfg-slider" style="display:flex;overflow-x:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch">
+      <div id="cfg-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">
       <!-- Aba IP -->
       <div id="cfg-panel-config" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
         <!-- Item: IP do Cliente -->
@@ -7801,7 +7809,16 @@ function _carregarHistoricoIP() {
             if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
           }
           header.addEventListener('click', toggle);
-          header.addEventListener('touchend', function(e) { e.preventDefault(); toggle(); });
+          var _hdrTouchStartX = 0, _hdrTouchStartY = 0;
+          header.addEventListener('touchstart', function(e) {
+            _hdrTouchStartX = e.touches[0].clientX;
+            _hdrTouchStartY = e.touches[0].clientY;
+          }, { passive: true });
+          header.addEventListener('touchend', function(e) {
+            var dx = Math.abs(e.changedTouches[0].clientX - _hdrTouchStartX);
+            var dy = Math.abs(e.changedTouches[0].clientY - _hdrTouchStartY);
+            if (dx < 10 && dy < 10) { e.preventDefault(); toggle(); }
+          });
         })(uid);
 
         wrap.appendChild(header);
