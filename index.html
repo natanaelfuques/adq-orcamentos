@@ -7581,6 +7581,8 @@ function abrirModalConfiguracoes() {
   var modal = document.createElement('div');
   modal.id = 'modal-configuracoes';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.addEventListener('wheel', function(e) { e.stopPropagation(); }, { passive: false });
+  modal.addEventListener('touchmove', function(e) { e.stopPropagation(); }, { passive: false });
   modal.innerHTML = `
     <div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">
       <!-- Header -->
@@ -7596,7 +7598,7 @@ function abrirModalConfiguracoes() {
       <!-- Slider de abas -->
       <div id="cfg-slider" style="display:flex;overflow-x:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch">
       <!-- Aba IP -->
-      <div id="cfg-panel-config" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start">
+      <div id="cfg-panel-config" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
         <!-- Item: IP do Cliente -->
         <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
           <div style="margin-bottom:10px">
@@ -7614,7 +7616,7 @@ function abrirModalConfiguracoes() {
         <!-- Mais configurações futuras aqui -->
       </div>
       <!-- Aba Metas -->
-      <div id="cfg-panel-metas" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start">
+      <div id="cfg-panel-metas" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
         <div style="text-align:center;padding:32px 0 24px 0">
           <div style="margin-bottom:12px;display:flex;justify-content:center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C8A94A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">Em breve</div>
@@ -7713,28 +7715,77 @@ function _rastrearIPAgora() {
 function _carregarHistoricoIP() {
   var hist = document.getElementById('cfg-ip-historico');
   if (!hist || !db) return;
-  db.collection('logs_ip').orderBy('data','desc').limit(12).get()
+  db.collection('logs_ip').orderBy('data','desc').get()
     .then(function(snap) {
       if (snap.empty) { hist.textContent = 'Nenhum registro ainda.'; return; }
-      var html = '<div style="display:flex;flex-direction:column;gap:0">';
-      snap.forEach(function(doc) {
+      var docs = [];
+      snap.forEach(function(doc) { docs.push(doc); });
+      if (docs.length > 10) {
+        docs.slice(10).forEach(function(doc) { db.collection('logs_ip').doc(doc.id).delete().catch(function(){}); });
+        docs = docs.slice(0, 10);
+      }
+      var container = document.createElement('div');
+      docs.forEach(function(doc, i) {
         var d = doc.data();
-        var dataStr = d.data && d.data.toDate ? d.data.toDate().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '–';
-        var origemLabel = d.origem === 'orcamento-view' ? '<span style="color:#4a90c8;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">VIEW</span>' : '<span style="color:#444;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">IDX</span>';
-        var orcLabel = d.orcamento_id ? ' <span style="color:#3a3a3a;font-size:0.62rem;font-family:monospace">' + d.orcamento_id.substring(0,6) + '…</span>' : '';
-        var ipValido = d.ip && d.ip !== '–';
-        var local = (d.cidade && d.cidade !== '–') ? d.cidade + (d.estado && d.estado !== '–' ? ', ' + d.estado : '') : '';
-        html += '<div style="padding:8px 0;border-bottom:1px solid #1a1a1a">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">' +
-            '<span style="color:#555;font-size:0.68rem">' + dataStr + '</span>' +
-            '<span>' + origemLabel + orcLabel + '</span>' +
+        var uid = 'ip-entry-' + i;
+        var dataStr = d.data && d.data.toDate ? d.data.toDate().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+        var ipValido = d.ip && d.ip !== '-';
+        var ipCurto = ipValido ? (d.ip.length > 20 ? d.ip.substring(0,18) + '...' : d.ip) : '-';
+        var local = (d.cidade && d.cidade !== '-') ? d.cidade + (d.estado && d.estado !== '-' ? ', ' + d.estado : '') + (d.pais && d.pais !== '-' ? ' - ' + d.pais : '') : '-';
+        var postal = d.postal ? ' · CEP ' + d.postal : '';
+
+        // Wrapper
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'border-bottom:1px solid #1a1a1a';
+
+        // Header row (clicável)
+        var header = document.createElement('div');
+        header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer';
+        header.dataset.uid = uid;
+
+        var origemColor = d.origem === 'orcamento-view' ? '#4a90c8' : '#444';
+        var origemTxt = d.origem === 'orcamento-view' ? 'VIEW' : 'IDX';
+        var orcTxt = d.orcamento_id ? ' ' + d.orcamento_id.substring(0,6) + '...' : '';
+
+        header.innerHTML =
+          '<div>' +
+            '<div style="color:#555;font-size:0.65rem;margin-bottom:2px">' + dataStr +
+              ' <span style="color:' + origemColor + ';font-size:0.62rem;font-weight:700;text-transform:uppercase">' + origemTxt + '</span>' +
+              '<span style="color:#3a3a3a;font-size:0.62rem;font-family:monospace">' + orcTxt + '</span>' +
+            '</div>' +
+            '<div style="color:' + (ipValido ? '#C8A94A' : '#333') + ';font-family:monospace;font-size:0.72rem">' + ipCurto + '</div>' +
           '</div>' +
-          '<div style="color:' + (ipValido ? '#C8A94A' : '#333') + ';font-family:monospace;font-size:0.72rem;word-break:break-all;line-height:1.4">' + (d.ip||'–') + '</div>' +
-          (local ? '<div style="color:#555;font-size:0.68rem;margin-top:2px">' + local + '</div>' : '') +
-          '</div>';
+          '<span style="color:#333;font-size:0.8rem;padding-left:8px">›</span>';
+
+        // Detail panel
+        var detail = document.createElement('div');
+        detail.id = uid;
+        detail.style.cssText = 'display:none;background:#0d0d0d;border-radius:4px;padding:10px 12px;margin-bottom:8px;font-size:0.72rem;line-height:1.9';
+
+        var detailHTML =
+          '<div style="color:#C8A94A;font-family:monospace;word-break:break-all;margin-bottom:4px">' + (d.ip||'-') + '</div>' +
+          '<div><span style="color:#444;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em">Local</span> <span style="color:#ccc">' + local + postal + '</span>';
+        if (d.lat && d.lng) {
+          detailHTML += '<a href="https://maps.google.com/?q=' + d.lat + ',' + d.lng + '" target="_blank" style="color:#4a90c8;font-size:0.68rem;text-decoration:none;display:block;margin-top:4px">';
+          detailHTML += '→ Ver no Maps (' + parseFloat(d.lat).toFixed(4) + ', ' + parseFloat(d.lng).toFixed(4) + ')</a>';
+        }
+        detailHTML += '</div>';
+        if (d.isp && d.isp !== '-') {
+          detailHTML += '<div style="margin-top:4px"><span style="color:#444;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em">ISP</span> <span style="color:#666;font-size:0.7rem">' + d.isp + '</span></div>';
+        }
+        detail.innerHTML = detailHTML;
+
+        header.addEventListener('click', function() {
+          var el = document.getElementById(this.dataset.uid);
+          if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        });
+
+        wrap.appendChild(header);
+        wrap.appendChild(detail);
+        container.appendChild(wrap);
       });
-      html += '</div>';
-      hist.innerHTML = html;
+      hist.innerHTML = '';
+      hist.appendChild(container);
     })
     .catch(function() { hist.textContent = 'Erro ao carregar histórico.'; });
 }
