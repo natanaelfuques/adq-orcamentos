@@ -1947,27 +1947,31 @@ window.addEventListener('load', function() {
         renderOrcamento(doc);
         // Rastrear IP do cliente
         (function(orcDocId) {
-          fetch('https://ipwho.is/')
-            .then(function(r) { return r.json(); })
-            .then(function(d) {
-              var ip = d.ip || '–';
-              var cidade = d.city || '–';
-              var estado = d.region || '–';
-              var pais = d.country || '–';
-              var isp = (d.connection && d.connection.isp) ? d.connection.isp : (d.org || '–');
-              db.collection('logs_ip').add({
-                origem: 'orcamento-view',
-                orcamento_id: orcDocId,
-                ip: ip,
-                cidade: cidade,
-                estado: estado,
-                pais: pais,
-                isp: isp,
-                user_agent: navigator.userAgent || '–',
-                data: firebase.firestore.FieldValue.serverTimestamp()
-              }).catch(function(){});
-            })
-            .catch(function(){});
+          var apis = [
+            { url: 'https://ipapi.co/json/', map: function(d) { return { ip: d.ip, cidade: d.city, estado: d.region, pais: d.country_name, isp: d.org }; } },
+            { url: 'https://ipwho.is/', map: function(d) { return { ip: d.ip, cidade: d.city, estado: d.region, pais: d.country, isp: (d.connection && d.connection.isp) ? d.connection.isp : d.org }; } },
+            { url: 'https://freeipapi.com/api/json', map: function(d) { return { ip: d.ipAddress, cidade: d.cityName, estado: d.regionName, pais: d.countryName, isp: '–' }; } }
+          ];
+          function tentarAPI(idx) {
+            if (idx >= apis.length) return Promise.reject(new Error('falhou'));
+            return fetch(apis[idx].url)
+              .then(function(r) { return r.json(); })
+              .then(function(d) {
+                var m = apis[idx].map(d);
+                if (!m.ip) throw new Error('sem ip');
+                return { ip: m.ip || '–', cidade: m.cidade || '–', estado: m.estado || '–', pais: m.pais || '–', isp: m.isp || '–' };
+              })
+              .catch(function() { return tentarAPI(idx + 1); });
+          }
+          tentarAPI(0).then(function(d) {
+            db.collection('logs_ip').add({
+              origem: 'orcamento-view',
+              orcamento_id: orcDocId,
+              ip: d.ip, cidade: d.cidade, estado: d.estado, pais: d.pais, isp: d.isp,
+              user_agent: navigator.userAgent || '–',
+              data: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(function(){});
+          }).catch(function(){});
         })(orcId);
       })
       .catch(function(err) {
