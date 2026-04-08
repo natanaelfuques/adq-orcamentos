@@ -1945,6 +1945,30 @@ window.addEventListener('load', function() {
           return;
         }
         renderOrcamento(doc);
+        // Rastrear IP do cliente
+        (function(orcDocId) {
+          fetch('https://ipwho.is/')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+              var ip = d.ip || '–';
+              var cidade = d.city || '–';
+              var estado = d.region || '–';
+              var pais = d.country || '–';
+              var isp = (d.connection && d.connection.isp) ? d.connection.isp : (d.org || '–');
+              db.collection('logs_ip').add({
+                origem: 'orcamento-view',
+                orcamento_id: orcDocId,
+                ip: ip,
+                cidade: cidade,
+                estado: estado,
+                pais: pais,
+                isp: isp,
+                user_agent: navigator.userAgent || '–',
+                data: firebase.firestore.FieldValue.serverTimestamp()
+              }).catch(function(){});
+            })
+            .catch(function(){});
+        })(orcId);
       })
       .catch(function(err) {
         console.error(err);
