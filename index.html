@@ -6995,6 +6995,7 @@ function handleNotasClick(e) {
           ev_desmontagem: '',
           ev_resp:        '',
           cli_nome:       '',
+          val_total:      nota.val_total || '',
           servicos:       itens,
           itens_tipo:     itensTipo,
           itens_ok:       {},
@@ -7068,6 +7069,11 @@ function _abrirModalEditarNota(nota) {
       '<input id="nota-edit-local" type="text" value="' + escHtml(nota.ev_local || '') + '" placeholder="Ex: Salão Espaço Nobre" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
     '</div>' +
 
+    '<div style="margin-bottom:14px">' +
+      '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Valor</label>' +
+      '<input id="nota-edit-valor" type="text" inputmode="numeric" value="' + escHtml(nota.val_total || '') + '" placeholder="Ex: 2.500,00" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+    '</div>' +
+
     '<div style="margin-bottom:12px">' +
       '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Itens</label>' +
       '<div id="nota-edit-itens-lista">' + itensHtml + '</div>' +
@@ -7121,6 +7127,7 @@ function _salvarEdicaoNota(id) {
   var evLocal  = (document.getElementById('nota-edit-local')  || {}).value || '';
   var evInicio = (document.getElementById('nota-edit-inicio') || {}).value || '';
   var evFim    = (document.getElementById('nota-edit-fim')    || {}).value || '';
+  var valTotal = (document.getElementById('nota-edit-valor')  || {}).value || '';
   // Coletar itens da lista
   var inputs = document.querySelectorAll('#nota-edit-itens-lista .nota-edit-item-input');
   var itens = [];
@@ -7133,7 +7140,8 @@ function _salvarEdicaoNota(id) {
     ev_data:  evData.trim(),
     ev_local:  evLocal.trim(),
     ev_inicio: evInicio.trim(),
-    ev_fim:    evFim.trim()
+    ev_fim:    evFim.trim(),
+    val_total: valTotal.trim()
   };
   db.collection('notas').doc(id).update(updateData).then(function() {
     var modal = document.getElementById('nota-edit-modal');
@@ -7147,6 +7155,7 @@ function _salvarEdicaoNota(id) {
       nota.ev_local  = updateData.ev_local;
       nota.ev_inicio = updateData.ev_inicio;
       nota.ev_fim    = updateData.ev_fim;
+      nota.val_total = updateData.val_total;
     }
     var painelId = nota && nota.painel_id ? nota.painel_id : null;
     if (painelId && db) {
@@ -7159,6 +7168,7 @@ function _salvarEdicaoNota(id) {
         ev_data:    evData.trim(),
         ev_inicio:  evInicio.trim(),
         ev_fim:     evFim.trim(),
+        val_total:  valTotal.trim(),
         servicos:   itens,
         itens_tipo: itensTipoUpd
       }).catch(function(e) { console.warn('Erro ao atualizar painel:', e); });
@@ -8153,20 +8163,8 @@ function _metaMesNav(dir) {
   if (_metaMesAtual > 11) { _metaMesAtual = 0; _metaAnoAtual++; }
   if (_metaMesAtual < 0) { _metaMesAtual = 11; _metaAnoAtual--; }
   _atualizarMetaLabel();
-  // Recarregar do Firestore para garantir dados frescos
-  if (db) {
-    db.collection('config').doc('metas').get().then(function(doc) {
-      if (doc.exists) _metasAllData = doc.data();
-      _carregarMetasDoMes();
-      _calcularProgressoMetas();
-    }).catch(function() {
-      _carregarMetasDoMes();
-      _calcularProgressoMetas();
-    });
-  } else {
-    _carregarMetasDoMes();
-    _calcularProgressoMetas();
-  }
+  _carregarMetasDoMes();
+  _calcularProgressoMetas();
 }
 
 function _atualizarMetaLabel() {
@@ -8274,41 +8272,32 @@ function _calcularProgressoMetas() {
   var inicioAno = new Date(_metaAnoAtual, 0, 1);
   var fimAno = new Date(_metaAnoAtual, 11, 31, 23, 59, 59);
 
-  // Atualizar label do ano
   var anoEl = document.getElementById('meta-anual-ano');
   if (anoEl) anoEl.textContent = 'Acumulado do ano ' + _metaAnoAtual;
 
-  // Buscar todos os contratos e filtrar localmente
-  // (pois contratos antigos usam 'aprovado: true', novos usam 'status_contrato: assinado')
-  db.collection('contratos')
+  // Buscar todos os eventos no painel (contratos assinados + eventos rápidos)
+  db.collection('eventos_campo')
     .get()
     .then(function(snap) {
       var totalReceita = 0;
       var totalEventos = 0;
       var totalAnual = 0;
-      var receitaPorMes = {}; // chave: "YYYY-MM"
+      var receitaPorMes = {};
 
       snap.forEach(function(doc) {
         var d = doc.data();
-        // Filtrar: só contratos assinados (novo campo ou legado)
-        var isAssinado = (d.status_contrato === 'assinado') || (d.aprovado === true);
-        if (!isAssinado) return;
-
         var dataRef = _parseDataContrato(d);
         if (!dataRef) return;
 
         var valor = _extrairValor(d);
 
-        // Acumular por mês para sequência
         var chave = dataRef.getFullYear() + '-' + String(dataRef.getMonth() + 1).padStart(2, '0');
         receitaPorMes[chave] = (receitaPorMes[chave] || 0) + valor;
 
-        // Mês selecionado
         if (dataRef >= inicioMes && dataRef <= fimMes) {
           totalEventos++;
           totalReceita += valor;
         }
-        // Ano selecionado
         if (dataRef >= inicioAno && dataRef <= fimAno) {
           totalAnual += valor;
         }
@@ -8322,7 +8311,6 @@ function _calcularProgressoMetas() {
       _renderProgressoMeta('anual', totalAnual, _metasConfig.anual, true);
       _calcularSequenciaMetas(receitaPorMes);
 
-      // Checklist: buscar eventos_campo do mês, depois verificar conquistas com tudo
       _calcularChecklist(inicioMes, fimMes, function(checklistOk) {
         _verificarConquistas(totalReceita, totalEventos, ticketMedio, totalAnual, checklistOk);
       });
@@ -8595,16 +8583,13 @@ function _verificarMetasAoAbrir(forceShow) {
     var inicioAno = new Date(hoje.getFullYear(), 0, 1);
     var fimAno = new Date(hoje.getFullYear(), 11, 31, 23, 59, 59);
 
-    db.collection('contratos').get().then(function(snap) {
+    db.collection('eventos_campo').get().then(function(snap) {
       var receita = 0;
       var eventos = 0;
       var receitaAnual = 0;
 
       snap.forEach(function(doc) {
         var d = doc.data();
-        var isAssinado = (d.status_contrato === 'assinado') || (d.aprovado === true);
-        if (!isAssinado) return;
-
         var dataRef = _parseDataContrato(d);
         if (!dataRef) return;
         var valor = _extrairValor(d);
@@ -8691,7 +8676,6 @@ function _mostrarNotificacaoMeta(conquistas) {
   var existing = document.getElementById('meta-notif-banner');
   if (existing) existing.remove();
 
-  // Guardar conquistas para o modal expandido
   window._metaConquistasAtual = conquistas;
 
   var banner = document.createElement('div');
@@ -8710,29 +8694,21 @@ function _mostrarNotificacaoMeta(conquistas) {
     '</div>' +
     '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="2,4 6,8 10,4"/></svg>';
 
-  // Toque abre modal expandido
-  var _bannerTouchX = 0, _bannerTouchY = 0;
+  // Toque abre modal
+  var _bTouchX = 0, _bTouchY = 0;
   banner.addEventListener('touchstart', function(e) {
-    _bannerTouchX = e.touches[0].clientX;
-    _bannerTouchY = e.touches[0].clientY;
+    _bTouchX = e.touches[0].clientX; _bTouchY = e.touches[0].clientY;
   }, { passive: true });
   banner.addEventListener('touchend', function(e) {
-    var dx = Math.abs(e.changedTouches[0].clientX - _bannerTouchX);
-    var dy = Math.abs(e.changedTouches[0].clientY - _bannerTouchY);
+    var dx = Math.abs(e.changedTouches[0].clientX - _bTouchX);
+    var dy = Math.abs(e.changedTouches[0].clientY - _bTouchY);
     if (dx < 15 && dy < 15) {
-      // Toque (não swipe) — abrir modal
       e.preventDefault();
       _fecharBannerMeta(banner);
       setTimeout(function() { _abrirModalConquistas(); }, 300);
     }
   });
-  banner.addEventListener('click', function(e) {
-    // Desktop fallback
-    if (e.target.closest && e.target.closest('svg[viewBox="0 0 12 12"]')) {
-      // X close button area
-      _fecharBannerMeta(banner);
-      return;
-    }
+  banner.addEventListener('click', function() {
     _fecharBannerMeta(banner);
     setTimeout(function() { _abrirModalConquistas(); }, 300);
   });
@@ -8740,8 +8716,7 @@ function _mostrarNotificacaoMeta(conquistas) {
   // Swipe horizontal para dispensar
   var _swStartX = 0, _swStartY = 0, _swiping = false;
   banner.addEventListener('touchstart', function(e) {
-    _swStartX = e.touches[0].clientX;
-    _swStartY = e.touches[0].clientY;
+    _swStartX = e.touches[0].clientX; _swStartY = e.touches[0].clientY;
     _swiping = false;
     banner.style.transition = 'none';
   }, { passive: true });
@@ -8756,14 +8731,13 @@ function _mostrarNotificacaoMeta(conquistas) {
     }
   }, { passive: true });
   banner.addEventListener('touchend', function(e) {
+    if (!_swiping) return;
     var dx = e.changedTouches[0].clientX - _swStartX;
     banner.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
     if (Math.abs(dx) > 80) {
       banner.style.transform = 'translateX(' + (dx > 0 ? '120%' : '-120%') + ')';
       banner.style.opacity = '0';
       setTimeout(function() { if (banner.parentNode) banner.remove(); }, 300);
-    } else if (!_swiping) {
-      // Handled by touchend above
     } else {
       banner.style.transform = 'translateY(0)';
       banner.style.opacity = '1';
@@ -8772,11 +8746,7 @@ function _mostrarNotificacaoMeta(conquistas) {
 
   document.body.appendChild(banner);
   setTimeout(function() { banner.style.transform = 'translateY(0)'; }, 100);
-
-  // Auto dismiss after 10 seconds
-  setTimeout(function() {
-    if (banner.parentNode) _fecharBannerMeta(banner);
-  }, 10000);
+  setTimeout(function() { if (banner.parentNode) _fecharBannerMeta(banner); }, 10000);
 }
 
 function _fecharBannerMeta(banner) {
@@ -8789,21 +8759,17 @@ function _fecharBannerMeta(banner) {
 
 function _abrirModalConquistas() {
   var conquistas = window._metaConquistasAtual || [];
-  if (!conquistas.length) return;
+  if (!conquistas.length || !db) return;
 
   var old = document.getElementById('modal-conquistas');
   if (old) old.remove();
 
-  // Buscar dados atuais para exibir barras de progresso
   var hoje = new Date();
   var inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   var fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59);
   var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
-  if (!db) return;
-
-  // Carregar metas do mês atual
   var chaveMes = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+
   db.collection('config').doc('metas').get().then(function(docMeta) {
     var cfg = docMeta.exists ? docMeta.data() : {};
     var mesDados = cfg[chaveMes] || {};
@@ -8811,12 +8777,10 @@ function _abrirModalConquistas() {
     var metaE = parseInt(mesDados.eventos) || 0;
     var metaT = parseFloat(mesDados.ticket) || 0;
 
-    db.collection('contratos').get().then(function(snap) {
+    db.collection('eventos_campo').get().then(function(snap) {
       var receita = 0, eventos = 0;
       snap.forEach(function(doc) {
         var d = doc.data();
-        var isAssinado = (d.status_contrato === 'assinado') || (d.aprovado === true);
-        if (!isAssinado) return;
         var dataRef = _parseDataContrato(d);
         if (!dataRef || dataRef < inicioMes || dataRef > fimMes) return;
         eventos++;
@@ -8824,7 +8788,6 @@ function _abrirModalConquistas() {
       });
       var ticket = eventos > 0 ? receita / eventos : 0;
 
-      // Montar barras
       var barrasHtml = '';
       var itens = [
         { nome: 'Receita', atual: receita, meta: metaR, cor: '#C8A94A', moeda: true },
@@ -8842,7 +8805,7 @@ function _abrirModalConquistas() {
 
         barrasHtml += '<div style="margin-bottom:14px">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">' +
-            '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:' + (bateu ? '#25D366' : '#C8A94A') + ';text-transform:uppercase;letter-spacing:0.08em">' + item.nome + (bateu ? ' ✓' : '') + '</span>' +
+            '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:' + (bateu ? '#25D366' : '#C8A94A') + ';text-transform:uppercase;letter-spacing:0.08em">' + item.nome + '</span>' +
             '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:' + (bateu ? '#25D366' : '#555') + '">' + pct.toFixed(0) + '%</span>' +
           '</div>' +
           '<div style="background:#1a1a1a;border-radius:4px;height:18px;overflow:hidden;position:relative">' +
@@ -8852,7 +8815,6 @@ function _abrirModalConquistas() {
         '</div>';
       });
 
-      // Modal
       var modal = document.createElement('div');
       modal.id = 'modal-conquistas';
       modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity 0.3s ease';
@@ -8872,8 +8834,6 @@ function _abrirModalConquistas() {
       modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
       document.body.style.overflow = 'hidden';
       document.body.appendChild(modal);
-
-      // Animate in
       setTimeout(function() {
         modal.style.opacity = '1';
         var inner = modal.firstElementChild;
