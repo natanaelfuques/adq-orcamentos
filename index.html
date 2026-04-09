@@ -8116,14 +8116,44 @@ function _carregarHistoricoIP() {
 
 var _metaMesAtual = new Date().getMonth(); // 0-11
 var _metaAnoAtual = new Date().getFullYear();
-var _metasConfig = { receita: 0, eventos: 0, ticket: 0, anual: 0 }; // valores-alvo
-var _metaNotificado = {}; // controle p/ não repetir banner no mesmo mês
+var _metasConfig = { receita: 0, eventos: 0, ticket: 0, anual: 0 }; // metas do mês selecionado
+var _metasAllData = {}; // todos os dados do Firestore (cache)
+var _metaNotificado = {};
+
+function _metaChaveMes(mes, ano) {
+  return ano + '-' + String(mes + 1).padStart(2, '0');
+}
+
+function _metaChaveAno(ano) {
+  return 'anual_' + ano;
+}
+
+function _carregarMetasDoMes() {
+  var chave = _metaChaveMes(_metaMesAtual, _metaAnoAtual);
+  var mesDados = _metasAllData[chave] || {};
+  var anualDados = _metasAllData[_metaChaveAno(_metaAnoAtual)];
+
+  _metasConfig.receita = parseFloat(mesDados.receita) || 0;
+  _metasConfig.eventos = parseInt(mesDados.eventos) || 0;
+  _metasConfig.ticket = parseFloat(mesDados.ticket) || 0;
+  _metasConfig.anual = parseFloat(anualDados) || 0;
+
+  var inpR = document.getElementById('meta-receita-input');
+  var inpE = document.getElementById('meta-eventos-input');
+  var inpT = document.getElementById('meta-ticket-input');
+  var inpA = document.getElementById('meta-anual-input');
+  if (inpR) inpR.value = _metasConfig.receita > 0 ? _metasConfig.receita : '';
+  if (inpE) inpE.value = _metasConfig.eventos > 0 ? _metasConfig.eventos : '';
+  if (inpT) inpT.value = _metasConfig.ticket > 0 ? _metasConfig.ticket : '';
+  if (inpA) inpA.value = _metasConfig.anual > 0 ? _metasConfig.anual : '';
+}
 
 function _metaMesNav(dir) {
   _metaMesAtual += dir;
   if (_metaMesAtual > 11) { _metaMesAtual = 0; _metaAnoAtual++; }
   if (_metaMesAtual < 0) { _metaMesAtual = 11; _metaAnoAtual--; }
   _atualizarMetaLabel();
+  _carregarMetasDoMes();
   _calcularProgressoMetas();
 }
 
@@ -8139,19 +8169,32 @@ function _initAbaMetas() {
     db.collection('config').doc('metas').get().then(function(doc) {
       if (doc.exists) {
         var d = doc.data();
-        _metasConfig.receita = parseFloat(d.receita) || 0;
-        _metasConfig.eventos = parseInt(d.eventos) || 0;
-        _metasConfig.ticket = parseFloat(d.ticket) || 0;
-        _metasConfig.anual = parseFloat(d.anual) || 0;
-        var inpR = document.getElementById('meta-receita-input');
-        var inpE = document.getElementById('meta-eventos-input');
-        var inpT = document.getElementById('meta-ticket-input');
-        var inpA = document.getElementById('meta-anual-input');
-        if (inpR && _metasConfig.receita > 0) inpR.value = _metasConfig.receita;
-        if (inpE && _metasConfig.eventos > 0) inpE.value = _metasConfig.eventos;
-        if (inpT && _metasConfig.ticket > 0) inpT.value = _metasConfig.ticket;
-        if (inpA && _metasConfig.anual > 0) inpA.value = _metasConfig.anual;
+        _metasAllData = d;
+        // Migração: se existem campos antigos (receita, eventos, ticket, anual no root),
+        // mover para o mês atual e limpar
+        if (d.receita !== undefined && typeof d.receita === 'number') {
+          var chaveMigr = _metaChaveMes(new Date().getMonth(), new Date().getFullYear());
+          if (!_metasAllData[chaveMigr]) {
+            _metasAllData[chaveMigr] = { receita: d.receita, eventos: d.eventos || 0, ticket: d.ticket || 0 };
+          }
+          if (d.anual !== undefined) {
+            _metasAllData[_metaChaveAno(new Date().getFullYear())] = d.anual;
+          }
+          // Salvar migração e limpar campos antigos
+          var migUpd = {};
+          migUpd[chaveMigr] = _metasAllData[chaveMigr];
+          if (d.anual) migUpd[_metaChaveAno(new Date().getFullYear())] = d.anual;
+          db.collection('config').doc('metas').set(migUpd, { merge: true }).then(function() {
+            // Remover campos antigos
+            var del = {};
+            ['receita','eventos','ticket','anual'].forEach(function(k) {
+              if (d[k] !== undefined) del[k] = firebase.firestore.FieldValue.delete();
+            });
+            if (Object.keys(del).length) db.collection('config').doc('metas').update(del).catch(function(){});
+          }).catch(function(){});
+        }
       }
+      _carregarMetasDoMes();
       _calcularProgressoMetas();
     }).catch(function() { _calcularProgressoMetas(); });
   } else {
@@ -8163,7 +8206,6 @@ function _salvarMeta(tipo) {
   var inp = document.getElementById('meta-' + tipo + '-input');
   if (!inp) return;
   var raw = inp.value.replace(/[^\d.,]/g, '');
-  // Mesmo parse BR do _extrairValor
   if (raw.indexOf(',') !== -1) {
     raw = raw.replace(/\./g, '').replace(',', '.');
   } else if ((raw.match(/\./g) || []).length > 1) {
@@ -8175,11 +8217,24 @@ function _salvarMeta(tipo) {
   var val = parseFloat(raw) || 0;
   if (val <= 0) { _metaStatus('Valor inválido.', '#e55'); return; }
   _metasConfig[tipo] = val;
-  inp.value = val; // mostrar valor limpo
+  inp.value = val;
   _metaStatus('Salvando...', '#C8A94A');
+
   if (db) {
     var upd = {};
-    upd[tipo] = val;
+    if (tipo === 'anual') {
+      // Anual: salva por ano
+      var chaveAno = _metaChaveAno(_metaAnoAtual);
+      upd[chaveAno] = val;
+      _metasAllData[chaveAno] = val;
+    } else {
+      // Receita, eventos, ticket: salva por mês
+      var chaveMes = _metaChaveMes(_metaMesAtual, _metaAnoAtual);
+      var mesDados = _metasAllData[chaveMes] || {};
+      mesDados[tipo] = val;
+      _metasAllData[chaveMes] = mesDados;
+      upd[chaveMes] = mesDados;
+    }
     db.collection('config').doc('metas').set(upd, { merge: true })
       .then(function() {
         _metaStatus('✓ Meta salva!', '#25D366');
@@ -8316,22 +8371,31 @@ function _calcularSequenciaMetas(receitaPorMes) {
   var numEl = document.getElementById('meta-sequencia-num');
   var labelEl = document.getElementById('meta-sequencia-label');
   var detalheEl = document.getElementById('meta-sequencia-detalhe');
-  if (!numEl || !_metasConfig.receita) {
+
+  // Verificar se existe alguma meta de receita definida
+  var temAlgumaMeta = false;
+  Object.keys(_metasAllData).forEach(function(k) {
+    if (k.match(/^\d{4}-\d{2}$/) && _metasAllData[k] && _metasAllData[k].receita > 0) temAlgumaMeta = true;
+  });
+
+  if (!numEl || !temAlgumaMeta) {
     if (numEl) numEl.textContent = '–';
-    if (labelEl) labelEl.textContent = 'defina a meta de receita';
+    if (labelEl) labelEl.textContent = 'defina metas de receita';
     return;
   }
 
-  // Contar meses consecutivos batendo meta, de trás pra frente a partir do mês atual
   var hoje = new Date();
   var seq = 0;
   var m = hoje.getMonth();
   var a = hoje.getFullYear();
 
-  for (var i = 0; i < 36; i++) { // até 3 anos pra trás
+  for (var i = 0; i < 36; i++) {
     var chave = a + '-' + String(m + 1).padStart(2, '0');
+    var mesDados = _metasAllData[chave] || {};
+    var metaMes = parseFloat(mesDados.receita) || 0;
+    if (metaMes <= 0) break; // mês sem meta definida interrompe a sequência
     var rec = receitaPorMes[chave] || 0;
-    if (rec >= _metasConfig.receita) {
+    if (rec >= metaMes) {
       seq++;
     } else {
       break;
@@ -8504,14 +8568,16 @@ function _verificarMetasAoAbrir(forceShow) {
 
   db.collection('config').doc('metas').get().then(function(docMeta) {
     var cfg = docMeta.exists ? docMeta.data() : {};
-    var metaReceita = parseFloat(cfg.receita) || 0;
-    var metaEventos = parseInt(cfg.eventos) || 0;
-    var metaTicket = parseFloat(cfg.ticket) || 0;
-    var metaAnual = parseFloat(cfg.anual) || 0;
+    var hoje = new Date();
+    var chaveMes = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+    var mesDados = cfg[chaveMes] || {};
+    var metaReceita = parseFloat(mesDados.receita) || 0;
+    var metaEventos = parseInt(mesDados.eventos) || 0;
+    var metaTicket = parseFloat(mesDados.ticket) || 0;
+    var metaAnual = parseFloat(cfg['anual_' + hoje.getFullYear()]) || 0;
 
     if (!metaReceita && !metaEventos && !metaTicket && !metaAnual) return;
 
-    var hoje = new Date();
     var inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     var fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59);
     var inicioAno = new Date(hoje.getFullYear(), 0, 1);
