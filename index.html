@@ -6661,10 +6661,14 @@ function renderNotas() {
     var _criadorNota = doc.criador || '';
     var _classeBordaNota = _criadorNota === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorNota === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
     var card = '<div class="nota-card' + (semTitulo ? ' nota-sem-titulo' : '') + _classeBordaNota + '">';
+    var _valBadge = doc.val_total ? '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#C8A94A;white-space:nowrap;flex-shrink:0">R$ ' + escHtml(doc.val_total) + '</span>' : '';
     if (semTitulo) {
       card += '<div class="nota-card-titulo nota-card-titulo--vazio" aria-hidden="true"></div>';
     } else {
-      card += '<div class="nota-card-titulo">' + titulo + '</div>';
+      card += '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">';
+      card += '<div class="nota-card-titulo" style="flex:1;min-width:0">' + titulo + '</div>';
+      card += _valBadge;
+      card += '</div>';
     }
     // Lista de itens estilo painel
     if (itens.length) {
@@ -6680,8 +6684,6 @@ function renderNotas() {
       card += '</div>';
     }
     if (dataFmt) card += '<div class="nota-card-meta">' + dataFmt + '</div>';
-    var valNotaDisplay = doc.val_total ? '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;margin-top:4px">R$ ' + escHtml(doc.val_total) + '</div>' : '';
-    card += valNotaDisplay;
     var noPainel = !!(doc.no_painel);
     var calNotaClass = doc.calendar_adicionado ? 'btn-salvo btn-calendar btn-calendar-ok' : 'btn-salvo btn-calendar';
     card += '<div class="salvo-card-actions">';
