@@ -5236,6 +5236,7 @@ function coletarDadosContrato() {
     });
   }
   var pgtoRadio = document.querySelector('input[name="pgto"]:checked');
+  var nParcRadio = document.querySelector('input[name="nparcelas"]:checked');
   return {
     _tipo: 'contrato',
     cli_nome:  get('cli_nome'),
@@ -5252,6 +5253,7 @@ function coletarDadosContrato() {
     ev_fim:    get('ev_fim'),
     val_total: get('val_total'),
     pgto_tipo: pgtoRadio ? pgtoRadio.value : 'vista',
+    nparcelas: nParcRadio ? nParcRadio.value : '',
     pgto_custom: get('pgto_custom'),
     data_entrada: get('data_entrada'),
     servicos:  servicos,
