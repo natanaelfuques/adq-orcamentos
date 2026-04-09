@@ -7733,12 +7733,30 @@ function abrirModalConfiguracoes() {
       </div>
       <!-- Abas -->
       <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">
-        <button id="cfg-tab-metas" onclick="_cfgAba(0)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Metas</button>
-        <button id="cfg-tab-config" onclick="_cfgAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">IP</button>
+        <button id="cfg-tab-config" onclick="_cfgAba(0)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">IP</button>
+        <button id="cfg-tab-metas" onclick="_cfgAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Metas</button>
         <button id="cfg-tab-apis" onclick="_cfgAba(2)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">APIs</button>
       </div>
       <!-- Slider de abas -->
       <div id="cfg-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">
+      <!-- Aba IP -->
+      <div id="cfg-panel-config" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
+        <!-- Item: IP do Cliente -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="margin-bottom:10px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">IP do Cliente</div>
+            <div style="font-size:0.72rem;color:#666">Rastreia o IP de cada acesso.</div>
+          </div>
+          <div id="cfg-ip-badge" style="display:none"></div>
+          <button onclick="_rastrearIPAgora()" style="width:100%;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center;gap:6px" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 1,1 4,1"/><polyline points="13,10 13,13 10,13"/><path d="M1,1 C3,0 10,0 12,5"/><path d="M13,13 C11,14 4,14 2,9"/></svg> Verificar agora</button>
+          <div id="cfg-ip-resultado" style="display:none;margin-top:12px;padding:12px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;font-size:0.72rem;line-height:2;color:#ccc;word-break:break-all"></div>
+          <div style="margin-top:12px">
+            <div style="font-size:0.68rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Últimos acessos registrados</div>
+            <div id="cfg-ip-historico" style="font-size:0.72rem;color:#666;font-style:italic">Carregando...</div>
+          </div>
+        </div>
+        <!-- Mais configurações futuras aqui -->
+      </div>
       <!-- Aba Metas -->
       <div id="cfg-panel-metas" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
 
@@ -7831,19 +7849,6 @@ function abrirModalConfiguracoes() {
           </div>
         </div>
 
-        <!-- Checklist 100% -->
-        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Checklist Completo</div>
-            <div id="meta-checklist-pct" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#555"></div>
-          </div>
-          <div style="font-size:0.68rem;color:#555;margin-bottom:10px">Eventos do mês com todos os itens marcados</div>
-          <div style="background:#1a1a1a;border-radius:4px;height:22px;overflow:hidden;position:relative;margin-bottom:4px">
-            <div id="meta-checklist-bar" style="height:100%;background:linear-gradient(90deg,#25D366,#30e876);border-radius:4px;transition:width 0.6s ease;width:0%"></div>
-            <div id="meta-checklist-valor" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)"></div>
-          </div>
-        </div>
-
         <!-- Sequência de meses -->
         <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Sequência de Metas</div>
@@ -7857,27 +7862,22 @@ function abrirModalConfiguracoes() {
           </div>
         </div>
 
+        <!-- Checklist 100% -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Checklist Completo</div>
+            <div id="meta-checklist-pct" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#555"></div>
+          </div>
+          <div style="font-size:0.68rem;color:#555;margin-bottom:10px">Eventos do mês com todos os itens marcados</div>
+          <div style="background:#1a1a1a;border-radius:4px;height:22px;overflow:hidden;position:relative;margin-bottom:4px">
+            <div id="meta-checklist-bar" style="height:100%;background:linear-gradient(90deg,#25D366,#30e876);border-radius:4px;transition:width 0.6s ease;width:0%"></div>
+            <div id="meta-checklist-valor" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)"></div>
+          </div>
+        </div>
+
         <!-- Status -->
         <div id="meta-status" style="display:none;text-align:center;font-size:0.7rem;margin-top:4px"></div>
 
-      </div>
-      <!-- Aba IP -->
-      <div id="cfg-panel-config" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
-        <!-- Item: IP do Cliente -->
-        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
-          <div style="margin-bottom:10px">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">IP do Cliente</div>
-            <div style="font-size:0.72rem;color:#666">Rastreia o IP de cada acesso.</div>
-          </div>
-          <div id="cfg-ip-badge" style="display:none"></div>
-          <button onclick="_rastrearIPAgora()" style="width:100%;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center;gap:6px" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 1,1 4,1"/><polyline points="13,10 13,13 10,13"/><path d="M1,1 C3,0 10,0 12,5"/><path d="M13,13 C11,14 4,14 2,9"/></svg> Verificar agora</button>
-          <div id="cfg-ip-resultado" style="display:none;margin-top:12px;padding:12px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;font-size:0.72rem;line-height:2;color:#ccc;word-break:break-all"></div>
-          <div style="margin-top:12px">
-            <div style="font-size:0.68rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Últimos acessos registrados</div>
-            <div id="cfg-ip-historico" style="font-size:0.72rem;color:#666;font-style:italic">Carregando...</div>
-          </div>
-        </div>
-        <!-- Mais configurações futuras aqui -->
       </div>
       <!-- Aba APIs -->
       <div id="cfg-panel-apis" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
@@ -7950,7 +7950,7 @@ function abrirModalConfiguracoes() {
 }
 
 function _cfgAba(idx, fromScroll) {
-  var keys = ['metas','config','apis'];
+  var keys = ['config','metas','apis'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('cfg-tab-' + k);
     if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
