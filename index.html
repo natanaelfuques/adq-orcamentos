@@ -4782,7 +4782,7 @@ function handleSalvosClick(e) {
       .then(function() {
         // Verificar metas em tempo real quando contrato vira assinado
         if (novoStatus === 'assinado') {
-          setTimeout(function() { _verificarMetasAoAbrir(); }, 1000);
+          setTimeout(function() { _verificarMetasAoAbrir(true); }, 1000);
         }
       })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
@@ -6226,7 +6226,7 @@ function verificarAssinaturaAutentique(contratoId, btn) {
       btn.className = 'salvo-status btn-autentique-check assinado-aut';
       if (db) {
         db.collection('contratos').doc(contratoId).update({ status_contrato: 'assinado', aprovado: true })
-          .then(function() { adicionarAoPainel(contratoId); setTimeout(function() { _verificarMetasAoAbrir(); }, 1500); })
+          .then(function() { adicionarAoPainel(contratoId); setTimeout(function() { _verificarMetasAoAbrir(true); }, 1500); })
           .catch(function(e) { console.warn('[AdQ] Erro ao atualizar status:', e); });
         var statusBtn = document.querySelector('[data-action="toggle-aprovado-contrato"][data-id="' + contratoId + '"]');
         if (statusBtn && statusBtn.getAttribute('data-status') !== 'assinado') {
@@ -8361,10 +8361,21 @@ function _calcularChecklist(inicioMes, fimMes) {
       var ev = doc.data();
       var dataRef = null;
       if (ev.ev_data) {
-        var pts = ev.ev_data.split('-');
-        if (pts.length === 3) dataRef = new Date(pts[0], parseInt(pts[1]) - 1, pts[2]);
+        if (ev.ev_data.indexOf('-') !== -1) {
+          // YYYY-MM-DD
+          var pts = ev.ev_data.split('-');
+          if (pts.length === 3) dataRef = new Date(parseInt(pts[0]), parseInt(pts[1]) - 1, parseInt(pts[2]));
+        } else if (ev.ev_data.indexOf('/') !== -1) {
+          // DD/MM/YYYY
+          var pts2 = ev.ev_data.split('/');
+          if (pts2.length === 3) dataRef = new Date(parseInt(pts2[2]), parseInt(pts2[1]) - 1, parseInt(pts2[0]));
+        }
       }
-      if (!dataRef || dataRef < inicioMes || dataRef > fimMes) return;
+      if (!dataRef && ev.criadoEm && ev.criadoEm.toDate) {
+        dataRef = ev.criadoEm.toDate();
+      }
+      if (!dataRef || isNaN(dataRef.getTime())) return;
+      if (dataRef < inicioMes || dataRef > fimMes) return;
       if (!ev.servicos || !ev.servicos.length) return;
 
       totalEventosMes++;
@@ -8374,8 +8385,8 @@ function _calcularChecklist(inicioMes, fimMes) {
 
       for (var i = 0; i < ev.servicos.length; i++) {
         var isObs = ev.servicos[i].toLowerCase().indexOf('obs:') === 0 || ev.servicos[i].toLowerCase().indexOf('obs.') === 0;
-        if (isObs || removidos[i]) continue;
-        if (!itensOk[i]) { todosMarcados = false; break; }
+        if (isObs || removidos[i] || removidos[String(i)]) continue;
+        if (!itensOk[i] && !itensOk[String(i)]) { todosMarcados = false; break; }
       }
       if (todosMarcados) eventosCompletos++;
     });
@@ -8479,7 +8490,7 @@ function _verificarConquistas(receita, eventos, ticket, anual) {
 
 // ── NOTIFICAÇÃO AUTOMÁTICA DE METAS ──────────────────────────────────────────
 
-function _verificarMetasAoAbrir() {
+function _verificarMetasAoAbrir(forceShow) {
   if (!db) return;
 
   db.collection('config').doc('metas').get().then(function(docMeta) {
@@ -8529,12 +8540,22 @@ function _verificarMetasAoAbrir() {
       if (metaAnual > 0 && receitaAnual >= metaAnual) conquistas.push('Anual');
 
       if (conquistas.length > 0) {
-        // Chave identifica mês + quais metas batidas (para re-notificar quando nova meta é batida)
-        var chave = 'adq_meta_notif_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1);
-        var notifAnterior = parseInt(localStorage.getItem(chave)) || 0;
-        if (conquistas.length > notifAnterior) {
-          localStorage.setItem(chave, conquistas.length);
-          _mostrarNotificacaoMeta(conquistas);
+        if (forceShow) {
+          // Acionado por assinatura de contrato — sempre mostra se bateu nova meta
+          var chaveMes = 'adq_meta_notif_mes_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1);
+          var anteriorMes = parseInt(localStorage.getItem(chaveMes)) || 0;
+          if (conquistas.length > anteriorMes) {
+            localStorage.setItem(chaveMes, conquistas.length);
+            _mostrarNotificacaoMeta(conquistas);
+          }
+        } else {
+          // Login/abertura — mostra uma vez por dia
+          var chaveHoje = 'adq_meta_notif_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1) + '-' + hoje.getDate();
+          var anteriorHoje = parseInt(localStorage.getItem(chaveHoje)) || 0;
+          if (conquistas.length > anteriorHoje) {
+            localStorage.setItem(chaveHoje, conquistas.length);
+            _mostrarNotificacaoMeta(conquistas);
+          }
         }
       }
     }).catch(function() {});
