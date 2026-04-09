@@ -4779,6 +4779,12 @@ function handleSalvosClick(e) {
     var novoLabel = novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : 'Pendente';
     var novaClasse = novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : '';
     db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado })
+      .then(function() {
+        // Verificar metas em tempo real quando contrato vira assinado
+        if (novoStatus === 'assinado') {
+          setTimeout(function() { _verificarMetasAoAbrir(); }, 1000);
+        }
+      })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
     btn.textContent = novoLabel;
     btn.setAttribute('data-status', novoStatus);
@@ -6220,7 +6226,7 @@ function verificarAssinaturaAutentique(contratoId, btn) {
       btn.className = 'salvo-status btn-autentique-check assinado-aut';
       if (db) {
         db.collection('contratos').doc(contratoId).update({ status_contrato: 'assinado', aprovado: true })
-          .then(function() { adicionarAoPainel(contratoId); })
+          .then(function() { adicionarAoPainel(contratoId); setTimeout(function() { _verificarMetasAoAbrir(); }, 1500); })
           .catch(function(e) { console.warn('[AdQ] Erro ao atualizar status:', e); });
         var statusBtn = document.querySelector('[data-action="toggle-aprovado-contrato"][data-id="' + contratoId + '"]');
         if (statusBtn && statusBtn.getAttribute('data-status') !== 'assinado') {
@@ -8156,9 +8162,20 @@ function _initAbaMetas() {
 function _salvarMeta(tipo) {
   var inp = document.getElementById('meta-' + tipo + '-input');
   if (!inp) return;
-  var val = parseFloat(inp.value.replace(/[^\d.,]/g,'').replace(',','.')) || 0;
+  var raw = inp.value.replace(/[^\d.,]/g, '');
+  // Mesmo parse BR do _extrairValor
+  if (raw.indexOf(',') !== -1) {
+    raw = raw.replace(/\./g, '').replace(',', '.');
+  } else if ((raw.match(/\./g) || []).length > 1) {
+    raw = raw.replace(/\./g, '');
+  } else {
+    var parts = raw.split('.');
+    if (parts.length === 2 && parts[1].length === 3) raw = parts[0] + parts[1];
+  }
+  var val = parseFloat(raw) || 0;
   if (val <= 0) { _metaStatus('Valor inválido.', '#e55'); return; }
   _metasConfig[tipo] = val;
+  inp.value = val; // mostrar valor limpo
   _metaStatus('Salvando...', '#C8A94A');
   if (db) {
     var upd = {};
@@ -8276,9 +8293,22 @@ function _parseDataContrato(d) {
 
 function _extrairValor(d) {
   // Contratos salvam val_total, fallback total_geral e valor_total
-  var raw = d.val_total || d.total_geral || d.valor_total || '';
-  var valor = parseFloat(String(raw).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
-  return valor;
+  var raw = String(d.val_total || d.total_geral || d.valor_total || '');
+  raw = raw.replace(/[^\d.,]/g, '');
+  if (!raw) return 0;
+  if (raw.indexOf(',') !== -1) {
+    // Formato BR: ponto = milhar, vírgula = decimal (ex: "3.850,00" ou "600,00")
+    raw = raw.replace(/\./g, '').replace(',', '.');
+  } else if ((raw.match(/\./g) || []).length > 1) {
+    // Múltiplos pontos = separador de milhar (ex: "1.500.000")
+    raw = raw.replace(/\./g, '');
+  }
+  // Se tem um ponto e a parte decimal tem 3+ dígitos, é milhar (ex: "1.500" → 1500)
+  var parts = raw.split('.');
+  if (parts.length === 2 && parts[1].length === 3) {
+    raw = parts[0] + parts[1];
+  }
+  return parseFloat(raw) || 0;
 }
 
 function _calcularSequenciaMetas(receitaPorMes) {
@@ -8452,22 +8482,25 @@ function _verificarConquistas(receita, eventos, ticket, anual) {
 function _verificarMetasAoAbrir() {
   if (!db) return;
 
-  // Carregar config de metas
   db.collection('config').doc('metas').get().then(function(docMeta) {
     var cfg = docMeta.exists ? docMeta.data() : {};
     var metaReceita = parseFloat(cfg.receita) || 0;
     var metaEventos = parseInt(cfg.eventos) || 0;
     var metaTicket = parseFloat(cfg.ticket) || 0;
+    var metaAnual = parseFloat(cfg.anual) || 0;
 
-    if (!metaReceita && !metaEventos && !metaTicket) return; // nenhuma meta definida
+    if (!metaReceita && !metaEventos && !metaTicket && !metaAnual) return;
 
     var hoje = new Date();
     var inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     var fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59);
+    var inicioAno = new Date(hoje.getFullYear(), 0, 1);
+    var fimAno = new Date(hoje.getFullYear(), 11, 31, 23, 59, 59);
 
     db.collection('contratos').get().then(function(snap) {
       var receita = 0;
       var eventos = 0;
+      var receitaAnual = 0;
 
       snap.forEach(function(doc) {
         var d = doc.data();
@@ -8475,10 +8508,16 @@ function _verificarMetasAoAbrir() {
         if (!isAssinado) return;
 
         var dataRef = _parseDataContrato(d);
-        if (!dataRef || dataRef < inicioMes || dataRef > fimMes) return;
+        if (!dataRef) return;
+        var valor = _extrairValor(d);
 
-        eventos++;
-        receita += _extrairValor(d);
+        if (dataRef >= inicioMes && dataRef <= fimMes) {
+          eventos++;
+          receita += valor;
+        }
+        if (dataRef >= inicioAno && dataRef <= fimAno) {
+          receitaAnual += valor;
+        }
       });
 
       var ticket = eventos > 0 ? receita / eventos : 0;
@@ -8487,13 +8526,12 @@ function _verificarMetasAoAbrir() {
       if (metaReceita > 0 && receita >= metaReceita) conquistas.push('Receita');
       if (metaEventos > 0 && eventos >= metaEventos) conquistas.push('Eventos');
       if (metaTicket > 0 && ticket >= metaTicket) conquistas.push('Ticket Médio');
+      if (metaAnual > 0 && receitaAnual >= metaAnual) conquistas.push('Anual');
 
       if (conquistas.length > 0) {
-        // Verificar se já notificou neste mês (localStorage)
+        // Chave identifica mês + quais metas batidas (para re-notificar quando nova meta é batida)
         var chave = 'adq_meta_notif_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1);
-        var jaNotificou = localStorage.getItem(chave);
-        // Notificar se não notificou ou se bateu mais metas desde a última vez
-        var notifAnterior = parseInt(jaNotificou) || 0;
+        var notifAnterior = parseInt(localStorage.getItem(chave)) || 0;
         if (conquistas.length > notifAnterior) {
           localStorage.setItem(chave, conquistas.length);
           _mostrarNotificacaoMeta(conquistas);
