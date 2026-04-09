@@ -7025,6 +7025,12 @@ function _obsInputColor(inp) {
   inp.style.color = (v.indexOf('obs:') === 0 || v.indexOf('obs.') === 0) ? '#C8A94A' : '#eee';
 }
 
+function _formatarValorNota(inp) {
+  if (!inp || !inp.value.trim()) return;
+  var num = parseBRL(inp.value);
+  if (num > 0) inp.value = formatBRL(num);
+}
+
 function _abrirModalEditarNota(nota) {
   var old = document.getElementById('nota-edit-modal');
   if (old) old.remove();
@@ -7075,7 +7081,7 @@ function _abrirModalEditarNota(nota) {
       '</div>' +
       '<div style="width:110px;flex-shrink:0">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Valor</label>' +
-        '<input id="nota-edit-valor" type="text" inputmode="numeric" value="' + escHtml(nota.val_total || '') + '" placeholder="R$ 0,00" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '<input id="nota-edit-valor" type="text" inputmode="numeric" value="' + (nota.val_total ? escHtml(formatBRL(parseBRL(nota.val_total))) : '') + '" placeholder="R$ 0,00" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\';_formatarValorNota(this)">' +
       '</div>' +
     '</div>' +
 
@@ -7133,6 +7139,11 @@ function _salvarEdicaoNota(id) {
   var evInicio = (document.getElementById('nota-edit-inicio') || {}).value || '';
   var evFim    = (document.getElementById('nota-edit-fim')    || {}).value || '';
   var valTotal = (document.getElementById('nota-edit-valor')  || {}).value || '';
+  // Padronizar formato: "600" → "600,00"
+  if (valTotal.trim()) {
+    var valNum = parseBRL(valTotal);
+    valTotal = valNum > 0 ? formatBRL(valNum) : '';
+  }
   // Coletar itens da lista
   var inputs = document.querySelectorAll('#nota-edit-itens-lista .nota-edit-item-input');
   var itens = [];
