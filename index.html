@@ -8254,10 +8254,11 @@ function _calcularProgressoMetas() {
       _renderProgressoMeta('ticket', ticketMedio, _metasConfig.ticket, true);
       _renderProgressoMeta('anual', totalAnual, _metasConfig.anual, true);
       _calcularSequenciaMetas(receitaPorMes);
-      _verificarConquistas(totalReceita, totalEventos, ticketMedio, totalAnual);
 
-      // Checklist: buscar eventos_campo do mês
-      _calcularChecklist(inicioMes, fimMes);
+      // Checklist: buscar eventos_campo do mês, depois verificar conquistas com tudo
+      _calcularChecklist(inicioMes, fimMes, function(checklistOk) {
+        _verificarConquistas(totalReceita, totalEventos, ticketMedio, totalAnual, checklistOk);
+      });
     })
     .catch(function(e) {
       console.warn('Erro ao calcular metas:', e);
@@ -8350,8 +8351,8 @@ function _calcularSequenciaMetas(receitaPorMes) {
   }
 }
 
-function _calcularChecklist(inicioMes, fimMes) {
-  if (!db) return;
+function _calcularChecklist(inicioMes, fimMes, callback) {
+  if (!db) { if (callback) callback(false); return; }
 
   db.collection('eventos_campo').get().then(function(snap) {
     var totalEventosMes = 0;
@@ -8362,11 +8363,9 @@ function _calcularChecklist(inicioMes, fimMes) {
       var dataRef = null;
       if (ev.ev_data) {
         if (ev.ev_data.indexOf('-') !== -1) {
-          // YYYY-MM-DD
           var pts = ev.ev_data.split('-');
           if (pts.length === 3) dataRef = new Date(parseInt(pts[0]), parseInt(pts[1]) - 1, parseInt(pts[2]));
         } else if (ev.ev_data.indexOf('/') !== -1) {
-          // DD/MM/YYYY
           var pts2 = ev.ev_data.split('/');
           if (pts2.length === 3) dataRef = new Date(parseInt(pts2[2]), parseInt(pts2[1]) - 1, parseInt(pts2[0]));
         }
@@ -8395,23 +8394,30 @@ function _calcularChecklist(inicioMes, fimMes) {
     var valor = document.getElementById('meta-checklist-valor');
     var pctEl = document.getElementById('meta-checklist-pct');
 
-    if (!bar || !valor) return;
+    var checklistCompleto = false;
+
+    if (!bar || !valor) {
+      if (callback) callback(false);
+      return;
+    }
 
     if (totalEventosMes === 0) {
       bar.style.width = '0%';
       valor.textContent = 'Sem eventos no mês';
       if (pctEl) pctEl.textContent = '';
-      return;
+    } else {
+      var pct = (eventosCompletos / totalEventosMes) * 100;
+      bar.style.width = pct.toFixed(1) + '%';
+      valor.textContent = eventosCompletos + ' / ' + totalEventosMes + ' eventos';
+      if (pctEl) {
+        pctEl.textContent = pct.toFixed(0) + '%';
+        pctEl.style.color = pct >= 100 ? '#25D366' : pct >= 70 ? '#C8A94A' : '#555';
+      }
+      checklistCompleto = (pct >= 100);
     }
 
-    var pct = (eventosCompletos / totalEventosMes) * 100;
-    bar.style.width = pct.toFixed(1) + '%';
-    valor.textContent = eventosCompletos + ' / ' + totalEventosMes + ' eventos';
-    if (pctEl) {
-      pctEl.textContent = pct.toFixed(0) + '%';
-      pctEl.style.color = pct >= 100 ? '#25D366' : pct >= 70 ? '#C8A94A' : '#555';
-    }
-  }).catch(function() {});
+    if (callback) callback(checklistCompleto);
+  }).catch(function() { if (callback) callback(false); });
 }
 
 function _renderProgressoMeta(tipo, atual, meta, isCurrency) {
@@ -8458,7 +8464,7 @@ function _formatarRS(v) {
   return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function _verificarConquistas(receita, eventos, ticket, anual) {
+function _verificarConquistas(receita, eventos, ticket, anual, checklistOk) {
   var banner = document.getElementById('meta-banner-conquista');
   var texto = document.getElementById('meta-banner-texto');
   if (!banner || !texto) return;
@@ -8476,6 +8482,9 @@ function _verificarConquistas(receita, eventos, ticket, anual) {
   }
   if (_metasConfig.anual > 0 && anual >= _metasConfig.anual) {
     msgs.push('Faturamento anual');
+  }
+  if (checklistOk) {
+    msgs.push('Checklist completo');
   }
 
   if (msgs.length > 0) {
@@ -8539,27 +8548,65 @@ function _verificarMetasAoAbrir(forceShow) {
       if (metaTicket > 0 && ticket >= metaTicket) conquistas.push('Ticket Médio');
       if (metaAnual > 0 && receitaAnual >= metaAnual) conquistas.push('Anual');
 
-      if (conquistas.length > 0) {
-        if (forceShow) {
-          // Acionado por assinatura de contrato — sempre mostra se bateu nova meta
-          var chaveMes = 'adq_meta_notif_mes_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1);
-          var anteriorMes = parseInt(localStorage.getItem(chaveMes)) || 0;
-          if (conquistas.length > anteriorMes) {
-            localStorage.setItem(chaveMes, conquistas.length);
-            _mostrarNotificacaoMeta(conquistas);
-          }
-        } else {
-          // Login/abertura — mostra uma vez por dia
-          var chaveHoje = 'adq_meta_notif_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1) + '-' + hoje.getDate();
-          var anteriorHoje = parseInt(localStorage.getItem(chaveHoje)) || 0;
-          if (conquistas.length > anteriorHoje) {
-            localStorage.setItem(chaveHoje, conquistas.length);
-            _mostrarNotificacaoMeta(conquistas);
+      // Verificar checklist completo antes de mostrar notificação
+      _verificarChecklistParaNotif(inicioMes, fimMes, function(checklistOk) {
+        if (checklistOk) conquistas.push('Checklist');
+
+        if (conquistas.length > 0) {
+          if (forceShow) {
+            var chaveMes = 'adq_meta_notif_mes_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1);
+            var anteriorMes = parseInt(localStorage.getItem(chaveMes)) || 0;
+            if (conquistas.length > anteriorMes) {
+              localStorage.setItem(chaveMes, conquistas.length);
+              _mostrarNotificacaoMeta(conquistas);
+            }
+          } else {
+            var chaveHoje = 'adq_meta_notif_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1) + '-' + hoje.getDate();
+            var anteriorHoje = parseInt(localStorage.getItem(chaveHoje)) || 0;
+            if (conquistas.length > anteriorHoje) {
+              localStorage.setItem(chaveHoje, conquistas.length);
+              _mostrarNotificacaoMeta(conquistas);
+            }
           }
         }
-      }
+      });
     }).catch(function() {});
   }).catch(function() {});
+}
+
+function _verificarChecklistParaNotif(inicioMes, fimMes, callback) {
+  if (!db) { callback(false); return; }
+  db.collection('eventos_campo').get().then(function(snap) {
+    var total = 0;
+    var completos = 0;
+    snap.forEach(function(doc) {
+      var ev = doc.data();
+      var dataRef = null;
+      if (ev.ev_data) {
+        if (ev.ev_data.indexOf('-') !== -1) {
+          var p = ev.ev_data.split('-');
+          if (p.length === 3) dataRef = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+        } else if (ev.ev_data.indexOf('/') !== -1) {
+          var p2 = ev.ev_data.split('/');
+          if (p2.length === 3) dataRef = new Date(parseInt(p2[2]), parseInt(p2[1]) - 1, parseInt(p2[0]));
+        }
+      }
+      if (!dataRef && ev.criadoEm && ev.criadoEm.toDate) dataRef = ev.criadoEm.toDate();
+      if (!dataRef || isNaN(dataRef.getTime()) || dataRef < inicioMes || dataRef > fimMes) return;
+      if (!ev.servicos || !ev.servicos.length) return;
+      total++;
+      var ok = ev.itens_ok || {};
+      var rem = ev.itens_removidos || {};
+      var completo = true;
+      for (var i = 0; i < ev.servicos.length; i++) {
+        var isObs = ev.servicos[i].toLowerCase().indexOf('obs:') === 0 || ev.servicos[i].toLowerCase().indexOf('obs.') === 0;
+        if (isObs || rem[i] || rem[String(i)]) continue;
+        if (!ok[i] && !ok[String(i)]) { completo = false; break; }
+      }
+      if (completo) completos++;
+    });
+    callback(total > 0 && completos === total);
+  }).catch(function() { callback(false); });
 }
 
 function _mostrarNotificacaoMeta(conquistas) {
@@ -8585,6 +8632,39 @@ function _mostrarNotificacaoMeta(conquistas) {
   banner.addEventListener('click', function() {
     banner.style.transform = 'translateY(-100%)';
     setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
+  });
+
+  // Swipe horizontal para dispensar
+  var _swStartX = 0, _swStartY = 0, _swiping = false;
+  banner.addEventListener('touchstart', function(e) {
+    _swStartX = e.touches[0].clientX;
+    _swStartY = e.touches[0].clientY;
+    _swiping = false;
+    banner.style.transition = 'none';
+  }, { passive: true });
+  banner.addEventListener('touchmove', function(e) {
+    var dx = e.touches[0].clientX - _swStartX;
+    var dy = Math.abs(e.touches[0].clientY - _swStartY);
+    if (dy > 30 && !_swiping) return; // scroll vertical, ignorar
+    if (Math.abs(dx) > 10) {
+      _swiping = true;
+      banner.style.transform = 'translateX(' + dx + 'px)';
+      banner.style.opacity = Math.max(0, 1 - Math.abs(dx) / 250);
+    }
+  }, { passive: true });
+  banner.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - _swStartX;
+    banner.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    if (Math.abs(dx) > 80) {
+      // Dispensar
+      banner.style.transform = 'translateX(' + (dx > 0 ? '120%' : '-120%') + ')';
+      banner.style.opacity = '0';
+      setTimeout(function() { if (banner.parentNode) banner.remove(); }, 300);
+    } else {
+      // Voltar
+      banner.style.transform = 'translateY(0)';
+      banner.style.opacity = '1';
+    }
   });
 
   document.body.appendChild(banner);
