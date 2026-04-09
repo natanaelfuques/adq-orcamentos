@@ -4492,6 +4492,8 @@ function initFirebase(config) {
         iniciarListenerSalvos();
         iniciarConnIndicator();
         carregarPresetsFirestore();
+        // Verificar metas ao logar (notificação automática)
+        setTimeout(function() { _verificarMetasAoAbrir(); }, 2500);
         // Carregar chave Anthropic do Firestore (fallback: localStorage)
         if (db) {
           db.collection('config').doc('ia').get().then(function(doc) {
@@ -8192,8 +8194,9 @@ function _calcularProgressoMetas() {
   var anoEl = document.getElementById('meta-anual-ano');
   if (anoEl) anoEl.textContent = 'Acumulado do ano ' + _metaAnoAtual;
 
+  // Buscar todos os contratos e filtrar localmente
+  // (pois contratos antigos usam 'aprovado: true', novos usam 'status_contrato: assinado')
   db.collection('contratos')
-    .where('status_assinatura', '==', 'Assinado')
     .get()
     .then(function(snap) {
       var totalReceita = 0;
@@ -8203,6 +8206,10 @@ function _calcularProgressoMetas() {
 
       snap.forEach(function(doc) {
         var d = doc.data();
+        // Filtrar: só contratos assinados (novo campo ou legado)
+        var isAssinado = (d.status_contrato === 'assinado') || (d.aprovado === true);
+        if (!isAssinado) return;
+
         var dataRef = _parseDataContrato(d);
         if (!dataRef) return;
 
@@ -8242,26 +8249,35 @@ function _calcularProgressoMetas() {
 
 function _parseDataContrato(d) {
   var dataRef = null;
-  if (d.data_evento) {
-    var pts = d.data_evento.split('/');
-    if (pts.length === 3) {
-      dataRef = new Date(pts[2], parseInt(pts[1]) - 1, pts[0]);
-    } else {
-      dataRef = new Date(d.data_evento);
+  // Contratos usam ev_data (YYYY-MM-DD), orçamentos podem usar data_evento
+  var raw = d.ev_data || d.data_evento || '';
+  if (raw) {
+    if (raw.indexOf('/') !== -1) {
+      // DD/MM/YYYY
+      var pts = raw.split('/');
+      if (pts.length === 3) {
+        dataRef = new Date(parseInt(pts[2]), parseInt(pts[1]) - 1, parseInt(pts[0]));
+      }
+    } else if (raw.indexOf('-') !== -1) {
+      // YYYY-MM-DD
+      var pts2 = raw.split('-');
+      if (pts2.length === 3) {
+        dataRef = new Date(parseInt(pts2[0]), parseInt(pts2[1]) - 1, parseInt(pts2[2]));
+      }
     }
-  } else if (d.criadoEm && d.criadoEm.toDate) {
+  }
+  if (!dataRef && d.criadoEm && d.criadoEm.toDate) {
     dataRef = d.criadoEm.toDate();
   }
+  // Validar se é uma data válida
+  if (dataRef && isNaN(dataRef.getTime())) dataRef = null;
   return dataRef;
 }
 
 function _extrairValor(d) {
-  var valor = 0;
-  if (d.total_geral) {
-    valor = parseFloat(String(d.total_geral).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
-  } else if (d.valor_total) {
-    valor = parseFloat(String(d.valor_total).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
-  }
+  // Contratos salvam val_total, fallback total_geral e valor_total
+  var raw = d.val_total || d.total_geral || d.valor_total || '';
+  var valor = parseFloat(String(raw).replace(/[^\d.,]/g,'').replace(',','.')) || 0;
   return valor;
 }
 
@@ -8362,35 +8378,39 @@ function _renderProgressoMeta(tipo, atual, meta, isCurrency) {
   var valor = document.getElementById('meta-' + tipo + '-valor');
   var pct = document.getElementById('meta-' + tipo + '-pct');
 
-  if (!bar || !valor || !pct) return;
+  if (!bar || !valor) return;
 
   if (meta <= 0) {
     bar.style.width = '0%';
     valor.textContent = isCurrency ? _formatarRS(atual) + ' (sem meta)' : atual + ' (sem meta)';
-    pct.textContent = '';
+    if (pct) pct.textContent = '';
     return;
   }
 
   var percent = Math.min((atual / meta) * 100, 100);
   bar.style.width = percent.toFixed(1) + '%';
 
+  // Cores por tipo
+  var cores = {
+    receita: 'linear-gradient(90deg,#C8A94A,#d4b85a)',
+    eventos: 'linear-gradient(90deg,#4A90C8,#5aa0d8)',
+    ticket:  'linear-gradient(90deg,#8B5CF6,#a78bfa)',
+    anual:   'linear-gradient(90deg,#E8A838,#f0c060)'
+  };
+
   if (percent >= 100) {
     bar.style.background = 'linear-gradient(90deg,#25D366,#30e876)';
-  } else if (percent >= 70) {
-    bar.style.background = tipo === 'receita'
-      ? 'linear-gradient(90deg,#C8A94A,#d4b85a)'
-      : 'linear-gradient(90deg,#4A90C8,#5aa0d8)';
   } else {
-    bar.style.background = tipo === 'receita'
-      ? 'linear-gradient(90deg,#C8A94A,#d4b85a)'
-      : 'linear-gradient(90deg,#4A90C8,#5aa0d8)';
+    bar.style.background = cores[tipo] || cores.receita;
   }
 
   var atualStr = isCurrency ? _formatarRS(atual) : atual;
   var metaStr = isCurrency ? _formatarRS(meta) : meta;
   valor.textContent = atualStr + ' / ' + metaStr;
-  pct.textContent = percent.toFixed(0) + '%';
-  pct.style.color = percent >= 100 ? '#25D366' : percent >= 70 ? '#C8A94A' : '#555';
+  if (pct) {
+    pct.textContent = percent.toFixed(0) + '%';
+    pct.style.color = percent >= 100 ? '#25D366' : percent >= 70 ? '#C8A94A' : '#555';
+  }
 }
 
 function _formatarRS(v) {
@@ -8425,6 +8445,101 @@ function _verificarConquistas(receita, eventos, ticket, anual) {
   } else {
     banner.style.display = 'none';
   }
+}
+
+// ── NOTIFICAÇÃO AUTOMÁTICA DE METAS ──────────────────────────────────────────
+
+function _verificarMetasAoAbrir() {
+  if (!db) return;
+
+  // Carregar config de metas
+  db.collection('config').doc('metas').get().then(function(docMeta) {
+    var cfg = docMeta.exists ? docMeta.data() : {};
+    var metaReceita = parseFloat(cfg.receita) || 0;
+    var metaEventos = parseInt(cfg.eventos) || 0;
+    var metaTicket = parseFloat(cfg.ticket) || 0;
+
+    if (!metaReceita && !metaEventos && !metaTicket) return; // nenhuma meta definida
+
+    var hoje = new Date();
+    var inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    var fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59);
+
+    db.collection('contratos').get().then(function(snap) {
+      var receita = 0;
+      var eventos = 0;
+
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        var isAssinado = (d.status_contrato === 'assinado') || (d.aprovado === true);
+        if (!isAssinado) return;
+
+        var dataRef = _parseDataContrato(d);
+        if (!dataRef || dataRef < inicioMes || dataRef > fimMes) return;
+
+        eventos++;
+        receita += _extrairValor(d);
+      });
+
+      var ticket = eventos > 0 ? receita / eventos : 0;
+      var conquistas = [];
+
+      if (metaReceita > 0 && receita >= metaReceita) conquistas.push('Receita');
+      if (metaEventos > 0 && eventos >= metaEventos) conquistas.push('Eventos');
+      if (metaTicket > 0 && ticket >= metaTicket) conquistas.push('Ticket Médio');
+
+      if (conquistas.length > 0) {
+        // Verificar se já notificou neste mês (localStorage)
+        var chave = 'adq_meta_notif_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1);
+        var jaNotificou = localStorage.getItem(chave);
+        // Notificar se não notificou ou se bateu mais metas desde a última vez
+        var notifAnterior = parseInt(jaNotificou) || 0;
+        if (conquistas.length > notifAnterior) {
+          localStorage.setItem(chave, conquistas.length);
+          _mostrarNotificacaoMeta(conquistas);
+        }
+      }
+    }).catch(function() {});
+  }).catch(function() {});
+}
+
+function _mostrarNotificacaoMeta(conquistas) {
+  var existing = document.getElementById('meta-notif-banner');
+  if (existing) existing.remove();
+
+  var banner = document.createElement('div');
+  banner.id = 'meta-notif-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:800;display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 20px;background:linear-gradient(135deg,#1a1a0a,#2a1f0a);border-bottom:2px solid #C8A94A;box-shadow:0 4px 20px rgba(0,0,0,0.5);transform:translateY(-100%);transition:transform 0.4s ease;cursor:pointer';
+
+  var icone = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8A94A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M6 3h12v7a6 6 0 0 1-12 0V3z"/><path d="M9 21h6"/><path d="M12 16v5"/></svg>';
+
+  var texto = conquistas.length === 1
+    ? 'Meta de ' + conquistas[0] + ' atingida este mês!'
+    : conquistas.length + ' metas atingidas: ' + conquistas.join(', ');
+
+  banner.innerHTML = icone +
+    '<div style="flex:1">' +
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">' + texto + '</div>' +
+    '</div>' +
+    '<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><path d="M3 3L9 9M9 3L3 9"/></svg>';
+
+  banner.addEventListener('click', function() {
+    banner.style.transform = 'translateY(-100%)';
+    setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
+  });
+
+  document.body.appendChild(banner);
+
+  // Slide in
+  setTimeout(function() { banner.style.transform = 'translateY(0)'; }, 100);
+
+  // Auto dismiss after 8 seconds
+  setTimeout(function() {
+    if (banner.parentNode) {
+      banner.style.transform = 'translateY(-100%)';
+      setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
+    }
+  }, 8000);
 }
 
 // ── ABA APIs ──────────────────────────────────────────────────────────────────
