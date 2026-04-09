@@ -8954,6 +8954,9 @@ function _calendarNota(nota, btn) {
   if (nota.ev_local) {
     lines.push('Local: ' + nota.ev_local);
   }
+  if (nota.val_total) {
+    lines.push('Valor: R$ ' + nota.val_total);
+  }
   var itens = Array.isArray(nota.itens) ? nota.itens : [];
   if (itens.length) {
     lines.push('');
