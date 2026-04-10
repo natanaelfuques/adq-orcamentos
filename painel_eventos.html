@@ -1507,7 +1507,7 @@ function buildCard(ev, past, col) {
           })() +
           '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg> ' +
           (ev.ev_maps
-            ? '<a href="' + esc(ev.ev_maps) + '" target="_blank" rel="noopener" class="card-field-editable card-local-link" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(200,169,74,0.45);cursor:pointer" title="Abrir no Maps">' + esc(ev.ev_local || '') +
+            ? '<a href="' + esc(ev.ev_maps) + '" target="_blank" rel="noopener" class="card-field-editable card-local-link" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#bbb;text-decoration:none;cursor:pointer" title="Abrir no Maps">' + esc(ev.ev_local || '') +
                 (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
               '</a>'
             : '<span class="card-field-editable" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') +
