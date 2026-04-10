@@ -1449,7 +1449,21 @@ function buildCard(ev, past, col) {
   var itens = '';
   if ((ev.servicos && ev.servicos.length) || (ev.itens_extras && ev.itens_extras.length)) {
     var removidos = ev.itens_removidos || {};
-    var itensHtml = (ev.servicos || []).map(function(s, i) {
+    // Expandir itens que contenham "•" em itens separados (mantendo índice original para check/remove)
+    var servicosExpandidos = [];
+    (ev.servicos || []).forEach(function(s, origIdx) {
+      if (s && s.indexOf('•') >= 0) {
+        s.split('•').forEach(function(parte) {
+          var p = parte.trim();
+          if (p) servicosExpandidos.push({ texto: p, idx: origIdx + '_' + servicosExpandidos.length });
+        });
+      } else {
+        servicosExpandidos.push({ texto: s, idx: origIdx });
+      }
+    });
+    var itensHtml = servicosExpandidos.map(function(item) {
+      var s = item.texto;
+      var i = item.idx;
       var done = ev.itens_ok && ev.itens_ok[i];
       var removido = removidos[i];
       var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
