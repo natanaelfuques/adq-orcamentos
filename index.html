@@ -3205,6 +3205,14 @@ function autoResize(el) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // ── Correção de scroll: restaura overflow do body quando todos os modais são removidos ──
+  var _modalIds = ['adq-autentique-modal', 'modal-ia', 'adq-link-ass-modal', 'adq-preset-modal', 'adq-opcoes-modal', 'nota-edit-modal', 'modal-ia-destino', 'modal-configuracoes'];
+  var _observer = new MutationObserver(function() {
+    var algumAberto = _modalIds.some(function(id) { return !!document.getElementById(id); });
+    if (!algumAberto) document.body.style.overflow = '';
+  });
+  _observer.observe(document.body, { childList: true, subtree: false });
+
   // Set today's date in header
   const hd = document.getElementById('header-date');
   if (hd) {
