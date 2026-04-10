@@ -6856,7 +6856,7 @@ function renderNotas() {
     var _waEvSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11" style="vertical-align:middle"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.856L.057 23.428a.75.75 0 0 0 .921.921l5.573-1.476A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.523-5.188-1.432l-.372-.22-3.862 1.023 1.023-3.861-.22-.373A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
     card += '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex-shrink:0">';
     card += '<div style="display:flex;align-items:center;gap:4px">';
-    card += '<button class="btn-whatsapp-ev' + (_waEvTemFone ? ' tem-fone' : '') + '" data-action="whatsapp-ev" data-id="'+id+'" data-fone="'+escHtml(ev.cli_fone||'')+'" title="WhatsApp" style="display:inline-flex;align-items:center;justify-content:center;padding:2px 5px;border-radius:3px;background:transparent;border:1px solid '+(_waEvTemFone?'#25D366':'var(--border)')+';color:'+(_waEvTemFone?'#25D366':'var(--muted)')+';cursor:pointer;line-height:1;flex-shrink:0" onclick="event.stopPropagation()">'+_waEvSvg+'</button>';
+    card += '<button class="btn-whatsapp-ev' + (_waEvTemFone ? ' tem-fone' : '') + '" data-action="whatsapp-ev" data-id="'+id+'" data-fone="'+escHtml(ev.cli_fone||'')+'" title="WhatsApp" style="display:inline-flex;align-items:center;justify-content:center;padding:2px 5px;border-radius:3px;background:transparent;border:1px solid '+(_waEvTemFone?'#25D366':'var(--border)')+';color:'+(_waEvTemFone?'#25D366':'var(--muted)')+';cursor:pointer;line-height:1;flex-shrink:0">'+_waEvSvg+'</button>';
     card += '<span style="font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:'+etapaColor+';border:1px solid '+etapaColor+';border-radius:3px;padding:2px 6px;white-space:nowrap">'+etapaLabel+'</span>';
     card += '</div>';
     if (dataEv) card += '<div style="font-size:0.65rem;font-weight:700;color:'+badgeDateColor+';background:'+badgeDateBg+';padding:3px 7px;border-radius:3px;white-space:nowrap;letter-spacing:0.06em">'+dataEv+'</div>';
@@ -7236,6 +7236,27 @@ function handleNotasClick(e) {
         switchMain('salvos');
         if (typeof switchSalvosTab === 'function') switchSalvosTab('contratos');
       }).catch(function(e) { alert('Erro ao remover do painel: ' + e.message); });
+
+  } else if (action === 'whatsapp-ev') {
+    var foneEv = btn.getAttribute('data-fone') || '';
+    var numeroEv = foneEv.replace(/\D/g, '');
+    if (numeroEv) {
+      if (numeroEv.length <= 11) numeroEv = '55' + numeroEv;
+      btn.blur();
+      window.open('https://wa.me/' + numeroEv, '_blank');
+    } else if (db && id) {
+      db.collection('contratos').doc(id).get().then(function(cDoc) {
+        var fFone = (cDoc.exists ? cDoc.data().cli_fone || cDoc.data().whatsapp_cliente || '' : '').replace(/\D/g, '');
+        if (!fFone) { alert('Número de contato não encontrado.'); return; }
+        db.collection('eventos_campo').doc(id).update({ cli_fone: fFone }).catch(function(){});
+        btn.style.borderColor = '#25D366'; btn.style.color = '#25D366';
+        btn.setAttribute('data-fone', fFone);
+        if (fFone.length <= 11) fFone = '55' + fFone;
+        window.open('https://wa.me/' + fFone, '_blank');
+      }).catch(function() { alert('Número de contato não encontrado.'); });
+    } else {
+      alert('Número de contato não encontrado.');
+    }
 
   } else if (action === 'whatsapp-nota') {
     var fone = btn.getAttribute('data-fone') || '';
