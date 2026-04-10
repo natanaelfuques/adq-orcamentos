@@ -6947,7 +6947,7 @@ function renderNotas() {
       +'<button class="btn-whatsapp-ev' + (_waEvTemFone ? ' tem-fone' : '') + '" data-action="whatsapp-ev" data-id="'+id+'" data-fone="'+escHtml(ev.cli_fone||'')+'" title="WhatsApp" style="display:inline-flex;align-items:center;justify-content:center;padding:2px 5px;border-radius:3px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;line-height:1;flex-shrink:0">'+_waEvSvg+'</button>'
       +'<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>'
       +(ev.ev_maps
-          ? '<a href="'+escHtml(ev.ev_maps)+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(200,169,74,0.5);cursor:pointer" title="Abrir no Maps">'+escHtml(ev.ev_local||'')+'</a>'
+          ? '<a href="'+escHtml(ev.ev_maps)+'" target="_blank" rel="noopener" style="color:#aaa;text-decoration:none;cursor:pointer" title="Abrir no Maps">'+escHtml(ev.ev_local||'')+'</a>'
           : escHtml(ev.ev_local||''))
       +(horarioInline
           ? '<span style="color:var(--border);margin:0 4px">·</span>'
@@ -7035,7 +7035,7 @@ function renderNotas() {
     if (doc.ev_local) {
       card += '<div style="font-size:0.75rem;color:var(--muted);margin-top:5px;margin-bottom:2px">';
       if (doc.ev_maps) {
-        card += '<a href="' + escHtml(doc.ev_maps) + '" target="_blank" rel="noopener" style="color:#4A90C8;text-decoration:none;text-underline-offset:2px" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'" title="Abrir no Maps">' + escHtml(doc.ev_local) + '</a>';
+        card += '<a href="' + escHtml(doc.ev_maps) + '" target="_blank" rel="noopener" style="color:#aaa;text-decoration:none" title="Abrir no Maps">' + escHtml(doc.ev_local) + '</a>';
       } else {
         card += escHtml(doc.ev_local);
       }
