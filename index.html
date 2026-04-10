@@ -4705,6 +4705,7 @@ function handleSalvosClick(e) {
         if (d.link_assinatura) {
           btn.setAttribute('data-link', d.link_assinatura);
           btn.classList.add('primary');
+          btn.textContent = 'Link';
           abrirModalLinkAssinatura(id, btn);
         } else if (d.autentique_public_id && AUTENTIQUE_TOKEN) {
           btn.textContent = '...';
@@ -4724,17 +4725,20 @@ function handleSalvosClick(e) {
               db.collection('contratos').doc(id).update({ link_assinatura: sl }).catch(function(){});
               btn.setAttribute('data-link', sl);
               btn.classList.add('primary');
+              btn.textContent = 'Link';
+            } else {
+              btn.textContent = 'Autentique';
             }
-            btn.textContent = 'Link';
             abrirModalLinkAssinatura(id, btn);
           })
-          .catch(function() { btn.textContent = 'Link'; abrirModalLinkAssinatura(id, btn); });
+          .catch(function() { btn.textContent = 'Autentique'; abrirModalLinkAssinatura(id, btn); });
         } else {
-          abrirModalLinkAssinatura(id, btn);
+          // Não tem link nem public_id — abre modal para enviar ao Autentique
+          _abrirModalAutentiqueDoCard(id, d, btn);
         }
-      }).catch(function() { abrirModalLinkAssinatura(id, btn); });
+      }).catch(function() { _abrirModalAutentiqueDoCard(id, {}, btn); });
     } else {
-      abrirModalLinkAssinatura(id, btn);
+      _abrirModalAutentiqueDoCard(id, {}, btn);
     }
   }
   else if (action === 'enviar-painel') {
@@ -5486,7 +5490,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
-    card += '<button class="btn-salvo' + (doc.link_assinatura ? ' primary' : '') + '" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">Link</button>';
+    card += '<button class="btn-salvo' + (doc.link_assinatura ? ' primary' : '') + '" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">' + (doc.link_assinatura ? 'Link' : 'Autentique') + '</button>';
     card += '<button class="btn-salvo" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
     var noPainel = !!etapa; // etapa existe no etapaMap → card já está no painel
     card += '<button class="btn-salvo' + (noPainel ? ' no-painel' : '') + '" data-action="enviar-painel" data-id="' + id + '" data-no-painel="' + (noPainel ? '1' : '0') + '" title="' + (noPainel ? 'Remover do painel' : 'Enviar para o painel') + '">Painel</button>';
@@ -7556,6 +7560,153 @@ function _exibirSucessoAutentique(link, email, sandbox, contratoId) {
       salvosLinkBtn.classList.add('primary');
     }
   }
+}
+
+function _abrirModalAutentiqueDoCard(contratoId, dadosContrato, btnCard) {
+  var old = document.getElementById('adq-autentique-modal');
+  if (old) old.remove();
+
+  var emailPreenchido = dadosContrato.cli_email || '';
+  var nomePreenchido  = dadosContrato.cli_nome  || '';
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-autentique-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  modal.innerHTML = `
+    <div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:400px;box-sizing:border-box">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Enviar para Assinatura — Autentique</div>
+
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Nome do signatário</label>
+        <input id="adq-aut-nome" type="text" value="${escHtml(nomePreenchido)}" placeholder="Nome completo do cliente" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor='#4A90C8'" onblur="this.style.borderColor='#444'">
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">E-mail do signatário</label>
+        <input id="adq-aut-email" type="email" value="${escHtml(emailPreenchido)}" placeholder="email@cliente.com" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor='#4A90C8'" onblur="this.style.borderColor='#444'">
+      </div>
+
+      ${!AUTENTIQUE_TOKEN ? '<div style="background:#2a1a0a;border:1px solid #c8752a;border-radius:4px;padding:10px 12px;font-size:0.75rem;color:#e0a060;margin-bottom:14px;line-height:1.5">⚠ Token da API não configurado.</div>' : ''}
+
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:16px;user-select:none">
+        <input id="adq-aut-sandbox" type="checkbox" style="width:15px;height:15px;accent-color:#4A90C8;cursor:pointer;margin:0">
+        <span style="font-size:0.72rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em">Modo Sandbox (teste — não consome documento)</span>
+      </label>
+
+      <div style="display:flex;gap:8px">
+        <button id="adq-aut-ok" style="flex:1;background:#4A90C8;border:none;color:#111;padding:10px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Enviar</button>
+        <button onclick="document.getElementById('adq-autentique-modal').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#666'">×</button>
+      </div>
+    </div>
+  `;
+
+  // Handler do botão Enviar
+  modal.querySelector('#adq-aut-ok').addEventListener('click', function() {
+    var nome    = (document.getElementById('adq-aut-nome')    || {}).value || '';
+    var email   = (document.getElementById('adq-aut-email')   || {}).value || '';
+    var sandbox = !!(document.getElementById('adq-aut-sandbox') || {}).checked;
+
+    if (!email || !email.includes('@')) {
+      alert('Informe um e-mail válido para o signatário.');
+      return;
+    }
+    if (!AUTENTIQUE_TOKEN) {
+      alert('Configure o AUTENTIQUE_TOKEN antes de usar esta função.');
+      return;
+    }
+
+    var btn = document.getElementById('adq-aut-ok');
+    if (btn) { btn.textContent = 'Enviando...'; btn.disabled = true; }
+
+    // Busca os dados do contrato e gera o HTML
+    db.collection('contratos').doc(contratoId).get().then(function(snap) {
+      var d = snap.data() || {};
+
+      // Monta os dados no formato esperado por buildContrato
+      var servicos = d.servicos || [];
+      var pgtoTextoCard = '';
+      if (d.pgto_tipo === 'vista') {
+        pgtoTextoCard = 'Pagamento à vista no valor de ' + (d.val_total || '');
+      } else if (d.pgto_tipo === 'parcelado') {
+        pgtoTextoCard = 'Pagamento parcelado em ' + (d.nparcelas || '') + 'x de ' + (d.val_total || '');
+      } else {
+        pgtoTextoCard = d.pgto_custom || '';
+      }
+
+      var htmlContrato = buildContrato({
+        cliNome:     d.cli_nome    || '',
+        cliLinha:    d.cli_doc     || '',
+        cliEmail:    d.cli_email   || '',
+        cliFone:     d.cli_fone    || '',
+        evNome:      d.ev_nome     || '',
+        evResp:      d.ev_resp     || '',
+        evLocal:     d.ev_local    || '',
+        evData:      d.ev_data     || '',
+        evIni:       d.ev_inicio   || '',
+        evFim:       d.ev_fim      || '',
+        valTotal:    d.val_total   || '',
+        servicos:    servicos,
+        pgto:        pgtoTextoCard,
+        dataEntrada: d.data_entrada || ''
+      });
+
+      if (!htmlContrato) {
+        alert('Não foi possível gerar o contrato. Verifique os dados.');
+        if (btn) { btn.textContent = 'Enviar'; btn.disabled = false; }
+        return;
+      }
+
+      var _dataParts = (d.ev_data || '').split('-');
+      var _dd = _dataParts[2] || ''; var _mm = _dataParts[1] || ''; var _aaaa = _dataParts[0] || '';
+      var nomeContrato = 'CONTRATO - ' + (d.cli_nome || 'Cliente').toUpperCase() + ' ' + _dd + '-' + _mm + '-' + _aaaa;
+
+      _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox)
+        .then(function(resultado) {
+          var modalEl = document.getElementById('adq-autentique-modal');
+          if (modalEl) modalEl.remove();
+          document.body.style.overflow = '';
+
+          var linkAssinatura = resultado.link || '';
+          var autentiqueId   = resultado.id   || '';
+          var publicId       = resultado.public_id || '';
+
+          if (!sandbox && autentiqueId) {
+            var updateData = {
+              autentique_id:   autentiqueId,
+              link_assinatura: linkAssinatura,
+              status_contrato: 'enviado'
+            };
+            if (publicId) updateData.autentique_public_id = publicId;
+            db.collection('contratos').doc(contratoId).update(updateData).catch(function(){});
+
+            // Atualiza o botão no card
+            if (btnCard) {
+              btnCard.setAttribute('data-link', linkAssinatura);
+              btnCard.classList.add('primary');
+              btnCard.textContent = 'Link';
+            }
+          }
+
+          _exibirSucessoAutentique(linkAssinatura, email, sandbox, contratoId);
+        })
+        .catch(function(err) {
+          alert('Erro ao enviar: ' + (err.message || err));
+          if (btn) { btn.textContent = 'Enviar'; btn.disabled = false; }
+        });
+    }).catch(function() {
+      alert('Erro ao buscar contrato.');
+      if (btn) { btn.textContent = 'Enviar'; btn.disabled = false; }
+    });
+  });
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
+  document.body.appendChild(modal);
+  setTimeout(function() {
+    var inp = document.getElementById('adq-aut-email');
+    if (inp) inp.focus();
+  }, 60);
 }
 
 function enviarParaAutentique() {
