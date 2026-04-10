@@ -5494,7 +5494,17 @@ function coletarDadosContrato() {
   var lista = document.getElementById('lista-servicos');
   if (lista) {
     lista.querySelectorAll('input[type=text]').forEach(function(inp) {
-      if (inp.value.trim()) servicos.push(inp.value.trim());
+      var val = inp.value.trim();
+      if (!val) return;
+      // Separar itens colados juntos com "•" em entradas individuais
+      if (val.indexOf('•') >= 0 || val.indexOf('·') >= 0) {
+        val.split(/\s*[•·]\s*/).forEach(function(parte) {
+          var p = parte.trim();
+          if (p) servicos.push(p);
+        });
+      } else {
+        servicos.push(val);
+      }
     });
   }
   var pgtoRadio = document.querySelector('input[name="pgto"]:checked');

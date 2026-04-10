@@ -1178,6 +1178,28 @@ function iniciarBoard() {
       _eventosCache = {};
       snap.forEach(function(doc) {
         var ev = Object.assign({ id: doc.id }, doc.data());
+        // ── Migração: expandir itens com "•" em entradas separadas ──
+        // Corrige contratos antigos cujos serviços foram colados juntos num único campo.
+        if (ev.servicos && ev.servicos.some(function(s) {
+          return s && (s.indexOf('•') >= 0 || s.indexOf('·') >= 0);
+        })) {
+          var servicosExpandidos = [];
+          ev.servicos.forEach(function(s) {
+            if (s && (s.indexOf('•') >= 0 || s.indexOf('·') >= 0)) {
+              s.split(/\s*[•·]\s*/).forEach(function(parte) {
+                var p = parte.trim();
+                if (p) servicosExpandidos.push(p);
+              });
+            } else if (s && s.trim()) {
+              servicosExpandidos.push(s.trim());
+            }
+          });
+          ev.servicos = servicosExpandidos;
+          // Persistir versão corrigida (itens_ok zerado pois índices mudaram)
+          db.collection('eventos_campo').doc(doc.id)
+            .update({ servicos: servicosExpandidos, itens_ok: {} })
+            .catch(function(e) { console.warn('[AdQ] Erro ao migrar serviços:', e); });
+        }
         _todosEventos.push(ev);
         _eventosCache[doc.id] = ev;
       });
