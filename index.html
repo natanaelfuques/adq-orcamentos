@@ -2211,6 +2211,25 @@ function _presetFeedback(btn, ok) {
   setTimeout(function() { btn.textContent = orig; btn.style.borderColor = ''; btn.style.color = ''; }, 1200);
 }
 
+// ── POSICIONAMENTO SEGURO DE MODAL ──
+function _posicionarModal(modal, btn) {
+  var rect = btn.getBoundingClientRect();
+  var scrollY = window.scrollY || window.pageYOffset;
+  var scrollX = window.scrollX || window.pageXOffset;
+  modal.style.visibility = 'hidden';
+  document.body.appendChild(modal);
+  var mw = modal.offsetWidth;
+  var mh = modal.offsetHeight;
+  var topPos = rect.top + scrollY - mh - 6;
+  if (topPos < scrollY + 8) topPos = rect.bottom + scrollY + 6;
+  var leftPos = rect.left + scrollX;
+  if (leftPos + mw > window.innerWidth + scrollX - 8) leftPos = window.innerWidth + scrollX - mw - 8;
+  if (leftPos < scrollX + 8) leftPos = scrollX + 8;
+  modal.style.top  = topPos + 'px';
+  modal.style.left = leftPos + 'px';
+  modal.style.visibility = 'visible';
+}
+
 // ── MODAL PRESET ──
 function abrirModalPreset(btn, tipo, id1, kit) {
   var old = document.getElementById('adq-preset-modal');
@@ -2223,19 +2242,7 @@ function abrirModalPreset(btn, tipo, id1, kit) {
   var rect = btn.getBoundingClientRect();
   var scrollY = window.scrollY || window.pageYOffset;
   modal.style.cssText = 'position:absolute;z-index:600;background:#1e1e1e;border:1px solid #444;border-top:2px solid var(--gold);border-radius:5px;padding:8px;display:flex;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,0.6)';
-  // Posicionamento após inserção para conhecer dimensões reais
-  modal.style.visibility = 'hidden';
-  document.body.appendChild(modal);
-  var mw = modal.offsetWidth;
-  var mh = modal.offsetHeight;
-  var topPos = rect.top + scrollY - mh - 6;
-  if (topPos < (window.scrollY + 8)) topPos = rect.bottom + scrollY + 6;
-  var leftPos = rect.left + window.scrollX;
-  if (leftPos + mw > window.innerWidth - 8) leftPos = window.innerWidth - mw - 8;
-  if (leftPos < 8) leftPos = 8;
-  modal.style.top  = topPos + 'px';
-  modal.style.left = leftPos + 'px';
-  modal.style.visibility = 'visible';
+  // rect já capturado antes — botões adicionados abaixo, posicionamento ao final
 
   var btnStyle = 'font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;padding:6px 12px;cursor:pointer;border:none;';
 
@@ -2276,6 +2283,7 @@ function abrirModalPreset(btn, tipo, id1, kit) {
   modal.appendChild(bCarregar);
   modal.appendChild(bSalvar);
   modal.appendChild(bFechar);
+  _posicionarModal(modal, btn);
 
   // Fechar ao clicar fora
   setTimeout(function() {
@@ -2366,19 +2374,7 @@ function abrirModalLocalPreset(btn, n) {
   var rect = btn.getBoundingClientRect();
   var scrollY = window.scrollY || window.pageYOffset;
   modal.style.cssText = 'position:absolute;z-index:600;background:#1e1e1e;border:1px solid #444;border-top:2px solid var(--gold);border-radius:5px;padding:8px;display:flex;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,0.6)';
-  // Posicionamento após inserção para conhecer dimensões reais
-  modal.style.visibility = 'hidden';
-  document.body.appendChild(modal);
-  var mw = modal.offsetWidth;
-  var mh = modal.offsetHeight;
-  var topPos = rect.top + scrollY - mh - 6;
-  if (topPos < (window.scrollY + 8)) topPos = rect.bottom + scrollY + 6;
-  var leftPos = rect.left + window.scrollX;
-  if (leftPos + mw > window.innerWidth - 8) leftPos = window.innerWidth - mw - 8;
-  if (leftPos < 8) leftPos = 8;
-  modal.style.top  = topPos + 'px';
-  modal.style.left = leftPos + 'px';
-  modal.style.visibility = 'visible';
+  // rect já capturado antes — botões adicionados abaixo, posicionamento ao final
 
   var btnStyle = 'font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;padding:6px 12px;cursor:pointer;border:none;';
 
@@ -2423,6 +2419,7 @@ function abrirModalLocalPreset(btn, n) {
   modal.appendChild(bCarregar);
   modal.appendChild(bSalvar);
   modal.appendChild(bFechar);
+  _posicionarModal(modal, btn);
 
   setTimeout(function() {
     document.addEventListener('click', function _close(e) {
@@ -2459,19 +2456,7 @@ function abrirModalClientePreset(btn, n) {
   var rect = btn.getBoundingClientRect();
   var scrollY = window.scrollY || window.pageYOffset;
   modal.style.cssText = 'position:absolute;z-index:600;background:#1e1e1e;border:1px solid #444;border-top:2px solid var(--gold);border-radius:5px;padding:8px;display:flex;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,0.6)';
-  // Posicionamento após inserção para conhecer dimensões reais
-  modal.style.visibility = 'hidden';
-  document.body.appendChild(modal);
-  var mw = modal.offsetWidth;
-  var mh = modal.offsetHeight;
-  var topPos = rect.top + scrollY - mh - 6;
-  if (topPos < (window.scrollY + 8)) topPos = rect.bottom + scrollY + 6;
-  var leftPos = rect.left + window.scrollX;
-  if (leftPos + mw > window.innerWidth - 8) leftPos = window.innerWidth - mw - 8;
-  if (leftPos < 8) leftPos = 8;
-  modal.style.top  = topPos + 'px';
-  modal.style.left = leftPos + 'px';
-  modal.style.visibility = 'visible';
+  // rect já capturado antes — botões adicionados abaixo, posicionamento ao final
   var btnStyle = "font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;padding:6px 12px;cursor:pointer;border:none;";
   var bCarregar = document.createElement('button');
   bCarregar.textContent = 'Carregar';
@@ -2507,6 +2492,7 @@ function abrirModalClientePreset(btn, n) {
   modal.appendChild(bCarregar);
   modal.appendChild(bSalvar);
   modal.appendChild(bFechar);
+  _posicionarModal(modal, btn);
   setTimeout(function() {
     document.addEventListener('click', function _close(e) {
       if (!modal.contains(e.target) && e.target !== btn) { modal.remove(); document.removeEventListener('click', _close); }
