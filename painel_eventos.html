@@ -216,6 +216,14 @@ header {
 .editor-mode .card-field-editable:hover {
   border-bottom-color: var(--gold);
 }
+/* No modo editor, o link do Maps se comporta como texto editável */
+.editor-mode .card-local-link {
+  text-decoration: none !important;
+  pointer-events: none;
+}
+.editor-mode .card-local-link.card-field-editable {
+  pointer-events: auto;
+}
 .editor-input-inline {
   background: #0e0e0e;
   border: 1px solid var(--gold);
@@ -1498,9 +1506,13 @@ function buildCard(ev, past, col) {
             return '<button class="btn-wa-painel' + (temFone ? ' tem-fone' : '') + '" data-wa-fone="' + esc(wFone) + '" data-evid="' + esc(ev.id) + '" data-contrato-id="' + esc(ev.contrato_id || '') + '" data-nota-id="' + esc(ev.nota_id || '') + '" title="WhatsApp">' + waSvg + '</button>';
           })() +
           '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg> ' +
-          '<span class="card-field-editable" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') +
-            (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
-          '</span>' +
+          (ev.ev_maps
+            ? '<a href="' + esc(ev.ev_maps) + '" target="_blank" rel="noopener" class="card-field-editable card-local-link" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(200,169,74,0.45);cursor:pointer" title="Abrir no Maps">' + esc(ev.ev_local || '') +
+                (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
+              '</a>'
+            : '<span class="card-field-editable" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') +
+                (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
+              '</span>') +
           (ev.contrato_id || ev.id ? '<span style="font-size:0.65rem;font-weight:700;color:var(--muted);letter-spacing:0.05em;flex-shrink:0;margin-left:8px"># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>' : '') +
         '</div>' +
         resp + itens +
@@ -2009,6 +2021,7 @@ function sincronizarPainel() {
           batch.set(ref, {
             ev_nome:     d.ev_nome   || '',
             ev_local:    d.ev_local  || '',
+            ev_maps:     d.ev_maps   || '',
             ev_data:     d.ev_data   || '',
             ev_inicio:      d.ev_inicio      || '',
             ev_fim:         d.ev_fim         || '',
