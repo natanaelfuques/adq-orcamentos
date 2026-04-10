@@ -1953,9 +1953,15 @@ Revestimento</textarea>
           <input type="text" id="ev_resp" placeholder="Quem receberá a equipe">
         </div>
       </div>
-      <div style="margin-bottom:16px">
-        <label>Local</label>
-        <input type="text" id="ev_local" placeholder="Ex: Salão das Rosas, Brusque/SC">
+      <div style="margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <label>Local</label>
+          <input type="text" id="ev_local" placeholder="Ex: Salão das Rosas, Brusque/SC">
+        </div>
+        <div>
+          <label>Link do Maps</label>
+          <input type="url" id="ev_maps" placeholder="https://maps.app.goo.gl/..." oninput="_agendarRascunho()">
+        </div>
       </div>
       <div class="grid-3">
         <div>
@@ -2908,6 +2914,7 @@ function aplicarOpcaoSelecionada() {
   setVal('cli_nome', d.nome || d.nome_cliente || '');
   setVal('ev_nome',  d.evento || d.tipo_evento || '');
   setVal('ev_local', d.local || '');
+  setVal('ev_maps',  d.ev_maps || d.maps_link || '');
   setVal('ev_data',  d.dataEvt || '');
   if (d.whatsapp_cliente) setVal('cli_fone', d.whatsapp_cliente);
 
@@ -3281,7 +3288,7 @@ var _draftTimer = null;
 
 var _DRAFT_CAMPOS = [
   'cli_nome','cli_doc','cli_end','cli_cep','cli_email','cli_fone',
-  'ev_nome','ev_resp','ev_local','ev_data','ev_inicio','ev_fim',
+  'ev_nome','ev_resp','ev_local','ev_maps','ev_data','ev_inicio','ev_fim',
   'val_total','pgto_custom','data_entrada'
 ];
 
@@ -3933,6 +3940,7 @@ function baixarDadosContrato() {
     ev_nome:   document.getElementById('ev_nome').value,
     ev_resp:   document.getElementById('ev_resp').value,
     ev_local:  document.getElementById('ev_local').value,
+    ev_maps:   document.getElementById('ev_maps') ? document.getElementById('ev_maps').value : '',
     ev_data:   document.getElementById('ev_data').value,
     ev_inicio: document.getElementById('ev_inicio').value,
     ev_fim:    document.getElementById('ev_fim').value,
@@ -4064,6 +4072,7 @@ function preencherContratoDados() {
   set('ev_nome',   d.ev_nome);
   set('ev_resp',   d.ev_resp);
   set('ev_local',  d.ev_local);
+  set('ev_maps',   d.ev_maps);
   set('ev_data',   d.ev_data);
   set('ev_inicio', d.ev_inicio);
   set('ev_fim',    d.ev_fim);
@@ -5268,6 +5277,7 @@ function coletarDadosContrato() {
     ev_nome:   get('ev_nome'),
     ev_resp:   get('ev_resp'),
     ev_local:  get('ev_local'),
+    ev_maps:   get('ev_maps'),
     ev_data:   get('ev_data'),
     ev_inicio: get('ev_inicio'),
     ev_fim:    get('ev_fim'),
@@ -5532,6 +5542,7 @@ function abrirContrato(id) {
     set('ev_nome',   d.ev_nome   || '');
     set('ev_resp',   d.ev_resp   || '');
     set('ev_local',  d.ev_local  || '');
+    set('ev_maps',   d.ev_maps   || '');
     set('ev_data',   d.ev_data   || '');
     set('ev_inicio', d.ev_inicio || '');
     set('ev_fim',    d.ev_fim    || '');
@@ -5919,6 +5930,7 @@ function buildEventoFromContrato(d, contratoId) {
   return {
     ev_nome:        d.ev_nome        || '',
     ev_local:       d.ev_local       || '',
+    ev_maps:        d.ev_maps        || '',
     ev_data:        d.ev_data        || '',
     ev_inicio:      d.ev_inicio      || '',
     ev_fim:         d.ev_fim         || '',
@@ -6635,7 +6647,9 @@ function renderNotas() {
     if (horarioBlock) card += '<div style="font-size:0.78rem;color:var(--text);font-weight:600;margin-bottom:4px">'+escHtml(horarioBlock)+'</div>';
     card += '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px">'
       +'<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>'
-      +' '+escHtml(ev.ev_local||'')
+      +(ev.ev_maps
+          ? '<a href="'+escHtml(ev.ev_maps)+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(200,169,74,0.5);cursor:pointer" title="Abrir no Maps">'+escHtml(ev.ev_local||'')+'</a>'
+          : escHtml(ev.ev_local||''))
       +(horarioInline
           ? '<span style="color:var(--border);margin:0 4px">·</span>'
             +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;opacity:0.5"><circle cx="6" cy="6" r="5"/><polyline points="6,3 6,6 8,7.5"/></svg>'
@@ -7040,6 +7054,7 @@ function handleNotasClick(e) {
         return db.collection('eventos_campo').add({
           ev_nome:        evNome,
           ev_local:       evLocal,
+          ev_maps:        nota.ev_maps || '',
           ev_data:        evData,
           ev_inicio:      nota.ev_inicio || '',
           ev_fim:         nota.ev_fim    || '',
@@ -7766,6 +7781,7 @@ function _aplicarIA(d, destino) {
       setVal('ev_nome',   d.ev_nome   || d.tipo_evento);
       setVal('ev_resp',   d.ev_resp   || d.nome_cliente || d.cli_nome);
       setVal('ev_local',  d.ev_local  || d.local_evento);
+      setVal('ev_maps',   d.ev_maps   || '');
       setVal('ev_data',   d.data_evento);
       setVal('ev_inicio', d.ev_inicio);
       setVal('ev_fim',    d.ev_fim);
