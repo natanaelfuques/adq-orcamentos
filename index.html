@@ -2245,7 +2245,7 @@ function abrirModalPreset(btn, tipo, id1, kit) {
 
   var bFechar = document.createElement('button');
   bFechar.textContent = '×';
-  bFechar.style.cssText = btnStyle + 'background:transparent;color:#888;border:1px solid #444;padding:6px 14px;font-size:1.1rem;line-height:1;';
+  bFechar.style.cssText = btnStyle + 'background:transparent;color:#888;border:1px solid #444;padding:6px 14px;font-size:1.4rem;line-height:1;';
   bFechar.onclick = function() { modal.remove(); };
 
   modal.appendChild(bCarregar);
@@ -2369,7 +2369,7 @@ function abrirModalLocalPreset(btn, n) {
   bSalvar.onclick = function() {
     var input = document.getElementById('local_evento');
     var val = input ? input.value.trim() : '';
-    if (!val) { modal.remove(); return; }
+    if (!val) { LOCAIS_PRESETS[n] = { nome: '', val: '' }; _salvarLocaisFirestore(); _atualizarBotoesLocaisPreset(); modal.remove(); return; }
     // Nome do preset = primeira parte antes da vírgula, ou o valor completo se curto
     var nome = val.split(',')[0].trim();
     if (nome.length > 18) nome = nome.substring(0, 16) + '…';
@@ -2382,7 +2382,7 @@ function abrirModalLocalPreset(btn, n) {
 
   var bFechar = document.createElement('button');
   bFechar.textContent = '×';
-  bFechar.style.cssText = btnStyle + 'background:transparent;color:#888;border:1px solid #444;padding:6px 14px;font-size:1.1rem;line-height:1;';
+  bFechar.style.cssText = btnStyle + 'background:transparent;color:#888;border:1px solid #444;padding:6px 14px;font-size:1.4rem;line-height:1;';
   bFechar.onclick = function() { modal.remove(); };
 
   modal.appendChild(bCarregar);
