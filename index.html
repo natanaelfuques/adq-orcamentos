@@ -7031,6 +7031,16 @@ function renderNotas() {
       card += '</div>';
     }
     if (dataFmt) card += '<div class="nota-card-meta">' + dataFmt + '</div>';
+    // Local com link do Maps
+    if (doc.ev_local) {
+      card += '<div style="font-size:0.75rem;color:var(--muted);margin-top:5px;margin-bottom:2px">';
+      if (doc.ev_maps) {
+        card += '<a href="' + escHtml(doc.ev_maps) + '" target="_blank" rel="noopener" style="color:#4A90C8;text-decoration:none;text-underline-offset:2px" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'" title="Abrir no Maps">' + escHtml(doc.ev_local) + '</a>';
+      } else {
+        card += escHtml(doc.ev_local);
+      }
+      card += '</div>';
+    }
     var noPainel = !!(doc.no_painel);
     var calNotaClass = doc.calendar_adicionado ? 'btn-salvo btn-calendar btn-calendar-ok' : 'btn-salvo btn-calendar';
     var _waNotaFone = (doc.contato || '').replace(/\D/g, '');
@@ -7467,7 +7477,11 @@ function _abrirModalEditarNota(nota) {
     '<div style="display:flex;gap:8px;margin-bottom:14px">' +
       '<div style="flex:1">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Local</label>' +
-        '<input id="nota-edit-local" type="text" value="' + escHtml(nota.ev_local || '') + '" placeholder="Ex: Salão Espaço Nobre" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '<input id="nota-edit-local" type="text" value="' + escHtml(nota.ev_local || '') + '" placeholder="Ex: Salão Espaço Nobre" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;margin-bottom:6px" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '<div style="position:relative">' +
+          '<input id="nota-edit-maps" type="url" value="' + escHtml(nota.ev_maps || '') + '" placeholder="Link do Google Maps (opcional)" style="width:100%;background:#111;border:1px solid #333;color:#4A90C8;font-family:\'Barlow\',sans-serif;font-size:0.78rem;padding:7px 72px 7px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#333\'">' +
+          '<button onclick="navigator.clipboard.readText().then(function(t){var i=document.getElementById(\'nota-edit-maps\');if(i){i.value=t;i.style.borderColor=\'#25D366\';setTimeout(function(){i.style.borderColor=\'#333\';},1200);}})" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:#1e1e1e;border:1px solid #333;color:#4A90C8;border-radius:3px;padding:3px 8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap" onmouseover="this.style.borderColor=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#333\'">Colar</button>' +
+        '</div>' +
       '</div>' +
       '<div style="width:110px;flex-shrink:0">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Valor</label>' +
@@ -7527,6 +7541,7 @@ function _salvarEdicaoNota(id) {
   var contato = (document.getElementById('nota-edit-contato') || {}).value || '';
   var evData  = (document.getElementById('nota-edit-data')   || {}).value || '';
   var evLocal  = (document.getElementById('nota-edit-local')  || {}).value || '';
+  var evMaps   = (document.getElementById('nota-edit-maps')   || {}).value || '';
   var evInicio = (document.getElementById('nota-edit-inicio') || {}).value || '';
   var evFim    = (document.getElementById('nota-edit-fim')    || {}).value || '';
   var valTotal = (document.getElementById('nota-edit-valor')  || {}).value || '';
@@ -7547,6 +7562,7 @@ function _salvarEdicaoNota(id) {
     itens:    itens,
     ev_data:  evData.trim(),
     ev_local:  evLocal.trim(),
+    ev_maps:   evMaps.trim(),
     ev_inicio: evInicio.trim(),
     ev_fim:    evFim.trim(),
     val_total: valTotal.trim()
@@ -7562,6 +7578,7 @@ function _salvarEdicaoNota(id) {
       nota.itens     = updateData.itens;
       nota.ev_data   = updateData.ev_data;
       nota.ev_local  = updateData.ev_local;
+      nota.ev_maps   = updateData.ev_maps;
       nota.ev_inicio = updateData.ev_inicio;
       nota.ev_fim    = updateData.ev_fim;
       nota.val_total = updateData.val_total;
