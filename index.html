@@ -2389,6 +2389,29 @@ function _toggleMapsBtn() {
   }
 }
 
+function _toggleNotaMapsBtn() {
+  var inp = document.getElementById('nota-edit-maps');
+  var link = inp ? inp.value.trim() : '';
+  if (link) {
+    window.open(link, '_blank', 'noopener');
+  } else {
+    navigator.clipboard.readText().then(function(t) {
+      t = t.trim();
+      if (t && (t.startsWith('http://') || t.startsWith('https://'))) {
+        inp.value = t;
+        var lbl = document.getElementById('btn-nota-maps-label');
+        if (lbl) lbl.textContent = 'Abrir';
+        var btn = document.getElementById('btn-nota-maps');
+        if (btn) { btn.style.color = '#25D366'; setTimeout(function(){ btn.style.color = '#4A90C8'; }, 1200); }
+      } else {
+        alert('Nenhum link válido na área de transferência.');
+      }
+    }).catch(function() {
+      if (inp) { inp.style.display = 'block'; inp.focus(); }
+    });
+  }
+}
+
 function aplicarLocalPreset(n) {
   const p = LOCAIS_PRESETS[n];
   if (!p || !p.val) return;
@@ -7508,11 +7531,14 @@ function _abrirModalEditarNota(nota) {
     '<div style="display:flex;gap:8px;margin-bottom:14px">' +
       '<div style="flex:1">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Local</label>' +
-        '<input id="nota-edit-local" type="text" value="' + escHtml(nota.ev_local || '') + '" placeholder="Ex: Salão Espaço Nobre" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:8px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s;margin-bottom:6px" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
-        '<div style="position:relative">' +
-          '<input id="nota-edit-maps" type="url" value="' + escHtml(nota.ev_maps || '') + '" placeholder="Link do Google Maps (opcional)" style="width:100%;background:#111;border:1px solid #333;color:#4A90C8;font-family:\'Barlow\',sans-serif;font-size:0.78rem;padding:7px 72px 7px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#333\'">' +
-          '<button onclick="navigator.clipboard.readText().then(function(t){var i=document.getElementById(\'nota-edit-maps\');if(i){i.value=t;i.style.borderColor=\'#25D366\';setTimeout(function(){i.style.borderColor=\'#333\';},1200);}})" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:#1e1e1e;border:1px solid #333;color:#4A90C8;border-radius:3px;padding:3px 8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap" onmouseover="this.style.borderColor=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#333\'">Colar</button>' +
+        '<div style="display:flex;align-items:center;border:1px solid #444;border-radius:4px;overflow:hidden;background:#111">' +
+          '<input id="nota-edit-local" type="text" value="' + escHtml(nota.ev_local || '') + '" placeholder="Ex: Salão Espaço Nobre" style="flex:1;height:36px;border:none;background:transparent;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:0 10px;outline:none;box-sizing:border-box">' +
+          '<button id="btn-nota-maps" title="Abrir no Maps / Colar link" onclick="_toggleNotaMapsBtn()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;height:36px;padding:0 10px;border:none;border-left:1px solid #333;background:#1a1a1a;color:#4A90C8;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
+            '<span id="btn-nota-maps-label">' + (nota.ev_maps ? 'Abrir' : 'Maps') + '</span>' +
+          '</button>' +
         '</div>' +
+        '<input id="nota-edit-maps" type="url" value="' + escHtml(nota.ev_maps || '') + '" style="display:none">' +
       '</div>' +
       '<div style="width:110px;flex-shrink:0">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Valor</label>' +
