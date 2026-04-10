@@ -6766,6 +6766,9 @@ function renderNotas() {
 
     function fmtHora(v) {
       if (!v) return '';
+      // Texto livre (contém letras além de 'h') — retorna sem modificar
+      var semH = v.replace(/h/gi, '');
+      if (/[a-zA-Z]/.test(semH)) return v;
       var pts = v.replace(/[hH]/g,':').split(':');
       var h = pts[0]||'0', m = pts[1]||'';
       var hf = h.padStart(2,'0')+':'+(m||'00').padStart(2,'0');
