@@ -4761,7 +4761,7 @@ function handleSalvosClick(e) {
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
   else if (action === 'calendar') { btn.blur(); registrarLogGerador('calendar', nome); gerarLinkCalendar(id); }
   else if (action === 'verificar-autentique') { verificarAssinaturaAutentique(id, btn); }
-  else if (action === 'whatsapp' || action === 'whatsapp-orc' || action === 'whatsapp-nota' || action === 'whatsapp-ev') {
+  else if (action === 'whatsapp' || action === 'whatsapp-orc' || action === 'whatsapp-nota') {
     var fone = btn.getAttribute('data-fone') || '';
     var numero = fone.replace(/\D/g, '');
     if (!numero) { alert('Número de contato não encontrado.'); return; }
@@ -4769,6 +4769,31 @@ function handleSalvosClick(e) {
     btn.blur();
     registrarLogGerador('whatsapp', nome);
     window.open('https://wa.me/' + numero, '_blank');
+  }
+  else if (action === 'whatsapp-ev') {
+    var foneEv = btn.getAttribute('data-fone') || '';
+    var numeroEv = foneEv.replace(/\D/g, '');
+    if (numeroEv) {
+      if (numeroEv.length <= 11) numeroEv = '55' + numeroEv;
+      btn.blur();
+      window.open('https://wa.me/' + numeroEv, '_blank');
+    } else if (db && id) {
+      // Fallback: busca cli_fone no contrato (eventos antigos sem cli_fone no painel)
+      db.collection('contratos').doc(id).get().then(function(cDoc) {
+        var fFone = (cDoc.exists ? cDoc.data().cli_fone || '' : '').replace(/\D/g, '');
+        if (!fFone) { alert('Número de contato não encontrado.'); return; }
+        // Atualiza o campo no eventos_campo para próximas vezes
+        db.collection('eventos_campo').doc(id).update({ cli_fone: cDoc.data().cli_fone }).catch(function(){});
+        // Atualiza o botão visualmente
+        btn.style.borderColor = '#25D366';
+        btn.style.color = '#25D366';
+        btn.setAttribute('data-fone', cDoc.data().cli_fone);
+        if (fFone.length <= 11) fFone = '55' + fFone;
+        window.open('https://wa.me/' + fFone, '_blank');
+      }).catch(function() { alert('Número de contato não encontrado.'); });
+    } else {
+      alert('Número de contato não encontrado.');
+    }
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
   else if (action === 'json-con') baixarContratoJSON(id);
@@ -5901,6 +5926,7 @@ function buildEventoFromContrato(d, contratoId) {
     ev_montagem:    d.montagem       || '',
     ev_desmontagem: d.desmontagem    || '',
     cli_nome:       d.cli_nome       || '',
+    cli_fone:       d.cli_fone       || '',
     val_total:      d.val_total      || '',
     servicos:       d.servicos       || [],
     criador:        d.criador        || '',
