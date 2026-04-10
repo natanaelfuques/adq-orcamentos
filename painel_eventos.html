@@ -1455,7 +1455,7 @@ function buildCard(ev, past, col) {
       if (s && s.indexOf('•') >= 0) {
         s.split('•').forEach(function(parte) {
           var p = parte.trim();
-          if (p) servicosExpandidos.push({ texto: p, idx: origIdx + '_' + servicosExpandidos.length });
+          if (p) servicosExpandidos.push({ texto: p, idx: origIdx });
         });
       } else {
         servicosExpandidos.push({ texto: s, idx: origIdx });

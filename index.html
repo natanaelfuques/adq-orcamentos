@@ -6797,13 +6797,13 @@ function renderNotas() {
     if (servicos.length || itensExtras.length) {
       itensHtml += '<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px">';
       itensHtml += '<div style="font-size:0.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Itens</div>';
-      // Expandir itens que contenham "•" em itens separados
+      // Expandir itens que contenham "•" em itens separados (data-idx sempre numérico original)
       var servicosExpandidos = [];
       servicos.forEach(function(s, origIdx) {
         if (s && s.indexOf('•') >= 0) {
           s.split('•').forEach(function(parte) {
             var p = parte.trim();
-            if (p) servicosExpandidos.push({ texto: p, idx: origIdx + '_' + servicosExpandidos.length });
+            if (p) servicosExpandidos.push({ texto: p, idx: origIdx });
           });
         } else {
           servicosExpandidos.push({ texto: s, idx: origIdx });
