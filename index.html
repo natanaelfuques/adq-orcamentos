@@ -1969,15 +1969,16 @@ Revestimento</textarea>
           <input type="text" id="ev_resp" placeholder="Quem receberá a equipe">
         </div>
       </div>
-      <div style="margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div>
-          <label>Local</label>
-          <input type="text" id="ev_local" placeholder="Ex: Salão das Rosas, Brusque/SC">
+      <div style="margin-bottom:16px">
+        <label>Local</label>
+        <div style="display:flex;align-items:center;border:1px solid #333;border-radius:6px;overflow:hidden;background:#111">
+          <input type="text" id="ev_local" placeholder="Ex: Salão das Rosas, Brusque/SC" oninput="_agendarRascunho()" style="flex:1;height:38px;border:none;background:transparent;color:#e0e0e0;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:0 10px;outline:none;">
+          <button id="btn-maps-local" title="Abrir no Maps / Colar link" onclick="_toggleMapsBtn()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;height:38px;padding:0 12px;border:none;border-left:1px solid #333;background:#1a1a1a;color:#4A90C8;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background 0.15s">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="btn-maps-label">Maps</span>
+          </button>
         </div>
-        <div>
-          <label>Link do Maps</label>
-          <input type="url" id="ev_maps" placeholder="https://maps.app.goo.gl/..." oninput="_agendarRascunho()">
-        </div>
+        <input type="url" id="ev_maps" placeholder="https://maps.app.goo.gl/..." oninput="_agendarRascunho();_atualizarBtnMaps()" style="display:none">
       </div>
       <div class="grid-3">
         <div>
@@ -2355,6 +2356,36 @@ function _atualizarBotoesLocaisPreset() {
     var p = LOCAIS_PRESETS[i];
     btn.textContent = (p && p.nome) ? p.nome : ('#' + i);
     btn.title = (p && p.val) ? p.val : '';
+  }
+}
+
+function _atualizarBtnMaps() {
+  var link = (document.getElementById('ev_maps') || {}).value || '';
+  var lbl = document.getElementById('btn-maps-label');
+  if (lbl) lbl.textContent = link ? 'Abrir' : 'Maps';
+}
+
+function _toggleMapsBtn() {
+  var inp = document.getElementById('ev_maps');
+  var link = inp ? inp.value.trim() : '';
+  if (link) {
+    window.open(link, '_blank', 'noopener');
+  } else {
+    navigator.clipboard.readText().then(function(t) {
+      t = t.trim();
+      if (t && (t.startsWith('http://') || t.startsWith('https://'))) {
+        inp.value = t;
+        _agendarRascunho();
+        _atualizarBtnMaps();
+        var btn = document.getElementById('btn-maps-local');
+        if (btn) { btn.style.color = '#25D366'; setTimeout(function(){ btn.style.color = '#4A90C8'; }, 1200); }
+      } else {
+        alert('Nenhum link válido na área de transferência.');
+      }
+    }).catch(function() {
+      inp.style.display = 'block';
+      inp.focus();
+    });
   }
 }
 
@@ -3134,7 +3165,7 @@ function aplicarOpcaoSelecionada() {
   setVal('cli_nome', d.nome || d.nome_cliente || '');
   setVal('ev_nome',  d.evento || d.tipo_evento || '');
   setVal('ev_local', d.local || '');
-  setVal('ev_maps',  d.ev_maps || d.maps_link || '');
+  setVal('ev_maps',  d.ev_maps || d.maps_link || ''); _atualizarBtnMaps();
   setVal('ev_data',  d.dataEvt || '');
   if (d.whatsapp_cliente) setVal('cli_fone', d.whatsapp_cliente);
 
@@ -4300,7 +4331,7 @@ function preencherContratoDados() {
   set('ev_nome',   d.ev_nome);
   set('ev_resp',   d.ev_resp);
   set('ev_local',  d.ev_local);
-  set('ev_maps',   d.ev_maps);
+  set('ev_maps',   d.ev_maps); _atualizarBtnMaps();
   set('ev_data',   d.ev_data);
   set('ev_inicio', d.ev_inicio);
   set('ev_fim',    d.ev_fim);
@@ -5823,7 +5854,7 @@ function abrirContrato(id) {
     set('ev_nome',   d.ev_nome   || '');
     set('ev_resp',   d.ev_resp   || '');
     set('ev_local',  d.ev_local  || '');
-    set('ev_maps',   d.ev_maps   || '');
+    set('ev_maps',   d.ev_maps   || ''); _atualizarBtnMaps();
     set('ev_data',   d.ev_data   || '');
     set('ev_inicio', d.ev_inicio || '');
     set('ev_fim',    d.ev_fim    || '');
@@ -8265,7 +8296,7 @@ function _aplicarIA(d, destino) {
       setVal('ev_nome',   d.ev_nome   || d.tipo_evento);
       setVal('ev_resp',   d.ev_resp   || d.nome_cliente || d.cli_nome);
       setVal('ev_local',  d.ev_local  || d.local_evento);
-      setVal('ev_maps',   d.ev_maps   || '');
+      setVal('ev_maps',   d.ev_maps   || ''); _atualizarBtnMaps();
       setVal('ev_data',   d.data_evento);
       setVal('ev_inicio', d.ev_inicio);
       setVal('ev_fim',    d.ev_fim);
