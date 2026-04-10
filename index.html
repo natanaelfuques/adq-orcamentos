@@ -1865,6 +1865,7 @@ Revestimento</textarea>
         <button class="salvos-filter-btn active" id="filtro-con-todos" onclick="setFiltroConStatus('todos')">Todos</button>
         <button class="salvos-filter-btn" id="filtro-con-pendente" onclick="setFiltroConStatus('pendente')">Pendentes</button>
         <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
+        <button class="salvos-filter-btn" id="filtro-con-confirmado" onclick="setFiltroConStatus('confirmado')">Confirmados</button>
         <button class="salvos-filter-btn" id="filtro-con-sem-painel" onclick="setFiltroConStatus('sem-painel')">- Painel</button>
       </div>
     </div>
@@ -5050,6 +5051,8 @@ function handleSalvosClick(e) {
     btn.setAttribute('data-aprovado', novoAprovado);
     btn.className = 'salvo-status' + (novaClasse ? ' ' + novaClasse : '');
     btn.style.cssText = 'cursor:pointer;background:transparent';
+    var monRow = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('.salvo-montagem-row');
+    if (monRow) monRow.style.display = novoStatus === 'confirmado' ? '' : 'none';
   }
   else if (action === 'toggle-aprovado') {
     if (!db) return;
@@ -5748,7 +5751,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button' + (_temEvento ? ' onclick="irParaEventoRef(\'' + ref + '\')"' : '') + ' data-ref-contrato="' + ref + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + refColor + ';letter-spacing:0.1em;background:transparent;border:none;cursor:' + refCursor + ';padding:0;transition:color 0.15s"' + (_temEvento ? ' onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"' : '') + '># ' + ref + '</button>';
     card += '</span>';
     card += '</div>';
-    card += '<div class="salvo-montagem-row" style="' + (aprovado && etapa !== 'concluido' ? '' : 'display:none') + '">';
+    card += '<div class="salvo-montagem-row" style="' + (_statusCon === 'confirmado' && etapa !== 'concluido' ? '' : 'display:none') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Desmontagem" data-field="desmontagem" data-id="' + id + '" value="' + escHtml(doc.desmontagem || '') + '">';
     card += '</div>';
@@ -6004,7 +6007,8 @@ function filtrarContratos() {
     var matchStatus = (_filtroConStatus === 'todos') ||
       (_filtroConStatus === 'sem-painel' && !noPainel) ||
       (_filtroConStatus === 'pendente' && sc === 'pendente') ||
-      (_filtroConStatus === 'assinado' && (sc === 'assinado' || sc === 'confirmado'));
+      (_filtroConStatus === 'assinado' && sc === 'assinado') ||
+      (_filtroConStatus === 'confirmado' && sc === 'confirmado');
     return matchTexto && matchStatus;
   });
   renderContratos(filtrados);
