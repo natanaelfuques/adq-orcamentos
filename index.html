@@ -3218,7 +3218,9 @@ function gerarOrcamento() {
   iframe.srcdoc = html;
 
   document.getElementById('preview-area').style.display = 'block';
-  document.getElementById('preview-area').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(function() {
+    document.getElementById('preview-area').scrollIntoView({ behavior: 'smooth' });
+  }, 100);
 
   // Salva para impressão
   window._printHTML = html;
