@@ -4780,12 +4780,6 @@ function handleSalvosClick(e) {
     var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : 'Pendente';
     var novaClasse = novoStatus === 'confirmado' ? 'confirmado' : novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : '';
     db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado })
-      .then(function() {
-        // Verificar metas em tempo real quando contrato vira assinado ou confirmado
-        if (novoStatus === 'assinado' || novoStatus === 'confirmado') {
-          setTimeout(function() { _verificarMetasAoAbrir(true); }, 1000);
-        }
-      })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
     btn.textContent = novoLabel;
     btn.setAttribute('data-status', novoStatus);
@@ -6237,7 +6231,6 @@ function verificarAssinaturaAutentique(contratoId, btn) {
       btn.className = 'salvo-status btn-autentique-check assinado-aut';
       if (db) {
         db.collection('contratos').doc(contratoId).update({ status_contrato: 'assinado', aprovado: true })
-          .then(function() { adicionarAoPainel(contratoId); setTimeout(function() { _verificarMetasAoAbrir(true); }, 1500); })
           .catch(function(e) { console.warn('[AdQ] Erro ao atualizar status:', e); });
         var statusBtn = document.querySelector('[data-action="toggle-aprovado-contrato"][data-id="' + contratoId + '"]');
         if (statusBtn && statusBtn.getAttribute('data-status') !== 'assinado') {
@@ -6292,7 +6285,6 @@ function _pollingAutentique() {
           var assinado = sigs.length > 0 && sigs.every(function(s) { return s.signed_at && s.signed_at.date; });
           if (!assinado) return;
           db.collection('contratos').doc(cid).update({ status_contrato: 'assinado', aprovado: true })
-            .then(function() { adicionarAoPainel(cid); })
             .catch(function(e) { console.warn('[AdQ] Polling erro update:', e); });
           var statusBtn = document.querySelector('[data-action="toggle-aprovado-contrato"][data-id="' + cid + '"]');
           if (statusBtn) {
