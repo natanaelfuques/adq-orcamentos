@@ -1262,10 +1262,10 @@ header {
         <div id="conn-dot"></div>
         <span id="conn-label">Online</span>
       </div>
-      <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico">
-        <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="3" r="2.2"/><circle cx="9.5" cy="3" r="2.2"/><path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/><path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/></svg>
+      <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico de Acessos" style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">
+        Acessos
       </button>
-      <button id="btn-ia-config" onclick="abrirModalConfiguracoes()" title="Configurações" style="background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 6px;cursor:pointer;display:none;align-items:center;justify-content:center;align-self:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.69.07-1.08s-.03-.73-.07-1.08l2.32-1.82c.21-.16.27-.45.14-.69l-2.2-3.81c-.13-.24-.41-.32-.65-.24l-2.74 1.1c-.57-.44-1.17-.8-1.84-1.08L14.26 2.1A.535.535 0 0 0 13.74 2h-3.48c-.26 0-.48.18-.52.44L9.45 5.18C8.78 5.46 8.18 5.83 7.61 6.27L4.87 5.17c-.24-.09-.52 0-.65.24l-2.2 3.81c-.13.23-.07.53.14.69L4.48 11.5c-.04.35-.07.7-.07 1.08s.03.73.07 1.08L2.16 15.48c-.21.16-.27.45-.14.69l2.2 3.81c.13.24.41.32.65.24l2.74-1.1c.57.44 1.17.8 1.84 1.08l.29 2.91c.04.26.26.44.52.44h3.48c.26 0 .48-.18.52-.44l.29-2.91c.67-.28 1.27-.65 1.84-1.08l2.74 1.1c.24.09.52 0 .65-.24l2.2-3.81c.13-.23.07-.53-.14-.69l-2.32-1.81z"/></svg></button>
+      <button id="btn-ia-config" onclick="abrirModalConfiguracoes()" title="Configurações" style="background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 8px;cursor:pointer;display:none;align-items:center;justify-content:center;align-self:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s;font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'">Admin</button>
       <button id="btn-gerador-sair" onclick="geradorSair()">Sair</button>
       <button id="pwa-install-btn" onclick="adqInstall()">&#8659; Instalar</button>
     </div>
@@ -3218,9 +3218,7 @@ function gerarOrcamento() {
   iframe.srcdoc = html;
 
   document.getElementById('preview-area').style.display = 'block';
-  setTimeout(function() {
-    document.getElementById('preview-area').scrollIntoView({ behavior: 'smooth' });
-  }, 100);
+  document.getElementById('preview-area').scrollIntoView({ behavior: 'smooth' });
 
   // Salva para impressão
   window._printHTML = html;
@@ -4713,27 +4711,38 @@ function initFirebase(config) {
     db = firebase.firestore();
     var auth = firebase.auth();
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    var ALLOWED = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
+    // Admin fixo — sempre tem acesso e pode gerenciar usuários
+    var ADMIN_EMAIL = 'natanael.fuques@gmail.com';
     auth.onAuthStateChanged(function(user) {
-      window._currentUser = (user && ALLOWED.indexOf(user.email) !== -1) ? user : null;
-      if (user && ALLOWED.indexOf(user.email) !== -1) {
+      if (!user) {
+        window._currentUser = null;
+        window._currentUserDoc = null;
+        document.getElementById('gerador-login-screen').style.display = 'flex';
+        document.getElementById('gerador-app').style.display = 'none';
+        var btn = document.getElementById('gerador-btn-login');
+        if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
+        return;
+      }
+      // Admin sempre entra; demais precisam estar na coleção 'usuarios' com ativo:true
+      function _entrarNoApp(userDoc) {
+        window._currentUser = user;
+        window._currentUserDoc = userDoc || null;
+        var isAdmin = user.email === ADMIN_EMAIL;
         document.getElementById('gerador-login-screen').style.display = 'none';
         document.getElementById('gerador-app').style.display = 'block';
         var hu = document.getElementById('header-user');
-        if (hu) hu.textContent = user.email.split('@')[0];
+        if (hu) hu.textContent = (userDoc && userDoc.nome) ? userDoc.nome : user.email.split('@')[0];
         var bs = document.getElementById('btn-gerador-sair');
         if (bs) bs.style.display = 'inline-block';
         var ba = document.getElementById('btn-gerador-acessos');
-        if (ba) ba.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'inline-flex' : 'none';
+        if (ba) ba.style.display = isAdmin ? 'inline-flex' : 'none';
         var bic = document.getElementById('btn-ia-config');
-        if (bic) bic.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'inline-flex' : 'none';
+        if (bic) bic.style.display = isAdmin ? 'inline-flex' : 'none';
         registrarAcessoGerador(user);
         iniciarListenerSalvos();
         iniciarConnIndicator();
         carregarPresetsFirestore();
-        // Verificar metas ao logar (notificação automática)
         setTimeout(function() { _verificarMetasAoAbrir(); }, 2500);
-        // Carregar chave Anthropic do Firestore (fallback: localStorage)
         if (db) {
           db.collection('config').doc('ia').get().then(function(doc) {
             if (doc.exists && doc.data().anthropic_key && doc.data().anthropic_key.startsWith('sk-')) {
@@ -4743,13 +4752,32 @@ function initFirebase(config) {
           }).catch(function(){});
           _carregarTokensAPIs();
         }
-      } else {
-        if (user) auth.signOut();
+      }
+      function _negarAcesso() {
+        window._currentUser = null;
+        window._currentUserDoc = null;
+        auth.signOut();
         document.getElementById('gerador-login-screen').style.display = 'flex';
         document.getElementById('gerador-app').style.display = 'none';
+        var err = document.getElementById('gerador-login-error');
+        if (err) { err.textContent = 'Acesso negado. Conta não autorizada ou desativada.'; err.style.display = 'block'; }
         var btn = document.getElementById('gerador-btn-login');
         if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
       }
+      if (user.email === ADMIN_EMAIL) {
+        _entrarNoApp(null);
+        return;
+      }
+      // Verificar na coleção 'usuarios' do Firestore
+      db.collection('usuarios').where('email', '==', user.email).limit(1).get()
+        .then(function(snap) {
+          if (!snap.empty) {
+            var doc = snap.docs[0].data();
+            if (doc.ativo === true) { _entrarNoApp(doc); }
+            else { _negarAcesso(); }
+          } else { _negarAcesso(); }
+        })
+        .catch(function() { _negarAcesso(); });
     });
   } catch(e) {
     console.warn('[AdQ] Firebase erro:', e);
@@ -8260,14 +8288,15 @@ function abrirModalConfiguracoes() {
     <div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">
       <!-- Header -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0 22px">
-        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>
-        <button onclick="document.body.style.overflow='';document.getElementById('modal-configuracoes').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">Painel do Administrador</span>
+        <button onclick="document.body.style.overflow='';document.getElementById('modal-configuracoes').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">&#x2715;</button>
       </div>
       <!-- Abas -->
-      <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">
-        <button id="cfg-tab-metas" onclick="_cfgAba(0)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Metas</button>
-        <button id="cfg-tab-config" onclick="_cfgAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">IP</button>
-        <button id="cfg-tab-apis" onclick="_cfgAba(2)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">APIs</button>
+      <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px;overflow-x:auto;scrollbar-width:none">
+        <button id="cfg-tab-metas" onclick="_cfgAba(0)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;white-space:nowrap">Metas</button>
+        <button id="cfg-tab-config" onclick="_cfgAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;white-space:nowrap">IP</button>
+        <button id="cfg-tab-apis" onclick="_cfgAba(2)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;white-space:nowrap">APIs</button>
+        <button id="cfg-tab-usuarios" onclick="_cfgAba(3)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;white-space:nowrap">Usuários</button>
       </div>
       <!-- Slider de abas -->
       <div id="cfg-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">
@@ -8276,7 +8305,7 @@ function abrirModalConfiguracoes() {
 
         <!-- Banner de celebração (hidden by default) -->
         <div id="meta-banner-conquista" style="display:none;background:linear-gradient(135deg,#2a1f0a,#1a1a0a);border:1px solid #C8A94A;border-radius:8px;padding:14px 18px;margin-bottom:14px;text-align:center;animation:metaPulse 1.5s ease-in-out infinite alternate">
-          <div style="margin-bottom:4px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8A94A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M6 3h12v7a6 6 0 0 1-12 0V3z"/><path d="M9 21h6"/><path d="M12 16v5"/></svg></div>
+          <div style="margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;color:#C8A94A;line-height:1">&#9733;</div>
           <div id="meta-banner-texto" style="font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em"></div>
         </div>
 
@@ -8303,7 +8332,7 @@ function abrirModalConfiguracoes() {
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:0.7rem;color:#555;white-space:nowrap">Meta R$</span>
             <input id="meta-receita-input" type="text" inputmode="numeric" placeholder="Ex: 15000" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
-            <button onclick="_salvarMeta('receita')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L5 9.5L10 3"/></svg></button>
+            <button onclick="_salvarMeta('receita')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">OK</button>
           </div>
         </div>
 
@@ -8323,7 +8352,7 @@ function abrirModalConfiguracoes() {
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:0.7rem;color:#555;white-space:nowrap">Meta qtd</span>
             <input id="meta-eventos-input" type="text" inputmode="numeric" placeholder="Ex: 10" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
-            <button onclick="_salvarMeta('eventos')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L5 9.5L10 3"/></svg></button>
+            <button onclick="_salvarMeta('eventos')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">OK</button>
           </div>
         </div>
 
@@ -8341,7 +8370,7 @@ function abrirModalConfiguracoes() {
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:0.7rem;color:#555;white-space:nowrap">Meta R$</span>
             <input id="meta-ticket-input" type="text" inputmode="numeric" placeholder="Ex: 3000" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
-            <button onclick="_salvarMeta('ticket')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L5 9.5L10 3"/></svg></button>
+            <button onclick="_salvarMeta('ticket')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">OK</button>
           </div>
         </div>
 
@@ -8359,7 +8388,7 @@ function abrirModalConfiguracoes() {
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:0.7rem;color:#555;white-space:nowrap">Meta R$</span>
             <input id="meta-anual-input" type="text" inputmode="numeric" placeholder="Ex: 150000" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
-            <button onclick="_salvarMeta('anual')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L5 9.5L10 3"/></svg></button>
+            <button onclick="_salvarMeta('anual')" style="background:#1e1e1e;border:1px solid #333;color:#aaa;padding:8px 12px;border-radius:4px;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">OK</button>
           </div>
         </div>
 
@@ -8402,7 +8431,7 @@ function abrirModalConfiguracoes() {
             <div style="font-size:0.72rem;color:#666">Rastreia o IP de cada acesso.</div>
           </div>
           <div id="cfg-ip-badge" style="display:none"></div>
-          <button onclick="_rastrearIPAgora()" style="width:100%;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center;gap:6px" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 1,1 4,1"/><polyline points="13,10 13,13 10,13"/><path d="M1,1 C3,0 10,0 12,5"/><path d="M13,13 C11,14 4,14 2,9"/></svg> Verificar agora</button>
+          <button onclick="_rastrearIPAgora()" style="width:100%;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">Verificar agora</button>
           <div id="cfg-ip-resultado" style="display:none;margin-top:12px;padding:12px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;font-size:0.72rem;line-height:2;color:#ccc;word-break:break-all"></div>
           <div style="margin-top:12px">
             <div style="font-size:0.68rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Últimos acessos registrados</div>
@@ -8421,7 +8450,7 @@ function abrirModalConfiguracoes() {
               <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Firebase</div>
               <div style="font-size:0.68rem;color:#555">Somente leitura — configuração fixa no código.</div>
             </div>
-            <span style="display:flex;align-items:center;gap:4px;font-size:0.6rem;color:#444;border:1px solid #2a2a2a;border-radius:3px;padding:3px 7px;text-transform:uppercase;letter-spacing:0.08em"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:0.6rem;color:#444;border:1px solid #2a2a2a;border-radius:3px;padding:3px 7px;text-transform:uppercase;letter-spacing:0.08em;font-family:'Barlow Condensed',sans-serif;font-weight:700">Fixo</span>
           </div>
           <div id="cfg-firebase-fields" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
@@ -8434,11 +8463,11 @@ function abrirModalConfiguracoes() {
           </div>
           <div style="position:relative">
             <input id="cfg-api-autentique" type="password" value="" placeholder="Cole seu token aqui" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:9px 36px 9px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
-            <button onclick="_toggleApiVis('cfg-api-autentique',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#555;cursor:pointer;padding:4px;display:flex;align-items:center" title="Mostrar/ocultar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button onclick="_toggleApiVis('cfg-api-autentique',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#555;cursor:pointer;padding:4px 6px;font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase" title="Mostrar/ocultar">Ver</button>
           </div>
           <div style="display:flex;gap:8px;margin-top:10px">
-            <button onclick="_salvarApiAutentique()" style="flex:1;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center;gap:5px" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L5 9.5L10 3"/></svg> Salvar</button>
-            <button onclick="_limparApiAutentique()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#555'"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3L9 9M9 3L3 9"/></svg></button>
+            <button onclick="_salvarApiAutentique()" style="flex:1;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">Salvar</button>
+            <button onclick="_limparApiAutentique()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#555'">&#x2715;</button>
           </div>
           <div id="cfg-api-autentique-status" style="display:none;margin-top:8px;font-size:0.7rem;text-align:center"></div>
         </div>
@@ -8451,13 +8480,49 @@ function abrirModalConfiguracoes() {
           </div>
           <div style="position:relative">
             <input id="cfg-api-anthropic" type="password" value="" placeholder="sk-ant-..." style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:9px 36px 9px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
-            <button onclick="_toggleApiVis('cfg-api-anthropic',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#555;cursor:pointer;padding:4px;display:flex;align-items:center" title="Mostrar/ocultar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button onclick="_toggleApiVis('cfg-api-anthropic',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#555;cursor:pointer;padding:4px 6px;font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase" title="Mostrar/ocultar">Ver</button>
           </div>
           <div style="display:flex;gap:8px;margin-top:10px">
-            <button onclick="_salvarApiAnthropic()" style="flex:1;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center;gap:5px" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L5 9.5L10 3"/></svg> Salvar</button>
-            <button onclick="_limparApiAnthropic()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#555'"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3L9 9M9 3L3 9"/></svg></button>
+            <button onclick="_salvarApiAnthropic()" style="flex:1;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">Salvar</button>
+            <button onclick="_limparApiAnthropic()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#555'">&#x2715;</button>
           </div>
           <div id="cfg-api-anthropic-status" style="display:none;margin-top:8px;font-size:0.7rem;text-align:center"></div>
+        </div>
+
+      </div>
+      <!-- Aba Usuários -->
+      <div id="cfg-panel-usuarios" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
+
+        <!-- Formulário: Cadastrar novo usuário -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Cadastrar Usuário</div>
+          <div style="font-size:0.68rem;color:#555;margin-bottom:14px">O usuário precisa criar a conta no Firebase Auth com este e-mail antes de fazer login aqui.</div>
+          <div style="margin-bottom:10px">
+            <div style="font-size:0.65rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px">Nome</div>
+            <input id="usr-novo-nome" type="text" placeholder="Ex: Maria Silva" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:9px 11px;border-radius:4px;font-family:'Barlow',sans-serif;font-size:0.85rem;box-sizing:border-box;outline:none;transition:border-color 0.15s" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#2a2a2a'" />
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="font-size:0.65rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px">E-mail</div>
+            <input id="usr-novo-email" type="email" placeholder="usuario@email.com" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:9px 11px;border-radius:4px;font-family:'Barlow',sans-serif;font-size:0.85rem;box-sizing:border-box;outline:none;transition:border-color 0.15s" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#2a2a2a'" />
+          </div>
+          <div style="margin-bottom:14px">
+            <div style="font-size:0.65rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px">Cargo / Permissão</div>
+            <select id="usr-novo-cargo" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:9px 11px;border-radius:4px;font-family:'Barlow',sans-serif;font-size:0.85rem;box-sizing:border-box;outline:none;transition:border-color 0.15s" onfocus="this.style.borderColor='#C8A94A'" onblur="this.style.borderColor='#2a2a2a'">
+              <option value="operador">Operador</option>
+              <option value="visualizador">Visualizador</option>
+            </select>
+          </div>
+          <button onclick="_usuarioCadastrar()" style="width:100%;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:10px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'">Cadastrar</button>
+          <div id="usr-cadastro-status" style="display:none;margin-top:8px;font-size:0.7rem;text-align:center;font-family:'Barlow',sans-serif"></div>
+        </div>
+
+        <!-- Lista de usuários -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Usuários Cadastrados</div>
+            <button onclick="_usuariosCarregar()" style="background:transparent;border:1px solid #2a2a2a;color:#555;border-radius:4px;padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#555'">Atualizar</button>
+          </div>
+          <div id="usr-lista" style="font-size:0.78rem;color:#555;font-style:italic">Carregando...</div>
         </div>
 
       </div>
@@ -8482,7 +8547,7 @@ function abrirModalConfiguracoes() {
 }
 
 function _cfgAba(idx, fromScroll) {
-  var keys = ['metas','config','apis'];
+  var keys = ['metas','config','apis','usuarios'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('cfg-tab-' + k);
     if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
@@ -8491,6 +8556,102 @@ function _cfgAba(idx, fromScroll) {
     var slider = document.getElementById('cfg-slider');
     if (slider) slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
   }
+  // Carregar usuários ao abrir a aba
+  if (idx === 3) _usuariosCarregar();
+}
+
+// ── GESTÃO DE USUÁRIOS ─────────────────────────────────────────────────────────
+
+function _usuariosCarregar() {
+  var lista = document.getElementById('usr-lista');
+  if (!lista || !db) return;
+  lista.innerHTML = '<span style="color:#555;font-style:italic">Carregando...</span>';
+  db.collection('usuarios').orderBy('nome').get()
+    .then(function(snap) {
+      if (snap.empty) {
+        lista.innerHTML = '<span style="color:#444;font-style:italic">Nenhum usuário cadastrado ainda.</span>';
+        return;
+      }
+      var html = '';
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        var id = doc.id;
+        var ativo = d.ativo === true;
+        var cargo = d.cargo || 'operador';
+        var cargoLabel = cargo === 'visualizador' ? 'Visualizador' : 'Operador';
+        html += '<div id="usr-item-' + id + '" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #1e1e1e;flex-wrap:wrap">' +
+          '<div style="min-width:0;flex:1">' +
+            '<div style="font-size:0.8rem;font-weight:700;color:' + (ativo ? '#e8e8e8' : '#444') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (d.nome || '—') + '</div>' +
+            '<div style="font-size:0.68rem;color:#555;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (d.email || '') + '</div>' +
+            '<div style="margin-top:4px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">' +
+              '<span style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:' + (ativo ? '#C8A94A' : '#3a3a3a') + ';border:1px solid ' + (ativo ? '#C8A94A' : '#2a2a2a') + ';border-radius:3px;padding:1px 6px">' + (ativo ? 'Ativo' : 'Inativo') + '</span>' +
+              '<span style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#555;border:1px solid #2a2a2a;border-radius:3px;padding:1px 6px">' + cargoLabel + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-shrink:0">' +
+            '<button onclick="_usuarioToggle(\'' + id + '\',' + ativo + ')" title="' + (ativo ? 'Desativar' : 'Ativar') + '" style="background:transparent;border:1px solid ' + (ativo ? '#e05c5c' : '#25D366') + ';color:' + (ativo ? '#e05c5c' : '#25D366') + ';border-radius:4px;padding:5px 9px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;transition:opacity 0.15s" onmouseover="this.style.opacity=\'0.75\'" onmouseout="this.style.opacity=\'1\'">' + (ativo ? 'Desativar' : 'Ativar') + '</button>' +
+            '<button onclick="_usuarioExcluir(\'' + id + '\',\'' + (d.nome||'').replace(/'/g,"\\'") + '\')" title="Excluir" style="background:transparent;border:1px solid #2a2a2a;color:#444;border-radius:4px;padding:5px 8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor=\'#e05c5c\';this.style.color=\'#e05c5c\'" onmouseout="this.style.borderColor=\'#2a2a2a\';this.style.color=\'#444\'">&#x2715;</button>' +
+          '</div>' +
+        '</div>';
+      });
+      lista.innerHTML = html || '<span style="color:#444;font-style:italic">Nenhum usuário cadastrado.</span>';
+    })
+    .catch(function(e) {
+      lista.innerHTML = '<span style="color:#e05c5c">Erro ao carregar: ' + e.message + '</span>';
+    });
+}
+
+function _usuarioCadastrar() {
+  var nome = (document.getElementById('usr-novo-nome') || {}).value || '';
+  var email = (document.getElementById('usr-novo-email') || {}).value || '';
+  var cargo = (document.getElementById('usr-novo-cargo') || {}).value || 'operador';
+  var st = document.getElementById('usr-cadastro-status');
+  nome = nome.trim(); email = email.trim().toLowerCase();
+  if (!nome) { _usrStatus('Preencha o nome.', '#e05c5c'); return; }
+  if (!email || email.indexOf('@') < 1) { _usrStatus('E-mail inválido.', '#e05c5c'); return; }
+  if (!db) { _usrStatus('Banco de dados não conectado.', '#e05c5c'); return; }
+  // Checar duplicata
+  _usrStatus('Verificando...', '#C8A94A');
+  db.collection('usuarios').where('email', '==', email).limit(1).get()
+    .then(function(snap) {
+      if (!snap.empty) { _usrStatus('Este e-mail já está cadastrado.', '#e05c5c'); return; }
+      return db.collection('usuarios').add({
+        nome: nome,
+        email: email,
+        cargo: cargo,
+        ativo: true,
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        _usrStatus('Usuário cadastrado com sucesso!', '#25D366');
+        document.getElementById('usr-novo-nome').value = '';
+        document.getElementById('usr-novo-email').value = '';
+        _usuariosCarregar();
+      });
+    })
+    .catch(function(e) { _usrStatus('Erro: ' + e.message, '#e05c5c'); });
+}
+
+function _usuarioToggle(id, ativoAtual) {
+  if (!db) return;
+  var novoEstado = !ativoAtual;
+  db.collection('usuarios').doc(id).update({ ativo: novoEstado })
+    .then(function() { _usuariosCarregar(); })
+    .catch(function(e) { alert('Erro: ' + e.message); });
+}
+
+function _usuarioExcluir(id, nome) {
+  if (!confirm('Excluir o usuário "' + nome + '"? Esta ação não pode ser desfeita.')) return;
+  if (!db) return;
+  db.collection('usuarios').doc(id).delete()
+    .then(function() { _usuariosCarregar(); })
+    .catch(function(e) { alert('Erro ao excluir: ' + e.message); });
+}
+
+function _usrStatus(msg, color) {
+  var el = document.getElementById('usr-cadastro-status');
+  if (!el) return;
+  el.style.display = 'block'; el.style.color = color; el.textContent = msg;
+  setTimeout(function() { if (el) el.style.display = 'none'; }, 3500);
 }
 
 function _buscarDadosIP() {
@@ -9309,10 +9470,8 @@ function _initAbaAPIs() {
 function _toggleApiVis(inputId, btn) {
   var inp = document.getElementById(inputId);
   if (!inp) return;
-  var eyeOpen = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-  var eyeClosed = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
-  if (inp.type === 'password') { inp.type = 'text'; btn.innerHTML = eyeClosed; }
-  else { inp.type = 'password'; btn.innerHTML = eyeOpen; }
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Ocultar'; }
+  else { inp.type = 'password'; btn.textContent = 'Ver'; }
 }
 
 function _salvarApiAutentique() {
