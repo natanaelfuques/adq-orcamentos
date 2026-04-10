@@ -701,7 +701,8 @@
     transition: all 0.15s;
     margin-top: 8px;
   }
-  .salvo-status.aprovado   { border-color: #25D366; color: #25D366; }
+  .salvo-status.aprovado   { border-color: #4A90C8; color: #4A90C8; }
+  .salvo-status.confirmado { border-color: #25D366; color: #25D366; }
   .salvo-status.enviado    { border-color: #C8A94A; color: #C8A94A; }
   .salvo-status.andamento  { border-color: var(--gold); color: var(--gold); cursor: default; }
   .salvo-status.concluido  { border-color: #25D366; color: #25D366; cursor: default; }
@@ -4774,14 +4775,14 @@ function handleSalvosClick(e) {
   else if (action === 'toggle-aprovado-contrato') {
     if (!db) return;
     var statusAtual = btn.getAttribute('data-status') || (btn.getAttribute('data-aprovado') === 'true' ? 'assinado' : 'pendente');
-    var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : 'pendente';
-    var novoAprovado = novoStatus === 'assinado';
-    var novoLabel = novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : 'Pendente';
-    var novaClasse = novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : '';
+    var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : statusAtual === 'assinado' ? 'confirmado' : 'pendente';
+    var novoAprovado = novoStatus === 'assinado' || novoStatus === 'confirmado';
+    var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : 'Pendente';
+    var novaClasse = novoStatus === 'confirmado' ? 'confirmado' : novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : '';
     db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado })
       .then(function() {
         // Verificar metas em tempo real quando contrato vira assinado
-        if (novoStatus === 'assinado') {
+        if (novoStatus === 'assinado' || novoStatus === 'confirmado') {
           setTimeout(function() { _verificarMetasAoAbrir(true); }, 1000);
         }
       })
@@ -5441,8 +5442,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var etapa = etapaMap[id]; // 'eventos','andamento','concluido' ou undefined
     // Determinar estado visual do botão
     var _statusCon = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
-    var statusClass = _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : '';
-    var statusLabel = _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado...' : 'Pendente';
+    var statusClass = _statusCon === 'confirmado' ? ' confirmado' : _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : '';
+    var statusLabel = _statusCon === 'confirmado' ? 'Confirmado' : _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado...' : 'Pendente';
     var statusClickable = true;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
@@ -5743,7 +5744,7 @@ function filtrarContratos() {
     var matchStatus = (_filtroConStatus === 'todos') ||
       (_filtroConStatus === 'sem-painel' && !noPainel) ||
       (_filtroConStatus === 'pendente' && sc === 'pendente') ||
-      (_filtroConStatus === 'assinado' && sc === 'assinado');
+      (_filtroConStatus === 'assinado' && (sc === 'assinado' || sc === 'confirmado'));
     return matchTexto && matchStatus;
   });
   renderContratos(filtrados);
@@ -6273,7 +6274,7 @@ function _pollingAutentique() {
       snap.forEach(function(docSnap) {
         var dados = docSnap.data();
         var sc = dados.status_contrato || (dados.aprovado ? 'assinado' : 'pendente');
-        if (sc === 'assinado') return;
+        if (sc === 'assinado' || sc === 'confirmado') return;
         var autId = dados.autentique_id;
         var cid = docSnap.id;
         var query = 'query { document(id: "' + autId + '") { signatures { signed_at { date } } } }';
@@ -6967,14 +6968,6 @@ function handleNotasClick(e) {
         switchMain('salvos');
         if (typeof switchSalvosTab === 'function') switchSalvosTab('contratos');
       }).catch(function(e) { alert('Erro ao remover do painel: ' + e.message); });
-
-  } else if (action === 'whatsapp-nota') {
-    var fone = btn.getAttribute('data-fone') || '';
-    var numero = fone.replace(/\D/g, '');
-    if (!numero) { alert('Número de contato não encontrado.'); return; }
-    if (numero.length <= 11) numero = '55' + numero;
-    btn.blur();
-    window.open('https://wa.me/' + numero, '_blank');
 
   } else if (action === 'painel-nota') {
     if (!db) return;
