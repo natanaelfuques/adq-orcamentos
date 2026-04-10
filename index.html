@@ -1972,7 +1972,7 @@ Revestimento</textarea>
       <div style="margin-bottom:16px">
         <label>Local</label>
         <div style="display:flex;align-items:center;border:1px solid #333;border-radius:6px;overflow:hidden;background:#111">
-          <input type="text" id="ev_local" placeholder="Ex: Salão das Rosas, Brusque/SC" oninput="_agendarRascunho()" style="flex:1;height:38px;border:none;background:transparent;color:#e0e0e0;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:0 10px;outline:none;">
+          <input type="text" id="ev_local" placeholder="Ex: Salão das Rosas, Brusque/SC" oninput="_agendarRascunho()" onblur="if(!this.value.trim()){var m=document.getElementById('ev_maps');if(m)m.value='';_atualizarBtnMaps();}" style="flex:1;height:38px;border:none;background:transparent;color:#e0e0e0;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:0 10px;outline:none;">
           <button id="btn-maps-local" title="Abrir no Maps / Colar link" onclick="_toggleMapsBtn()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;height:38px;padding:0 12px;border:none;border-left:1px solid #333;background:#1a1a1a;color:#4A90C8;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background 0.15s">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             <span id="btn-maps-label">Maps</span>
@@ -4222,7 +4222,7 @@ function baixarDadosContrato() {
     ev_nome:   document.getElementById('ev_nome').value,
     ev_resp:   document.getElementById('ev_resp').value,
     ev_local:  document.getElementById('ev_local').value,
-    ev_maps:   document.getElementById('ev_maps') ? document.getElementById('ev_maps').value : '',
+    ev_maps:   (document.getElementById('ev_local').value.trim() && document.getElementById('ev_maps')) ? document.getElementById('ev_maps').value : '',
     ev_data:   document.getElementById('ev_data').value,
     ev_inicio: document.getElementById('ev_inicio').value,
     ev_fim:    document.getElementById('ev_fim').value,
@@ -7532,7 +7532,7 @@ function _abrirModalEditarNota(nota) {
       '<div style="flex:1">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Local</label>' +
         '<div style="display:flex;align-items:center;border:1px solid #444;border-radius:4px;overflow:hidden;background:#111">' +
-          '<input id="nota-edit-local" type="text" value="' + escHtml(nota.ev_local || '') + '" placeholder="Ex: Salão Espaço Nobre" style="flex:1;height:36px;border:none;background:transparent;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:0 10px;outline:none;box-sizing:border-box">' +
+          '<input id="nota-edit-local" type="text" value="' + escHtml(nota.ev_local || '') + '" placeholder="Ex: Salão Espaço Nobre" onblur="if(!this.value.trim()){var m=document.getElementById(&apos;nota-edit-maps&apos;);if(m)m.value=&apos;&apos;;var l=document.getElementById(&apos;btn-nota-maps-label&apos;);if(l)l.textContent=&apos;Maps&apos;;}" style="flex:1;height:36px;border:none;background:transparent;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:0 10px;outline:none;box-sizing:border-box">' +
           '<button id="btn-nota-maps" title="Abrir no Maps / Colar link" onclick="_toggleNotaMapsBtn()" style="flex-shrink:0;display:flex;align-items:center;gap:4px;height:36px;padding:0 10px;border:none;border-left:1px solid #333;background:#1a1a1a;color:#4A90C8;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap">' +
             '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' +
             '<span id="btn-nota-maps-label">' + (nota.ev_maps ? 'Abrir' : 'Maps') + '</span>' +
@@ -7598,7 +7598,7 @@ function _salvarEdicaoNota(id) {
   var contato = (document.getElementById('nota-edit-contato') || {}).value || '';
   var evData  = (document.getElementById('nota-edit-data')   || {}).value || '';
   var evLocal  = (document.getElementById('nota-edit-local')  || {}).value || '';
-  var evMaps   = (document.getElementById('nota-edit-maps')   || {}).value || '';
+  var evMaps   = evLocal.trim() ? ((document.getElementById('nota-edit-maps')   || {}).value || '') : '';
   var evInicio = (document.getElementById('nota-edit-inicio') || {}).value || '';
   var evFim    = (document.getElementById('nota-edit-fim')    || {}).value || '';
   var valTotal = (document.getElementById('nota-edit-valor')  || {}).value || '';
