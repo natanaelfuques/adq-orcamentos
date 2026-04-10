@@ -1491,7 +1491,7 @@ function buildCard(ev, past, col) {
       var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
       if (isObs) {
         return '<div class="card-item" style="align-items:center;display:flex">' +
-          '<span class="item-text" style="color:var(--gold);flex:1">' + esc(s) + '</span>' +
+          '<span class="item-text" style="color:#FFD600;flex:1">' + esc(s) + '</span>' +
           '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="margin-left:auto;background:none;border:none;color:#555;cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
           '</div>';
       }
@@ -1506,7 +1506,7 @@ function buildCard(ev, past, col) {
       var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
       return '<div class="card-item' + (done && !isObs ? ' item-done' : '') + '" style="display:flex;align-items:center">' +
         (!isObs ? '<div class="item-check' + (done ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '"></div>' : '') +
-        '<span class="item-text' + (!isObs ? ' item-label-extra' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (isObs ? 'color:var(--gold);' : 'cursor:pointer;') + 'flex:1">' + esc(s) + '</span>' +
+        '<span class="item-text' + (!isObs ? ' item-label-extra' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (isObs ? 'color:#FFD600;' : 'cursor:pointer;') + 'flex:1">' + esc(s) + '</span>' +
         '<span class="item-extra-tag" style="flex-shrink:0">+</span>' +
         '<button class="item-rem-extra-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="background:none;border:none;color:#e05c5c;cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
         '</div>';
