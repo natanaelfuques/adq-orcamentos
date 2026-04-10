@@ -5724,9 +5724,9 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<div class="salvo-status-row">';
-    card += '<button class="salvo-status btn-whatsapp' + (_wTemFone ? ' tem-fone' : '') + '" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '" title="WhatsApp" style="padding:6px 9px;min-width:unset;flex:unset">' + _waSvgCon + '</button>';
+    card += '<button class="salvo-status btn-whatsapp' + (_wTemFone ? ' tem-fone' : '') + '" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '" title="WhatsApp" style="padding:0;min-width:unset;flex:unset;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center">' + _waSvgCon + '</button>';
     var calClass = doc.calendar_adicionado ? 'salvo-status btn-calendar btn-calendar-ok' : 'salvo-status btn-calendar';
-    card += '<button class="' + calClass + '" data-action="calendar" data-id="' + id + '" title="Google Calendar" style="padding:6px 9px;min-width:unset;flex:unset">'
+    card += '<button class="' + calClass + '" data-action="calendar" data-id="' + id + '" title="Google Calendar" style="padding:0;min-width:unset;flex:unset;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center">'
       + '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'
       + '<rect x="1" y="2" width="11" height="10" rx="1.5"/>'
       + '<line x1="1" y1="5.5" x2="12" y2="5.5"/>'
