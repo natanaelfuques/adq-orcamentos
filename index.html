@@ -1321,7 +1321,14 @@ header {
           <input type="text" id="nome_cliente" placeholder="Ex: João Silva" />
         </div>
         <div>
-          <label>Local do Evento</label>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <label style="margin-bottom:0">Local do Evento</label>
+            <div class="det-presets" style="margin:0;display:flex;gap:4px">
+              <button class="btn-preset" id="btn-local-preset-1" onclick="abrirModalLocalPreset(this,1)">#1</button>
+              <button class="btn-preset" id="btn-local-preset-2" onclick="abrirModalLocalPreset(this,2)">#2</button>
+              <button class="btn-preset" id="btn-local-preset-3" onclick="abrirModalLocalPreset(this,3)">#3</button>
+            </div>
+          </div>
           <input type="text" id="local_evento" placeholder="Ex: Salão Espaço Nobre, Brusque/SC" />
         </div>
       </div>
@@ -1330,6 +1337,7 @@ header {
           <label>Evento</label>
           <input type="text" id="tipo_evento" placeholder="Ex: Casamento, Formatura, Show" list="tipo-evento-sugestoes" autocomplete="off" />
           <datalist id="tipo-evento-sugestoes">
+            <option value="15 Anos">
             <option value="Aniversário">
             <option value="Casamento">
             <option value="Corporativo">
@@ -2153,6 +2161,20 @@ function carregarPresetsFirestore() {
         });
       });
     }
+    if (d.locais) {
+      Object.keys(d.locais).forEach(function(n) {
+        if (LOCAIS_PRESETS[n] !== undefined) {
+          var v = d.locais[n];
+          if (typeof v === 'string') {
+            // compatibilidade com formato antigo (string)
+            LOCAIS_PRESETS[n] = { nome: v.split(',')[0].trim().substring(0, 18), val: v };
+          } else if (v && typeof v === 'object') {
+            LOCAIS_PRESETS[n] = v;
+          }
+        }
+      });
+      _atualizarBotoesLocaisPreset();
+    }
   }).catch(function(e) { console.warn('[AdQ] Erro ao carregar presets:', e); });
 }
 
@@ -2280,23 +2302,110 @@ Técnica: montagem, desmontagem, suporte durante o evento, operação das luzes.
 };
 
 const LOCAIS_PRESETS = {
-  1: '',
-  2: '',
-  3: '',
-  4: '',
-  5: '',
-  6: '',
-  7: '',
-  8: '',
-  9: '',
-  10: ''
+  1: { nome: '', val: '' },
+  2: { nome: '', val: '' },
+  3: { nome: '', val: '' },
+  4: { nome: '', val: '' },
+  5: { nome: '', val: '' },
+  6: { nome: '', val: '' },
+  7: { nome: '', val: '' },
+  8: { nome: '', val: '' },
+  9: { nome: '', val: '' },
+  10: { nome: '', val: '' }
 };
 
+function _atualizarBotoesLocaisPreset() {
+  for (var i = 1; i <= 3; i++) {
+    var btn = document.getElementById('btn-local-preset-' + i);
+    if (!btn) continue;
+    var p = LOCAIS_PRESETS[i];
+    btn.textContent = (p && p.nome) ? p.nome : ('#' + i);
+    btn.title = (p && p.val) ? p.val : '';
+  }
+}
+
 function aplicarLocalPreset(n) {
-  const val = LOCAIS_PRESETS[n];
-  if (!val) return;
+  const p = LOCAIS_PRESETS[n];
+  if (!p || !p.val) return;
   const input = document.getElementById('ev_local');
-  if (input) input.value = val;
+  if (input) input.value = p.val;
+}
+
+// ── MODAL PRESET LOCAL ──
+function abrirModalLocalPreset(btn, n) {
+  var old = document.getElementById('adq-preset-modal');
+  if (old) { old.remove(); return; }
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-preset-modal';
+
+  var rect = btn.getBoundingClientRect();
+  var scrollY = window.scrollY || window.pageYOffset;
+  modal.style.cssText = 'position:absolute;z-index:600;background:#1e1e1e;border:1px solid #444;border-top:2px solid var(--gold);border-radius:5px;padding:8px;display:flex;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,0.6)';
+  modal.style.top  = (rect.top + scrollY - 54) + 'px';
+  modal.style.left = Math.max(8, rect.left + window.scrollX) + 'px';
+
+  var btnStyle = 'font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;border-radius:3px;padding:6px 12px;cursor:pointer;border:none;';
+
+  var bCarregar = document.createElement('button');
+  bCarregar.textContent = 'Carregar';
+  bCarregar.style.cssText = btnStyle + 'background:var(--surface);color:var(--text);border:1px solid #444;';
+  bCarregar.onmouseenter = function() { this.style.borderColor='var(--gold)'; this.style.color='var(--gold)'; };
+  bCarregar.onmouseleave = function() { this.style.borderColor='#444'; this.style.color='var(--text)'; };
+  bCarregar.onclick = function() {
+    var p = LOCAIS_PRESETS[n];
+    if (p && p.val) {
+      var input = document.getElementById('local_evento');
+      if (input) input.value = p.val;
+    }
+    modal.remove();
+  };
+
+  var bSalvar = document.createElement('button');
+  bSalvar.textContent = 'Salvar';
+  bSalvar.style.cssText = btnStyle + 'background:var(--gold);color:#111;';
+  bSalvar.onmouseenter = function() { this.style.opacity='0.85'; };
+  bSalvar.onmouseleave = function() { this.style.opacity='1'; };
+  bSalvar.onclick = function() {
+    var input = document.getElementById('local_evento');
+    var val = input ? input.value.trim() : '';
+    if (!val) { modal.remove(); return; }
+    // Nome do preset = primeira parte antes da vírgula, ou o valor completo se curto
+    var nome = val.split(',')[0].trim();
+    if (nome.length > 18) nome = nome.substring(0, 16) + '…';
+    LOCAIS_PRESETS[n] = { nome: nome, val: val };
+    _salvarLocaisFirestore();
+    _atualizarBotoesLocaisPreset();
+    _presetFeedback(btn, true);
+    modal.remove();
+  };
+
+  var bFechar = document.createElement('button');
+  bFechar.textContent = '×';
+  bFechar.style.cssText = btnStyle + 'background:transparent;color:#888;border:1px solid #444;padding:6px 14px;font-size:1.1rem;line-height:1;';
+  bFechar.onclick = function() { modal.remove(); };
+
+  modal.appendChild(bCarregar);
+  modal.appendChild(bSalvar);
+  modal.appendChild(bFechar);
+  document.body.appendChild(modal);
+
+  setTimeout(function() {
+    document.addEventListener('click', function _close(e) {
+      if (!modal.contains(e.target) && e.target !== btn) {
+        modal.remove();
+        document.removeEventListener('click', _close);
+      }
+    });
+  }, 10);
+}
+
+function _salvarLocaisFirestore() {
+  if (!db) return;
+  db.collection('presets_gerador').doc('presets').set({
+    locais: JSON.parse(JSON.stringify(LOCAIS_PRESETS)),
+    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true }).catch(function(e) { console.warn('[AdQ] Erro ao salvar locais:', e); });
 }
 
 function resetPacote(n) {
