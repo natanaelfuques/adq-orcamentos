@@ -5198,19 +5198,34 @@ function handleSalvosClick(e) {
       btn.blur();
       window.open('https://wa.me/' + numeroEv, '_blank');
     } else if (db && id) {
-      // Fallback: busca cli_fone no contrato (eventos antigos sem cli_fone no painel)
-      db.collection('contratos').doc(id).get().then(function(cDoc) {
-        var fFone = (cDoc.exists ? cDoc.data().cli_fone || '' : '').replace(/\D/g, '');
+      var notaIdEv = btn.getAttribute('data-nota-id') || '';
+      var _resolveWppFoneEv = function(rawFone) {
+        var fFone = rawFone.replace(/\D/g, '');
         if (!fFone) { alert('Número de contato não encontrado.'); return; }
-        // Atualiza o campo no eventos_campo para próximas vezes
-        db.collection('eventos_campo').doc(id).update({ cli_fone: cDoc.data().cli_fone }).catch(function(){});
-        // Atualiza o botão visualmente
+        // Persiste no eventos_campo para não precisar buscar novamente
+        var campoUpd = notaIdEv ? { contato: rawFone } : { cli_fone: rawFone };
+        db.collection('eventos_campo').doc(id).update(campoUpd).catch(function(){});
         btn.style.borderColor = '#25D366';
         btn.style.color = '#25D366';
-        btn.setAttribute('data-fone', cDoc.data().cli_fone);
+        btn.setAttribute('data-fone', rawFone);
         if (fFone.length <= 11) fFone = '55' + fFone;
         window.open('https://wa.me/' + fFone, '_blank');
-      }).catch(function() { alert('Número de contato não encontrado.'); });
+      };
+      if (notaIdEv) {
+        // Evento criado por nota — busca campo "contato" em notas
+        db.collection('notas').doc(notaIdEv).get().then(function(nDoc) {
+          var rawFone = nDoc.exists ? nDoc.data().contato || '' : '';
+          if (!rawFone) { alert('Número de contato não encontrado.'); return; }
+          _resolveWppFoneEv(rawFone);
+        }).catch(function() { alert('Número de contato não encontrado.'); });
+      } else {
+        // Evento criado por contrato — busca cli_fone / whatsapp_cliente em contratos
+        db.collection('contratos').doc(id).get().then(function(cDoc) {
+          var rawFone = cDoc.exists ? cDoc.data().cli_fone || cDoc.data().whatsapp_cliente || '' : '';
+          if (!rawFone) { alert('Número de contato não encontrado.'); return; }
+          _resolveWppFoneEv(rawFone);
+        }).catch(function() { alert('Número de contato não encontrado.'); });
+      }
     } else {
       alert('Número de contato não encontrado.');
     }
@@ -6365,7 +6380,7 @@ function buildEventoFromContrato(d, contratoId) {
     ev_montagem:    d.montagem       || '',
     ev_desmontagem: d.desmontagem    || '',
     cli_nome:       d.cli_nome       || '',
-    cli_fone:       d.cli_fone       || '',
+    cli_fone:       d.cli_fone       || d.whatsapp_cliente || '',
     val_total:      d.val_total      || '',
     servicos:       d.servicos       || [],
     criador:        d.criador        || '',
@@ -7065,7 +7080,7 @@ function renderNotas() {
     card += '<div class="ev-painel-summary" data-ev-toggle="'+id+'" style="display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer">';
     card += '<div style="display:flex;align-items:center;gap:10px;min-width:0">';
     // Coluna esquerda: badge etapa (acima) + badge data (abaixo)
-    var _waEvFone = (ev.cli_fone || '').replace(/\D/g,'');
+    var _waEvFone = (ev.cli_fone || ev.contato || '').replace(/\D/g,'');
     var _waEvTemFone = _waEvFone.length === 10 || _waEvFone.length === 11;
     var _waEvSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11" style="vertical-align:middle"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.856L.057 23.428a.75.75 0 0 0 .921.921l5.573-1.476A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.523-5.188-1.432l-.372-.22-3.862 1.023 1.023-3.861-.22-.373A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
     card += '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex-shrink:0">';
@@ -7089,7 +7104,7 @@ function renderNotas() {
     card += '<div style="padding-top:12px">';
     if (horarioBlock) card += '<div style="font-size:0.78rem;color:var(--text);font-weight:600;margin-bottom:4px">'+escHtml(horarioBlock)+'</div>';
     card += '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px">'
-      +'<button class="btn-whatsapp-ev' + (_waEvTemFone ? ' tem-fone' : '') + '" data-action="whatsapp-ev" data-id="'+id+'" data-fone="'+escHtml(ev.cli_fone||'')+'" title="WhatsApp" style="display:inline-flex;align-items:center;justify-content:center;padding:2px 5px;border-radius:3px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;line-height:1;flex-shrink:0">'+_waEvSvg+'</button>'
+      +'<button class="btn-whatsapp-ev' + (_waEvTemFone ? ' tem-fone' : '') + '" data-action="whatsapp-ev" data-id="'+id+'" data-nota-id="'+escHtml(ev.nota_id||'')+'" data-fone="'+escHtml(ev.cli_fone||ev.contato||'')+'" title="WhatsApp" style="display:inline-flex;align-items:center;justify-content:center;padding:2px 5px;border-radius:3px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;line-height:1;flex-shrink:0">'+_waEvSvg+'</button>'
       +'<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>'
       +(ev.ev_maps
           ? '<a href="'+escHtml(ev.ev_maps)+'" target="_blank" rel="noopener" style="color:#aaa;text-decoration:none;cursor:pointer" title="Abrir no Maps">'+escHtml(ev.ev_local||'')+'</a>'
@@ -7469,15 +7484,33 @@ function handleNotasClick(e) {
       btn.blur();
       window.open('https://wa.me/' + numeroEv, '_blank');
     } else if (db && id) {
-      db.collection('contratos').doc(id).get().then(function(cDoc) {
-        var fFone = (cDoc.exists ? cDoc.data().cli_fone || cDoc.data().whatsapp_cliente || '' : '').replace(/\D/g, '');
+      var notaId = btn.getAttribute('data-nota-id') || '';
+      var _resolveWppFone = function(rawFone) {
+        var fFone = rawFone.replace(/\D/g, '');
         if (!fFone) { alert('Número de contato não encontrado.'); return; }
-        db.collection('eventos_campo').doc(id).update({ cli_fone: fFone }).catch(function(){});
+        // Persiste no eventos_campo para não precisar buscar de novo
+        var campoUpdate = notaId ? { contato: rawFone } : { cli_fone: rawFone };
+        db.collection('eventos_campo').doc(id).update(campoUpdate).catch(function(){});
         btn.style.borderColor = '#25D366'; btn.style.color = '#25D366';
-        btn.setAttribute('data-fone', fFone);
+        btn.setAttribute('data-fone', rawFone);
         if (fFone.length <= 11) fFone = '55' + fFone;
         window.open('https://wa.me/' + fFone, '_blank');
-      }).catch(function() { alert('Número de contato não encontrado.'); });
+      };
+      if (notaId) {
+        // Evento veio de nota — busca campo "contato" na coleção notas
+        db.collection('notas').doc(notaId).get().then(function(nDoc) {
+          var rawFone = nDoc.exists ? nDoc.data().contato || '' : '';
+          if (!rawFone) { alert('Número de contato não encontrado.'); return; }
+          _resolveWppFone(rawFone);
+        }).catch(function() { alert('Número de contato não encontrado.'); });
+      } else {
+        // Evento veio de contrato — busca cli_fone / whatsapp_cliente na coleção contratos
+        db.collection('contratos').doc(id).get().then(function(cDoc) {
+          var rawFone = cDoc.exists ? cDoc.data().cli_fone || cDoc.data().whatsapp_cliente || '' : '';
+          if (!rawFone) { alert('Número de contato não encontrado.'); return; }
+          _resolveWppFone(rawFone);
+        }).catch(function() { alert('Número de contato não encontrado.'); });
+      }
     } else {
       alert('Número de contato não encontrado.');
     }
