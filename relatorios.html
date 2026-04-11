@@ -498,6 +498,34 @@ header {
   .table-card th, .table-card td { padding: 8px 10px; }
 }
 
+
+/* ── DELETE ROW BUTTON ── */
+.col-del {
+  width: 32px;
+  padding: 0 8px !important;
+  text-align: center;
+}
+.btn-del-row {
+  display: none;
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  color: #555;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: all 0.15s;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.btn-del-row:hover { border-color: var(--red); color: var(--red); background: rgba(224,92,92,0.08); }
+/* show only in editor mode */
+.editor-mode .btn-del-row { display: flex; }
+.editor-mode tr:hover .btn-del-row { border-color: #555; }
+
 /* ── EDITOR MODE ── */
 .editor-mode .row-field-editable {
   cursor: pointer;
@@ -685,13 +713,13 @@ header {
         <table>
           <thead>
             <tr>
-              <th>Cliente</th>
-              <th>Tipo de Evento</th>
+              <th>Evento</th>
               <th>Data Evento</th>
               <th>Local</th>
               <th class="r">Valor</th>
               <th>Status</th>
               <th>Criado em</th>
+              <th class="col-del"></th>
             </tr>
           </thead>
           <tbody id="tbody-contratos"></tbody>
@@ -708,14 +736,14 @@ header {
         <table>
           <thead>
             <tr>
-              <th>Cliente</th>
-              <th>Tipo de Evento</th>
+              <th>Evento</th>
               <th>Data Evento</th>
               <th>Local</th>
               <th class="r">Valor</th>
               <th>Status</th>
               <th>Origem</th>
               <th>Criado em</th>
+              <th class="col-del"></th>
             </tr>
           </thead>
           <tbody id="tbody-eventos"></tbody>
@@ -804,12 +832,12 @@ header {
           <thead>
             <tr>
               <th>Competência</th>
-              <th>Cliente</th>
-              <th>Tipo Evento</th>
+              <th>Evento</th>
               <th>Data Evento</th>
               <th>Forma Pgto</th>
               <th class="r">Valor Contrato</th>
               <th>Status</th>
+              <th class="col-del"></th>
             </tr>
           </thead>
           <tbody id="tbody-cont"></tbody>
@@ -1404,14 +1432,16 @@ function renderContratos() {
   tbody.innerHTML = cons.map(c => {
     const st = getStatusContrato(c);
     const id = c.id;
+    const cli = nomeCli(c); const tipo = tipoEv(c);
+    const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
     return `<tr>
-      <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos">${nomeCli(c)}</td>
-      <td class="row-field-editable" data-field="ev_nome" data-docid="${id}" data-col="contratos">${tipoEv(c)}</td>
+      <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:220px">${desc}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="contratos">${c.ev_local || c.local_evento || '—'}</td>
       <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorContrato(c))}</td>
       <td><span class="badge ${st}">${st}</span></td>
       <td>${formatDateBR(c.criadoEm)}</td>
+      <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="contratos" title="Excluir">×</button></td>
     </tr>`;
   }).join('');
 }
@@ -1457,25 +1487,25 @@ function renderEventos() {
   tbody.innerHTML = todos.map(e => {
     const st = getStatusContrato(e);
     const origem = e._origem === 'nota' ? 'nota' : 'contrato';
-    const col = origem; // 'contrato' -> collection 'contratos', 'nota' -> 'notas'
     const colName = origem === 'nota' ? 'notas' : 'contratos';
     const fieldNome = origem === 'nota' ? 'titulo' : 'cli_nome';
-    const fieldTipo = origem === 'nota' ? 'titulo' : 'ev_nome';
     const val = valorEv(e);
     const valorTxt = val > 0 ? frs(val) : '—';
     const valorStyle = val > 0 ? 'color:var(--gold);font-weight:700' : 'color:var(--muted)';
     const nomeExib = nomeCli(e);
     const tipoExib = e._origem === 'nota' ? (e.titulo || '—') : tipoEv(e);
+    const cli = nomeExib; const tipo = tipoExib;
+    const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
     const id = e.id;
     return `<tr>
-      <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${colName}">${nomeExib}</td>
-      <td class="row-field-editable" data-field="${fieldTipo}" data-docid="${id}" data-col="${colName}">${tipoExib}</td>
+      <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${colName}" style="max-width:220px">${desc}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${colName}">${dataEv(e)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="${colName}">${localEv(e)}</td>
       <td class="r" style="${valorStyle}">${valorTxt}</td>
       <td><span class="badge ${st}">${st}</span></td>
       <td><span class="badge-origem ${origem}">${origem}</span></td>
       <td>${formatDateBR(e.criadoEm)}</td>
+      <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="${colName}" title="Excluir">×</button></td>
     </tr>`;
   }).join('');
 }
@@ -1748,14 +1778,16 @@ function renderContabilidade() {
       const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '—';
       const st = getStatusContrato(c);
       const id = c.id;
+      const cli = nomeCli(c); const tipo = tipoEv(c);
+      const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
       return `<tr>
         <td>${comp}</td>
-        <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos">${nomeCli(c)}</td>
-        <td class="row-field-editable" data-field="ev_nome" data-docid="${id}" data-col="contratos">${tipoEv(c)}</td>
+        <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:200px">${desc}</td>
         <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
         <td>${getPgtoLabel(c)}</td>
         <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorContrato(c))}</td>
         <td><span class="badge ${st}">${st}</span></td>
+        <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="contratos" title="Excluir">×</button></td>
       </tr>`;
     }).join('');
   }
@@ -1854,12 +1886,12 @@ function abrirPainelAdmin() {
   modal.innerHTML =
     '<div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0 22px">' +
-        '<span style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>' +
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>' +
         '<button onclick="document.body.style.overflow=\'\';document.getElementById(\'modal-admin-rel\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>' +
       '</div>' +
       '<div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">' +
-        '<button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Editor</button>' +
-        '<button id="adm-tab-info" onclick="_admAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Informações</button>' +
+        '<button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Editor</button>' +
+        '<button id="adm-tab-info" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Informações</button>' +
       '</div>' +
       '<div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">' +
         // ABA EDITOR
@@ -1867,7 +1899,7 @@ function abrirPainelAdmin() {
           '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
               '<div>' +
-                '<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Modo Editor</div>' +
+                '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Modo Editor</div>' +
                 '<div style="font-size:0.68rem;color:#555;line-height:1.5">Ativa edição inline nas tabelas.<br>Toque em qualquer célula para editar.</div>' +
               '</div>' +
               '<div id="adm-editor-toggle" onclick="_toggleEditorMode()" style="width:44px;height:24px;background:' + (edOn ? '#C8A94A' : '#2a2a2a') + ';border-radius:12px;cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0">' +
@@ -1883,7 +1915,7 @@ function abrirPainelAdmin() {
         // ABA INFO
         '<div id="adm-panel-info" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">' +
           '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:10px">' +
-            '<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Base de dados</div>' +
+            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Base de dados</div>' +
             '<div style="font-size:0.78rem;color:#888;line-height:1.8">' +
               'Contratos: <span style="color:#ccc" id="adm-count-contratos">—</span><br>' +
               'Orçamentos: <span style="color:#ccc" id="adm-count-orcamentos">—</span><br>' +
@@ -1891,7 +1923,7 @@ function abrirPainelAdmin() {
             '</div>' +
           '</div>' +
           '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px">' +
-            '<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Filtro ativo</div>' +
+            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Filtro ativo</div>' +
             '<div style="font-size:0.78rem;color:#888" id="adm-filtro-info">—</div>' +
           '</div>' +
         '</div>' +
@@ -2033,6 +2065,42 @@ document.addEventListener('click', function(e) {
     if (ev.key === 'Escape') { el.innerHTML = originalHtml; }
   });
 }, true);
+
+
+// ── EXCLUIR LINHA (modo editor) ──
+document.addEventListener('click', function(e) {
+  if (!_editorModeAtivo) return;
+  var btn = e.target.closest('.btn-del-row');
+  if (!btn) return;
+  e.stopPropagation();
+  var docId = btn.dataset.docid;
+  var col   = btn.dataset.col;
+  if (!docId || !col) return;
+  if (!confirm('Excluir este registro do Firestore? Esta ação não pode ser desfeita.')) return;
+  if (!db) return;
+  // Se for nota, também excluir eventos_campo vinculado
+  if (col === 'notas') {
+    var nota = _notas.find(function(n) { return n.id === docId; });
+    var painelId = nota && nota.painel_id ? nota.painel_id : null;
+    var p = painelId
+      ? db.collection('eventos_campo').doc(painelId).delete().catch(function(){})
+      : Promise.resolve();
+    p.then(function() {
+      return db.collection('notas').doc(docId).delete();
+    }).then(function() {
+      _editorToast('Nota excluída!');
+      renderTudo();
+    }).catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+  } else {
+    // contrato — marca removido_manualmente (soft delete, mantém histórico)
+    db.collection('contratos').doc(docId).delete()
+      .then(function() {
+        _editorToast('Contrato excluído!');
+        renderTudo();
+      })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+  }
+});
 
 function _editorToast(msg, isError) {
   var existing = document.getElementById('editor-toast');
