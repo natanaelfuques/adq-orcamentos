@@ -1898,6 +1898,7 @@ Revestimento</textarea>
         <button class="salvos-filter-btn" id="filtro-con-pendente" onclick="setFiltroConStatus('pendente')">Pendentes</button>
         <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
         <button class="salvos-filter-btn" id="filtro-con-confirmado" onclick="setFiltroConStatus('confirmado')">Confirmados</button>
+        <button class="salvos-filter-btn" id="filtro-con-cancelado" onclick="setFiltroConStatus('cancelado')" style="color:#e05c5c;border-color:#e05c5c">Cancelados</button>
         <button class="salvos-filter-btn" id="filtro-con-sem-painel" onclick="setFiltroConStatus('sem-painel')">- Painel</button>
       </div>
     </div>
@@ -5243,10 +5244,10 @@ function handleSalvosClick(e) {
   else if (action === 'toggle-aprovado-contrato') {
     if (!db) return;
     var statusAtual = btn.getAttribute('data-status') || (btn.getAttribute('data-aprovado') === 'true' ? 'assinado' : 'pendente');
-    var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : statusAtual === 'assinado' ? 'confirmado' : 'pendente';
+    var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : statusAtual === 'assinado' ? 'confirmado' : statusAtual === 'confirmado' ? 'cancelado' : 'pendente';
     var novoAprovado = novoStatus === 'assinado' || novoStatus === 'confirmado';
-    var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : 'Pendente';
-    var novaClasse = novoStatus === 'confirmado' ? 'confirmado' : novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : '';
+    var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'cancelado' ? 'Cancelado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : 'Pendente';
+    var novaClasse = novoStatus === 'confirmado' ? 'confirmado' : novoStatus === 'cancelado' ? 'cancelado' : novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : '';
     db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
     btn.textContent = novoLabel;
@@ -5920,8 +5921,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var etapa = etapaMap[id]; // 'eventos','andamento','concluido' ou undefined
     // Determinar estado visual do botão
     var _statusCon = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
-    var statusClass = _statusCon === 'confirmado' ? ' confirmado' : _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : '';
-    var statusLabel = _statusCon === 'confirmado' ? 'Confirmado' : _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado...' : 'Pendente';
+    var statusClass = _statusCon === 'confirmado' ? ' confirmado' : _statusCon === 'cancelado' ? ' cancelado' : _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : '';
+    var statusLabel = _statusCon === 'confirmado' ? 'Confirmado' : _statusCon === 'cancelado' ? 'Cancelado' : _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado...' : 'Pendente';
     var statusClickable = true;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
@@ -5967,7 +5968,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button' + (_temEvento ? ' onclick="irParaEventoRef(\'' + ref + '\')"' : '') + ' data-ref-contrato="' + ref + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + refColor + ';letter-spacing:0.1em;background:transparent;border:none;cursor:' + refCursor + ';padding:0;transition:color 0.15s"' + (_temEvento ? ' onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"' : '') + '># ' + ref + '</button>';
     card += '</span>';
     card += '</div>';
-    card += '<div class="salvo-montagem-row" style="' + (_statusCon === 'confirmado' && etapa !== 'concluido' ? '' : 'display:none') + '">';
+    card += '<div class="salvo-montagem-row" style="' + (_statusCon === 'confirmado' && etapa !== 'concluido' && _statusCon !== 'cancelado' ? '' : 'display:none') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Desmontagem" data-field="desmontagem" data-id="' + id + '" value="' + escHtml(doc.desmontagem || '') + '">';
     card += '</div>';
@@ -6224,7 +6225,8 @@ function filtrarContratos() {
       (_filtroConStatus === 'sem-painel' && !noPainel) ||
       (_filtroConStatus === 'pendente' && sc === 'pendente') ||
       (_filtroConStatus === 'assinado' && sc === 'assinado') ||
-      (_filtroConStatus === 'confirmado' && sc === 'confirmado');
+      (_filtroConStatus === 'confirmado' && sc === 'confirmado') ||
+      (_filtroConStatus === 'cancelado' && sc === 'cancelado');
     return matchTexto && matchStatus;
   });
   renderContratos(filtrados);
