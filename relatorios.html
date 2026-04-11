@@ -1010,11 +1010,13 @@ function getPgtoLabel(c) {
 }
 
 function nomeCli(c) {
+  // notas nao tem cli_nome — contato e telefone, nao nome
   return c.cli_nome || c.nome_cliente || c.cliente || c.nome || '—';
 }
 
 function tipoEv(c) {
-  return c.ev_nome || c.tipo_evento || c.evento || c.tipo || '—';
+  // notas usam "titulo" como descricao do evento
+  return c.ev_nome || c.tipo_evento || c.evento || c.tipo || c.titulo || '—';
 }
 
 function dataEv(c) {
@@ -1023,6 +1025,14 @@ function dataEv(c) {
   const p = d.split('-');
   if (p.length === 3) return p[2] + '/' + p[1] + '/' + p[0];
   return d;
+}
+
+function localEv(c) {
+  return c.ev_local || c.local_evento || c.local || '—';
+}
+
+function valorEv(c) {
+  return parseBRL(c.val_total) || parseBRL(c.valorTotal) || 0;
 }
 
 function formatDateBR(ts) {
@@ -1063,15 +1073,53 @@ function renderTudo() {
 }
 
 // ── TAB SWITCH ──
+const _TAB_NAMES = ['financeiro','contratos','eventos','clientes','sazonalidade','contabilidade'];
+
 function trocarTab(tab) {
   _tabAtiva = tab;
-  const tabNames = ['financeiro','contratos','eventos','clientes','sazonalidade','contabilidade'];
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', tabNames[i] === tab);
+    b.classList.toggle('active', _TAB_NAMES[i] === tab);
   });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
+  const activeBtn = document.querySelector('.tab-btn.active');
+  if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 }
+
+// ── SWIPE ENTRE ABAS ──
+(function() {
+  let _sx = 0, _sy = 0, _swiping = false;
+  const THRESHOLD = 50;
+  const RATIO = 1.5;
+
+  function onTouchStart(e) {
+    if (e.touches.length !== 1) return;
+    _sx = e.touches[0].clientX;
+    _sy = e.touches[0].clientY;
+    _swiping = true;
+  }
+
+  function onTouchEnd(e) {
+    if (!_swiping) return;
+    _swiping = false;
+    const dx = e.changedTouches[0].clientX - _sx;
+    const dy = e.changedTouches[0].clientY - _sy;
+    if (Math.abs(dx) < THRESHOLD || Math.abs(dx) < Math.abs(dy) * RATIO) return;
+    const idx = _TAB_NAMES.indexOf(_tabAtiva);
+    if (dx < 0 && idx < _TAB_NAMES.length - 1) {
+      trocarTab(_TAB_NAMES[idx + 1]);
+    } else if (dx > 0 && idx > 0) {
+      trocarTab(_TAB_NAMES[idx - 1]);
+    }
+  }
+
+  window.addEventListener('load', function() {
+    const main = document.querySelector('.main');
+    if (!main) return;
+    main.addEventListener('touchstart', onTouchStart, { passive: true });
+    main.addEventListener('touchend', onTouchEnd, { passive: true });
+  });
+})();
 
 // ══════════════════════════════════════════
 // TAB 1 – FINANCEIRO
@@ -1304,7 +1352,7 @@ function renderEventos() {
   const deContratos = todos.filter(e => e._origem === 'contrato');
   const deNotas = todos.filter(e => e._origem === 'nota');
   const confirmados = todos.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
-  const recTotal = confirmados.filter(e => e._origem === 'contrato').reduce((s,c) => s + getValorContrato(c), 0);
+  const recTotal = todos.reduce((s,e) => s + valorEv(e), 0);
 
   document.getElementById('kpi-ev').innerHTML = `
     <div class="kpi-card gold">
@@ -1317,9 +1365,9 @@ function renderEventos() {
       <div class="kpi-value">${confirmados.length}</div>
     </div>
     <div class="kpi-card blue">
-      <div class="kpi-label">Receita confirmada</div>
+      <div class="kpi-label">Valor total no período</div>
       <div class="kpi-value">${frsShort(recTotal)}</div>
-      <div class="kpi-sub">Somente contratos</div>
+      <div class="kpi-sub">Contratos + notas com valor</div>
     </div>
     <div class="kpi-card orange">
       <div class="kpi-label">Eventos sem contrato</div>
@@ -1337,14 +1385,19 @@ function renderEventos() {
   tbody.innerHTML = todos.map(e => {
     const st = getStatusContrato(e);
     const origem = e._origem === 'nota' ? 'nota' : 'contrato';
-    const valor = e._origem === 'contrato' ? frs(getValorContrato(e)) : '—';
-    const valorStyle = e._origem === 'contrato' ? 'color:var(--gold);font-weight:700' : 'color:var(--muted)';
+    const val = valorEv(e);
+    const valorTxt = val > 0 ? frs(val) : '—';
+    const valorStyle = val > 0 ? 'color:var(--gold);font-weight:700' : 'color:var(--muted)';
+    const nomeExib = nomeCli(e);
+    const tipoExib = e._origem === 'nota'
+      ? (e.titulo || '—')
+      : tipoEv(e);
     return `<tr>
-      <td>${nomeCli(e)}</td>
-      <td>${tipoEv(e)}</td>
+      <td>${nomeExib}</td>
+      <td>${tipoExib}</td>
       <td>${dataEv(e)}</td>
-      <td>${e.ev_local || e.local_evento || e.local || '—'}</td>
-      <td class="r" style="${valorStyle}">${valor}</td>
+      <td>${localEv(e)}</td>
+      <td class="r" style="${valorStyle}">${valorTxt}</td>
       <td><span class="badge ${st}">${st}</span></td>
       <td><span class="badge-origem ${origem}">${origem}</span></td>
       <td>${formatDateBR(e.criadoEm)}</td>
