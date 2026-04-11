@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Relatórios – NF Soluções para Eventos</title>
+<meta name="theme-color" content="#1a1a1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Relatórios NF">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Relat%C3%B3rios%20NF%20Solu%C3%A7%C3%B5es%22%2C%22short_name%22%3A%22Relat%C3%B3rios%20NF%22%2C%22start_url%22%3A%22.%2Frelatorios.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23111111%22%2C%22theme_color%22%3A%22%231a1a1a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22icon-192.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22icon-512.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22icon.svg%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
@@ -62,6 +71,28 @@ header {
 .hdr-right { display: flex; align-items: center; gap: 10px; }
 
 #user-info { font-size: 0.72rem; color: var(--muted); }
+
+/* ── PWA INSTALL ── */
+#btn-pwa {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 5px 11px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+#btn-pwa:hover { background: var(--gold); color: #111; }
+#btn-pwa svg { flex-shrink: 0; }
 
 /* ── PERÍODO SELECTOR ── */
 .periodo-bar {
@@ -130,12 +161,21 @@ header {
 }
 
 /* ── TABS ── */
+.tabs-wrap {
+  position: sticky;
+  top: 0; /* calculado por JS: header + periodo-bar heights */
+  z-index: 90;
+  background: var(--darker);
+  border-bottom: 2px solid var(--border);
+}
 .tabs {
   display: flex;
   gap: 0;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.tabs::-webkit-scrollbar { display: none; }
 .tab-btn {
   background: transparent;
   border: none;
@@ -149,13 +189,28 @@ header {
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
-  transition: all 0.15s;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .tab-btn:hover { color: var(--text); }
 .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
 
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
+/* Slider real — cada painel ocupa 100% da largura */
+.tab-slider {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+.tab-panel {
+  min-width: 100%;
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 24px 20px 80px;
+}
+/* .main sem padding próprio */
+.main { padding: 0; max-width: none; margin: 0; overflow: hidden; }
 
 /* ── KPI GRID ── */
 .kpi-grid {
@@ -460,27 +515,44 @@ header {
 
 /* ── MOBILE FIXES ── */
 @media (max-width: 600px) {
-  header { padding: 10px 14px; }
-  .hdr-title { font-size: 1rem; }
+  header { padding: 10px 12px; gap: 8px; }
+  .hdr-left { gap: 8px; }
+  .hdr-left svg { width: 28px; height: 28px; }
+  .hdr-title { font-size: 0.95rem; }
   .hdr-sub { display: none; }
+  #user-info { display: none; }
+
+  /* PWA btn: só ícone no mobile */
+  #btn-pwa { padding: 6px 8px; gap: 0; }
+  #btn-pwa span.pwa-label { display: none; }
+
+  /* Admin: só ícone */
+  .btn-admin { padding: 6px 8px; gap: 0; }
+  .btn-admin span.adm-label { display: none; }
+
+  /* Logout: ícone ou texto curto */
+  .btn-logout { padding: 6px 10px; font-size: 0.7rem; }
 
   .periodo-bar {
     padding: 8px 12px;
-    gap: 8px;
+    gap: 6px;
   }
   .periodo-btns {
-    flex-wrap: wrap;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     gap: 5px;
   }
-  .pbtn { font-size: 0.7rem; padding: 4px 10px; }
+  .periodo-btns::-webkit-scrollbar { display: none; }
+  .pbtn { font-size: 0.68rem; padding: 4px 9px; white-space: nowrap; flex-shrink: 0; }
   .periodo-custom { width: 100%; }
-  .periodo-custom input { width: 100%; flex: 1; }
+  .periodo-custom input { flex: 1; width: auto; }
   .export-btn { width: 100%; margin-left: 0; text-align: center; }
 
-  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
-  .tab-btn { white-space: nowrap; padding: 10px 14px; font-size: 0.75rem; }
+  .tab-btn { padding: 9px 13px; font-size: 0.72rem; }
 
-  .main { padding: 16px 12px 60px; }
+  .tab-panel { padding: 14px 12px 80px; }
 
   .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .kpi-value { font-size: 1.35rem; }
@@ -494,6 +566,11 @@ header {
 
   .table-card { font-size: 0.78rem; }
   .table-card th, .table-card td { padding: 8px 10px; }
+
+  .pgto-parcelas { grid-template-columns: 1fr 1fr; }
+  .pgto-card-nome { max-width: 160px; }
+  .pgto-busca { width: 100%; margin-left: 0; }
+  .pgto-kpi-grid { grid-template-columns: 1fr 1fr; }
 }
 
 
@@ -815,12 +892,6 @@ header {
   gap: 12px;
   margin-bottom: 20px;
 }
-@media (max-width: 600px) {
-  .pgto-parcelas { grid-template-columns: 1fr 1fr; }
-  .pgto-card-nome { max-width: 180px; }
-  .pgto-busca { width: 100%; margin-left: 0; }
-  .pgto-kpi-grid { grid-template-columns: 1fr 1fr; }
-}
 </style>
 </head>
 <body>
@@ -863,9 +934,13 @@ header {
     </div>
     <div class="hdr-right">
       <span id="user-info"></span>
+      <button id="btn-pwa" onclick="_instalarPWA()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 12l4 4 4-4"/><path d="M20 21H4"/></svg>
+        <span class="pwa-label">Instalar App</span>
+      </button>
       <button class="btn-admin" id="btn-admin" onclick="abrirPainelAdmin()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
-        Admin
+        <span class="adm-label">Admin</span>
       </button>
       <button class="btn-logout" onclick="fazerLogout()">Sair</button>
     </div>
@@ -888,9 +963,8 @@ header {
     <button class="export-btn" onclick="exportarCSV()">⬇ Exportar CSV</button>
   </div>
 
-  <div class="main">
-
-    <div class="tabs">
+  <div class="tabs-wrap" id="tabs-wrap">
+    <div class="tabs" id="tabs-nav">
       <button class="tab-btn active" onclick="trocarTab('pagamentos')">Pagamentos</button>
       <button class="tab-btn" onclick="trocarTab('financeiro')">Financeiro</button>
       <button class="tab-btn" onclick="trocarTab('contratos')">Contratos</button>
@@ -899,9 +973,13 @@ header {
       <button class="tab-btn" onclick="trocarTab('sazonalidade')">Sazonalidade</button>
       <button class="tab-btn" onclick="trocarTab('contabilidade')">Contabilidade</button>
     </div>
+  </div>
+
+  <div class="main">
+    <div class="tab-slider" id="tab-slider">
 
     <!-- ════ TAB: PAGAMENTOS ════ -->
-    <div id="tab-pagamentos" class="tab-panel active">
+    <div id="tab-pagamentos" class="tab-panel">
 
       <!-- KPIs -->
       <div class="pgto-kpi-grid" id="kpi-pgto"></div>
@@ -1117,9 +1195,11 @@ header {
           ⬇ Exportar relatório contábil (CSV)
         </button>
       </div>
-    </div>
+    </div><!-- /tab-contabilidade -->
 
+    </div><!-- /tab-slider -->
   </div><!-- /main -->
+</div><!-- /screen-app -->
 </div><!-- /screen-app -->
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -1482,49 +1562,142 @@ function renderTudo() {
 // ── TAB SWITCH ──
 const _TAB_NAMES = ['pagamentos','financeiro','contratos','eventos','clientes','sazonalidade','contabilidade'];
 
-function trocarTab(tab) {
+function trocarTab(tab, animate) {
   _tabAtiva = tab;
+  const idx = _TAB_NAMES.indexOf(tab);
+
+  // botões nav
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', _TAB_NAMES[i] === tab);
+    b.classList.toggle('active', i === idx);
   });
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
+
+  // scroll do nav para centrar o botão ativo
   const activeBtn = document.querySelector('.tab-btn.active');
   if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  // mover slider
+  const slider = document.getElementById('tab-slider');
+  if (slider) {
+    if (animate !== false) {
+      slider.style.transition = 'transform 0.28s cubic-bezier(0.4,0,0.2,1)';
+    } else {
+      slider.style.transition = 'none';
+    }
+    slider.style.transform = 'translateX(-' + (idx * 100) + '%)';
+  }
+
+  // renderizar aba correspondente
+  const _tabRenderMap = {
+    pagamentos: renderPagamentos,
+    financeiro: renderFinanceiro,
+    contratos: renderContratos,
+    eventos: renderEventos,
+    clientes: renderClientes,
+    sazonalidade: renderSazonalidade,
+    contabilidade: renderContabilidade
+  };
+  if (_tabRenderMap[tab]) _tabRenderMap[tab]();
 }
 
-// ── SWIPE ENTRE ABAS ──
+// ── SWIPE ENTRE ABAS (slider real) ──
 (function() {
-  let _sx = 0, _sy = 0, _swiping = false;
-  const THRESHOLD = 50;
-  const RATIO = 1.5;
+  let _sx = 0, _sy = 0, _dragging = false, _startOffset = 0;
+  const THRESHOLD = 40;
+  const RATIO = 1.2;
+
+  function getOffset() {
+    const idx = _TAB_NAMES.indexOf(_tabAtiva);
+    return idx * 100; // em percent
+  }
 
   function onTouchStart(e) {
     if (e.touches.length !== 1) return;
+    // não iniciar se o toque começou em elemento scrollável horizontal (tabela, etc.)
+    const target = e.target;
+    const scrollableParent = target.closest('.table-scroll, .tabs, .periodo-btns, .pgto-filtros');
+    if (scrollableParent) return;
+
     _sx = e.touches[0].clientX;
     _sy = e.touches[0].clientY;
-    _swiping = true;
+    _startOffset = getOffset();
+    _dragging = true;
+
+    const slider = document.getElementById('tab-slider');
+    if (slider) slider.style.transition = 'none';
+  }
+
+  function onTouchMove(e) {
+    if (!_dragging) return;
+    const dx = e.touches[0].clientX - _sx;
+    const dy = e.touches[0].clientY - _sy;
+
+    // se movimento mais vertical que horizontal, cancela drag
+    if (Math.abs(dy) > Math.abs(dx) * RATIO) {
+      _dragging = false;
+      const slider = document.getElementById('tab-slider');
+      if (slider) {
+        slider.style.transition = 'transform 0.28s cubic-bezier(0.4,0,0.2,1)';
+        slider.style.transform = 'translateX(-' + _startOffset + '%)';
+      }
+      return;
+    }
+
+    e.preventDefault(); // previne scroll da página durante drag horizontal
+
+    const slider = document.getElementById('tab-slider');
+    if (!slider) return;
+    const W = slider.offsetWidth;
+    const dxPct = (dx / W) * 100;
+    const idx = _TAB_NAMES.indexOf(_tabAtiva);
+    // resistência nas bordas
+    let newOffset = _startOffset - dxPct;
+    if (newOffset < 0) newOffset = newOffset * 0.3;
+    if (newOffset > (_TAB_NAMES.length - 1) * 100) {
+      newOffset = (_TAB_NAMES.length - 1) * 100 + (newOffset - (_TAB_NAMES.length - 1) * 100) * 0.3;
+    }
+    slider.style.transform = 'translateX(-' + newOffset + '%)';
   }
 
   function onTouchEnd(e) {
-    if (!_swiping) return;
-    _swiping = false;
+    if (!_dragging) return;
+    _dragging = false;
     const dx = e.changedTouches[0].clientX - _sx;
     const dy = e.changedTouches[0].clientY - _sy;
-    if (Math.abs(dx) < THRESHOLD || Math.abs(dx) < Math.abs(dy) * RATIO) return;
     const idx = _TAB_NAMES.indexOf(_tabAtiva);
-    if (dx < 0 && idx < _TAB_NAMES.length - 1) {
-      trocarTab(_TAB_NAMES[idx + 1]);
-    } else if (dx > 0 && idx > 0) {
-      trocarTab(_TAB_NAMES[idx - 1]);
+
+    if (Math.abs(dx) >= THRESHOLD && Math.abs(dx) > Math.abs(dy) * RATIO) {
+      if (dx < 0 && idx < _TAB_NAMES.length - 1) {
+        trocarTab(_TAB_NAMES[idx + 1]);
+        return;
+      } else if (dx > 0 && idx > 0) {
+        trocarTab(_TAB_NAMES[idx - 1]);
+        return;
+      }
+    }
+    // volta pro lugar
+    const slider = document.getElementById('tab-slider');
+    if (slider) {
+      slider.style.transition = 'transform 0.28s cubic-bezier(0.4,0,0.2,1)';
+      slider.style.transform = 'translateX(-' + _startOffset + '%)';
     }
   }
 
   window.addEventListener('load', function() {
-    const main = document.querySelector('.main');
-    if (!main) return;
-    main.addEventListener('touchstart', onTouchStart, { passive: true });
-    main.addEventListener('touchend', onTouchEnd, { passive: true });
+    const slider = document.getElementById('tab-slider');
+    if (!slider) return;
+    slider.addEventListener('touchstart', onTouchStart, { passive: true });
+    slider.addEventListener('touchmove', onTouchMove, { passive: false });
+    slider.addEventListener('touchend', onTouchEnd, { passive: true });
+
+    // Calcula top do tabs-wrap = altura do header (sticky)
+    function calcStickyTop() {
+      const hdr = document.querySelector('header');
+      const tabsWrap = document.getElementById('tabs-wrap');
+      if (!tabsWrap || !hdr) return;
+      tabsWrap.style.top = hdr.offsetHeight + 'px';
+    }
+    calcStickyTop();
+    window.addEventListener('resize', calcStickyTop);
   });
 })();
 
@@ -2785,7 +2958,52 @@ document.addEventListener('click', function(e) {
 }, true);
 
 
-// ── EXCLUIR LINHA (modo editor) ──
+// ── PWA INSTALL ──
+var _pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _pwaPrompt = e;
+  var btn = document.getElementById('btn-pwa');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', function() {
+  var btn = document.getElementById('btn-pwa');
+  if (btn) btn.style.display = 'none';
+  _pwaPrompt = null;
+});
+function _instalarPWA() {
+  if (!_pwaPrompt) {
+    // iOS: mostrar instrução
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isIOS) {
+      _editorToast('No Safari: toque em  ↑  e depois "Adicionar à Tela Início"');
+    } else {
+      _editorToast('Abra no Chrome para instalar o app');
+    }
+    return;
+  }
+  _pwaPrompt.prompt();
+  _pwaPrompt.userChoice.then(function(r) {
+    if (r.outcome === 'accepted') {
+      var btn = document.getElementById('btn-pwa');
+      if (btn) btn.style.display = 'none';
+    }
+    _pwaPrompt = null;
+  });
+}
+// Service Worker inline
+if ('serviceWorker' in navigator) {
+  var swCode = [
+    "const CACHE='nf-relatorios-v1';",
+    "self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./',location.pathname])).catch(()=>{})));",
+    "self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});"
+  ].join('\n');
+  var blob = new Blob([swCode], { type: 'application/javascript' });
+  var swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(function(){});
+}
+
+
 document.addEventListener('click', function(e) {
   if (!_editorModeAtivo) return;
   var btn = e.target.closest('.btn-del-row');
