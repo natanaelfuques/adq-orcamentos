@@ -272,11 +272,39 @@
     letter-spacing: 0.07em;
     cursor: pointer;
     transition: background 0.18s, border-color 0.18s, color 0.18s;
+    line-height: 1;
+    height: 26px;
+    box-sizing: border-box;
+    vertical-align: middle;
   }
   #btn-gerador-sair:hover {
     background: #111 !important;
     border-color: #e55 !important;
     color: #e55 !important;
+  }
+
+  /* ── BOTÃO METAS (TROFÉU) ── */
+  #btn-metas-trofeu {
+    display: none;
+    background: transparent;
+    border: 1px solid #444;
+    color: #aaa;
+    border-radius: 4px;
+    padding: 0;
+    width: 26px;
+    height: 26px;
+    box-sizing: border-box;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    flex-shrink: 0;
+    transition: border-color 0.15s, color 0.15s;
+    vertical-align: middle;
+  }
+  #btn-metas-trofeu:hover {
+    border-color: #C8A94A !important;
+    color: #C8A94A !important;
   }
 
   /* ── BOTÃO INSTALAR PWA ── */
@@ -1267,6 +1295,7 @@ header {
         <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="3" r="2.2"/><circle cx="9.5" cy="3" r="2.2"/><path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/><path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/></svg>
       </button>
       <button id="btn-ia-config" onclick="abrirModalConfiguracoes()" title="Configurações" style="background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 6px;cursor:pointer;display:none;align-items:center;justify-content:center;align-self:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.69.07-1.08s-.03-.73-.07-1.08l2.32-1.82c.21-.16.27-.45.14-.69l-2.2-3.81c-.13-.24-.41-.32-.65-.24l-2.74 1.1c-.57-.44-1.17-.8-1.84-1.08L14.26 2.1A.535.535 0 0 0 13.74 2h-3.48c-.26 0-.48.18-.52.44L9.45 5.18C8.78 5.46 8.18 5.83 7.61 6.27L4.87 5.17c-.24-.09-.52 0-.65.24l-2.2 3.81c-.13.23-.07.53.14.69L4.48 11.5c-.04.35-.07.7-.07 1.08s.03.73.07 1.08L2.16 15.48c-.21.16-.27.45-.14.69l2.2 3.81c.13.24.41.32.65.24l2.74-1.1c.57.44 1.17.8 1.84 1.08l.29 2.91c.04.26.26.44.52.44h3.48c.26 0 .48-.18.52-.44l.29-2.91c.67-.28 1.27-.65 1.84-1.08l2.74 1.1c.24.09.52 0 .65-.24l2.2-3.81c.13-.23.07-.53-.14-.69l-2.32-1.81z"/></svg></button>
+      <button id="btn-metas-trofeu" onclick="abrirModalMetas()" title="Metas"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12"/><path d="M6 3v6a6 6 0 0 0 12 0V3"/><path d="M6 7H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 7h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M12 15v4"/><path d="M9 19h6"/></svg></button>
       <button id="btn-gerador-sair" onclick="geradorSair()">Sair</button>
       <button id="pwa-install-btn" onclick="adqInstall()">&#8659; Instalar</button>
     </div>
@@ -4843,6 +4872,8 @@ function initFirebase(config) {
         if (hu) hu.textContent = (userDoc && userDoc.nome) ? userDoc.nome : user.email.split('@')[0];
         var bs = document.getElementById('btn-gerador-sair');
         if (bs) bs.style.display = 'inline-block';
+        var bmt = document.getElementById('btn-metas-trofeu');
+        if (bmt) bmt.style.display = 'inline-flex';
         var ba = document.getElementById('btn-gerador-acessos');
         if (ba) ba.style.display = isAdmin ? 'inline-flex' : 'none';
         var bic = document.getElementById('btn-ia-config');
@@ -9999,6 +10030,139 @@ function _calendarNota(nota, btn) {
   if (db) db.collection('notas').doc(nota.id).update({ calendar_adicionado: true })
     .catch(function(){});
 }
+
+// ── MODAL METAS (somente leitura, visível para todos) ─────────────────────────
+
+function abrirModalMetas() {
+  var existe = document.getElementById('modal-metas-view');
+  if (existe) { existe.remove(); return; }
+
+  var hoje = new Date();
+  var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var labelMes = meses[_metaMesAtual] + ' ' + _metaAnoAtual;
+  var isMesAtual = _metaMesAtual === hoje.getMonth() && _metaAnoAtual === hoje.getFullYear();
+
+  // Ler valores atuais das barras do painel admin para espelhar
+  function _lerBarra(tipo) {
+    var bar   = document.getElementById('meta-' + tipo + '-bar');
+    var valor = document.getElementById('meta-' + tipo + '-valor');
+    var pct   = document.getElementById('meta-' + tipo + '-pct');
+    return {
+      width: bar   ? bar.style.width   : '0%',
+      bg:    bar   ? bar.style.background : '#333',
+      valor: valor ? valor.textContent  : '–',
+      pct:   pct   ? pct.textContent   : ''
+    };
+  }
+  function _lerChecklistBarra() {
+    var bar   = document.getElementById('meta-checklist-bar');
+    var valor = document.getElementById('meta-checklist-valor');
+    var pct   = document.getElementById('meta-checklist-pct');
+    return {
+      width: bar   ? bar.style.width   : '0%',
+      bg:    bar   ? bar.style.background : '#333',
+      valor: valor ? valor.textContent  : '–',
+      pct:   pct   ? pct.textContent   : ''
+    };
+  }
+
+  var r  = _lerBarra('receita');
+  var ev = _lerBarra('eventos');
+  var tk = _lerBarra('ticket');
+  var an = _lerBarra('anual');
+  var ck = _lerChecklistBarra();
+
+  var metasCores = {
+    receita: { label: 'Receita Mensal',    icon: '💰', cor: '#C8A94A', bg: 'rgba(200,169,74,0.08)'  },
+    eventos: { label: 'Eventos no Mês',    icon: '🎵', cor: '#4A90C8', bg: 'rgba(74,144,200,0.08)'  },
+    ticket:  { label: 'Ticket Médio',      icon: '📊', cor: '#8B5CF6', bg: 'rgba(139,92,246,0.08)'  },
+    anual:   { label: 'Faturamento Anual', icon: '🏆', cor: '#E8A838', bg: 'rgba(232,168,56,0.08)'  },
+    checklist:{ label: 'Checklist Painel', icon: '✅', cor: '#25D366', bg: 'rgba(37,211,102,0.08)'  }
+  };
+
+  function _blocoMeta(tipo, dados) {
+    var cfg = metasCores[tipo];
+    var pctNum = parseFloat(dados.pct) || 0;
+    var atingida = pctNum >= 100;
+    return '<div style="background:' + cfg.bg + ';border:1px solid ' + (atingida ? cfg.cor : '#2a2a2a') + ';border-radius:8px;padding:14px 16px;' + (atingida ? 'box-shadow:0 0 12px ' + cfg.cor + '22;' : '') + '">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span style="font-size:1rem">' + cfg.icon + '</span>' +
+          '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:' + cfg.cor + '">' + cfg.label + '</span>' +
+        '</div>' +
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:' + (atingida ? cfg.cor : '#555') + '">' + (dados.pct || '–') + (dados.pct ? '' : '') + '</span>' +
+      '</div>' +
+      '<div style="position:relative;height:22px;background:#111;border-radius:5px;overflow:hidden;margin-bottom:8px">' +
+        '<div style="height:100%;border-radius:5px;transition:width 0.8s ease;width:' + dados.width + ';background:' + dados.bg + '"></div>' +
+        '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8)">' + dados.valor + '</div>' +
+      '</div>' +
+      (atingida ? '<div style="text-align:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;font-weight:700;color:' + cfg.cor + ';text-transform:uppercase;letter-spacing:0.1em">✓ Meta atingida!</div>' : '') +
+    '</div>';
+  }
+
+  var overlay = document.createElement('div');
+  overlay.id = 'modal-metas-view';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:9100;display:flex;align-items:flex-start;justify-content:flex-end;padding:56px 16px 0 16px;';
+
+  overlay.innerHTML =
+    '<div style="background:#1a1a1a;border:1px solid #333;border-radius:10px;width:100%;max-width:360px;max-height:calc(100vh - 72px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 8px 40px rgba(0,0,0,0.6)">' +
+      // Header
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #2a2a2a;position:sticky;top:0;background:#1a1a1a;z-index:1">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8A94A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12"/><path d="M6 3v6a6 6 0 0 0 12 0V3"/><path d="M6 7H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 7h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M12 15v4"/><path d="M9 19h6"/></svg>' +
+          '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:1rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Metas</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em">' + labelMes + (isMesAtual ? ' · Atual' : '') + '</span>' +
+          '<button onclick="document.getElementById(\'modal-metas-view\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;transition:all 0.15s" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">✕</button>' +
+        '</div>' +
+      '</div>' +
+      // Barras de progresso
+      '<div style="padding:16px 16px 20px;display:flex;flex-direction:column;gap:10px">' +
+        _blocoMeta('receita',   r)  +
+        _blocoMeta('eventos',   ev) +
+        _blocoMeta('ticket',    tk) +
+        _blocoMeta('anual',     an) +
+        _blocoMeta('checklist', ck) +
+      '</div>' +
+      // Sequência
+      '<div style="margin:0 16px 20px;background:rgba(200,169,74,0.06);border:1px solid #2a2a2a;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px">' +
+        '<div style="text-align:center;min-width:48px">' +
+          '<div id="mv-seq-num" style="font-family:\'Barlow Condensed\',sans-serif;font-size:2rem;font-weight:800;color:#C8A94A;line-height:1">' + (document.getElementById('meta-sequencia-num') ? document.getElementById('meta-sequencia-num').textContent : '0') + '</div>' +
+          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em">meses</div>' +
+        '</div>' +
+        '<div>' +
+          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.08em">Sequência de Metas</div>' +
+          '<div style="font-size:0.68rem;color:#555;margin-top:2px">' + (document.getElementById('meta-sequencia-detalhe') ? document.getElementById('meta-sequencia-detalhe').textContent || 'Meses consecutivos batendo receita' : 'Meses consecutivos batendo receita') + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  // Fechar ao clicar fora
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.remove();
+  });
+
+  document.body.appendChild(overlay);
+
+  // Animar barras após render
+  setTimeout(function() {
+    var barras = overlay.querySelectorAll('[style*="transition:width"]');
+    barras.forEach(function(b) {
+      var w = b.style.width;
+      b.style.width = '0%';
+      setTimeout(function() { b.style.width = w; }, 30);
+    });
+  }, 50);
+}
+
+// Fechar modal de metas ao pressionar ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var m = document.getElementById('modal-metas-view');
+    if (m) m.remove();
+  }
+});
 
 function _montarNotaLivre(d) {
   var partes = [];
