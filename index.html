@@ -6121,16 +6121,15 @@ function toggleAprovadoContrato(id, atual) {
   if (!db) return;
   var statusEl = document.querySelector('.salvo-card [data-action="status-contrato"][data-id="' + id + '"]')
     || document.querySelector('.salvo-card span.salvo-status[data-id="' + id + '"]');
-  var etapa = statusEl ? (statusEl.getAttribute('data-etapa') || '') : '';
   // Ciclo: Pendente → Assinado → Cancelado → Pendente
   // Em andamento e Concluído são somente leitura (vêm do painel)
-  var novoAprovado, novoLabel, novoClass, novoPainel;
+  var novoAprovado, novoLabel, novoClass;
   if (!atual) {
     // Pendente → Assinado
-    novoAprovado = true; novoLabel = 'Assinado'; novoClass = 'aprovado'; novoPainel = 'add';
+    novoAprovado = true; novoLabel = 'Assinado'; novoClass = 'aprovado';
   } else {
-    // Assinado → Cancelado (remove do painel)
-    novoAprovado = false; novoLabel = 'Cancelado'; novoClass = 'cancelado'; novoPainel = 'remove';
+    // Assinado → Cancelado
+    novoAprovado = false; novoLabel = 'Cancelado'; novoClass = 'cancelado';
   }
   db.collection('contratos').doc(id).update({ aprovado: novoAprovado })
     .catch(function(e) { console.error('[AdQ] Erro ao atualizar status:', e); });
@@ -6138,15 +6137,12 @@ function toggleAprovadoContrato(id, atual) {
     var cardEl = statusEl.closest('.salvo-card');
     statusEl.textContent = novoLabel;
     statusEl.setAttribute('data-aprovado', novoAprovado);
-    statusEl.setAttribute('data-etapa', novoAprovado ? 'eventos' : '');
-    statusEl.className = 'salvo-status status-readonly ' + novoClass;
+    statusEl.className = 'salvo-status ' + novoClass;
     if (cardEl) {
       var monRow = cardEl.querySelector('.salvo-montagem-row');
-      if (monRow) monRow.style.display = novoAprovado ? '' : 'none';
+      if (monRow) monRow.style.display = 'none';
     }
   }
-  if (novoPainel === 'add') adicionarAoPainel(id);
-  else removerDoPainel(id);
 }
 
 
