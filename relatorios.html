@@ -1118,6 +1118,9 @@ function getStatusContrato(c) {
   // Cancelado tem prioridade máxima (flag ou status explícito)
   if (c.removido_manualmente || c.status_contrato === 'cancelado') return 'cancelado';
 
+  // Se o contrato (origem = contrato) está no painel, sobrepõe o status para 'painel'
+  if (c._origem === 'contrato' && c.etapa) return 'painel';
+
   // Se status_contrato está definido explicitamente, usar diretamente —
   // evita que campos legados (aprovado, link_assinatura) sobrescrevam o valor correto
   if (c.status_contrato === 'pendente') return 'pendente';
@@ -1474,12 +1477,16 @@ function renderContratos() {
     const id = c.id;
     const cli = nomeCli(c); const tipo = tipoEv(c);
     const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
+    // Badge de status: contratos com etapa no painel → "painel" (roxo)
+    const statusBadge = (c.etapa && !c.removido_manualmente && c.status_contrato !== 'cancelado')
+      ? '<span class="badge painel">painel</span>'
+      : `<span class="badge ${st}">${st}</span>`;
     return `<tr>
       <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:220px">${desc}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="contratos">${c.ev_local || c.local_evento || '—'}</td>
       <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorContrato(c))}</td>
-      <td><span class="badge ${st}">${st}</span></td>
+      <td>${statusBadge}</td>
       <td>${formatDateBR(c.criadoEm)}</td>
       <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="contratos" title="Excluir">×</button></td>
     </tr>`;
