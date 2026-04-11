@@ -4452,8 +4452,17 @@ function preencherContratoDados() {
   });
   if (!lista.children.length) addServico();
   calcEntrada();
-  // Painel permanece aberto — dados limpos só ao clicar X
-  document.getElementById('tab-contratante').scrollIntoView({ behavior: 'smooth' });
+  // Navegar para a aba Contrato e depois fazer o scroll
+  if (window._goToVirtual) {
+    window._goToVirtual(4, true);
+  } else {
+    switchMain('contrato');
+  }
+  setTimeout(function() {
+    var el = document.getElementById('tab-contratante');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 380);
 }
 
 function togglePreviaOrcamento() {
