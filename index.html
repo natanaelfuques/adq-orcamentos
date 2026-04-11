@@ -3241,7 +3241,7 @@ function aplicarOpcaoSelecionada() {
   setVal('cli_nome', d.nome || d.nome_cliente || '');
   setVal('ev_nome',  d.evento || d.tipo_evento || '');
   setVal('ev_local', d.local || d.local_evento || '');
-  setVal('ev_maps',  d.local_evento_maps || d.ev_maps || d.maps_link || ''); _atualizarBtnMaps();
+  setVal('ev_maps',  d.local_evento_maps || d.ev_maps || d.maps_link || (document.getElementById('ev_maps')||{}).value || ''); _atualizarBtnMaps();
   setVal('ev_data',  d.dataEvt || '');
   if (d.whatsapp_cliente) setVal('cli_fone', d.whatsapp_cliente);
 
