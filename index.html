@@ -5260,7 +5260,7 @@ function handleSalvosClick(e) {
     var statusAtual = btn.getAttribute('data-status') || (btn.getAttribute('data-aprovado') === 'true' ? 'assinado' : 'pendente');
     var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : statusAtual === 'assinado' ? 'confirmado' : statusAtual === 'confirmado' ? 'cancelado' : 'pendente';
     var novoAprovado = novoStatus === 'assinado' || novoStatus === 'confirmado';
-    var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : novoStatus === 'cancelado' ? 'Cancelado' : 'Pendente';
+    var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado' : novoStatus === 'cancelado' ? 'Cancelado' : 'Pendente';
     var novaClasse = novoStatus === 'confirmado' ? 'confirmado' : novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : novoStatus === 'cancelado' ? 'cancelado' : '';
     db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado, removido_manualmente: (novoStatus === 'cancelado') })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
@@ -5818,7 +5818,7 @@ function iniciarListenerContratos() {
                        : _statusCon === 'cancelado'   ? ' cancelado' : '';
           var _scLabel = _statusCon === 'confirmado' ? 'Confirmado'
                        : _statusCon === 'assinado'   ? 'Assinado'
-                       : _statusCon === 'enviado'     ? 'Enviado...'
+                       : _statusCon === 'enviado'     ? 'Enviado'
                        : _statusCon === 'cancelado'   ? 'Cancelado' : 'Pendente';
           statusBtn.textContent = _scLabel;
           statusBtn.setAttribute('data-status', _statusCon);
@@ -5871,7 +5871,7 @@ function iniciarListenerContratos() {
       } else {
         var sc = btn.getAttribute('data-status') || 'cancelado';
         statusClass = sc === 'cancelado' ? 'cancelado' : sc === 'confirmado' ? 'confirmado' : sc === 'assinado' ? 'aprovado' : sc === 'enviado' ? 'enviado' : '';
-        statusLabel  = sc === 'cancelado' ? 'Cancelado' : sc === 'confirmado' ? 'Confirmado' : sc === 'assinado' ? 'Assinado' : sc === 'enviado' ? 'Enviado...' : 'Pendente';
+        statusLabel  = sc === 'cancelado' ? 'Cancelado' : sc === 'confirmado' ? 'Confirmado' : sc === 'assinado' ? 'Assinado' : sc === 'enviado' ? 'Enviado' : 'Pendente';
         clickable = true;
       }
       btn.className = clickable ? ('salvo-status' + (statusClass ? ' ' + statusClass : '')) : ('salvo-status status-readonly' + (statusClass ? ' ' + statusClass : ''));
@@ -5991,7 +5991,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     // Determinar estado visual do botão
     var _statusCon = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
     var statusClass = _statusCon === 'confirmado' ? ' confirmado' : _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : _statusCon === 'cancelado' ? ' cancelado' : '';
-    var statusLabel = _statusCon === 'confirmado' ? 'Confirmado' : _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado...' : _statusCon === 'cancelado' ? 'Cancelado' : 'Pendente';
+    var statusLabel = _statusCon === 'confirmado' ? 'Confirmado' : _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado' : _statusCon === 'cancelado' ? 'Cancelado' : 'Pendente';
     var statusClickable = true;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
@@ -8031,7 +8031,7 @@ function _confirmarAutentique() {
         }
         var statusBtn = document.querySelector('.salvo-card [data-action="toggle-aprovado-contrato"][data-id="' + _ultimoContratoSalvoId + '"]');
         if (statusBtn) {
-          statusBtn.textContent = 'Enviado...';
+          statusBtn.textContent = 'Enviado';
           statusBtn.className = statusBtn.className.replace(/\baprova[^\s]*/g, '').replace(/\benviado\b/g, '').trim() + ' enviado';
           statusBtn.setAttribute('data-status', 'enviado');
         }
