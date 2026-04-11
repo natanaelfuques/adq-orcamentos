@@ -1275,49 +1275,59 @@ function trocarTab(tab) {
 // ══════════════════════════════════════════
 // TAB 1 – FINANCEIRO
 // ══════════════════════════════════════════
-function renderFinanceiro() {
-  const cons = contratosFiltrados();
-  const ativos = cons.filter(c => !['cancelado'].includes(getStatusContrato(c)));
-  const confirmados = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
+function getValorEvento(e) {
+  // Valor unificado para contratos e notas
+  if (e._origem === 'nota') {
+    return parseBRL(e.val_total) || parseBRL(e.valorTotal) || parseBRL(e.valor) || 0;
+  }
+  return getValorContrato(e);
+}
 
-  const receitaTotal = confirmados.reduce((s,c) => s + getValorContrato(c), 0);
-  const receitaPendente = ativos.filter(c => !['confirmado','concluido'].includes(getStatusContrato(c)))
-    .reduce((s,c) => s + getValorContrato(c), 0);
+function renderFinanceiro() {
+  // Usa todos os eventos (contratos + notas), sem duplicatas
+  const todos = todoEventosFiltrados();
+  const ativos = todos.filter(e => !['cancelado'].includes(getStatusContrato(e)));
+  const confirmados = todos.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
+
+  const receitaTotal = confirmados.reduce((s,e) => s + getValorEvento(e), 0);
+  const receitaPendente = ativos.filter(e => !['confirmado','concluido'].includes(getStatusContrato(e)))
+    .reduce((s,e) => s + getValorEvento(e), 0);
   const ticket = confirmados.length ? receitaTotal / confirmados.length : 0;
 
-  // Mês atual
+  // Mês atual — contratos + notas
   const hoje = new Date();
-  const consMes = _contratos.filter(c => {
-    const d = tsToDate(c.criadoEm);
+  const todosMes = [..._contratos, ..._notas].filter(e => {
+    const d = tsToDate(e.criadoEm);
     return d && d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
   });
-  const recMes = consMes.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)))
-    .reduce((s,c) => s + getValorContrato(c), 0);
+  const recMes = todosMes.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)))
+    .reduce((s,e) => s + getValorEvento(e), 0);
+  const qtdMesConf = todosMes.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e))).length;
 
   document.getElementById('kpi-fin').innerHTML = `
     <div class="kpi-card gold">
       <div class="kpi-label">Receita confirmada</div>
       <div class="kpi-value">${frsShort(receitaTotal)}</div>
-      <div class="kpi-sub">${confirmados.length} contrato(s) no período</div>
+      <div class="kpi-sub">${confirmados.length} evento(s) no período</div>
     </div>
     <div class="kpi-card green">
       <div class="kpi-label">Receita do mês atual</div>
       <div class="kpi-value">${frsShort(recMes)}</div>
-      <div class="kpi-sub">${consMes.filter(c=>['confirmado','concluido'].includes(getStatusContrato(c))).length} contratos</div>
+      <div class="kpi-sub">${qtdMesConf} evento(s) confirmado(s)</div>
     </div>
     <div class="kpi-card blue">
       <div class="kpi-label">Receita em negociação</div>
       <div class="kpi-value">${frsShort(receitaPendente)}</div>
-      <div class="kpi-sub">Contratos pendentes/em andamento</div>
+      <div class="kpi-sub">Pendentes/em andamento</div>
     </div>
     <div class="kpi-card purple">
       <div class="kpi-label">Ticket médio</div>
       <div class="kpi-value">${frsShort(ticket)}</div>
-      <div class="kpi-sub">Contratos confirmados</div>
+      <div class="kpi-sub">Eventos confirmados/concluídos</div>
     </div>
   `;
 
-  // Gráfico: faturamento mensal (12 meses do período ou ano atual)
+  // Gráfico: faturamento mensal — contratos + notas
   const meses12 = [];
   const ref = _dataIni || new Date(new Date().getFullYear(), 0, 1);
   for (let i = 0; i < 12; i++) {
@@ -1326,12 +1336,13 @@ function renderFinanceiro() {
     meses12.push({ label: MESES[m.getMonth()] + '/' + String(m.getFullYear()).slice(2), m: m });
   }
 
+  const todosParaGraf = [..._contratos.map(c => ({ ...c, _origem: 'contrato' })), ..._notas];
   const dataFat = meses12.map(({ m }) => {
-    return _contratos.filter(c => {
-      const d = tsToDate(c.criadoEm);
+    return todosParaGraf.filter(e => {
+      const d = tsToDate(e.criadoEm);
       return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear()
-        && ['confirmado','concluido'].includes(getStatusContrato(c));
-    }).reduce((s,c) => s + getValorContrato(c), 0);
+        && ['confirmado','concluido'].includes(getStatusContrato(e));
+    }).reduce((s,e) => s + getValorEvento(e), 0);
   });
 
   criarChart('chart-faturamento', {
@@ -1357,11 +1368,11 @@ function renderFinanceiro() {
     }
   });
 
-  // Gráfico: receita por tipo de evento
+  // Gráfico: receita por tipo de evento (contratos + notas)
   const tipoMap = {};
-  confirmados.forEach(c => {
-    const t = tipoEv(c) || 'Outros';
-    tipoMap[t] = (tipoMap[t] || 0) + getValorContrato(c);
+  confirmados.forEach(e => {
+    const t = tipoEv(e) || 'Outros';
+    tipoMap[t] = (tipoMap[t] || 0) + getValorEvento(e);
   });
   const tipoEntries = Object.entries(tipoMap).sort((a,b) => b[1]-a[1]).slice(0, 8);
   const CORES = ['#C8A94A','#4A90C8','#25D366','#8B5CF6','#E8A838','#e05c5c','#38bdf8','#f472b6'];
@@ -1381,10 +1392,10 @@ function renderFinanceiro() {
     }
   });
 
-  // Gráfico: receita por serviço
+  // Gráfico: receita por serviço (contratos + notas)
   const servMap = {};
-  confirmados.forEach(c => {
-    const servicos = c.servicos || [];
+  confirmados.forEach(e => {
+    const servicos = e.servicos || [];
     servicos.forEach(s => { if (s) servMap[s] = (servMap[s] || 0) + 1; });
   });
   const servEntries = Object.entries(servMap).sort((a,b) => b[1]-a[1]).slice(0, 10);
