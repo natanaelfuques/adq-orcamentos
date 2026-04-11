@@ -5866,7 +5866,11 @@ function iniciarListenerContratos() {
       } else if (etapa === 'concluido') {
         statusClass = 'concluido'; statusLabel = 'Concluído'; clickable = false;
       } else if (etapa === 'eventos') {
-        statusClass = aprovado ? 'aprovado' : ''; statusLabel = aprovado ? 'Assinado' : 'No Painel'; clickable = true;
+        // Mantém o status real do contrato — o botão roxo "Painel" já indica que está no painel
+        var scEv = btn.getAttribute('data-status') || (aprovado ? 'assinado' : 'pendente');
+        statusClass = scEv === 'confirmado' ? 'confirmado' : scEv === 'assinado' ? 'aprovado' : scEv === 'enviado' ? 'enviado' : scEv === 'cancelado' ? 'cancelado' : '';
+        statusLabel  = scEv === 'confirmado' ? 'Confirmado' : scEv === 'assinado' ? 'Assinado' : scEv === 'enviado' ? 'Enviado' : scEv === 'cancelado' ? 'Cancelado' : 'Pendente';
+        clickable = true;
       } else {
         var sc = btn.getAttribute('data-status') || 'cancelado';
         statusClass = sc === 'cancelado' ? 'cancelado' : sc === 'confirmado' ? 'confirmado' : sc === 'assinado' ? 'aprovado' : sc === 'enviado' ? 'enviado' : '';
