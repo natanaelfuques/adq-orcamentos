@@ -4851,6 +4851,9 @@ function initFirebase(config) {
         iniciarListenerSalvos();
         iniciarConnIndicator();
         carregarPresetsFirestore();
+        // Inicializar metas em tempo real logo ao logar (carrega config + cálculo inicial)
+        setTimeout(function() { _initAbaMetas(); }, 1000);
+        // Notificação de boas-vindas ao abrir (após metas carregarem)
         setTimeout(function() { _verificarMetasAoAbrir(); }, 2500);
         // Expandir textareas de pacotes agora que o painel está visível
         setTimeout(function() {
@@ -8684,7 +8687,10 @@ function abrirModalConfiguracoes() {
   }, 80);
   _carregarHistoricoIP();
   _initAbaAPIs();
-  _initAbaMetas();
+  // Ao abrir o modal, apenas recarrega config e recalcula — o listener em tempo real já está ativo
+  _carregarMetasDoMes();
+  _calcularProgressoMetas();
+  _atualizarMetaLabel();
 }
 
 function _cfgAba(idx, fromScroll) {
@@ -8953,6 +8959,7 @@ var _metaAnoAtual = new Date().getFullYear();
 var _metasConfig = { receita: 0, eventos: 0, ticket: 0, anual: 0 }; // metas do mês selecionado
 var _metasAllData = {}; // todos os dados do Firestore (cache)
 var _metaNotificado = {};
+var _metaListenerUnsubscribe = null; // controla o listener em tempo real
 
 function _metaChaveMes(mes, ano) {
   return ano + '-' + String(mes + 1).padStart(2, '0');
@@ -9031,6 +9038,14 @@ function _initAbaMetas() {
       _carregarMetasDoMes();
       _calcularProgressoMetas();
     }).catch(function() { _calcularProgressoMetas(); });
+
+    // Listener em tempo real: recalcula metas sempre que eventos_campo mudar
+    if (_metaListenerUnsubscribe) _metaListenerUnsubscribe(); // cancelar listener anterior se houver
+    _metaListenerUnsubscribe = db.collection('eventos_campo').onSnapshot(function() {
+      _calcularProgressoMetas();
+    }, function(err) {
+      console.warn('[AdQ] Listener metas erro:', err);
+    });
   } else {
     _calcularProgressoMetas();
   }
