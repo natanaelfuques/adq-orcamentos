@@ -310,6 +310,7 @@ header {
 }
 /* badges — mesmas cores dos cards de contratos no index */
 .badge.pendente   { color: #777;     border-color: #555;     background: rgba(120,120,120,0.08); }
+.badge.nota       { color: #E8A838;  border-color: #E8A838;  background: rgba(232,168,56,0.10); }
 .badge.enviado    { color: #C8A94A;  border-color: #C8A94A;  background: rgba(200,169,74,0.10); }
 .badge.assinado   { color: #4A90C8;  border-color: #4A90C8;  background: rgba(74,144,200,0.10); }
 .badge.aprovado   { color: #4A90C8;  border-color: #4A90C8;  background: rgba(74,144,200,0.10); }
@@ -443,6 +444,59 @@ header {
   transition: all 0.15s;
 }
 .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* ── BADGE ORIGEM ── */
+.badge-origem {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.badge-origem.contrato { background: rgba(74,144,200,0.15); color: #4A90C8; border: 1px solid rgba(74,144,200,0.3); }
+.badge-origem.nota     { background: rgba(232,168,56,0.15);  color: #E8A838; border: 1px solid rgba(232,168,56,0.3); }
+
+/* ── MOBILE FIXES ── */
+@media (max-width: 600px) {
+  header { padding: 10px 14px; }
+  .hdr-title { font-size: 1rem; }
+  .hdr-sub { display: none; }
+
+  .periodo-bar {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .periodo-btns {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .pbtn { font-size: 0.7rem; padding: 4px 10px; }
+  .periodo-custom { width: 100%; }
+  .periodo-custom input { width: 100%; flex: 1; }
+  .export-btn { width: 100%; margin-left: 0; text-align: center; }
+
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .tab-btn { white-space: nowrap; padding: 10px 14px; font-size: 0.75rem; }
+
+  .main { padding: 16px 12px 60px; }
+
+  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kpi-value { font-size: 1.35rem; }
+  .kpi-label { font-size: 0.62rem; }
+
+  .chart-grid { grid-template-columns: 1fr; }
+  .chart-grid.triple { grid-template-columns: 1fr; }
+  .chart-wrap canvas { max-height: 220px; }
+
+  .cont-grid { grid-template-columns: 1fr; }
+
+  .table-card { font-size: 0.78rem; }
+  .table-card th, .table-card td { padding: 8px 10px; }
+}
 </style>
 </head>
 <body>
@@ -511,6 +565,7 @@ header {
     <div class="tabs">
       <button class="tab-btn active" onclick="trocarTab('financeiro')">Financeiro</button>
       <button class="tab-btn" onclick="trocarTab('contratos')">Contratos</button>
+      <button class="tab-btn" onclick="trocarTab('eventos')">Eventos</button>
       <button class="tab-btn" onclick="trocarTab('clientes')">Clientes</button>
       <button class="tab-btn" onclick="trocarTab('sazonalidade')">Sazonalidade</button>
       <button class="tab-btn" onclick="trocarTab('contabilidade')">Contabilidade</button>
@@ -571,6 +626,30 @@ header {
             </tr>
           </thead>
           <tbody id="tbody-contratos"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ TAB: EVENTOS ════ -->
+    <div id="tab-eventos" class="tab-panel">
+      <div class="kpi-grid" id="kpi-ev"></div>
+
+      <p class="sec-title">Todos os eventos no período — contratos + notas</p>
+      <div class="table-card table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Tipo de Evento</th>
+              <th>Data Evento</th>
+              <th>Local</th>
+              <th class="r">Valor</th>
+              <th>Status</th>
+              <th>Origem</th>
+              <th>Criado em</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-eventos"></tbody>
         </table>
       </div>
     </div>
@@ -709,6 +788,7 @@ const firebaseConfig = {
 let db = null;
 let _contratos = [];
 let _orcamentos = [];
+let _notas = [];
 let _periodoAtivo = 'ano';
 let _dataIni = null, _dataFim = null;
 let _tabAtiva = 'financeiro';
@@ -749,6 +829,7 @@ function fazerLogout() {
 // ── CARREGAR DADOS ──
 let _contratosCarregados = false;
 let _orcamentosCarregados = false;
+let _notasCarregadas = false;
 
 function carregarDados() {
   // Listener em tempo real — contratos
@@ -768,10 +849,22 @@ function carregarDados() {
   }, function(e) {
     alert('Erro ao carregar orçamentos: ' + e.message);
   });
+
+  // Listener em tempo real — notas (eventos criados manualmente)
+  db.collection('notas').orderBy('criadoEm', 'desc').onSnapshot(function(snap) {
+    _notas = snap.docs.map(d => ({ id: d.id, _origem: 'nota', ...d.data() }));
+    _notasCarregadas = true;
+    _verificarPronto();
+  }, function(e) {
+    // Notas podem não existir — não bloquear
+    _notas = [];
+    _notasCarregadas = true;
+    _verificarPronto();
+  });
 }
 
 function _verificarPronto() {
-  if (!_contratosCarregados || !_orcamentosCarregados) return;
+  if (!_contratosCarregados || !_orcamentosCarregados || !_notasCarregadas) return;
   const loading = document.getElementById('screen-loading');
   const app = document.getElementById('screen-app');
   if (loading && loading.style.display !== 'none') {
@@ -847,6 +940,24 @@ function orcamentosFiltrados() {
   return _orcamentos.filter(dentroDoPeríodo);
 }
 
+function notasFiltradas() {
+  return _notas.filter(dentroDoPeríodo);
+}
+
+// Todos os eventos: contratos + notas (sem duplicatas — notas que viraram contrato têm nota_id no contrato)
+function todoEventosFiltrados() {
+  const cons = contratosFiltrados().map(c => ({ ...c, _origem: 'contrato' }));
+  const notaIdsComContrato = new Set(cons.map(c => c.nota_id).filter(Boolean));
+  const notas = notasFiltradas().filter(n => !notaIdsComContrato.has(n.id));
+  return [...cons, ...notas].sort((a, b) => {
+    const da = tsToDate(a.criadoEm), db_ = tsToDate(b.criadoEm);
+    if (!da && !db_) return 0;
+    if (!da) return 1;
+    if (!db_) return -1;
+    return db_ - da;
+  });
+}
+
 // ══════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════
@@ -884,6 +995,8 @@ function getStatusContrato(c) {
   if (c.status_contrato === 'andamento' || c.etapa === 'andamento') return 'andamento';
   if (c.status_contrato === 'assinado' || c.aprovado) return 'assinado';
   if (c.status_contrato === 'enviado' || c.link_assinatura) return 'enviado';
+  // Para notas: usar campo status se houver, senão "nota"
+  if (c._origem === 'nota') return c.status || 'nota';
   return 'pendente';
 }
 
@@ -897,15 +1010,15 @@ function getPgtoLabel(c) {
 }
 
 function nomeCli(c) {
-  return c.cli_nome || c.nome_cliente || c.nome || '—';
+  return c.cli_nome || c.nome_cliente || c.cliente || c.nome || '—';
 }
 
 function tipoEv(c) {
-  return c.ev_nome || c.tipo_evento || c.evento || '—';
+  return c.ev_nome || c.tipo_evento || c.evento || c.tipo || '—';
 }
 
 function dataEv(c) {
-  const d = c.ev_data || c.data_evento || c.dataEvt || '';
+  const d = c.ev_data || c.data_evento || c.dataEvt || c.data || '';
   if (!d) return '—';
   const p = d.split('-');
   if (p.length === 3) return p[2] + '/' + p[1] + '/' + p[0];
@@ -943,6 +1056,7 @@ Chart.defaults.borderColor = '#2e2e2e';
 function renderTudo() {
   renderFinanceiro();
   renderContratos();
+  renderEventos();
   renderClientes();
   renderSazonalidade();
   renderContabilidade();
@@ -951,9 +1065,9 @@ function renderTudo() {
 // ── TAB SWITCH ──
 function trocarTab(tab) {
   _tabAtiva = tab;
+  const tabNames = ['financeiro','contratos','eventos','clientes','sazonalidade','contabilidade'];
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    const tabs = ['financeiro','contratos','clientes','sazonalidade','contabilidade'];
-    b.classList.toggle('active', tabs[i] === tab);
+    b.classList.toggle('active', tabNames[i] === tab);
   });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
@@ -1183,7 +1297,63 @@ function renderContratos() {
 }
 
 // ══════════════════════════════════════════
-// TAB 3 – CLIENTES
+// TAB 3 – EVENTOS (contratos + notas)
+// ══════════════════════════════════════════
+function renderEventos() {
+  const todos = todoEventosFiltrados();
+  const deContratos = todos.filter(e => e._origem === 'contrato');
+  const deNotas = todos.filter(e => e._origem === 'nota');
+  const confirmados = todos.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
+  const recTotal = confirmados.filter(e => e._origem === 'contrato').reduce((s,c) => s + getValorContrato(c), 0);
+
+  document.getElementById('kpi-ev').innerHTML = `
+    <div class="kpi-card gold">
+      <div class="kpi-label">Total de eventos</div>
+      <div class="kpi-value">${todos.length}</div>
+      <div class="kpi-sub">${deContratos.length} contratos · ${deNotas.length} anotações</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Confirmados / Concluídos</div>
+      <div class="kpi-value">${confirmados.length}</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Receita confirmada</div>
+      <div class="kpi-value">${frsShort(recTotal)}</div>
+      <div class="kpi-sub">Somente contratos</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">Eventos sem contrato</div>
+      <div class="kpi-value">${deNotas.length}</div>
+      <div class="kpi-sub">Criados por anotação</div>
+    </div>
+  `;
+
+  const tbody = document.getElementById('tbody-eventos');
+  if (!todos.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum evento no período.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = todos.map(e => {
+    const st = getStatusContrato(e);
+    const origem = e._origem === 'nota' ? 'nota' : 'contrato';
+    const valor = e._origem === 'contrato' ? frs(getValorContrato(e)) : '—';
+    const valorStyle = e._origem === 'contrato' ? 'color:var(--gold);font-weight:700' : 'color:var(--muted)';
+    return `<tr>
+      <td>${nomeCli(e)}</td>
+      <td>${tipoEv(e)}</td>
+      <td>${dataEv(e)}</td>
+      <td>${e.ev_local || e.local_evento || e.local || '—'}</td>
+      <td class="r" style="${valorStyle}">${valor}</td>
+      <td><span class="badge ${st}">${st}</span></td>
+      <td><span class="badge-origem ${origem}">${origem}</span></td>
+      <td>${formatDateBR(e.criadoEm)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// TAB 4 – CLIENTES
 // ══════════════════════════════════════════
 function renderClientes() {
   const cons = contratosFiltrados();
