@@ -1898,6 +1898,7 @@ Revestimento</textarea>
         <button class="salvos-filter-btn" id="filtro-con-pendente" onclick="setFiltroConStatus('pendente')">Pendentes</button>
         <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
         <button class="salvos-filter-btn" id="filtro-con-confirmado" onclick="setFiltroConStatus('confirmado')">Confirmados</button>
+        <button class="salvos-filter-btn" id="filtro-con-cancelado" onclick="setFiltroConStatus('cancelado')">Cancelados</button>
         <button class="salvos-filter-btn" id="filtro-con-sem-painel" onclick="setFiltroConStatus('sem-painel')">- Painel</button>
       </div>
     </div>
@@ -5161,14 +5162,23 @@ function handleSalvosClick(e) {
     var painelBtn = btn;
     var jaNoPainel = painelBtn.getAttribute('data-no-painel') === '1';
     if (jaNoPainel) {
-      // Marcar como removido manualmente para sincronizarPainel não recriar
-      db.collection('contratos').doc(id).update({ removido_manualmente: true }).catch(function(){});
+      // Marcar como removido manualmente e cancelar no Firestore
+      db.collection('contratos').doc(id).update({ removido_manualmente: true, status_contrato: 'cancelado', aprovado: false }).catch(function(){});
       removerDoPainel(id);
-      // Atualizar mapa otimisticamente para o card sair da lista imediatamente
+      // Atualizar mapa otimisticamente
       delete _etapaMapContratos[id];
       painelBtn.classList.remove('no-painel');
       painelBtn.setAttribute('data-no-painel', '0');
       painelBtn.title = 'Enviar para o painel';
+      // Atualizar botão de status no card imediatamente
+      var statusBtnP = painelBtn.closest('.salvo-card') && painelBtn.closest('.salvo-card').querySelector('.salvo-status[data-id="' + id + '"]');
+      if (statusBtnP) {
+        statusBtnP.textContent = 'Cancelado';
+        statusBtnP.setAttribute('data-status', 'cancelado');
+        statusBtnP.setAttribute('data-aprovado', 'false');
+        statusBtnP.className = 'salvo-status cancelado';
+        statusBtnP.style.cssText = 'cursor:pointer;background:transparent';
+      }
       // Removido do painel → ir para aba Contratos
       switchMain('salvos');
       if (typeof switchSalvosTab === 'function') switchSalvosTab('contratos');
@@ -5243,12 +5253,14 @@ function handleSalvosClick(e) {
   else if (action === 'toggle-aprovado-contrato') {
     if (!db) return;
     var statusAtual = btn.getAttribute('data-status') || (btn.getAttribute('data-aprovado') === 'true' ? 'assinado' : 'pendente');
-    var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : statusAtual === 'assinado' ? 'confirmado' : 'pendente';
+    var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : statusAtual === 'assinado' ? 'confirmado' : statusAtual === 'confirmado' ? 'cancelado' : 'pendente';
     var novoAprovado = novoStatus === 'assinado' || novoStatus === 'confirmado';
-    var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : 'Pendente';
-    var novaClasse = novoStatus === 'confirmado' ? 'confirmado' : novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : '';
+    var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : novoStatus === 'cancelado' ? 'Cancelado' : 'Pendente';
+    var novaClasse = novoStatus === 'confirmado' ? 'confirmado' : novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : novoStatus === 'cancelado' ? 'cancelado' : '';
     db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado, removido_manualmente: false })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
+    // Se cancelou, remove do painel
+    if (novoStatus === 'cancelado') removerDoPainel(id);
     btn.textContent = novoLabel;
     btn.setAttribute('data-status', novoStatus);
     btn.setAttribute('data-aprovado', novoAprovado);
@@ -5792,7 +5804,8 @@ function iniciarListenerContratos() {
       if (change.type === 'removed') delete _etapaMapContratos[change.doc.id];
       var id = change.doc.id;
       var etapa = change.type === 'removed' ? '' : (change.doc.data().etapa || 'eventos');
-      var btn = document.querySelector('.salvo-card span.salvo-status[data-id="' + id + '"]');
+      var btn = document.querySelector('.salvo-card span.salvo-status[data-id="' + id + '"]')
+             || document.querySelector('.salvo-card button.salvo-status[data-id="' + id + '"]');
       if (!btn) return;
       var aprovado = btn.getAttribute('data-aprovado') === 'true';
       var statusClass, statusLabel, clickable;
@@ -5803,7 +5816,10 @@ function iniciarListenerContratos() {
       } else if (etapa === 'eventos') {
         statusClass = aprovado ? 'aprovado' : ''; statusLabel = aprovado ? 'Assinado' : 'No Painel'; clickable = true;
       } else {
-        statusClass = ''; statusLabel = 'Pendente'; clickable = true;
+        var sc = btn.getAttribute('data-status') || 'cancelado';
+        statusClass = sc === 'cancelado' ? 'cancelado' : sc === 'confirmado' ? 'confirmado' : sc === 'assinado' ? 'aprovado' : sc === 'enviado' ? 'enviado' : '';
+        statusLabel  = sc === 'cancelado' ? 'Cancelado' : sc === 'confirmado' ? 'Confirmado' : sc === 'assinado' ? 'Assinado' : sc === 'enviado' ? 'Enviado...' : 'Pendente';
+        clickable = true;
       }
       btn.className = 'salvo-status status-readonly' + (statusClass ? ' ' + statusClass : '');
       btn.textContent = statusLabel;
@@ -5920,8 +5936,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var etapa = etapaMap[id]; // 'eventos','andamento','concluido' ou undefined
     // Determinar estado visual do botão
     var _statusCon = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
-    var statusClass = _statusCon === 'confirmado' ? ' confirmado' : _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : '';
-    var statusLabel = _statusCon === 'confirmado' ? 'Confirmado' : _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado...' : 'Pendente';
+    var statusClass = _statusCon === 'confirmado' ? ' confirmado' : _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : _statusCon === 'cancelado' ? ' cancelado' : '';
+    var statusLabel = _statusCon === 'confirmado' ? 'Confirmado' : _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado...' : _statusCon === 'cancelado' ? 'Cancelado' : 'Pendente';
     var statusClickable = true;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
@@ -6224,7 +6240,8 @@ function filtrarContratos() {
       (_filtroConStatus === 'sem-painel' && !noPainel) ||
       (_filtroConStatus === 'pendente' && sc === 'pendente') ||
       (_filtroConStatus === 'assinado' && sc === 'assinado') ||
-      (_filtroConStatus === 'confirmado' && sc === 'confirmado');
+      (_filtroConStatus === 'confirmado' && sc === 'confirmado') ||
+      (_filtroConStatus === 'cancelado' && sc === 'cancelado');
     return matchTexto && matchStatus;
   });
   renderContratos(filtrados);
@@ -7509,13 +7526,12 @@ function handleNotasClick(e) {
     // Remover contrato do painel (de dentro da aba Eventos)
     if (!db) return;
     var contratoId = btn.getAttribute('data-contrato-id') || id;
-    // Marca o contrato como removido_manualmente para que sincronizarPainel não o recrie
-    db.collection('contratos').doc(contratoId).update({ removido_manualmente: true })
+    // Marca como removido manualmente e cancela no Firestore
+    db.collection('contratos').doc(contratoId).update({ removido_manualmente: true, status_contrato: 'cancelado', aprovado: false })
       .catch(function() {})
       .then(function() {
         return db.collection('eventos_campo').doc(contratoId).delete();
       }).then(function() {
-        // Atualizar botão Painel no card de contratos se estiver visível
         delete _etapaMapContratos[contratoId];
         filtrarContratos();
         var painelBtnCon = document.querySelector('[data-action="enviar-painel"][data-id="' + contratoId + '"]');
@@ -7524,7 +7540,16 @@ function handleNotasClick(e) {
           painelBtnCon.setAttribute('data-no-painel', '0');
           painelBtnCon.title = 'Enviar para o painel';
         }
-        // Navegar para aba Contratos após remover do painel
+        // Atualizar botão de status no card imediatamente
+        var statusBtnEv = document.querySelector('.salvo-card .salvo-status[data-id="' + contratoId + '"]');
+        if (statusBtnEv) {
+          statusBtnEv.textContent = 'Cancelado';
+          statusBtnEv.setAttribute('data-status', 'cancelado');
+          statusBtnEv.setAttribute('data-aprovado', 'false');
+          statusBtnEv.className = 'salvo-status cancelado';
+          statusBtnEv.style.cssText = 'cursor:pointer;background:transparent';
+        }
+        // Navegar para aba Contratos
         switchMain('salvos');
         if (typeof switchSalvosTab === 'function') switchSalvosTab('contratos');
       }).catch(function(e) { alert('Erro ao remover do painel: ' + e.message); });
