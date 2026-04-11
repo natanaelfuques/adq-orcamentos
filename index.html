@@ -3289,7 +3289,14 @@ function aplicarOpcaoSelecionada() {
   const pgtoVista = document.querySelector('input[name="pgto"][value="vista"]');
   if (pgtoVista) { pgtoVista.checked = true; pgtoVista.dispatchEvent(new Event('change')); }
 
-  document.getElementById('tab-contratante').scrollIntoView({ behavior: 'smooth' });
+  if (window._goToVirtual) {
+    window._goToVirtual(4, true);
+  } else {
+    switchMain('contrato');
+  }
+  setTimeout(function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 380);
 }
 
 function gerarOrcamento() {
