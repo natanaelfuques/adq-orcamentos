@@ -3491,8 +3491,7 @@ function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, incCl
     <div class="client-left">
       <div class="label">Cliente / Evento</div>
       <p><strong>Para:</strong> ${nome}</p>
-      <p><strong>Evento:</strong> ${evento}</p>
-      ${pessoas ? `<p><strong>Qtd.:</strong> ${pessoas}</p>` : ''}
+      <p><strong>Evento:</strong> ${evento}${pessoas ? ` - ${pessoas}` : ''}</p>
     </div>
     <div class="client-right">
       <div class="label">&nbsp;</div>
