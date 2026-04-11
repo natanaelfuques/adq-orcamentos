@@ -588,6 +588,239 @@ header {
   transition: all 0.15s;
 }
 .btn-admin:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── PAGAMENTOS ── */
+.pgto-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.pgto-card:hover { border-color: var(--border2); }
+.pgto-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pgto-card-header:hover { background: rgba(200,169,74,0.03); }
+.pgto-card-info { flex: 1; min-width: 0; }
+.pgto-card-nome {
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+.pgto-card-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.pgto-card-valores {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.pgto-valor-total { font-size: 1rem; font-weight: 800; color: var(--gold); }
+.pgto-valor-restante { font-size: 0.75rem; }
+.pgto-valor-restante.pago { color: var(--green); }
+.pgto-valor-restante.parcial { color: var(--orange); }
+.pgto-valor-restante.pendente { color: var(--red); }
+.pgto-card-body {
+  border-top: 1px solid var(--border);
+  padding: 16px 18px;
+  display: none;
+}
+.pgto-card-body.open { display: block; }
+.pgto-progress-bar {
+  background: var(--border);
+  border-radius: 4px;
+  height: 6px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.pgto-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s;
+}
+.pgto-parcelas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.pgto-parcela-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pgto-parcela-item.recebida { border-color: rgba(37,211,102,0.3); background: rgba(37,211,102,0.05); }
+.pgto-parcela-item.atrasada { border-color: rgba(224,92,92,0.3); background: rgba(224,92,92,0.05); }
+.pgto-parcela-check {
+  width: 20px; height: 20px;
+  accent-color: var(--green);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.pgto-parcela-info { flex: 1; min-width: 0; }
+.pgto-parcela-label { font-size: 0.75rem; font-weight: 700; }
+.pgto-parcela-valor { font-size: 0.78rem; color: var(--gold); }
+.pgto-parcela-status { font-size: 0.65rem; color: var(--muted); margin-top: 1px; }
+.pgto-filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  align-items: center;
+}
+.pgto-filtro-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pgto-filtro-btn:hover { border-color: var(--gold); color: var(--gold); }
+.pgto-filtro-btn.active { background: var(--gold); border-color: var(--gold); color: #111; }
+.pgto-busca {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 20px;
+  outline: none;
+  width: 180px;
+  margin-left: auto;
+}
+.pgto-busca:focus { border-color: var(--gold); }
+.pgto-resumo-pgto {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 0.82rem;
+}
+.pgto-resumo-pgto-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.pgto-resumo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+.pgto-resumo-row:last-child { border-bottom: none; }
+.pgto-calc {
+  background: rgba(200,169,74,0.06);
+  border: 1px solid rgba(200,169,74,0.2);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-top: 12px;
+}
+.pgto-calc-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.pgto-calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  padding: 3px 0;
+}
+.pgto-calc-row.total { font-weight: 800; font-size: 0.92rem; padding-top: 8px; border-top: 1px solid rgba(200,169,74,0.2); margin-top: 4px; }
+.pgto-status-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+  margin-left: 6px;
+}
+.pgto-status-badge.quitado { color: var(--green); border-color: var(--green); background: rgba(37,211,102,0.08); }
+.pgto-status-badge.parcial { color: var(--orange); border-color: var(--orange); background: rgba(232,168,56,0.08); }
+.pgto-status-badge.pendente { color: var(--red); border-color: var(--red); background: rgba(224,92,92,0.08); }
+.pgto-status-badge.naovence { color: var(--muted); border-color: var(--border2); background: rgba(120,120,120,0.08); }
+.pgto-input-pago {
+  background: var(--darker);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.82rem;
+  padding: 5px 10px;
+  border-radius: 4px;
+  outline: none;
+  width: 130px;
+}
+.pgto-input-pago:focus { border-color: var(--gold); }
+.pgto-btn-salvar {
+  background: var(--gold);
+  border: none;
+  color: #111;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 5px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.pgto-btn-salvar:hover { opacity: 0.85; }
+.pgto-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 600px) {
+  .pgto-parcelas { grid-template-columns: 1fr 1fr; }
+  .pgto-card-nome { max-width: 180px; }
+  .pgto-busca { width: 100%; margin-left: 0; }
+  .pgto-kpi-grid { grid-template-columns: 1fr 1fr; }
+}
 </style>
 </head>
 <body>
@@ -658,7 +891,8 @@ header {
   <div class="main">
 
     <div class="tabs">
-      <button class="tab-btn active" onclick="trocarTab('financeiro')">Financeiro</button>
+      <button class="tab-btn active" onclick="trocarTab('pagamentos')">Pagamentos</button>
+      <button class="tab-btn" onclick="trocarTab('financeiro')">Financeiro</button>
       <button class="tab-btn" onclick="trocarTab('contratos')">Contratos</button>
       <button class="tab-btn" onclick="trocarTab('eventos')">Eventos</button>
       <button class="tab-btn" onclick="trocarTab('clientes')">Clientes</button>
@@ -666,8 +900,29 @@ header {
       <button class="tab-btn" onclick="trocarTab('contabilidade')">Contabilidade</button>
     </div>
 
+    <!-- ════ TAB: PAGAMENTOS ════ -->
+    <div id="tab-pagamentos" class="tab-panel active">
+
+      <!-- KPIs -->
+      <div class="pgto-kpi-grid" id="kpi-pgto"></div>
+
+      <!-- Filtros -->
+      <div class="pgto-filtros">
+        <button class="pgto-filtro-btn active" onclick="filtroPgto('todos',this)">Todos</button>
+        <button class="pgto-filtro-btn" onclick="filtroPgto('pendentes',this)">Pendentes</button>
+        <button class="pgto-filtro-btn" onclick="filtroPgto('parcial',this)">Parcial</button>
+        <button class="pgto-filtro-btn" onclick="filtroPgto('quitados',this)">Quitados</button>
+        <button class="pgto-filtro-btn" onclick="filtroPgto('atrasados',this)">Atrasados</button>
+        <input class="pgto-busca" type="text" id="pgto-busca" placeholder="Buscar cliente..." oninput="renderPagamentos()">
+      </div>
+
+      <!-- Lista de eventos / contratos -->
+      <div id="pgto-lista"></div>
+
+    </div><!-- /tab-pagamentos -->
+
     <!-- ════ TAB: FINANCEIRO ════ -->
-    <div id="tab-financeiro" class="tab-panel active">
+    <div id="tab-financeiro" class="tab-panel">
       <div class="kpi-grid" id="kpi-fin"></div>
 
       <p class="sec-title">Faturamento Mensal</p>
@@ -889,7 +1144,7 @@ let _orcamentos = [];
 let _notas = [];
 let _periodoAtivo = 'ano';
 let _dataIni = null, _dataFim = null;
-let _tabAtiva = 'financeiro';
+let _tabAtiva = 'pagamentos';
 let _charts = {};
 
 // ── INIT ──
@@ -1215,6 +1470,7 @@ Chart.defaults.borderColor = '#2e2e2e';
 // RENDER TUDO
 // ══════════════════════════════════════════
 function renderTudo() {
+  renderPagamentos();
   renderFinanceiro();
   renderContratos();
   renderEventos();
@@ -1224,7 +1480,7 @@ function renderTudo() {
 }
 
 // ── TAB SWITCH ──
-const _TAB_NAMES = ['financeiro','contratos','eventos','clientes','sazonalidade','contabilidade'];
+const _TAB_NAMES = ['pagamentos','financeiro','contratos','eventos','clientes','sazonalidade','contabilidade'];
 
 function trocarTab(tab) {
   _tabAtiva = tab;
@@ -1271,6 +1527,390 @@ function trocarTab(tab) {
     main.addEventListener('touchend', onTouchEnd, { passive: true });
   });
 })();
+
+// ══════════════════════════════════════════
+// TAB: PAGAMENTOS
+// ══════════════════════════════════════════
+
+let _pgtoFiltro = 'todos';
+let _pgtoAbertos = {}; // { docId: true/false }
+
+/* Retorna a coleção de pagamentos registrados de um evento (salvo no Firestore como campo pgto_registros) */
+function getPgtoRegistros(ev) {
+  return ev.pgto_registros || [];
+}
+
+/* Calcula o total pago de um evento com base nos registros salvos */
+function getTotalPago(ev) {
+  return getPgtoRegistros(ev).reduce(function(s, r) { return s + (parseFloat(r.valor) || 0); }, 0);
+}
+
+/* Monta as "parcelas esperadas" com base no pgto_tipo do contrato */
+function getParcelas(ev) {
+  const total = valorEv(ev);
+  const tipo = ev.pgto_tipo || ev.pgto_sel || 'vista';
+  const n = parseInt(ev.nparcelas) || 1;
+  const dataEntrada = ev.data_entrada || ev.ev_data || ev.data_evento || '';
+  const dataEvento = ev.ev_data || ev.data_evento || '';
+
+  function parseDataBR(s) {
+    if (!s) return null;
+    const p = s.split('-');
+    if (p.length === 3) return new Date(p[0], parseInt(p[1]) - 1, parseInt(p[2]));
+    const p2 = s.split('/');
+    if (p2.length === 3) return new Date(parseInt(p2[2]), parseInt(p2[1]) - 1, parseInt(p2[0]));
+    return null;
+  }
+
+  if (tipo === 'vista') {
+    return [{ label: 'Pagamento à vista', valor: total, vencimento: dataEvento, idx: 0 }];
+  }
+
+  if (tipo === 'metade') {
+    const metade = total * 0.5;
+    return [
+      { label: '1ª parcela (50%)', valor: metade, vencimento: dataEntrada || '', idx: 0 },
+      { label: '2ª parcela (50%)', valor: metade, vencimento: dataEvento, idx: 1 }
+    ];
+  }
+
+  if (tipo === 'parcelado') {
+    const entrada = total * 0.2;
+    const restante = total - entrada;
+    const valorParc = n > 0 ? restante / n : restante;
+    const parcelas = [{ label: 'Entrada (20%)', valor: entrada, vencimento: dataEntrada || '', idx: 0 }];
+    // calcular vencimentos mensais a partir da entrada
+    const dataBase = parseDataBR(dataEntrada) || parseDataBR(dataEvento) || new Date();
+    for (let i = 0; i < n; i++) {
+      const venc = new Date(dataBase.getFullYear(), dataBase.getMonth() + i + 1, dataBase.getDate());
+      const vencStr = venc.getFullYear() + '-' + String(venc.getMonth() + 1).padStart(2, '0') + '-' + String(venc.getDate()).padStart(2, '0');
+      parcelas.push({ label: 'Parcela ' + (i + 1) + '/' + n, valor: valorParc, vencimento: vencStr, idx: i + 1 });
+    }
+    return parcelas;
+  }
+
+  if (tipo === 'custom') {
+    // Exibe como uma única parcela com descrição personalizada
+    return [{ label: ev.pgto_custom ? 'Personalizado: ' + ev.pgto_custom.slice(0, 60) : 'Pagamento personalizado', valor: total, vencimento: dataEvento, idx: 0 }];
+  }
+
+  return [{ label: 'Pagamento', valor: total, vencimento: dataEvento, idx: 0 }];
+}
+
+/* Status de pagamento do evento */
+function getStatusPgto(ev) {
+  const total = valorEv(ev);
+  if (total <= 0) return 'naovence';
+  const pago = getTotalPago(ev);
+  if (pago <= 0) return 'pendente';
+  if (pago >= total - 0.01) return 'quitado';
+  return 'parcial';
+}
+
+/* Verifica se tem parcela atrasada */
+function temParcelaAtrasada(ev) {
+  const parcelas = getParcelas(ev);
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const pago = getTotalPago(ev);
+  const total = valorEv(ev);
+  if (pago >= total - 0.01) return false; // quitado, não está atrasado
+  const registros = getPgtoRegistros(ev);
+  // calcular quanto já foi marcado por parcela
+  let acumuladoPago = 0;
+  for (const p of parcelas) {
+    const recebida = registros.some(function(r) { return r.parcela_idx === p.idx; });
+    if (!recebida) {
+      if (p.vencimento) {
+        const vparts = p.vencimento.split('-');
+        if (vparts.length === 3) {
+          const vDate = new Date(parseInt(vparts[0]), parseInt(vparts[1]) - 1, parseInt(vparts[2]));
+          if (vDate < hoje) return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function filtroPgto(filtro, btn) {
+  _pgtoFiltro = filtro;
+  document.querySelectorAll('.pgto-filtro-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderPagamentos();
+}
+
+/* Salva um registro de parcela paga no Firestore */
+function salvarParcela(ev, parcelaIdx, valor, checked) {
+  if (!db || !ev) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  const docId = ev.id;
+  let registros = getPgtoRegistros(ev).filter(function(r) { return r.parcela_idx !== parcelaIdx; });
+  if (checked) {
+    registros.push({ parcela_idx: parcelaIdx, valor: valor, data: new Date().toISOString().slice(0, 10), marcadoEm: Date.now() });
+  }
+  const upd = { pgto_registros: registros };
+  // Atualizar o status do contrato conforme pagamento
+  const total = valorEv(ev);
+  const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
+  const totalPago = avulso > 0 ? avulso : registros.reduce(function(s, r) { return s + (parseFloat(r.valor) || 0); }, 0);
+  if (totalPago >= total - 0.01 && total > 0) {
+    upd.status_pgto = 'quitado';
+  } else if (totalPago > 0) {
+    upd.status_pgto = 'parcial';
+  } else {
+    upd.status_pgto = 'pendente';
+  }
+  // Atualizar objeto local imediatamente para o cálculo ser reativo
+  const arrLocal = col === 'notas' ? _notas : _contratos;
+  const idx = arrLocal.findIndex(function(x) { return x.id === docId; });
+  if (idx >= 0) {
+    arrLocal[idx].pgto_registros = registros;
+    arrLocal[idx].status_pgto = upd.status_pgto;
+    // Atualizar cálculo no card aberto sem re-renderizar tudo
+    const evAtualizado = Object.assign({}, arrLocal[idx], { _origem: ev._origem });
+    const pagoAtual = avulso > 0 ? avulso : registros.reduce(function(s,r){return s+(parseFloat(r.valor)||0);},0);
+    const restante = Math.max(0, total - pagoAtual);
+    const pct = total > 0 ? Math.min(100, (pagoAtual / total) * 100) : 0;
+    const st = pagoAtual >= total - 0.01 && total > 0 ? 'quitado' : pagoAtual > 0 ? 'parcial' : 'pendente';
+    const calcEl = document.getElementById('pgto-calc-' + docId);
+    if (calcEl) calcEl.innerHTML = buildPgtoCalcHTML(total, pagoAtual, restante, pct, st);
+    // atualizar badge de status e valor restante no header do card
+    const hdrRestante = document.querySelector('[data-pgto-restante="' + docId + '"]');
+    if (hdrRestante) {
+      hdrRestante.textContent = restante <= 0 ? '✓ Quitado' : 'Falta ' + frs(restante);
+      hdrRestante.className = 'pgto-valor-restante ' + (restante <= 0 ? 'pago' : pagoAtual > 0 ? 'parcial' : 'pendente');
+    }
+  }
+  db.collection(col).doc(docId).update(upd)
+    .then(function() { _editorToast('Salvo!'); })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
+/* Salva valor avulso pago (campo livre) */
+function salvarValorAvulso(ev) {
+  if (!db) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  const docId = ev.id;
+  const inp = document.getElementById('pgto-inp-avulso-' + docId);
+  if (!inp) return;
+  const novoValor = parseBRL(inp.value);
+  const total = valorEv(ev);
+  const upd = { pgto_valor_avulso: novoValor };
+  if (novoValor >= total - 0.01 && total > 0) upd.status_pgto = 'quitado';
+  else if (novoValor > 0) upd.status_pgto = 'parcial';
+  else upd.status_pgto = 'pendente';
+  db.collection(col).doc(docId).update(upd)
+    .then(function() {
+      _editorToast('Valor salvo!');
+      // atualizar local para recalcular sem precisar reload
+      ev.pgto_valor_avulso = novoValor;
+      ev.status_pgto = upd.status_pgto;
+      renderPgtoCalc(ev, docId);
+    })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
+/* Re-renderiza apenas o bloco de cálculo de um card aberto */
+function renderPgtoCalc(ev, docId) {
+  const calcEl = document.getElementById('pgto-calc-' + docId);
+  if (!calcEl) return;
+  const total = valorEv(ev);
+  const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
+  const pago = avulso > 0 ? avulso : getTotalPago(ev);
+  const restante = Math.max(0, total - pago);
+  const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
+  const statusPgto = pago >= total - 0.01 && total > 0 ? 'quitado' : pago > 0 ? 'parcial' : 'pendente';
+  calcEl.innerHTML = buildPgtoCalcHTML(total, pago, restante, pct, statusPgto);
+}
+
+function buildPgtoCalcHTML(total, pago, restante, pct, statusPgto) {
+  const fillColor = statusPgto === 'quitado' ? '#25D366' : statusPgto === 'parcial' ? '#E8A838' : '#e05c5c';
+  return '<div class="pgto-progress-bar"><div class="pgto-progress-fill" style="width:' + pct.toFixed(1) + '%;background:' + fillColor + '"></div></div>' +
+    '<div class="pgto-calc">' +
+      '<div class="pgto-calc-title">Calculadora de Pagamento</div>' +
+      '<div class="pgto-calc-row"><span style="color:var(--muted)">Valor total contratado</span><span style="color:var(--gold);font-weight:700">' + frs(total) + '</span></div>' +
+      '<div class="pgto-calc-row"><span style="color:var(--muted)">Total recebido</span><span style="color:' + (pago > 0 ? '#25D366' : 'var(--muted)') + ';font-weight:700">' + frs(pago) + '</span></div>' +
+      '<div class="pgto-calc-row total"><span>Saldo a receber</span><span style="color:' + (restante <= 0 ? '#25D366' : '#e05c5c') + '">' + (restante <= 0 ? '✓ Quitado' : frs(restante)) + '</span></div>' +
+      '<div class="pgto-calc-row" style="margin-top:6px"><span style="color:var(--muted);font-size:0.75rem">Progresso</span><span style="color:var(--muted);font-size:0.75rem">' + pct.toFixed(0) + '%</span></div>' +
+    '</div>';
+}
+
+function renderPagamentos() {
+  // Usa TODOS os eventos (sem filtro de período) — controle financeiro precisa de visão completa
+  const todosContratos = _contratos.map(function(c) { return Object.assign({}, c, { _origem: 'contrato' }); });
+  const notaIdsComContrato = new Set(todosContratos.map(function(c) { return c.nota_id; }).filter(Boolean));
+  const todosNotas = _notas.filter(function(n) { return !notaIdsComContrato.has(n.id); });
+  const todosBase = [...todosContratos, ...todosNotas]
+    .filter(function(e) { return valorEv(e) > 0 && !e.removido_manualmente; })
+    .sort(function(a, b) {
+      // Ordenar: atrasados primeiro, depois pendentes, parciais, quitados
+      const ord = { pendente: 0, parcial: 1, quitado: 2 };
+      const sa = getStatusPgto(a), sb = getStatusPgto(b);
+      const aAtras = temParcelaAtrasada(a) ? -1 : 0;
+      const bAtras = temParcelaAtrasada(b) ? -1 : 0;
+      if (aAtras !== bAtras) return aAtras - bAtras;
+      return (ord[sa] || 0) - (ord[sb] || 0);
+    });
+
+  // filtro de status + busca
+  const busca = (document.getElementById('pgto-busca') ? document.getElementById('pgto-busca').value : '').toLowerCase();
+  const lista = todosBase.filter(function(ev) {
+    if (busca) {
+      const nome = (nomeCli(ev) + ' ' + tipoEv(ev)).toLowerCase();
+      if (!nome.includes(busca)) return false;
+    }
+    const st = getStatusPgto(ev);
+    if (_pgtoFiltro === 'todos') return true;
+    if (_pgtoFiltro === 'quitados') return st === 'quitado';
+    if (_pgtoFiltro === 'parcial') return st === 'parcial';
+    if (_pgtoFiltro === 'pendentes') return st === 'pendente';
+    if (_pgtoFiltro === 'atrasados') return temParcelaAtrasada(ev);
+    return true;
+  });
+
+  // KPIs sobre a base toda
+  const todos = todosBase;
+  const totalReceita = todos.reduce(function(s, e) { return s + valorEv(e); }, 0);
+  const totalPago = todos.reduce(function(s, e) {
+    const avulso = parseFloat(e.pgto_valor_avulso) || 0;
+    return s + (avulso > 0 ? avulso : getTotalPago(e));
+  }, 0);
+  const totalRestante = Math.max(0, totalReceita - totalPago);
+  const quitados = todos.filter(function(e) { return getStatusPgto(e) === 'quitado'; }).length;
+  const atrasados = todos.filter(function(e) { return temParcelaAtrasada(e); }).length;
+
+  document.getElementById('kpi-pgto').innerHTML =
+    '<div class="kpi-card gold"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todos.length + ' evento(s) com valor</div></div>' +
+    '<div class="kpi-card green"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
+    '<div class="kpi-card red"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todos.length - quitados) + ' pendente(s)</div></div>' +
+    '<div class="kpi-card orange"><div class="kpi-label">Atrasados</div><div class="kpi-value">' + atrasados + '</div><div class="kpi-sub">Com vencimento passado</div></div>';
+
+  // Lista de cards
+  const container = document.getElementById('pgto-lista');
+  if (!lista.length) {
+    container.innerHTML = '<div class="empty-state" style="padding:48px">Nenhum evento encontrado.</div>';
+    return;
+  }
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  container.innerHTML = lista.map(function(ev) {
+    const docId = ev.id;
+    const total = valorEv(ev);
+    const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
+    const usaAvulso = avulso > 0 || getPgtoRegistros(ev).length === 0;
+    const pago = avulso > 0 ? avulso : getTotalPago(ev);
+    const restante = Math.max(0, total - pago);
+    const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
+    const statusPgto = getStatusPgto(ev);
+    const badgeClass = statusPgto === 'quitado' ? 'quitado' : statusPgto === 'parcial' ? 'parcial' : 'pendente';
+    const badgeTxt = statusPgto === 'quitado' ? 'Quitado' : statusPgto === 'parcial' ? 'Parcial' : 'Pendente';
+    const fillColor = statusPgto === 'quitado' ? '#25D366' : statusPgto === 'parcial' ? '#E8A838' : '#e05c5c';
+    const restanteCor = restante <= 0 ? 'pago' : pago > 0 ? 'parcial' : 'pendente';
+    const isOpen = !!_pgtoAbertos[docId];
+    const origem = ev._origem === 'nota' ? 'nota' : 'contrato';
+    const nomeExib = nomeCli(ev);
+    const tipoExib = tipoEv(ev);
+    const descExib = (nomeExib !== '—' && tipoExib !== '—') ? nomeExib + ' — ' + tipoExib : (nomeExib !== '—' ? nomeExib : tipoExib);
+    const datExib = dataEv(ev);
+    const pgtoLabel = getPgtoLabel(ev);
+    const parcelas = getParcelas(ev);
+    const registros = getPgtoRegistros(ev);
+
+    // Parcelas HTML
+    let parcelasHTML = '';
+    parcelas.forEach(function(p) {
+      const recebida = registros.some(function(r) { return r.parcela_idx === p.idx; });
+      let vencStr = '';
+      let atrasada = false;
+      if (p.vencimento) {
+        const vp = p.vencimento.split('-');
+        if (vp.length === 3) {
+          const vDate = new Date(parseInt(vp[0]), parseInt(vp[1]) - 1, parseInt(vp[2]));
+          vencStr = vDate.toLocaleDateString('pt-BR');
+          if (!recebida && vDate < hoje) atrasada = true;
+        }
+      }
+      const itemClass = recebida ? 'pgto-parcela-item recebida' : atrasada ? 'pgto-parcela-item atrasada' : 'pgto-parcela-item';
+      const statusTxt = recebida ? '✓ Recebido' : atrasada ? '⚠ Atrasado' : vencStr ? 'Vence: ' + vencStr : '';
+      parcelasHTML +=
+        '<div class="' + itemClass + '">' +
+          '<input type="checkbox" class="pgto-parcela-check" ' + (recebida ? 'checked' : '') +
+            ' onchange="salvarParcela(_pgtoEventoById(\'' + docId + '\'),' + p.idx + ',' + p.valor.toFixed(2) + ',this.checked)">' +
+          '<div class="pgto-parcela-info">' +
+            '<div class="pgto-parcela-label">' + p.label + '</div>' +
+            '<div class="pgto-parcela-valor">' + frs(p.valor) + '</div>' +
+            (statusTxt ? '<div class="pgto-parcela-status">' + statusTxt + '</div>' : '') +
+          '</div>' +
+        '</div>';
+    });
+
+    // Resumo da forma de pagamento
+    const resumoHTML =
+      '<div class="pgto-resumo-pgto">' +
+        '<div class="pgto-resumo-pgto-title">Forma de Pagamento</div>' +
+        '<div class="pgto-resumo-row"><span style="color:var(--muted)">Tipo</span><span>' + pgtoLabel + '</span></div>' +
+        '<div class="pgto-resumo-row"><span style="color:var(--muted)">Origem</span><span><span class="badge-origem ' + origem + '">' + origem + '</span></span></div>' +
+        '<div class="pgto-resumo-row"><span style="color:var(--muted)">Data do evento</span><span>' + datExib + '</span></div>' +
+        (ev.pgto_custom ? '<div class="pgto-resumo-row"><span style="color:var(--muted)">Obs.</span><span style="font-size:0.75rem;color:var(--muted);max-width:200px;text-align:right">' + ev.pgto_custom + '</span></div>' : '') +
+      '</div>';
+
+    // Calc HTML
+    const calcHTML = '<div id="pgto-calc-' + docId + '">' + buildPgtoCalcHTML(total, pago, restante, pct, statusPgto) + '</div>';
+
+    // Campo valor avulso (alternativa às checkboxes, para quando não há parcelas claras)
+    const avulsoHTML =
+      '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">Registrar valor recebido manualmente</div>' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+          '<input id="pgto-inp-avulso-' + docId + '" class="pgto-input-pago" type="text" placeholder="Ex: 2.500,00"' +
+            ' value="' + (avulso > 0 ? avulso.toFixed(2).replace('.', ',') : '') + '">' +
+          '<button class="pgto-btn-salvar" onclick="salvarValorAvulso(_pgtoEventoById(\'' + docId + '\'))">Salvar</button>' +
+          '<span style="font-size:0.72rem;color:var(--muted)">Valor total já recebido</span>' +
+        '</div>' +
+      '</div>';
+
+    return '<div class="pgto-card">' +
+      '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
+        '<div class="pgto-card-info">' +
+          '<div class="pgto-card-nome">' + descExib + '<span class="pgto-status-badge ' + badgeClass + '">' + badgeTxt + '</span>' + (temParcelaAtrasada(ev) ? '<span class="pgto-status-badge" style="color:#e05c5c;border-color:#e05c5c;background:rgba(224,92,92,0.08);margin-left:4px">⚠ Atrasado</span>' : '') + '</div>' +
+          '<div class="pgto-card-meta">' + pgtoLabel + ' · ' + datExib + ' · <span class="badge-origem ' + origem + '">' + origem + '</span></div>' +
+        '</div>' +
+        '<div class="pgto-card-valores">' +
+          '<div class="pgto-valor-total">' + frs(total) + '</div>' +
+          '<div class="pgto-valor-restante ' + restanteCor + '" data-pgto-restante="' + docId + '">' + (restante <= 0 ? '✓ Quitado' : 'Falta ' + frs(restante)) + '</div>' +
+        '</div>' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);flex-shrink:0;transition:transform 0.2s;transform:rotate(' + (isOpen ? '180' : '0') + 'deg)" id="pgto-arrow-' + docId + '"><polyline points="6 9 12 15 18 9"/></svg>' +
+      '</div>' +
+      '<div class="pgto-card-body ' + (isOpen ? 'open' : '') + '" id="pgto-body-' + docId + '">' +
+        resumoHTML +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">Parcelas</div>' +
+        '<div class="pgto-parcelas">' + parcelasHTML + '</div>' +
+        avulsoHTML +
+        calcHTML +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* Retorna o objeto de evento pelo ID (busca em contratos e notas) */
+function _pgtoEventoById(id) {
+  const c = _contratos.find(function(x) { return x.id === id; });
+  if (c) return Object.assign({}, c, { _origem: 'contrato' });
+  const n = _notas.find(function(x) { return x.id === id; });
+  if (n) return Object.assign({}, n, { _origem: 'nota' });
+  return null;
+}
+
+function togglePgtoCard(docId) {
+  _pgtoAbertos[docId] = !_pgtoAbertos[docId];
+  const body = document.getElementById('pgto-body-' + docId);
+  const arrow = document.getElementById('pgto-arrow-' + docId);
+  if (body) body.classList.toggle('open', !!_pgtoAbertos[docId]);
+  if (arrow) arrow.style.transform = 'rotate(' + (_pgtoAbertos[docId] ? '180' : '0') + 'deg)';
+}
 
 // ══════════════════════════════════════════
 // TAB 1 – FINANCEIRO
