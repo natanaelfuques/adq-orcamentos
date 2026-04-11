@@ -9344,6 +9344,10 @@ function _calcularChecklist(inicioMes, fimMes, callback) {
       if (!dataRef || isNaN(dataRef.getTime())) return;
       if (dataRef < inicioMes || dataRef > fimMes) return;
       if (!ev.servicos || !ev.servicos.length) return;
+      // Contabiliza apenas eventos com status "concluido" no painel
+      if ((ev.etapa || 'eventos') !== 'concluido') return;
+
+
 
       totalEventosMes++;
       var itensOk = ev.itens_ok || {};
