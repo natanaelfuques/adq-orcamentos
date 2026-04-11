@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Relatórios – NF Soluções para Eventos</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
@@ -870,6 +867,9 @@ header {
   </div><!-- /main -->
 </div><!-- /screen-app -->
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
 // ══════════════════════════════════════════
 // FIREBASE CONFIG (igual ao index.html)
@@ -920,7 +920,10 @@ function fazerLogin() {
   firebase.auth().signInWithEmailAndPassword(email, senha)
     .catch(function(e) { errEl.textContent = 'Credenciais inválidas.'; });
 }
-document.getElementById('inp-senha').addEventListener('keydown', function(e) { if (e.key === 'Enter') fazerLogin(); });
+document.addEventListener('DOMContentLoaded', function() {
+  var inpSenha = document.getElementById('inp-senha');
+  if (inpSenha) inpSenha.addEventListener('keydown', function(e) { if (e.key === 'Enter') fazerLogin(); });
+});
 
 function fazerLogout() {
   firebase.auth().signOut();
@@ -930,11 +933,34 @@ function fazerLogout() {
 let _contratosCarregados = false;
 let _orcamentosCarregados = false;
 let _notasCarregadas = false;
+let _etapasCarregadas = false;
+let _etapaMap = {}; // { contratoId: etapa } — espelho do eventos_campo
+
+function _enriquecerContratos() {
+  // Injeta c.etapa em cada contrato a partir do mapa do painel
+  _contratos = _contratos.map(c => ({ ...c, etapa: _etapaMap[c.id] || '' }));
+}
 
 function carregarDados() {
+  // Listener em tempo real — eventos_campo (etapas do painel)
+  // Carregado PRIMEIRO para que os contratos já venham enriquecidos
+  db.collection('eventos_campo').onSnapshot(function(snap) {
+    _etapaMap = {};
+    snap.forEach(function(d) { _etapaMap[d.id] = d.data().etapa || 'eventos'; });
+    _etapasCarregadas = true;
+    // Re-enriquecer contratos já carregados e re-renderizar
+    if (_contratosCarregados) { _enriquecerContratos(); renderTudo(); }
+    _verificarPronto();
+  }, function() {
+    // eventos_campo pode não existir — não bloquear
+    _etapasCarregadas = true;
+    _verificarPronto();
+  });
+
   // Listener em tempo real — contratos
   db.collection('contratos').orderBy('criadoEm', 'desc').onSnapshot(function(snap) {
     _contratos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    _enriquecerContratos(); // injeta etapa do painel
     _contratosCarregados = true;
     _verificarPronto();
   }, function(e) {
@@ -964,7 +990,7 @@ function carregarDados() {
 }
 
 function _verificarPronto() {
-  if (!_contratosCarregados || !_orcamentosCarregados || !_notasCarregadas) return;
+  if (!_contratosCarregados || !_orcamentosCarregados || !_notasCarregadas || !_etapasCarregadas) return;
   const loading = document.getElementById('screen-loading');
   const app = document.getElementById('screen-app');
   if (loading && loading.style.display !== 'none') {
@@ -1089,14 +1115,27 @@ function getValorContrato(c) {
 }
 
 function getStatusContrato(c) {
+  // Cancelado tem prioridade máxima (flag ou status explícito)
   if (c.removido_manualmente || c.status_contrato === 'cancelado') return 'cancelado';
+
+  // Se status_contrato está definido explicitamente, usar diretamente —
+  // evita que campos legados (aprovado, link_assinatura) sobrescrevam o valor correto
+  if (c.status_contrato === 'pendente') return 'pendente';
+  if (c.status_contrato === 'enviado')  return 'enviado';
+  if (c.status_contrato === 'assinado') return 'assinado';
+
+  // Etapa do painel (concluido/confirmado/andamento) tem precedência sobre status
   if (c.status_contrato === 'concluido' || c.etapa === 'concluido') return 'concluido';
   if (c.status_contrato === 'confirmado' || c.etapa === 'confirmado') return 'confirmado';
   if (c.status_contrato === 'andamento' || c.etapa === 'andamento') return 'andamento';
-  if (c.status_contrato === 'assinado' || c.aprovado) return 'assinado';
-  if (c.status_contrato === 'enviado' || c.link_assinatura) return 'enviado';
-  // Para notas: usar campo status se houver, senão "nota"
+
+  // Fallback legado (contratos salvos antes do campo status_contrato existir)
+  if (c.aprovado) return 'assinado';
+  if (c.link_assinatura) return 'enviado';
+
+  // Para notas
   if (c._origem === 'nota') return c.status || 'nota';
+
   return 'pendente';
 }
 
