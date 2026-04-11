@@ -1336,7 +1336,7 @@ header {
             </div>
           </div>
           <div style="display:flex;align-items:center;border:1px solid #333;border-radius:6px;overflow:hidden;background:#111">
-            <input type="text" id="local_evento" placeholder="Ex: Salão Espaço Nobre, Brusque/SC" oninput="_agendarRascunhoOrc()" onblur="if(!this.value.trim()){var m=document.getElementById('local_evento_maps');if(m)m.value='';_atualizarBtnMapsOrc();}" style="flex:1;height:38px;border:none;background:transparent;color:#e0e0e0;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:0 10px;outline:none;" />
+            <input type="text" id="local_evento" placeholder="Ex: Salão Espaço Nobre, Brusque/SC" oninput="_agendarRascunhoOrc()" onblur="if(!this.value.trim()){var m=document.getElementById('local_evento_maps');if(m)m.value='';_atualizarBtnMapsOrc();_syncMapsOrcToContrato('');}" style="flex:1;height:38px;border:none;background:transparent;color:#e0e0e0;font-family:'Barlow',sans-serif;font-size:0.9rem;padding:0 10px;outline:none;" />
             <button id="btn-maps-orc" title="Abrir no Maps / Colar link" onclick="_toggleMapsBtnOrc()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;height:38px;padding:0 12px;border:none;border-left:1px solid #333;background:#1a1a1a;color:#4A90C8;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:background 0.15s">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               <span id="btn-maps-orc-label">Maps</span>
@@ -2390,6 +2390,7 @@ function _toggleMapsBtnOrc() {
         inp.value = t;
         _agendarRascunhoOrc();
         _atualizarBtnMapsOrc();
+        _syncMapsOrcToContrato(t);
         var btn = document.getElementById('btn-maps-orc');
         if (btn) { btn.style.color = '#25D366'; setTimeout(function(){ btn.style.color = '#4A90C8'; }, 1200); }
       } else {
@@ -2399,6 +2400,17 @@ function _toggleMapsBtnOrc() {
       inp.style.display = 'block';
       inp.focus();
     });
+  }
+}
+
+function _syncMapsOrcToContrato(link) {
+  if (typeof _orcDados !== 'undefined' && _orcDados) {
+    _orcDados.local_evento_maps = link || '';
+  }
+  var evMaps = document.getElementById('ev_maps');
+  if (evMaps) {
+    evMaps.value = link || '';
+    if (typeof _atualizarBtnMaps === 'function') _atualizarBtnMaps();
   }
 }
 
@@ -5437,6 +5449,7 @@ function abrirSalvo(id) {
       _currentOrcRef = id.substring(0, 8).toUpperCase();
       carregarOrcamentoEditavel._processar(d);
       switchMain('orcamento');
+      setTimeout(_atualizarBtnMapsOrc, 50);
     }
   });
 }
@@ -5465,6 +5478,7 @@ function gerarContratoSalvo(id) {
       if (d._tipo === 'orcamento' || d._tipo === 'orcamento_completo') {
         carregarOrcamentoJSON._processar(d);
       }
+      _atualizarBtnMaps();
     }, 150);
   });
 }
