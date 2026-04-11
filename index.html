@@ -736,7 +736,7 @@
   .salvo-status.enviado    { border-color: #C8A94A; color: #C8A94A; }
   .salvo-status.andamento  { border-color: var(--gold); color: var(--gold); cursor: default; }
   .salvo-status.concluido  { border-color: #25D366; color: #25D366; cursor: default; }
-  .salvo-status.cancelado  { border-color: #e05c5c; color: #e05c5c; }
+  .salvo-status.cancelado  { border-color: #e05c5c; color: #e05c5c; background: rgba(224,92,92,0.08); }
   .salvo-status-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
   .salvo-montagem-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
   .salvo-montagem-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 0.75rem; padding: 2px 4px; width: 110px; outline: none; }
@@ -842,6 +842,9 @@
   }
   .salvos-filter-btn:hover { border-color: var(--gold); color: var(--gold); }
   .salvos-filter-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(200,169,74,0.1); }
+  .salvos-filter-btn.filtro-cancelado { border-color: #6a2a2a; color: #e05c5c; }
+  .salvos-filter-btn.filtro-cancelado:hover { border-color: #e05c5c; color: #e05c5c; background: rgba(224,92,92,0.08); }
+  .salvos-filter-btn.filtro-cancelado.active { border-color: #e05c5c; color: #e05c5c; background: rgba(224,92,92,0.15); }
 
 
   .salvo-card-tipo {
@@ -1080,6 +1083,7 @@ header {
   .active-sub-tab:hover { color: var(--gold) !important; }
   .salvos-search-toggle:hover { border-color: var(--border); color: var(--muted); }
   .salvos-filter-btn:hover { border-color: var(--border); color: var(--muted); }
+  .salvos-filter-btn.filtro-cancelado:hover { border-color: #e05c5c; color: #e05c5c; background: rgba(224,92,92,0.08); }
   .gerador-btn-login:hover { opacity: 1; }
   .btn-acessos:hover { border-color: var(--border); color: var(--muted); }
   .acessos-close:hover { color: var(--muted); }
@@ -1896,9 +1900,10 @@ Revestimento</textarea>
       <div class="salvos-filter-btns">
         <button class="salvos-filter-btn active" id="filtro-con-todos" onclick="setFiltroConStatus('todos')">Todos</button>
         <button class="salvos-filter-btn" id="filtro-con-pendente" onclick="setFiltroConStatus('pendente')">Pendentes</button>
+        <button class="salvos-filter-btn" id="filtro-con-enviado" onclick="setFiltroConStatus('enviado')">Enviados</button>
         <button class="salvos-filter-btn" id="filtro-con-assinado" onclick="setFiltroConStatus('assinado')">Assinados</button>
         <button class="salvos-filter-btn" id="filtro-con-confirmado" onclick="setFiltroConStatus('confirmado')">Confirmados</button>
-        <button class="salvos-filter-btn" id="filtro-con-cancelado" onclick="setFiltroConStatus('cancelado')">Cancelados</button>
+        <button class="salvos-filter-btn filtro-cancelado" id="filtro-con-cancelado" onclick="setFiltroConStatus('cancelado')">Cancelados</button>
         <button class="salvos-filter-btn" id="filtro-con-sem-painel" onclick="setFiltroConStatus('sem-painel')">- Painel</button>
       </div>
     </div>
@@ -5177,7 +5182,7 @@ function handleSalvosClick(e) {
         statusBtnP.setAttribute('data-status', 'cancelado');
         statusBtnP.setAttribute('data-aprovado', 'false');
         statusBtnP.className = 'salvo-status cancelado';
-        statusBtnP.style.cssText = 'cursor:pointer;background:transparent';
+        statusBtnP.style.cssText = 'cursor:pointer';
       }
       // Removido do painel → ir para aba Contratos
       switchMain('salvos');
@@ -5257,15 +5262,15 @@ function handleSalvosClick(e) {
     var novoAprovado = novoStatus === 'assinado' || novoStatus === 'confirmado';
     var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado...' : novoStatus === 'cancelado' ? 'Cancelado' : 'Pendente';
     var novaClasse = novoStatus === 'confirmado' ? 'confirmado' : novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : novoStatus === 'cancelado' ? 'cancelado' : '';
-    db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado, removido_manualmente: false })
+    db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado, removido_manualmente: (novoStatus === 'cancelado') })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
     // Se cancelou, remove do painel
-    if (novoStatus === 'cancelado') removerDoPainel(id);
+    if (novoStatus === 'cancelado') { removerDoPainel(id); delete _etapaMapContratos[id]; }
     btn.textContent = novoLabel;
     btn.setAttribute('data-status', novoStatus);
     btn.setAttribute('data-aprovado', novoAprovado);
     btn.className = 'salvo-status' + (novaClasse ? ' ' + novaClasse : '');
-    btn.style.cssText = 'cursor:pointer;background:transparent';
+    btn.style.cssText = novoStatus === 'cancelado' ? 'cursor:pointer' : 'cursor:pointer;background:transparent';
     var monRow = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('.salvo-montagem-row');
     if (monRow) monRow.style.display = novoStatus === 'confirmado' ? '' : 'none';
   }
@@ -5783,15 +5788,63 @@ function salvarContratoNaNuvem() {
 
 function iniciarListenerContratos() {
   if (!db) return;
+
+  // Listener unificado: mantém lista atualizada E sincroniza status dos cards em tempo real
   db.collection('contratos')
     .orderBy('criadoEm', 'desc')
     .onSnapshot(function(snap) {
+      // 1. Atualizar lista global e re-filtrar
       var docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
       _todosContratos = docs;
       filtrarContratos();
       window._countContratos = docs.length;
       if (_salvosTab === 'contratos') atualizarContadorSalvos();
+
+      // 2. Atualizar status dos botões nos cards em tempo real (qualquer dispositivo/aba)
+      snap.docChanges().forEach(function(change) {
+        if (change.type === 'removed') return;
+        var id = change.doc.id;
+        var dados = change.doc.data();
+        var _statusCon = dados.status_contrato || (dados.aprovado ? 'assinado' : 'pendente');
+        var aprovado   = dados.aprovado ? true : false;
+
+        var statusBtn = document.querySelector('[data-action="toggle-aprovado-contrato"][data-id="' + id + '"]')
+                     || document.querySelector('.salvo-status[data-id="' + id + '"]');
+        if (statusBtn && statusBtn.getAttribute('data-status') !== _statusCon) {
+          var _scClass = _statusCon === 'confirmado' ? ' confirmado'
+                       : _statusCon === 'assinado'   ? ' aprovado'
+                       : _statusCon === 'enviado'     ? ' enviado'
+                       : _statusCon === 'cancelado'   ? ' cancelado' : '';
+          var _scLabel = _statusCon === 'confirmado' ? 'Confirmado'
+                       : _statusCon === 'assinado'   ? 'Assinado'
+                       : _statusCon === 'enviado'     ? 'Enviado...'
+                       : _statusCon === 'cancelado'   ? 'Cancelado' : 'Pendente';
+          statusBtn.textContent = _scLabel;
+          statusBtn.setAttribute('data-status', _statusCon);
+          statusBtn.setAttribute('data-aprovado', aprovado);
+          var _etapaAtual = statusBtn.getAttribute('data-etapa') || '';
+          if (_etapaAtual === 'andamento' || _etapaAtual === 'concluido') {
+            statusBtn.className = 'salvo-status status-readonly' + _scClass;
+          } else {
+            statusBtn.className = 'salvo-status' + _scClass;
+            statusBtn.style.cssText = 'cursor:pointer;background:transparent';
+          }
+          var cardEl = statusBtn.closest && statusBtn.closest('.salvo-card');
+          if (cardEl) {
+            var monRow = cardEl.querySelector('.salvo-montagem-row');
+            if (monRow) monRow.style.display = (_statusCon === 'confirmado' && _etapaAtual !== 'concluido') ? '' : 'none';
+          }
+        }
+
+        // Se cancelado manualmente: limpar mapa de etapas
+        if (_statusCon === 'cancelado' && dados.removido_manualmente) {
+          delete _etapaMapContratos[id];
+        }
+      });
+
+      // 3. Recalcular metas/relatório em tempo real sempre que contratos mudar
+      _calcularProgressoMetas();
     }, function(err) {
       console.warn('[AdQ] Contratos listener erro:', err);
     });
@@ -5821,8 +5874,9 @@ function iniciarListenerContratos() {
         statusLabel  = sc === 'cancelado' ? 'Cancelado' : sc === 'confirmado' ? 'Confirmado' : sc === 'assinado' ? 'Assinado' : sc === 'enviado' ? 'Enviado...' : 'Pendente';
         clickable = true;
       }
-      btn.className = 'salvo-status status-readonly' + (statusClass ? ' ' + statusClass : '');
+      btn.className = clickable ? ('salvo-status' + (statusClass ? ' ' + statusClass : '')) : ('salvo-status status-readonly' + (statusClass ? ' ' + statusClass : ''));
       btn.textContent = statusLabel;
+      if (clickable) { btn.style.cssText = statusClass === 'cancelado' ? 'cursor:pointer' : 'cursor:pointer;background:transparent'; btn.setAttribute('data-action', 'toggle-aprovado-contrato'); } else { btn.style.cssText = ''; }
       btn.setAttribute('data-etapa', etapa);
       // Atualizar botão Painel do mesmo card
       var painelBtnRT = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('[data-action="enviar-painel"][data-id="' + id + '"]');
@@ -6239,6 +6293,7 @@ function filtrarContratos() {
     var matchStatus = (_filtroConStatus === 'todos') ||
       (_filtroConStatus === 'sem-painel' && !noPainel) ||
       (_filtroConStatus === 'pendente' && sc === 'pendente') ||
+      (_filtroConStatus === 'enviado' && sc === 'enviado') ||
       (_filtroConStatus === 'assinado' && sc === 'assinado') ||
       (_filtroConStatus === 'confirmado' && sc === 'confirmado') ||
       (_filtroConStatus === 'cancelado' && sc === 'cancelado');
