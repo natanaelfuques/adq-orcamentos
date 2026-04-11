@@ -7497,6 +7497,7 @@ function handleNotasClick(e) {
           ev_local:       evLocal,
           ev_maps:        nota.ev_maps || '',
           ev_data:        evData,
+          data_evento:    evData, // fallback para compatibilidade com _parseDataContrato
           ev_inicio:      nota.ev_inicio || '',
           ev_fim:         nota.ev_fim    || '',
           ev_montagem:    '',
@@ -9142,6 +9143,8 @@ function _calcularProgressoMetas() {
       // Checklist: buscar eventos_campo do mês, depois verificar conquistas com tudo
       _calcularChecklist(inicioMes, fimMes, function(checklistOk) {
         _verificarConquistas(totalReceita, totalEventos, ticketMedio, totalAnual, checklistOk);
+        // Notificação imediata usando os valores já calculados (sem nova query ao Firestore)
+        _verificarConquistasImediato(totalReceita, totalEventos, ticketMedio, totalAnual, checklistOk);
       });
     })
     .catch(function(e) {
@@ -9168,8 +9171,18 @@ function _parseDataContrato(d) {
       }
     }
   }
-  if (!dataRef && d.criadoEm && d.criadoEm.toDate) {
-    dataRef = d.criadoEm.toDate();
+  if (!dataRef) {
+    var ts = d.criadoEm;
+    if (ts) {
+      if (typeof ts.toDate === 'function') {
+        dataRef = ts.toDate();
+      } else if (ts instanceof Date) {
+        dataRef = ts;
+      } else if (ts && ts.seconds) {
+        // Firestore Timestamp serializado como { seconds, nanoseconds }
+        dataRef = new Date(ts.seconds * 1000);
+      }
+    }
   }
   // Validar se é uma data válida
   if (dataRef && isNaN(dataRef.getTime())) dataRef = null;
@@ -9388,6 +9401,51 @@ function _verificarConquistas(receita, eventos, ticket, anual, checklistOk) {
   } else {
     banner.style.display = 'none';
   }
+}
+
+// ── NOTIFICAÇÃO IMEDIATA (usando valores já calculados, sem nova query) ───────
+function _verificarConquistasImediato(receita, eventos, ticket, anual, checklistOk) {
+  var hoje = new Date();
+  // Só verifica o mês atual — se o usuário está navegando em outro mês, não dispara
+  var mesSelecionado = _metaMesAtual === hoje.getMonth() && _metaAnoAtual === hoje.getFullYear();
+  if (!mesSelecionado) return;
+
+  var conquistas = [];
+  if (_metasConfig.receita > 0 && receita >= _metasConfig.receita) conquistas.push('Receita');
+  if (_metasConfig.eventos > 0 && eventos >= _metasConfig.eventos) conquistas.push('Eventos');
+  if (_metasConfig.ticket  > 0 && ticket  >= _metasConfig.ticket)  conquistas.push('Ticket Médio');
+  if (_metasConfig.anual   > 0 && anual   >= _metasConfig.anual)   conquistas.push('Anual');
+  if (checklistOk) conquistas.push('Checklist');
+
+  if (conquistas.length === 0) return;
+
+  // Compara com o que já foi notificado neste mês para não repetir
+  var chaveMes = 'adq_meta_notif_mes_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1);
+  var anteriorMes = parseInt(localStorage.getItem(chaveMes)) || 0;
+  if (conquistas.length <= anteriorMes) return;
+
+  // Nova meta atingida — atualiza contador e dispara notificação
+  localStorage.setItem(chaveMes, conquistas.length);
+
+  var progressoMetas = [];
+  if (_metasConfig.receita > 0 && receita < _metasConfig.receita) {
+    var p1 = Math.round((receita / _metasConfig.receita) * 100);
+    if (p1 >= 50) progressoMetas.push({ label: 'Receita', pct: p1, cor: '#C8A94A', atual: 'R$ ' + formatBRL(receita), meta: 'R$ ' + formatBRL(_metasConfig.receita) });
+  }
+  if (_metasConfig.eventos > 0 && eventos < _metasConfig.eventos) {
+    var p2 = Math.round((eventos / _metasConfig.eventos) * 100);
+    if (p2 >= 50) progressoMetas.push({ label: 'Eventos', pct: p2, cor: '#4A90C8', atual: eventos + ' evento' + (eventos !== 1 ? 's' : ''), meta: _metasConfig.eventos + ' eventos' });
+  }
+  if (_metasConfig.ticket > 0 && ticket < _metasConfig.ticket) {
+    var p3 = Math.round((ticket / _metasConfig.ticket) * 100);
+    if (p3 >= 50) progressoMetas.push({ label: 'Ticket Médio', pct: p3, cor: '#8B5CF6', atual: 'R$ ' + formatBRL(ticket), meta: 'R$ ' + formatBRL(_metasConfig.ticket) });
+  }
+  if (_metasConfig.anual > 0 && anual < _metasConfig.anual) {
+    var p4 = Math.round((anual / _metasConfig.anual) * 100);
+    if (p4 >= 50) progressoMetas.push({ label: 'Anual', pct: p4, cor: '#E8A838', atual: 'R$ ' + formatBRL(anual), meta: 'R$ ' + formatBRL(_metasConfig.anual) });
+  }
+
+  _mostrarNotificacaoMeta(conquistas, progressoMetas);
 }
 
 // ── NOTIFICAÇÃO AUTOMÁTICA DE METAS ──────────────────────────────────────────
