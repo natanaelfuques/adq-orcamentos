@@ -9441,6 +9441,25 @@ function _verificarMetasAoAbrir(forceShow) {
       if (metaTicket > 0 && ticket >= metaTicket) conquistas.push('Ticket Médio');
       if (metaAnual > 0 && receitaAnual >= metaAnual) conquistas.push('Anual');
 
+      // Montar dados de progresso para metas não atingidas (próximas de concluir)
+      var progressoMetas = [];
+      if (metaReceita > 0 && receita < metaReceita) {
+        var pct = Math.round((receita / metaReceita) * 100);
+        if (pct >= 50) progressoMetas.push({ label: 'Receita', pct: pct, cor: '#C8A94A', atual: 'R$ ' + formatBRL(receita), meta: 'R$ ' + formatBRL(metaReceita) });
+      }
+      if (metaEventos > 0 && eventos < metaEventos) {
+        var pct2 = Math.round((eventos / metaEventos) * 100);
+        if (pct2 >= 50) progressoMetas.push({ label: 'Eventos', pct: pct2, cor: '#4A90C8', atual: eventos + ' evento' + (eventos !== 1 ? 's' : ''), meta: metaEventos + ' eventos' });
+      }
+      if (metaTicket > 0 && ticket < metaTicket) {
+        var pct3 = Math.round((ticket / metaTicket) * 100);
+        if (pct3 >= 50) progressoMetas.push({ label: 'Ticket Médio', pct: pct3, cor: '#8B5CF6', atual: 'R$ ' + formatBRL(ticket), meta: 'R$ ' + formatBRL(metaTicket) });
+      }
+      if (metaAnual > 0 && receitaAnual < metaAnual) {
+        var pct4 = Math.round((receitaAnual / metaAnual) * 100);
+        if (pct4 >= 50) progressoMetas.push({ label: 'Anual', pct: pct4, cor: '#E8A838', atual: 'R$ ' + formatBRL(receitaAnual), meta: 'R$ ' + formatBRL(metaAnual) });
+      }
+
       // Verificar checklist completo antes de mostrar notificação
       _verificarChecklistParaNotif(inicioMes, fimMes, function(checklistOk) {
         if (checklistOk) conquistas.push('Checklist');
@@ -9451,14 +9470,14 @@ function _verificarMetasAoAbrir(forceShow) {
             var anteriorMes = parseInt(localStorage.getItem(chaveMes)) || 0;
             if (conquistas.length > anteriorMes) {
               localStorage.setItem(chaveMes, conquistas.length);
-              _mostrarNotificacaoMeta(conquistas);
+              _mostrarNotificacaoMeta(conquistas, progressoMetas);
             }
           } else {
             var chaveHoje = 'adq_meta_notif_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1) + '-' + hoje.getDate();
             var anteriorHoje = parseInt(localStorage.getItem(chaveHoje)) || 0;
             if (conquistas.length > anteriorHoje) {
               localStorage.setItem(chaveHoje, conquistas.length);
-              _mostrarNotificacaoMeta(conquistas);
+              _mostrarNotificacaoMeta(conquistas, progressoMetas);
             }
           }
         }
@@ -9502,9 +9521,11 @@ function _verificarChecklistParaNotif(inicioMes, fimMes, callback) {
   }).catch(function() { callback(false); });
 }
 
-function _mostrarNotificacaoMeta(conquistas) {
+function _mostrarNotificacaoMeta(conquistas, progressoMetas) {
   var existing = document.getElementById('meta-notif-banner');
   if (existing) existing.remove();
+
+  progressoMetas = progressoMetas || [];
 
   var banner = document.createElement('div');
   banner.id = 'meta-notif-banner';
@@ -9519,26 +9540,23 @@ function _mostrarNotificacaoMeta(conquistas) {
   banner.innerHTML = icone +
     '<div style="flex:1">' +
       '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">' + texto + '</div>' +
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;color:#7a6a30;margin-top:1px;letter-spacing:0.05em">Toque para ver detalhes</div>' +
     '</div>' +
     '<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><path d="M3 3L9 9M9 3L3 9"/></svg>';
 
-  banner.addEventListener('click', function() {
-    banner.style.transform = 'translateY(-100%)';
-    setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
-  });
-
   // Swipe horizontal para dispensar
-  var _swStartX = 0, _swStartY = 0, _swiping = false;
+  var _swStartX = 0, _swStartY = 0, _swiping = false, _swipeDismissed = false;
   banner.addEventListener('touchstart', function(e) {
     _swStartX = e.touches[0].clientX;
     _swStartY = e.touches[0].clientY;
     _swiping = false;
+    _swipeDismissed = false;
     banner.style.transition = 'none';
   }, { passive: true });
   banner.addEventListener('touchmove', function(e) {
     var dx = e.touches[0].clientX - _swStartX;
     var dy = Math.abs(e.touches[0].clientY - _swStartY);
-    if (dy > 30 && !_swiping) return; // scroll vertical, ignorar
+    if (dy > 30 && !_swiping) return;
     if (Math.abs(dx) > 10) {
       _swiping = true;
       banner.style.transform = 'translateX(' + dx + 'px)';
@@ -9549,15 +9567,23 @@ function _mostrarNotificacaoMeta(conquistas) {
     var dx = e.changedTouches[0].clientX - _swStartX;
     banner.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
     if (Math.abs(dx) > 80) {
-      // Dispensar
+      _swipeDismissed = true;
       banner.style.transform = 'translateX(' + (dx > 0 ? '120%' : '-120%') + ')';
       banner.style.opacity = '0';
       setTimeout(function() { if (banner.parentNode) banner.remove(); }, 300);
     } else {
-      // Voltar
       banner.style.transform = 'translateY(0)';
       banner.style.opacity = '1';
     }
+  });
+
+  banner.addEventListener('click', function() {
+    if (_swipeDismissed || _swiping) return;
+    // Fechar banner
+    banner.style.transform = 'translateY(-100%)';
+    setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
+    // Abrir modal de parabéns
+    _abrirModalParabens(conquistas, progressoMetas);
   });
 
   document.body.appendChild(banner);
@@ -9572,6 +9598,122 @@ function _mostrarNotificacaoMeta(conquistas) {
       setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
     }
   }, 8000);
+}
+
+function _abrirModalParabens(conquistas, progressoMetas) {
+  var existingModal = document.getElementById('modal-parabens');
+  if (existingModal) existingModal.remove();
+
+  var iconesMap = {
+    'Receita':    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    'Eventos':    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    'Ticket Médio':'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    'Anual':      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
+    'Checklist':  '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'
+  };
+  var coresMap = {
+    'Receita': '#C8A94A', 'Eventos': '#4A90C8', 'Ticket Médio': '#8B5CF6', 'Anual': '#E8A838', 'Checklist': '#25D366'
+  };
+
+  // Confetti particles
+  var confettiColors = ['#C8A94A','#4A90C8','#8B5CF6','#25D366','#E8A838','#e05c5c'];
+  var confettiHTML = '';
+  for (var ci = 0; ci < 40; ci++) {
+    var cx = Math.random() * 100;
+    var cy = -10 - Math.random() * 20;
+    var crot = Math.random() * 360;
+    var cdur = 2.5 + Math.random() * 2;
+    var cdel = Math.random() * 1.5;
+    var cw = 6 + Math.random() * 6;
+    var ch = cw * (0.4 + Math.random() * 0.6);
+    var cc = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+    var cborderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    confettiHTML += '<div style="position:absolute;left:' + cx + '%;top:' + cy + '%;width:' + cw + 'px;height:' + ch + 'px;background:' + cc + ';border-radius:' + cborderRadius + ';opacity:0.85;animation:confettiFall ' + cdur + 's ' + cdel + 's ease-in forwards;transform:rotate(' + crot + 'deg)"></div>';
+  }
+
+  // Metas conquistadas
+  var conquistasHTML = '';
+  for (var i = 0; i < conquistas.length; i++) {
+    var nome = conquistas[i];
+    var cor = coresMap[nome] || '#C8A94A';
+    var icon = iconesMap[nome] || '';
+    conquistasHTML +=
+      '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid ' + cor + '33;border-radius:8px;animation:slideInItem 0.4s ' + (0.3 + i * 0.1) + 's both">' +
+        '<div style="width:40px;height:40px;border-radius:50%;background:' + cor + '18;border:1.5px solid ' + cor + '55;display:flex;align-items:center;justify-content:center;color:' + cor + ';flex-shrink:0">' + icon + '</div>' +
+        '<div style="flex:1">' +
+          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:' + cor + ';text-transform:uppercase;letter-spacing:0.1em">' + nome + '</div>' +
+          '<div style="font-size:0.68rem;color:#666;margin-top:1px">Meta atingida ✓</div>' +
+        '</div>' +
+        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + cor + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+      '</div>';
+  }
+
+  // Metas em progresso
+  var progressoHTML = '';
+  if (progressoMetas && progressoMetas.length > 0) {
+    progressoHTML = '<div style="margin-top:18px">' +
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">Quase lá...</div>';
+    for (var j = 0; j < progressoMetas.length; j++) {
+      var pm = progressoMetas[j];
+      progressoHTML +=
+        '<div style="margin-bottom:12px;animation:slideInItem 0.4s ' + (0.5 + j * 0.1) + 's both">' +
+          '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">' +
+            '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.08em">' + pm.label + '</span>' +
+            '<span style="font-size:0.68rem;color:#666">' + pm.atual + ' / ' + pm.meta + '</span>' +
+          '</div>' +
+          '<div style="height:7px;background:#1e1e1e;border-radius:4px;overflow:hidden;position:relative">' +
+            '<div style="height:100%;width:0%;background:linear-gradient(90deg,' + pm.cor + ',' + pm.cor + 'cc);border-radius:4px;transition:width 0.8s ease;animation:barraGrow 0.8s ' + (0.6 + j * 0.1) + 's forwards" data-pct="' + pm.pct + '"></div>' +
+          '</div>' +
+          '<div style="font-size:0.65rem;color:' + pm.cor + ';margin-top:3px;text-align:right">' + pm.pct + '%</div>' +
+        '</div>';
+    }
+    progressoHTML += '</div>';
+  }
+
+  var overlay = document.createElement('div');
+  overlay.id = 'modal-parabens';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0);transition:background 0.3s ease;box-sizing:border-box';
+
+  overlay.innerHTML =
+    '<style>' +
+    '@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:0.9}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}' +
+    '@keyframes slideInItem{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}' +
+    '@keyframes barraGrow{from{width:0%}to{width:var(--target-pct,0%)}}' +
+    '@keyframes modalPopIn{from{opacity:0;transform:scale(0.88) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}' +
+    '@keyframes trofeoPulse{0%,100%{transform:scale(1) rotate(-3deg)}50%{transform:scale(1.12) rotate(3deg)}}' +
+    '</style>' +
+    '<div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">' + confettiHTML + '</div>' +
+    '<div id="modal-parabens-box" style="position:relative;background:#111;border:1px solid #2a2a2a;border-radius:14px;width:100%;max-width:400px;max-height:85vh;overflow-y:auto;overscroll-behavior:contain;box-shadow:0 24px 60px rgba(0,0,0,0.7);animation:modalPopIn 0.35s cubic-bezier(0.175,0.885,0.32,1.275) both">' +
+      '<div style="background:linear-gradient(135deg,#1a1a0a,#1e1808);padding:28px 24px 20px;text-align:center;border-bottom:1px solid #2a2a2a;position:relative">' +
+        '<div style="font-size:2.8rem;line-height:1;animation:trofeoPulse 2s ease-in-out infinite;display:inline-block">🏆</div>' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1.5rem;font-weight:900;color:#C8A94A;text-transform:uppercase;letter-spacing:0.15em;margin-top:10px">Parabéns!</div>' +
+        '<div style="font-size:0.75rem;color:#7a6a30;margin-top:4px">' + (conquistas.length === 1 ? 'Você atingiu sua meta este mês' : 'Você atingiu ' + conquistas.length + ' metas este mês') + '</div>' +
+        '<button onclick="document.getElementById(\'modal-parabens\').remove()" style="position:absolute;top:14px;right:14px;background:transparent;border:1px solid #2a2a2a;color:#555;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor=\'#C8A94A\';this.style.color=\'#C8A94A\'" onmouseout="this.style.borderColor=\'#2a2a2a\';this.style.color=\'#555\'"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2L10 10M10 2L2 10"/></svg></button>' +
+      '</div>' +
+      '<div style="padding:18px 20px 24px">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">Metas atingidas</div>' +
+        '<div style="display:flex;flex-direction:column;gap:8px">' + conquistasHTML + '</div>' +
+        progressoHTML +
+        '<button onclick="document.getElementById(\'modal-parabens\').remove()" style="width:100%;margin-top:20px;background:linear-gradient(135deg,#1e1808,#2a2010);border:1px solid #C8A94A55;color:#C8A94A;padding:12px;border-radius:8px;cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;transition:background 0.2s,border-color 0.2s" onmouseover="this.style.borderColor=\'#C8A94A\'" onmouseout="this.style.borderColor=\'#C8A94A55\'">Fechar</button>' +
+      '</div>' +
+    '</div>';
+
+  // Fechar clicando no overlay
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.remove();
+  });
+
+  document.body.appendChild(overlay);
+
+  // Fade in overlay e animar barras de progresso
+  setTimeout(function() {
+    overlay.style.background = 'rgba(0,0,0,0.75)';
+    // Animar largura das barras
+    var barras = overlay.querySelectorAll('[data-pct]');
+    barras.forEach(function(barra) {
+      barra.style.setProperty('--target-pct', barra.getAttribute('data-pct') + '%');
+    });
+  }, 50);
 }
 
 // ── ABA APIs ──────────────────────────────────────────────────────────────────
