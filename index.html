@@ -1291,7 +1291,7 @@ header {
         <div id="conn-dot"></div>
         <span id="conn-label">Online</span>
       </div>
-      <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico de Acessos">
+      <button class="btn-acessos" id="btn-gerador-acessos" onclick="toggleAcessosGerador()" title="Histórico de Acessos" style="display:none!important">
         <svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="3" r="2.2"/><circle cx="9.5" cy="3" r="2.2"/><path d="M0.5 10.5c0-2.2 1.8-4 4-4h1c2.2 0 4 1.8 4 4"/><path d="M9 6.5c1.8 0.3 3 1.8 3 3.9"/></svg>
       </button>
       <button id="btn-ia-config" onclick="abrirModalConfiguracoes()" title="Configurações" style="background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:4px 6px;cursor:pointer;display:none;align-items:center;justify-content:center;align-self:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.92c.04-.34.07-.69.07-1.08s-.03-.73-.07-1.08l2.32-1.82c.21-.16.27-.45.14-.69l-2.2-3.81c-.13-.24-.41-.32-.65-.24l-2.74 1.1c-.57-.44-1.17-.8-1.84-1.08L14.26 2.1A.535.535 0 0 0 13.74 2h-3.48c-.26 0-.48.18-.52.44L9.45 5.18C8.78 5.46 8.18 5.83 7.61 6.27L4.87 5.17c-.24-.09-.52 0-.65.24l-2.2 3.81c-.13.23-.07.53.14.69L4.48 11.5c-.04.35-.07.7-.07 1.08s.03.73.07 1.08L2.16 15.48c-.21.16-.27.45-.14.69l2.2 3.81c.13.24.41.32.65.24l2.74-1.1c.57.44 1.17.8 1.84 1.08l.29 2.91c.04.26.26.44.52.44h3.48c.26 0 .48-.18.52-.44l.29-2.91c.67-.28 1.27-.65 1.84-1.08l2.74 1.1c.24.09.52 0 .65-.24l2.2-3.81c.13-.23.07-.53-.14-.69l-2.32-1.81z"/></svg></button>
@@ -3491,7 +3491,8 @@ function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, incCl
     <div class="client-left">
       <div class="label">Cliente / Evento</div>
       <p><strong>Para:</strong> ${nome}</p>
-      <p><strong>Evento:</strong> ${evento}${pessoas ? ` - ${pessoas}` : ''}</p>
+      <p><strong>Evento:</strong> ${evento}</p>
+      ${pessoas ? `<p><strong>Qtd.:</strong> ${pessoas}</p>` : ''}
     </div>
     <div class="client-right">
       <div class="label">&nbsp;</div>
@@ -4874,7 +4875,7 @@ function initFirebase(config) {
         var bmt = document.getElementById('btn-metas-trofeu');
         if (bmt) bmt.style.display = 'inline-flex';
         var ba = document.getElementById('btn-gerador-acessos');
-        if (ba) ba.style.display = isAdmin ? 'inline-flex' : 'none';
+        if (ba) ba.style.display = 'none';
         var bic = document.getElementById('btn-ia-config');
         if (bic) bic.style.display = isAdmin ? 'inline-flex' : 'none';
         registrarAcessoGerador(user);
@@ -5002,9 +5003,11 @@ function fecharAcessosGerador(e) {
   if (e.target === document.getElementById('acessos-overlay-gerador')) toggleAcessosGerador();
 }
 
-function carregarAcessosGerador() {
+function carregarAcessosGerador(usarPainel) {
   if (!db) return;
-  var lista = document.getElementById('acessos-lista-gerador');
+  var lista = usarPainel
+    ? document.getElementById('acessos-lista-painel')
+    : document.getElementById('acessos-lista-gerador');
   if (!lista) return;
   lista.innerHTML = '<div class="acessos-empty">Carregando...</div>';
   db.collection('logs_gerador').limit(80).get().then(function(snap) {
@@ -8504,6 +8507,7 @@ function abrirModalConfiguracoes() {
         <button id="cfg-tab-config" onclick="_cfgAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;white-space:nowrap">IP</button>
         <button id="cfg-tab-apis" onclick="_cfgAba(2)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;white-space:nowrap">APIs</button>
         <button id="cfg-tab-usuarios" onclick="_cfgAba(3)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;white-space:nowrap">Usuários</button>
+        <button id="cfg-tab-acessos" onclick="_cfgAba(4)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer;white-space:nowrap">Acessos</button>
       </div>
       <!-- Slider de abas -->
       <div id="cfg-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">
@@ -8733,6 +8737,14 @@ function abrirModalConfiguracoes() {
         </div>
 
       </div>
+      <!-- Aba Acessos -->
+      <div id="cfg-panel-acessos" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Histórico de Acessos</div>
+          <button onclick="carregarAcessosGerador(true)" style="background:transparent;border:1px solid #2a2a2a;color:#555;border-radius:4px;padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#555'">Atualizar</button>
+        </div>
+        <div id="acessos-lista-painel"><div class="acessos-empty">Carregando...</div></div>
+      </div>
       </div><!-- /cfg-slider -->
     </div>
   `;
@@ -8757,7 +8769,7 @@ function abrirModalConfiguracoes() {
 }
 
 function _cfgAba(idx, fromScroll) {
-  var keys = ['metas','config','apis','usuarios'];
+  var keys = ['metas','config','apis','usuarios','acessos'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('cfg-tab-' + k);
     if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
@@ -8768,6 +8780,8 @@ function _cfgAba(idx, fromScroll) {
   }
   // Carregar usuários ao abrir a aba
   if (idx === 3) _usuariosCarregar();
+  // Carregar acessos ao abrir a aba
+  if (idx === 4) carregarAcessosGerador(true);
 }
 
 // ── GESTÃO DE USUÁRIOS ─────────────────────────────────────────────────────────
