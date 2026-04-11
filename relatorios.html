@@ -497,6 +497,71 @@ header {
   .table-card { font-size: 0.78rem; }
   .table-card th, .table-card td { padding: 8px 10px; }
 }
+
+/* ── EDITOR MODE ── */
+.editor-mode .row-field-editable {
+  cursor: pointer;
+  border-bottom: 1px dashed rgba(200,169,74,0.25);
+  transition: border-color 0.15s;
+}
+.editor-mode .row-field-editable:hover {
+  border-bottom-color: var(--gold);
+  color: var(--gold);
+}
+.editor-input-inline {
+  background: #0e0e0e;
+  border: 1px solid var(--gold);
+  color: #ccc;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Barlow', sans-serif;
+  font-size: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+.editor-input-inline:focus { outline: none; border-color: #d4b85a; }
+.editor-banner {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a0a;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  animation: editorPulse 2s ease-in-out infinite alternate;
+  white-space: nowrap;
+}
+@keyframes editorPulse {
+  from { box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+  to   { box-shadow: 0 4px 16px rgba(200,169,74,0.25); }
+}
+.btn-admin {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.75rem;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.btn-admin:hover { border-color: var(--gold); color: var(--gold); }
 </style>
 </head>
 <body>
@@ -539,6 +604,10 @@ header {
     </div>
     <div class="hdr-right">
       <span id="user-info"></span>
+      <button class="btn-admin" id="btn-admin" onclick="abrirPainelAdmin()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+        Admin
+      </button>
       <button class="btn-logout" onclick="fazerLogout()">Sair</button>
     </div>
   </header>
@@ -803,6 +872,8 @@ window.addEventListener('load', function() {
       document.getElementById('screen-login').style.display = 'none';
       document.getElementById('screen-loading').style.display = 'flex';
       document.getElementById('user-info').textContent = user.email;
+      const btnAdm = document.getElementById('btn-admin');
+      if (btnAdm) btnAdm.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'flex' : 'none';
       carregarDados();
     } else {
       document.getElementById('screen-login').style.display = 'flex';
@@ -1332,11 +1403,12 @@ function renderContratos() {
 
   tbody.innerHTML = cons.map(c => {
     const st = getStatusContrato(c);
+    const id = c.id;
     return `<tr>
-      <td>${nomeCli(c)}</td>
-      <td>${tipoEv(c)}</td>
-      <td>${dataEv(c)}</td>
-      <td>${c.ev_local || c.local_evento || '—'}</td>
+      <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos">${nomeCli(c)}</td>
+      <td class="row-field-editable" data-field="ev_nome" data-docid="${id}" data-col="contratos">${tipoEv(c)}</td>
+      <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
+      <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="contratos">${c.ev_local || c.local_evento || '—'}</td>
       <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorContrato(c))}</td>
       <td><span class="badge ${st}">${st}</span></td>
       <td>${formatDateBR(c.criadoEm)}</td>
@@ -1385,18 +1457,21 @@ function renderEventos() {
   tbody.innerHTML = todos.map(e => {
     const st = getStatusContrato(e);
     const origem = e._origem === 'nota' ? 'nota' : 'contrato';
+    const col = origem; // 'contrato' -> collection 'contratos', 'nota' -> 'notas'
+    const colName = origem === 'nota' ? 'notas' : 'contratos';
+    const fieldNome = origem === 'nota' ? 'titulo' : 'cli_nome';
+    const fieldTipo = origem === 'nota' ? 'titulo' : 'ev_nome';
     const val = valorEv(e);
     const valorTxt = val > 0 ? frs(val) : '—';
     const valorStyle = val > 0 ? 'color:var(--gold);font-weight:700' : 'color:var(--muted)';
     const nomeExib = nomeCli(e);
-    const tipoExib = e._origem === 'nota'
-      ? (e.titulo || '—')
-      : tipoEv(e);
+    const tipoExib = e._origem === 'nota' ? (e.titulo || '—') : tipoEv(e);
+    const id = e.id;
     return `<tr>
-      <td>${nomeExib}</td>
-      <td>${tipoExib}</td>
-      <td>${dataEv(e)}</td>
-      <td>${localEv(e)}</td>
+      <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${colName}">${nomeExib}</td>
+      <td class="row-field-editable" data-field="${fieldTipo}" data-docid="${id}" data-col="${colName}">${tipoExib}</td>
+      <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${colName}">${dataEv(e)}</td>
+      <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="${colName}">${localEv(e)}</td>
       <td class="r" style="${valorStyle}">${valorTxt}</td>
       <td><span class="badge ${st}">${st}</span></td>
       <td><span class="badge-origem ${origem}">${origem}</span></td>
@@ -1672,11 +1747,12 @@ function renderContabilidade() {
       const d = tsToDate(c.criadoEm);
       const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '—';
       const st = getStatusContrato(c);
+      const id = c.id;
       return `<tr>
         <td>${comp}</td>
-        <td>${nomeCli(c)}</td>
-        <td>${tipoEv(c)}</td>
-        <td>${dataEv(c)}</td>
+        <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos">${nomeCli(c)}</td>
+        <td class="row-field-editable" data-field="ev_nome" data-docid="${id}" data-col="contratos">${tipoEv(c)}</td>
+        <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
         <td>${getPgtoLabel(c)}</td>
         <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorContrato(c))}</td>
         <td><span class="badge ${st}">${st}</span></td>
@@ -1759,6 +1835,216 @@ function downloadCSV(rows, nome) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// ════════════════════════════════════════════
+// PAINEL DO ADMINISTRADOR
+// ════════════════════════════════════════════
+var _editorModeAtivo = false;
+
+function abrirPainelAdmin() {
+  var existing = document.getElementById('modal-admin-rel');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'modal-admin-rel';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+  modal.addEventListener('wheel', function(e) { e.preventDefault(); }, { passive: false });
+
+  var edOn = _editorModeAtivo;
+  modal.innerHTML =
+    '<div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0 22px">' +
+        '<span style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>' +
+        '<button onclick="document.body.style.overflow=\'\';document.getElementById(\'modal-admin-rel\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">' +
+        '<button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Editor</button>' +
+        '<button id="adm-tab-info" onclick="_admAba(1)" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Informações</button>' +
+      '</div>' +
+      '<div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">' +
+        // ABA EDITOR
+        '<div id="adm-panel-editor" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">' +
+          '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+              '<div>' +
+                '<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Modo Editor</div>' +
+                '<div style="font-size:0.68rem;color:#555;line-height:1.5">Ativa edição inline nas tabelas.<br>Toque em qualquer célula para editar.</div>' +
+              '</div>' +
+              '<div id="adm-editor-toggle" onclick="_toggleEditorMode()" style="width:44px;height:24px;background:' + (edOn ? '#C8A94A' : '#2a2a2a') + ';border-radius:12px;cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0">' +
+                '<div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;' + (edOn ? 'left:23px' : 'left:3px') + ';transition:left 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="font-size:0.68rem;color:#444;line-height:1.5;border-top:1px solid #1e1e1e;padding-top:10px;margin-top:4px">' +
+              '<div style="margin-bottom:4px"><span style="color:#C8A94A;font-weight:700">Campos editáveis:</span></div>' +
+              '<div style="color:#555">Cliente, tipo de evento, data, local, valor. Alterações salvas direto no Firestore (contratos ou notas).</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        // ABA INFO
+        '<div id="adm-panel-info" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">' +
+          '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:10px">' +
+            '<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Base de dados</div>' +
+            '<div style="font-size:0.78rem;color:#888;line-height:1.8">' +
+              'Contratos: <span style="color:#ccc" id="adm-count-contratos">—</span><br>' +
+              'Orçamentos: <span style="color:#ccc" id="adm-count-orcamentos">—</span><br>' +
+              'Notas: <span style="color:#ccc" id="adm-count-notas">—</span>' +
+            '</div>' +
+          '</div>' +
+          '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px">' +
+            '<div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Filtro ativo</div>' +
+            '<div style="font-size:0.78rem;color:#888" id="adm-filtro-info">—</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
+  document.body.appendChild(modal);
+
+  // Preencher info
+  setTimeout(function() {
+    var cc = document.getElementById('adm-count-contratos');
+    var co = document.getElementById('adm-count-orcamentos');
+    var cn = document.getElementById('adm-count-notas');
+    var fi = document.getElementById('adm-filtro-info');
+    if (cc) cc.textContent = _contratos.length;
+    if (co) co.textContent = _orcamentos.length;
+    if (cn) cn.textContent = _notas.length;
+    if (fi) {
+      var ini = _dataIni ? _dataIni.toLocaleDateString('pt-BR') : 'Início';
+      var fim = _dataFim ? _dataFim.toLocaleDateString('pt-BR') : 'Atual';
+      fi.textContent = ini + ' a ' + fim + ' (' + _periodoAtivo + ')';
+    }
+
+    // Swipe sync
+    var slider = document.getElementById('adm-slider');
+    if (!slider) return;
+    slider.addEventListener('scroll', function() {
+      var idx = Math.round(slider.scrollLeft / slider.offsetWidth);
+      _admAba(idx, true);
+    }, { passive: true });
+  }, 80);
+}
+
+function _admAba(idx, fromScroll) {
+  var keys = ['editor','info'];
+  keys.forEach(function(k, i) {
+    var tab = document.getElementById('adm-tab-' + k);
+    if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
+  });
+  if (!fromScroll) {
+    var slider = document.getElementById('adm-slider');
+    if (slider) slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
+  }
+}
+
+function _toggleEditorMode() {
+  _editorModeAtivo = !_editorModeAtivo;
+  var toggle = document.getElementById('adm-editor-toggle');
+  if (toggle) {
+    toggle.style.background = _editorModeAtivo ? '#C8A94A' : '#2a2a2a';
+    var knob = toggle.firstElementChild;
+    if (knob) knob.style.left = _editorModeAtivo ? '23px' : '3px';
+  }
+  var body = document.body;
+  var banner = document.getElementById('editor-mode-banner');
+  if (_editorModeAtivo) {
+    body.classList.add('editor-mode');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'editor-mode-banner';
+      banner.className = 'editor-banner';
+      banner.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg> Modo Editor ativo — toque para editar';
+      body.appendChild(banner);
+    }
+  } else {
+    body.classList.remove('editor-mode');
+    if (banner) banner.remove();
+  }
+}
+
+// Delegacao de cliques para edicao inline nas tabelas
+document.addEventListener('click', function(e) {
+  if (!_editorModeAtivo) return;
+  var el = e.target.closest('.row-field-editable');
+  if (!el) return;
+  e.stopPropagation();
+  e.preventDefault();
+
+  var field  = el.dataset.field;
+  var docId  = el.dataset.docid;
+  var col    = el.dataset.col; // 'contratos' ou 'notas'
+  if (!field || !docId || !col) return;
+  if (el.querySelector('.editor-input-inline')) return;
+
+  var valorAtual = el.textContent.trim();
+  var isDate = field === 'ev_data' || field === 'data_evento';
+
+  var input = document.createElement('input');
+  input.className = 'editor-input-inline';
+  if (isDate) {
+    input.type = 'date';
+    // Converter DD/MM/YYYY -> YYYY-MM-DD
+    var parts = valorAtual.split('/');
+    if (parts.length === 3) input.value = parts[2] + '-' + parts[1] + '-' + parts[0];
+    else input.value = valorAtual;
+  } else {
+    input.type = 'text';
+    input.value = valorAtual === '—' ? '' : valorAtual;
+  }
+
+  var originalHtml = el.innerHTML;
+  el.innerHTML = '';
+  el.appendChild(input);
+  input.focus();
+  if (!isDate) input.select();
+
+  function salvar() {
+    var novoValor = input.value.trim();
+    el.innerHTML = originalHtml;
+    if (isDate && novoValor) {
+      // Exibe DD/MM/YYYY
+      var p = novoValor.split('-');
+      if (p.length === 3) el.textContent = p[2] + '/' + p[1] + '/' + p[0];
+      else el.textContent = novoValor;
+    }
+    if (!novoValor && !isDate) return;
+    var saveVal = novoValor || '';
+    var upd = {};
+    upd[field] = saveVal;
+    if (col === 'notas' && field === 'titulo') {
+      // Tambem atualiza ev_nome no eventos_campo se tiver painel_id
+      var nota = _notas.find(function(n) { return n.id === docId; });
+      if (nota && nota.painel_id && db) {
+        db.collection('eventos_campo').doc(nota.painel_id).update({ ev_nome: saveVal }).catch(function(){});
+      }
+    }
+    if (db) {
+      db.collection(col).doc(docId).update(upd)
+        .then(function() { _editorToast('Salvo!'); })
+        .catch(function(err) { el.innerHTML = originalHtml; _editorToast('Erro: ' + err.message, true); });
+    }
+  }
+
+  input.addEventListener('blur', salvar);
+  input.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+    if (ev.key === 'Escape') { el.innerHTML = originalHtml; }
+  });
+}, true);
+
+function _editorToast(msg, isError) {
+  var existing = document.getElementById('editor-toast');
+  if (existing) existing.remove();
+  var toast = document.createElement('div');
+  toast.id = 'editor-toast';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:' + (isError ? '#2a0a0a' : '#0a1a0a') + ';border:1px solid ' + (isError ? '#e55' : '#25D366') + ';color:' + (isError ? '#e55' : '#25D366') + ';padding:8px 18px;border-radius:20px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;z-index:1200;box-shadow:0 4px 12px rgba(0,0,0,0.4);white-space:nowrap';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function() { if (toast.parentNode) toast.remove(); }, 2500);
+}
+
 </script>
 </body>
 </html>
