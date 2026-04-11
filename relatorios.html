@@ -318,6 +318,7 @@ header {
 .badge.andamento  { color: #C8A94A;  border-color: #C8A94A;  background: rgba(200,169,74,0.10); }
 .badge.concluido  { color: #25D366;  border-color: #25D366;  background: rgba(37,211,102,0.10); }
 .badge.cancelado  { color: #e05c5c;  border-color: #e05c5c;  background: rgba(224,92,92,0.10); }
+.badge.painel     { color: #8B5CF6;  border-color: #8B5CF6;  background: rgba(139,92,246,0.15); }
 
 /* ── LOADING / AUTH ── */
 .screen {
@@ -1497,12 +1498,14 @@ function renderEventos() {
     const cli = nomeExib; const tipo = tipoExib;
     const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
     const id = e.id;
+    // Badge de status: notas com painel_id → "painel" (roxo)
+    const statusBadge = (e._origem === 'nota' && e.painel_id) ? '<span class="badge painel">painel</span>' : `<span class="badge ${st}">${st}</span>`;
     return `<tr>
       <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${colName}" style="max-width:220px">${desc}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${colName}">${dataEv(e)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="${colName}">${localEv(e)}</td>
       <td class="r" style="${valorStyle}">${valorTxt}</td>
-      <td><span class="badge ${st}">${st}</span></td>
+      <td>${statusBadge}</td>
       <td><span class="badge-origem ${origem}">${origem}</span></td>
       <td>${formatDateBR(e.criadoEm)}</td>
       <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="${colName}" title="Excluir">×</button></td>
