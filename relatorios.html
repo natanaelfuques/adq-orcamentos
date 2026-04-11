@@ -1583,17 +1583,18 @@ function renderEventos() {
 // TAB 4 – CLIENTES
 // ══════════════════════════════════════════
 function renderClientes() {
-  const cons = contratosFiltrados();
-  const confirmados = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
+  // Contratos + notas, sem duplicatas
+  const todos = todoEventosFiltrados();
+  const confirmados = todos.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
 
   // Agrupar por cliente
   const cliMap = {};
-  confirmados.forEach(c => {
-    const nome = nomeCli(c);
+  confirmados.forEach(e => {
+    const nome = nomeCli(e);
     if (!cliMap[nome]) cliMap[nome] = { contratos: 0, total: 0, ultimo: null };
     cliMap[nome].contratos++;
-    cliMap[nome].total += getValorContrato(c);
-    const d = tsToDate(c.criadoEm);
+    cliMap[nome].total += getValorEvento(e);
+    const d = tsToDate(e.criadoEm);
     if (!cliMap[nome].ultimo || d > cliMap[nome].ultimo) cliMap[nome].ultimo = d;
   });
 
@@ -1601,23 +1602,23 @@ function renderClientes() {
     .map(([nome, v]) => ({ nome, ...v, ticket: v.contratos ? v.total / v.contratos : 0 }))
     .sort((a, b) => b.total - a.total);
 
-  const ticketMedio = confirmados.length ? confirmados.reduce((s,c) => s + getValorContrato(c), 0) / confirmados.length : 0;
+  const ticketMedio = confirmados.length ? confirmados.reduce((s,e) => s + getValorEvento(e), 0) / confirmados.length : 0;
   const qtdUnicos = cliList.length;
   const recorrentes = cliList.filter(c => c.contratos > 1).length;
 
   document.getElementById('kpi-cli').innerHTML = `
     <div class="kpi-card gold"><div class="kpi-label">Clientes únicos</div><div class="kpi-value">${qtdUnicos}</div></div>
-    <div class="kpi-card green"><div class="kpi-label">Clientes recorrentes</div><div class="kpi-value">${recorrentes}</div><div class="kpi-sub">Mais de 1 contrato</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Clientes recorrentes</div><div class="kpi-value">${recorrentes}</div><div class="kpi-sub">Mais de 1 evento</div></div>
     <div class="kpi-card purple"><div class="kpi-label">Ticket médio</div><div class="kpi-value">${frsShort(ticketMedio)}</div></div>
     <div class="kpi-card blue"><div class="kpi-label">Maior cliente</div><div class="kpi-value" style="font-size:1.1rem">${cliList[0]?.nome || '—'}</div><div class="kpi-sub">${cliList[0] ? frs(cliList[0].total) : ''}</div></div>
   `;
 
   // Gráfico ticket médio por mês
   const mesesTick = {};
-  confirmados.forEach(c => {
-    const k = mesAno(c.criadoEm);
-    if (!mesesTick[k]) mesesTick[k] = { soma: 0, qtd: 0, order: tsToDate(c.criadoEm) };
-    mesesTick[k].soma += getValorContrato(c);
+  confirmados.forEach(e => {
+    const k = mesAno(e.criadoEm);
+    if (!mesesTick[k]) mesesTick[k] = { soma: 0, qtd: 0, order: tsToDate(e.criadoEm) };
+    mesesTick[k].soma += getValorEvento(e);
     mesesTick[k].qtd++;
   });
   const tickEntries = Object.entries(mesesTick).sort((a,b) => a[1].order - b[1].order);
@@ -1644,9 +1645,9 @@ function renderClientes() {
     }
   });
 
-  // Gráfico qtd pessoas (orçamentos)
+  // Gráfico qtd pessoas — contratos + notas
   const pessoasMap = { '1-50': 0, '51-100': 0, '101-200': 0, '201-500': 0, '500+': 0 };
-  _contratos.forEach(c => {
+  [..._contratos, ..._notas].forEach(c => {
     const p = parseInt(c.qtd_pessoas) || 0;
     if (p <= 0) return;
     if (p <= 50) pessoasMap['1-50']++;
@@ -1699,11 +1700,13 @@ function renderSazonalidade() {
   // Histograma por mês (todos os anos)
   const volMes = Array(12).fill(0);
   const recMes = Array(12).fill(0);
-  _contratos.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c))).forEach(c => {
-    const d = tsToDate(c.criadoEm);
+  // Contratos + notas para sazonalidade
+  const todosParaSaz = [..._contratos.map(c => ({...c, _origem:'contrato'})), ..._notas];
+  todosParaSaz.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e))).forEach(e => {
+    const d = tsToDate(e.criadoEm);
     if (!d) return;
     volMes[d.getMonth()]++;
-    recMes[d.getMonth()] += getValorContrato(c);
+    recMes[d.getMonth()] += getValorEvento(e);
   });
 
   criarChart('chart-saz-volume', {
@@ -1749,10 +1752,10 @@ function renderSazonalidade() {
     }
   });
 
-  // Tipos mais contratados (histórico completo)
+  // Tipos mais contratados — histórico completo (contratos + notas)
   const tipoHist = {};
-  _contratos.forEach(c => {
-    const t = tipoEv(c) || 'Outros';
+  [..._contratos.map(c => ({...c, _origem:'contrato'})), ..._notas].forEach(e => {
+    const t = tipoEv(e) || 'Outros';
     tipoHist[t] = (tipoHist[t] || 0) + 1;
   });
   const tipoSort = Object.entries(tipoHist).sort((a,b) => b[1]-a[1]).slice(0, 8);
@@ -1776,17 +1779,18 @@ function renderSazonalidade() {
   for (let i = 1; i <= 3; i++) {
     const m = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
     const mFim = new Date(hoje.getFullYear(), hoje.getMonth() + i + 1, 0);
-    const eventosNoMes = _contratos.filter(c => {
-      const de = c.ev_data || c.data_evento || c.dataEvt;
+    const todosPrevisao = [..._contratos.map(c => ({...c, _origem:'contrato'})), ..._notas];
+    const eventosNoMes = todosPrevisao.filter(e => {
+      const de = e.ev_data || e.data_evento || e.dataEvt;
       if (!de) return false;
       const dev = new Date(de + 'T00:00:00');
-      return dev >= m && dev <= mFim && !c.removido_manualmente;
+      return dev >= m && dev <= mFim && !e.removido_manualmente;
     });
     proximos3.push({
       label: MESES_FULL[m.getMonth()] + ' ' + m.getFullYear(),
       qtd: eventosNoMes.length,
-      receita: eventosNoMes.reduce((s,c) => s + getValorContrato(c), 0),
-      confirmados: eventosNoMes.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c))).length
+      receita: eventosNoMes.reduce((s,e) => s + getValorEvento(e), 0),
+      confirmados: eventosNoMes.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e))).length
     });
   }
 
@@ -1803,12 +1807,13 @@ function renderSazonalidade() {
 // TAB 5 – CONTABILIDADE
 // ══════════════════════════════════════════
 function renderContabilidade() {
-  const cons = contratosFiltrados();
-  const ativos = cons.filter(c => !c.removido_manualmente);
-  const confirmados = ativos.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
+  // Contratos + notas, sem duplicatas
+  const todos = todoEventosFiltrados();
+  const ativos = todos.filter(e => !e.removido_manualmente);
+  const confirmados = ativos.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
 
-  const recBruta = confirmados.reduce((s,c) => s + getValorContrato(c), 0);
-  const recPotencial = ativos.reduce((s,c) => s + getValorContrato(c), 0);
+  const recBruta = confirmados.reduce((s,e) => s + getValorEvento(e), 0);
+  const recPotencial = ativos.reduce((s,e) => s + getValorEvento(e), 0);
 
   // Label período
   const ini = _dataIni ? _dataIni.toLocaleDateString('pt-BR') : 'Início';
@@ -1820,57 +1825,60 @@ function renderContabilidade() {
     <div class="kpi-card gold">
       <div class="kpi-label">Receita bruta (confirmados)</div>
       <div class="kpi-value">${frsShort(recBruta)}</div>
-      <div class="kpi-sub">${confirmados.length} contratos</div>
+      <div class="kpi-sub">${confirmados.length} eventos</div>
     </div>
     <div class="kpi-card blue">
       <div class="kpi-label">Receita potencial (todos ativos)</div>
       <div class="kpi-value">${frsShort(recPotencial)}</div>
-      <div class="kpi-sub">${ativos.length} contratos</div>
+      <div class="kpi-sub">${ativos.length} eventos</div>
     </div>
     <div class="kpi-card purple">
       <div class="kpi-label">Ticket médio</div>
       <div class="kpi-value">${frsShort(confirmados.length ? recBruta / confirmados.length : 0)}</div>
     </div>
     <div class="kpi-card orange">
-      <div class="kpi-label">Contratos a receber</div>
-      <div class="kpi-value">${ativos.filter(c => !['confirmado','concluido'].includes(getStatusContrato(c))).length}</div>
-      <div class="kpi-sub">${frsShort(ativos.filter(c => !['confirmado','concluido'].includes(getStatusContrato(c))).reduce((s,c)=>s+getValorContrato(c),0))}</div>
+      <div class="kpi-label">A receber</div>
+      <div class="kpi-value">${ativos.filter(e => !['confirmado','concluido'].includes(getStatusContrato(e))).length}</div>
+      <div class="kpi-sub">${frsShort(ativos.filter(e => !['confirmado','concluido'].includes(getStatusContrato(e))).reduce((s,e)=>s+getValorEvento(e),0))}</div>
     </div>
   `;
 
-  // Tabela extrato
+  // Tabela extrato — contratos + notas
   const tbody = document.getElementById('tbody-cont');
-  if (!ativos.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum contrato no período.</td></tr>'; }
+  if (!ativos.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum evento no período.</td></tr>'; }
   else {
-    tbody.innerHTML = ativos.map(c => {
-      const d = tsToDate(c.criadoEm);
+    tbody.innerHTML = ativos.map(e => {
+      const d = tsToDate(e.criadoEm);
       const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '—';
-      const st = getStatusContrato(c);
-      const id = c.id;
-      const cli = nomeCli(c); const tipo = tipoEv(c);
+      const st = getStatusContrato(e);
+      const id = e.id;
+      const col = e._origem === 'nota' ? 'notas' : 'contratos';
+      const fieldNome = e._origem === 'nota' ? 'titulo' : 'cli_nome';
+      const cli = nomeCli(e); const tipo = tipoEv(e);
       const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
+      const origemBadge = e._origem === 'nota' ? ' <span class="badge-origem nota">nota</span>' : '';
       return `<tr>
         <td>${comp}</td>
-        <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:200px">${desc}</td>
-        <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
-        <td>${getPgtoLabel(c)}</td>
-        <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorContrato(c))}</td>
+        <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${col}" style="max-width:200px">${desc}${origemBadge}</td>
+        <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${col}">${dataEv(e)}</td>
+        <td>${getPgtoLabel(e)}</td>
+        <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorEvento(e))}</td>
         <td><span class="badge ${st}">${st}</span></td>
-        <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="contratos" title="Excluir">×</button></td>
+        <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="${col}" title="Excluir">×</button></td>
       </tr>`;
     }).join('');
   }
 
-  // Tabela mensal
+  // Tabela mensal — contratos + notas
   const mensal = {};
-  ativos.forEach(c => {
-    const d = tsToDate(c.criadoEm);
+  ativos.forEach(e => {
+    const d = tsToDate(e.criadoEm);
     if (!d) return;
     const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
     const label = MESES_FULL[d.getMonth()] + ' ' + d.getFullYear();
     if (!mensal[k]) mensal[k] = { label, qtd: 0, receita: 0 };
     mensal[k].qtd++;
-    if (['confirmado','concluido'].includes(getStatusContrato(c))) mensal[k].receita += getValorContrato(c);
+    if (['confirmado','concluido'].includes(getStatusContrato(e))) mensal[k].receita += getValorEvento(e);
   });
 
   const mensalList = Object.entries(mensal).sort((a,b) => a[0].localeCompare(b[0]));
@@ -1901,26 +1909,27 @@ function renderContabilidade() {
 // EXPORTAR CSV
 // ══════════════════════════════════════════
 function exportarCSV() {
-  const cons = contratosFiltrados();
-  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Criado em'];
-  const rows = cons.map(c => [
-    nomeCli(c), tipoEv(c), dataEv(c),
-    c.ev_local || c.local_evento || '',
-    getValorContrato(c).toFixed(2).replace('.', ','),
-    getPgtoLabel(c), getStatusContrato(c),
-    formatDateBR(c.criadoEm)
+  const todos = todoEventosFiltrados();
+  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Origem','Criado em'];
+  const rows = todos.map(e => [
+    nomeCli(e), tipoEv(e), dataEv(e),
+    e.ev_local || e.local_evento || e.local || '',
+    getValorEvento(e).toFixed(2).replace('.', ','),
+    getPgtoLabel(e), getStatusContrato(e),
+    e._origem === 'nota' ? 'nota' : 'contrato',
+    formatDateBR(e.criadoEm)
   ]);
-  downloadCSV([header, ...rows], 'relatorio_contratos');
+  downloadCSV([header, ...rows], 'relatorio_eventos');
 }
 
 function exportarContabilidade() {
-  const cons = contratosFiltrados().filter(c => !c.removido_manualmente);
+  const cons = todoEventosFiltrados().filter(e => !e.removido_manualmente);
   const header = ['Competência','Cliente','Tipo Evento','Data Evento','Forma Pgto','Valor Contrato','Status'];
   const rows = cons.map(c => {
     const d = tsToDate(c.criadoEm);
     const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '';
     return [comp, nomeCli(c), tipoEv(c), dataEv(c), getPgtoLabel(c),
-      getValorContrato(c).toFixed(2).replace('.', ','), getStatusContrato(c)];
+      getValorEvento(c).toFixed(2).replace('.', ','), getStatusContrato(c)];
   });
   downloadCSV([header, ...rows], 'relatorio_contabil');
 }
