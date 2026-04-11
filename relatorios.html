@@ -1881,16 +1881,24 @@ function renderContabilidade() {
 // EXPORTAR CSV
 // ══════════════════════════════════════════
 function exportarCSV() {
-  const cons = contratosFiltrados();
-  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Criado em'];
-  const rows = cons.map(c => [
-    nomeCli(c), tipoEv(c), dataEv(c),
-    c.ev_local || c.local_evento || '',
-    getValorContrato(c).toFixed(2).replace('.', ','),
-    getPgtoLabel(c), getStatusContrato(c),
-    formatDateBR(c.criadoEm)
-  ]);
-  downloadCSV([header, ...rows], 'relatorio_contratos');
+  // Inclui contratos E notas (eventos criados manualmente), sem duplicatas
+  const todos = todoEventosFiltrados();
+  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Origem','Criado em'];
+  const rows = todos.map(e => {
+    const valor = e._origem === 'nota'
+      ? (parseBRL(e.val_total) || parseBRL(e.valorTotal) || parseBRL(e.valor) || 0)
+      : getValorContrato(e);
+    const local = e.ev_local || e.local_evento || e.local || '';
+    return [
+      nomeCli(e), tipoEv(e), dataEv(e),
+      local,
+      valor.toFixed(2).replace('.', ','),
+      getPgtoLabel(e), getStatusContrato(e),
+      e._origem === 'nota' ? 'nota' : 'contrato',
+      formatDateBR(e.criadoEm)
+    ];
+  });
+  downloadCSV([header, ...rows], 'relatorio_eventos');
 }
 
 function exportarContabilidade() {
