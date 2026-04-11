@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatórios – NF Soluções para Eventos</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
+
+:root {
+  --gold: #C8A94A;
+  --gold2: #d4b85a;
+  --dark: #1a1a1a;
+  --darker: #111111;
+  --surface: #242424;
+  --surface2: #1e1e1e;
+  --border: #2e2e2e;
+  --border2: #383838;
+  --text: #e8e8e8;
+  --muted: #777;
+  --green: #25D366;
+  --blue: #4A90C8;
+  --purple: #8B5CF6;
+  --red: #e05c5c;
+  --orange: #E8A838;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--darker);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--dark);
+  border-bottom: 2px solid var(--gold);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.hdr-left { display: flex; align-items: center; gap: 14px; }
+.hdr-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.hdr-sub { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 1px; }
+
+.hdr-right { display: flex; align-items: center; gap: 10px; }
+
+#user-info { font-size: 0.72rem; color: var(--muted); }
+
+/* ── PERÍODO SELECTOR ── */
+.periodo-bar {
+  background: var(--dark);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.periodo-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.periodo-btns { display: flex; gap: 6px; }
+.pbtn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 13px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pbtn:hover { border-color: var(--gold); color: var(--gold); }
+.pbtn.active { background: var(--gold); border-color: var(--gold); color: #111; }
+
+.periodo-custom { display: flex; align-items: center; gap: 6px; }
+.periodo-custom input {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.78rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  outline: none;
+  width: 120px;
+  color-scheme: dark;
+}
+.periodo-custom input:focus { border-color: var(--gold); }
+
+.export-btn {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 5px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.export-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── MAIN ── */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 24px;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 10px 22px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── KPI GRID ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.kpi-card.gold::before  { background: var(--gold); }
+.kpi-card.green::before { background: var(--green); }
+.kpi-card.blue::before  { background: var(--blue); }
+.kpi-card.purple::before { background: var(--purple); }
+.kpi-card.orange::before { background: var(--orange); }
+.kpi-card.red::before   { background: var(--red); }
+
+.kpi-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.kpi-sub { font-size: 0.72rem; color: var(--muted); }
+.kpi-delta {
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.kpi-delta.up { color: var(--green); }
+.kpi-delta.down { color: var(--red); }
+
+/* ── SECTION HEADERS ── */
+.sec-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+/* ── CHART CARDS ── */
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.chart-grid.single { grid-template-columns: 1fr; }
+.chart-grid.triple { grid-template-columns: 2fr 1fr; }
+
+@media (max-width: 768px) {
+  .chart-grid { grid-template-columns: 1fr; }
+  .chart-grid.triple { grid-template-columns: 1fr; }
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+.chart-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.chart-wrap { position: relative; }
+.chart-wrap canvas { max-height: 260px; }
+
+/* ── TABELAS ── */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.table-card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.table-card thead tr {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border2);
+}
+.table-card th {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  padding: 10px 16px;
+  text-align: left;
+}
+.table-card th.r { text-align: right; }
+.table-card td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.table-card td.r { text-align: right; font-weight: 600; }
+.table-card tr:last-child td { border-bottom: none; }
+.table-card tr:hover td { background: rgba(200,169,74,0.04); }
+
+/* STATUS BADGES */
+.badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.badge.aprovado   { color: var(--blue);   border-color: var(--blue);   background: rgba(74,144,200,0.1); }
+.badge.confirmado { color: var(--green);  border-color: var(--green);  background: rgba(37,211,102,0.1); }
+.badge.pendente   { color: var(--gold);   border-color: var(--gold);   background: rgba(200,169,74,0.1); }
+.badge.cancelado  { color: var(--red);    border-color: var(--red);    background: rgba(224,92,92,0.1); }
+.badge.andamento  { color: var(--orange); border-color: var(--orange); background: rgba(232,168,56,0.1); }
+.badge.concluido  { color: var(--green);  border-color: var(--green);  background: rgba(37,211,102,0.1); }
+
+/* ── LOADING / AUTH ── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 36px 40px;
+  width: 340px;
+  text-align: center;
+}
+.login-card h2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.login-card p { font-size: 0.8rem; color: var(--muted); margin-bottom: 24px; }
+.login-card input {
+  width: 100%;
+  background: var(--darker);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  border-radius: 5px;
+  outline: none;
+  margin-bottom: 10px;
+}
+.login-card input:focus { border-color: var(--gold); }
+.login-card button {
+  width: 100%;
+  background: var(--gold);
+  border: none;
+  color: #111;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 11px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: opacity 0.15s;
+}
+.login-card button:hover { opacity: 0.88; }
+.login-err { font-size: 0.78rem; color: var(--red); margin-top: 8px; }
+
+/* ── CONTABILIDADE ── */
+.cont-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+@media (max-width: 640px) { .cont-grid { grid-template-columns: 1fr; } }
+
+.info-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.info-box strong { color: var(--gold); display: block; margin-bottom: 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag {
+  background: rgba(200,169,74,0.08);
+  border: 1px solid rgba(200,169,74,0.2);
+  color: var(--gold);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Scroll responsivo nas tabelas */
+.table-scroll { overflow-x: auto; }
+
+/* Placeholder vazio */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ── LOGOUT BTN ── */
+.btn-logout {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.75rem;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="screen-login" class="screen">
+  <div class="login-card">
+    <h2>Relatórios</h2>
+    <p>NF Soluções para Eventos</p>
+    <input type="email" id="inp-email" placeholder="E-mail" autocomplete="username">
+    <input type="password" id="inp-senha" placeholder="Senha" autocomplete="current-password">
+    <button onclick="fazerLogin()">Entrar</button>
+    <div id="login-err" class="login-err"></div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="screen-loading" class="screen" style="display:none">
+  <div class="spinner"></div>
+  <span style="color:var(--muted);font-size:0.82rem">Carregando dados…</span>
+</div>
+
+<!-- ── APP ── -->
+<div id="screen-app" style="display:none">
+
+  <header>
+    <div class="hdr-left">
+      <div>
+        <div class="hdr-title">📊 Relatórios</div>
+        <div class="hdr-sub">NF Soluções para Eventos</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <span id="user-info"></span>
+      <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+    </div>
+  </header>
+
+  <div class="periodo-bar">
+    <span class="periodo-label">Período:</span>
+    <div class="periodo-btns">
+      <button class="pbtn" onclick="setPeriodo('mes')">Este mês</button>
+      <button class="pbtn" onclick="setPeriodo('trim')">Trimestre</button>
+      <button class="pbtn active" onclick="setPeriodo('ano')">Este ano</button>
+      <button class="pbtn" onclick="setPeriodo('tudo')">Tudo</button>
+      <button class="pbtn" onclick="setPeriodo('custom')">Personalizado</button>
+    </div>
+    <div class="periodo-custom" id="custom-wrap" style="display:none">
+      <input type="date" id="data-ini" onchange="aplicarCustom()">
+      <span style="color:var(--muted)">até</span>
+      <input type="date" id="data-fim" onchange="aplicarCustom()">
+    </div>
+    <button class="export-btn" onclick="exportarCSV()">⬇ Exportar CSV</button>
+  </div>
+
+  <div class="main">
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="trocarTab('financeiro')">Financeiro</button>
+      <button class="tab-btn" onclick="trocarTab('contratos')">Contratos</button>
+      <button class="tab-btn" onclick="trocarTab('clientes')">Clientes</button>
+      <button class="tab-btn" onclick="trocarTab('sazonalidade')">Sazonalidade</button>
+      <button class="tab-btn" onclick="trocarTab('contabilidade')">Contabilidade</button>
+    </div>
+
+    <!-- ════ TAB: FINANCEIRO ════ -->
+    <div id="tab-financeiro" class="tab-panel active">
+      <div class="kpi-grid" id="kpi-fin"></div>
+
+      <p class="sec-title">Faturamento Mensal</p>
+      <div class="chart-grid single" style="margin-bottom:24px">
+        <div class="chart-card">
+          <div class="chart-title">Receita por mês (contratos confirmados/concluídos)</div>
+          <div class="chart-wrap"><canvas id="chart-faturamento"></canvas></div>
+        </div>
+      </div>
+
+      <p class="sec-title">Composição de Receita</p>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Receita por tipo de evento</div>
+          <div class="chart-wrap"><canvas id="chart-tipo-evento"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Receita por serviço</div>
+          <div class="chart-wrap"><canvas id="chart-servicos"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: CONTRATOS ════ -->
+    <div id="tab-contratos" class="tab-panel">
+      <div class="kpi-grid" id="kpi-con"></div>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Contratos por status</div>
+          <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Taxa de conversão — orçamentos → contratos</div>
+          <div class="chart-wrap"><canvas id="chart-conversao"></canvas></div>
+        </div>
+      </div>
+
+      <p class="sec-title">Listagem de contratos no período</p>
+      <div class="table-card table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Tipo de Evento</th>
+              <th>Data Evento</th>
+              <th>Local</th>
+              <th class="r">Valor</th>
+              <th>Status</th>
+              <th>Criado em</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-contratos"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ TAB: CLIENTES ════ -->
+    <div id="tab-clientes" class="tab-panel">
+      <div class="kpi-grid" id="kpi-cli"></div>
+
+      <div class="chart-grid triple">
+        <div class="chart-card">
+          <div class="chart-title">Ticket médio ao longo do tempo</div>
+          <div class="chart-wrap"><canvas id="chart-ticket"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Qtd pessoas por evento</div>
+          <div class="chart-wrap"><canvas id="chart-pessoas"></canvas></div>
+        </div>
+      </div>
+
+      <p class="sec-title">Clientes mais frequentes</p>
+      <div class="table-card table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th class="r">Contratos</th>
+              <th class="r">Total Faturado</th>
+              <th class="r">Ticket Médio</th>
+              <th>Último evento</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-clientes"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ TAB: SAZONALIDADE ════ -->
+    <div id="tab-sazonalidade" class="tab-panel">
+      <p class="sec-title">Volume de eventos por mês (histórico completo)</p>
+      <div class="chart-card" style="margin-bottom:20px">
+        <div class="chart-title">Quantidade de contratos por mês</div>
+        <div class="chart-wrap"><canvas id="chart-saz-volume"></canvas></div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Receita histórica por mês</div>
+          <div class="chart-wrap"><canvas id="chart-saz-receita"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Tipos de evento mais contratados</div>
+          <div class="chart-wrap"><canvas id="chart-saz-tipo"></canvas></div>
+        </div>
+      </div>
+
+      <p class="sec-title">Previsão de receita — próximos 3 meses</p>
+      <div class="kpi-grid" id="kpi-previsao"></div>
+    </div>
+
+    <!-- ════ TAB: CONTABILIDADE ════ -->
+    <div id="tab-contabilidade" class="tab-panel">
+      <p class="sec-title">Resumo para contabilidade — período selecionado</p>
+
+      <div class="cont-grid">
+        <div class="info-box">
+          <strong>Empresa</strong>
+          NF Soluções para Eventos Ltda (SLU)<br>
+          CNPJ: <span id="cont-cnpj">—</span><br>
+          Regime: Simples Nacional
+        </div>
+        <div class="info-box">
+          <strong>Período do relatório</strong>
+          <span id="cont-periodo">—</span>
+        </div>
+      </div>
+
+      <div class="kpi-grid" id="kpi-cont"></div>
+
+      <p class="sec-title">Extrato de receitas — contratos ativos no período</p>
+      <div class="table-card table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Competência</th>
+              <th>Cliente</th>
+              <th>Tipo Evento</th>
+              <th>Data Evento</th>
+              <th>Forma Pgto</th>
+              <th class="r">Valor Contrato</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-cont"></tbody>
+        </table>
+      </div>
+
+      <p class="sec-title">Receita bruta por mês</p>
+      <div class="table-card table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th class="r">Qtd Eventos</th>
+              <th class="r">Receita Bruta</th>
+              <th class="r">Ticket Médio</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-cont-mensal"></tbody>
+        </table>
+      </div>
+
+      <div style="text-align:right;margin-top:8px">
+        <button class="export-btn" onclick="exportarContabilidade()" style="border-color:var(--gold);color:var(--gold)">
+          ⬇ Exportar relatório contábil (CSV)
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /screen-app -->
+
+<script>
+// ══════════════════════════════════════════
+// FIREBASE CONFIG (igual ao index.html)
+// ══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyBX7qH0fY990F73VWlL7aTbSyG-OKsqkoY",
+  authDomain: "adq-orcamentos.firebaseapp.com",
+  projectId: "adq-orcamentos",
+  storageBucket: "adq-orcamentos.firebasestorage.app",
+  messagingSenderId: "3618259495",
+  appId: "1:3618259495:web:4b749f1c9124f9c243c402"
+};
+
+let db = null;
+let _contratos = [];
+let _orcamentos = [];
+let _periodoAtivo = 'ano';
+let _dataIni = null, _dataFim = null;
+let _tabAtiva = 'financeiro';
+let _charts = {};
+
+// ── INIT ──
+window.addEventListener('load', function() {
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      document.getElementById('screen-login').style.display = 'none';
+      document.getElementById('screen-loading').style.display = 'flex';
+      document.getElementById('user-info').textContent = user.email;
+      carregarDados();
+    } else {
+      document.getElementById('screen-login').style.display = 'flex';
+      document.getElementById('screen-loading').style.display = 'none';
+      document.getElementById('screen-app').style.display = 'none';
+    }
+  });
+});
+
+function fazerLogin() {
+  const email = document.getElementById('inp-email').value.trim();
+  const senha = document.getElementById('inp-senha').value;
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+  firebase.auth().signInWithEmailAndPassword(email, senha)
+    .catch(function(e) { errEl.textContent = 'Credenciais inválidas.'; });
+}
+document.getElementById('inp-senha').addEventListener('keydown', function(e) { if (e.key === 'Enter') fazerLogin(); });
+
+function fazerLogout() {
+  firebase.auth().signOut();
+}
+
+// ── CARREGAR DADOS ──
+async function carregarDados() {
+  try {
+    const [snapC, snapO] = await Promise.all([
+      db.collection('contratos').orderBy('criadoEm', 'desc').get(),
+      db.collection('orcamentos').orderBy('criadoEm', 'desc').get()
+    ]);
+    _contratos = snapC.docs.map(d => ({ id: d.id, ...d.data() }));
+    _orcamentos = snapO.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById('screen-loading').style.display = 'none';
+    document.getElementById('screen-app').style.display = 'block';
+    setPeriodo('ano');
+  } catch(e) {
+    alert('Erro ao carregar dados: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════
+// PERÍODO
+// ══════════════════════════════════════════
+function setPeriodo(p) {
+  _periodoAtivo = p;
+  document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active'));
+  event && event.target && event.target.classList.add('active');
+
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = hoje.getMonth();
+
+  document.getElementById('custom-wrap').style.display = (p === 'custom') ? 'flex' : 'none';
+
+  if (p === 'mes') {
+    _dataIni = new Date(ano, mes, 1);
+    _dataFim = new Date(ano, mes + 1, 0, 23, 59, 59);
+  } else if (p === 'trim') {
+    const trimStart = Math.floor(mes / 3) * 3;
+    _dataIni = new Date(ano, trimStart, 1);
+    _dataFim = new Date(ano, trimStart + 3, 0, 23, 59, 59);
+  } else if (p === 'ano') {
+    _dataIni = new Date(ano, 0, 1);
+    _dataFim = new Date(ano, 11, 31, 23, 59, 59);
+  } else if (p === 'tudo') {
+    _dataIni = null;
+    _dataFim = null;
+  }
+  if (p !== 'custom') renderTudo();
+}
+
+function aplicarCustom() {
+  const ini = document.getElementById('data-ini').value;
+  const fim = document.getElementById('data-fim').value;
+  if (ini) _dataIni = new Date(ini + 'T00:00:00');
+  if (fim) _dataFim = new Date(fim + 'T23:59:59');
+  if (ini && fim) renderTudo();
+}
+
+// ── FILTRO DE PERÍODO ──
+function tsToDate(ts) {
+  if (!ts) return null;
+  if (ts.toDate) return ts.toDate();
+  if (typeof ts === 'string') return new Date(ts);
+  return new Date(ts);
+}
+
+function dentroDoPeríodo(doc) {
+  if (!_dataIni && !_dataFim) return true;
+  const d = tsToDate(doc.criadoEm);
+  if (!d) return true;
+  if (_dataIni && d < _dataIni) return false;
+  if (_dataFim && d > _dataFim) return false;
+  return true;
+}
+
+function contratosFiltrados() {
+  return _contratos.filter(dentroDoPeríodo);
+}
+
+function orcamentosFiltrados() {
+  return _orcamentos.filter(dentroDoPeríodo);
+}
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function parseBRL(v) {
+  if (!v) return 0;
+  v = String(v).trim().replace(/R\$\s*/g, '').replace(/\./g, '').replace(',', '.');
+  return parseFloat(v) || 0;
+}
+function frs(v) {
+  return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function frsShort(v) {
+  if (v >= 1000000) return 'R$ ' + (v/1000000).toFixed(1).replace('.',',') + 'M';
+  if (v >= 1000) return 'R$ ' + (v/1000).toFixed(1).replace('.',',') + 'K';
+  return frs(v);
+}
+
+const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESES_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function mesAno(ts) {
+  const d = tsToDate(ts);
+  if (!d) return '?';
+  return MESES[d.getMonth()] + '/' + String(d.getFullYear()).slice(2);
+}
+
+function getValorContrato(c) {
+  return parseBRL(c.val_total) || parseBRL(c.valorTotal) || 0;
+}
+
+function getStatusContrato(c) {
+  if (c.removido_manualmente) return 'cancelado';
+  if (c.status_contrato === 'concluido' || c.etapa === 'concluido') return 'concluido';
+  if (c.aprovado || c.status_contrato === 'confirmado' || c.etapa === 'confirmado') return 'confirmado';
+  if (c.status_contrato === 'andamento' || c.etapa === 'andamento') return 'andamento';
+  if (c.link_assinatura) return 'enviado';
+  return 'pendente';
+}
+
+function getPgtoLabel(c) {
+  const t = c.pgto_tipo || '';
+  if (t === 'vista') return 'À vista';
+  if (t === 'parcelado') return 'Parcelado (' + (c.nparcelas || '?') + 'x)';
+  if (t === 'metade') return '50%+50%';
+  if (c.pgto_custom) return 'Personalizado';
+  return t || '—';
+}
+
+function nomeCli(c) {
+  return c.cli_nome || c.nome_cliente || c.nome || '—';
+}
+
+function tipoEv(c) {
+  return c.ev_nome || c.tipo_evento || c.evento || '—';
+}
+
+function dataEv(c) {
+  const d = c.ev_data || c.data_evento || c.dataEvt || '';
+  if (!d) return '—';
+  const p = d.split('-');
+  if (p.length === 3) return p[2] + '/' + p[1] + '/' + p[0];
+  return d;
+}
+
+function formatDateBR(ts) {
+  const d = tsToDate(ts);
+  if (!d) return '—';
+  return d.toLocaleDateString('pt-BR');
+}
+
+function destruirChart(id) {
+  if (_charts[id]) { _charts[id].destroy(); delete _charts[id]; }
+}
+
+function criarChart(id, config) {
+  destruirChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  _charts[id] = new Chart(ctx, config);
+}
+
+const CHART_DEFAULTS = {
+  color: '#e8e8e8',
+  font: { family: 'Barlow' }
+};
+Chart.defaults.color = '#777';
+Chart.defaults.font.family = 'Barlow';
+Chart.defaults.borderColor = '#2e2e2e';
+
+// ══════════════════════════════════════════
+// RENDER TUDO
+// ══════════════════════════════════════════
+function renderTudo() {
+  renderFinanceiro();
+  renderContratos();
+  renderClientes();
+  renderSazonalidade();
+  renderContabilidade();
+}
+
+// ── TAB SWITCH ──
+function trocarTab(tab) {
+  _tabAtiva = tab;
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    const tabs = ['financeiro','contratos','clientes','sazonalidade','contabilidade'];
+    b.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ══════════════════════════════════════════
+// TAB 1 – FINANCEIRO
+// ══════════════════════════════════════════
+function renderFinanceiro() {
+  const cons = contratosFiltrados();
+  const ativos = cons.filter(c => !['cancelado'].includes(getStatusContrato(c)));
+  const confirmados = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
+
+  const receitaTotal = confirmados.reduce((s,c) => s + getValorContrato(c), 0);
+  const receitaPendente = ativos.filter(c => !['confirmado','concluido'].includes(getStatusContrato(c)))
+    .reduce((s,c) => s + getValorContrato(c), 0);
+  const ticket = confirmados.length ? receitaTotal / confirmados.length : 0;
+
+  // Mês atual
+  const hoje = new Date();
+  const consMes = _contratos.filter(c => {
+    const d = tsToDate(c.criadoEm);
+    return d && d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
+  });
+  const recMes = consMes.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)))
+    .reduce((s,c) => s + getValorContrato(c), 0);
+
+  document.getElementById('kpi-fin').innerHTML = `
+    <div class="kpi-card gold">
+      <div class="kpi-label">Receita confirmada</div>
+      <div class="kpi-value">${frsShort(receitaTotal)}</div>
+      <div class="kpi-sub">${confirmados.length} contrato(s) no período</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Receita do mês atual</div>
+      <div class="kpi-value">${frsShort(recMes)}</div>
+      <div class="kpi-sub">${consMes.filter(c=>['confirmado','concluido'].includes(getStatusContrato(c))).length} contratos</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Receita em negociação</div>
+      <div class="kpi-value">${frsShort(receitaPendente)}</div>
+      <div class="kpi-sub">Contratos pendentes/em andamento</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Ticket médio</div>
+      <div class="kpi-value">${frsShort(ticket)}</div>
+      <div class="kpi-sub">Contratos confirmados</div>
+    </div>
+  `;
+
+  // Gráfico: faturamento mensal (12 meses do período ou ano atual)
+  const meses12 = [];
+  const ref = _dataIni || new Date(new Date().getFullYear(), 0, 1);
+  for (let i = 0; i < 12; i++) {
+    const m = new Date(ref.getFullYear(), ref.getMonth() + i, 1);
+    if (m > (_dataFim || new Date())) break;
+    meses12.push({ label: MESES[m.getMonth()] + '/' + String(m.getFullYear()).slice(2), m: m });
+  }
+
+  const dataFat = meses12.map(({ m }) => {
+    return _contratos.filter(c => {
+      const d = tsToDate(c.criadoEm);
+      return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear()
+        && ['confirmado','concluido'].includes(getStatusContrato(c));
+    }).reduce((s,c) => s + getValorContrato(c), 0);
+  });
+
+  criarChart('chart-faturamento', {
+    type: 'bar',
+    data: {
+      labels: meses12.map(x => x.label),
+      datasets: [{
+        label: 'Receita (R$)',
+        data: dataFat,
+        backgroundColor: 'rgba(200,169,74,0.7)',
+        borderColor: '#C8A94A',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => frsShort(v) }, grid: { color: '#2a2a2a' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Gráfico: receita por tipo de evento
+  const tipoMap = {};
+  confirmados.forEach(c => {
+    const t = tipoEv(c) || 'Outros';
+    tipoMap[t] = (tipoMap[t] || 0) + getValorContrato(c);
+  });
+  const tipoEntries = Object.entries(tipoMap).sort((a,b) => b[1]-a[1]).slice(0, 8);
+  const CORES = ['#C8A94A','#4A90C8','#25D366','#8B5CF6','#E8A838','#e05c5c','#38bdf8','#f472b6'];
+
+  criarChart('chart-tipo-evento', {
+    type: 'doughnut',
+    data: {
+      labels: tipoEntries.map(x => x[0]),
+      datasets: [{ data: tipoEntries.map(x => x[1]), backgroundColor: CORES, borderColor: '#1a1a1a', borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'right', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ' ' + frs(ctx.raw) } }
+      }
+    }
+  });
+
+  // Gráfico: receita por serviço
+  const servMap = {};
+  confirmados.forEach(c => {
+    const servicos = c.servicos || [];
+    servicos.forEach(s => { if (s) servMap[s] = (servMap[s] || 0) + 1; });
+  });
+  const servEntries = Object.entries(servMap).sort((a,b) => b[1]-a[1]).slice(0, 10);
+
+  criarChart('chart-servicos', {
+    type: 'bar',
+    data: {
+      labels: servEntries.map(x => x[0]),
+      datasets: [{
+        label: 'Qtd contratos',
+        data: servEntries.map(x => x[1]),
+        backgroundColor: 'rgba(74,144,200,0.7)',
+        borderColor: '#4A90C8',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+// TAB 2 – CONTRATOS
+// ══════════════════════════════════════════
+function renderContratos() {
+  const cons = contratosFiltrados();
+  const orcs = orcamentosFiltrados();
+  const confirmados = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
+  const pendentes   = cons.filter(c => getStatusContrato(c) === 'pendente');
+  const andamento   = cons.filter(c => getStatusContrato(c) === 'andamento');
+  const cancelados  = cons.filter(c => getStatusContrato(c) === 'cancelado');
+
+  const taxa = orcs.length ? ((cons.length / orcs.length) * 100).toFixed(1) : 0;
+
+  document.getElementById('kpi-con').innerHTML = `
+    <div class="kpi-card gold"><div class="kpi-label">Total contratos</div><div class="kpi-value">${cons.length}</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Confirmados</div><div class="kpi-value">${confirmados.length}</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Em andamento</div><div class="kpi-value">${andamento.length}</div></div>
+    <div class="kpi-card orange"><div class="kpi-label">Pendentes</div><div class="kpi-value">${pendentes.length}</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Cancelados</div><div class="kpi-value">${cancelados.length}</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">Taxa de conversão</div><div class="kpi-value">${taxa}%</div><div class="kpi-sub">Orçamentos → Contratos</div></div>
+  `;
+
+  // Gráfico pizza status
+  criarChart('chart-status', {
+    type: 'doughnut',
+    data: {
+      labels: ['Confirmados','Andamento','Pendentes','Cancelados'],
+      datasets: [{
+        data: [confirmados.length, andamento.length, pendentes.length, cancelados.length],
+        backgroundColor: ['#25D366','#E8A838','#C8A94A','#e05c5c'],
+        borderColor: '#1a1a1a', borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 14 } } }
+    }
+  });
+
+  // Gráfico conversão
+  criarChart('chart-conversao', {
+    type: 'bar',
+    data: {
+      labels: ['Orçamentos','Contratos','Confirmados'],
+      datasets: [{
+        data: [orcs.length, cons.length, confirmados.length],
+        backgroundColor: ['rgba(200,169,74,0.6)','rgba(74,144,200,0.6)','rgba(37,211,102,0.6)'],
+        borderColor: ['#C8A94A','#4A90C8','#25D366'],
+        borderWidth: 1, borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Tabela
+  const tbody = document.getElementById('tbody-contratos');
+  if (!cons.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum contrato no período.</td></tr>'; return; }
+
+  tbody.innerHTML = cons.map(c => {
+    const st = getStatusContrato(c);
+    return `<tr>
+      <td>${nomeCli(c)}</td>
+      <td>${tipoEv(c)}</td>
+      <td>${dataEv(c)}</td>
+      <td>${c.ev_local || c.local_evento || '—'}</td>
+      <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorContrato(c))}</td>
+      <td><span class="badge ${st}">${st}</span></td>
+      <td>${formatDateBR(c.criadoEm)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// TAB 3 – CLIENTES
+// ══════════════════════════════════════════
+function renderClientes() {
+  const cons = contratosFiltrados();
+  const confirmados = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
+
+  // Agrupar por cliente
+  const cliMap = {};
+  confirmados.forEach(c => {
+    const nome = nomeCli(c);
+    if (!cliMap[nome]) cliMap[nome] = { contratos: 0, total: 0, ultimo: null };
+    cliMap[nome].contratos++;
+    cliMap[nome].total += getValorContrato(c);
+    const d = tsToDate(c.criadoEm);
+    if (!cliMap[nome].ultimo || d > cliMap[nome].ultimo) cliMap[nome].ultimo = d;
+  });
+
+  const cliList = Object.entries(cliMap)
+    .map(([nome, v]) => ({ nome, ...v, ticket: v.contratos ? v.total / v.contratos : 0 }))
+    .sort((a, b) => b.total - a.total);
+
+  const ticketMedio = confirmados.length ? confirmados.reduce((s,c) => s + getValorContrato(c), 0) / confirmados.length : 0;
+  const qtdUnicos = cliList.length;
+  const recorrentes = cliList.filter(c => c.contratos > 1).length;
+
+  document.getElementById('kpi-cli').innerHTML = `
+    <div class="kpi-card gold"><div class="kpi-label">Clientes únicos</div><div class="kpi-value">${qtdUnicos}</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Clientes recorrentes</div><div class="kpi-value">${recorrentes}</div><div class="kpi-sub">Mais de 1 contrato</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">Ticket médio</div><div class="kpi-value">${frsShort(ticketMedio)}</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Maior cliente</div><div class="kpi-value" style="font-size:1.1rem">${cliList[0]?.nome || '—'}</div><div class="kpi-sub">${cliList[0] ? frs(cliList[0].total) : ''}</div></div>
+  `;
+
+  // Gráfico ticket médio por mês
+  const mesesTick = {};
+  confirmados.forEach(c => {
+    const k = mesAno(c.criadoEm);
+    if (!mesesTick[k]) mesesTick[k] = { soma: 0, qtd: 0, order: tsToDate(c.criadoEm) };
+    mesesTick[k].soma += getValorContrato(c);
+    mesesTick[k].qtd++;
+  });
+  const tickEntries = Object.entries(mesesTick).sort((a,b) => a[1].order - b[1].order);
+
+  criarChart('chart-ticket', {
+    type: 'line',
+    data: {
+      labels: tickEntries.map(x => x[0]),
+      datasets: [{
+        label: 'Ticket médio',
+        data: tickEntries.map(x => x[1].qtd ? x[1].soma / x[1].qtd : 0),
+        borderColor: '#8B5CF6',
+        backgroundColor: 'rgba(139,92,246,0.1)',
+        tension: 0.3, fill: true, pointRadius: 4, pointBackgroundColor: '#8B5CF6'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => frsShort(v) }, grid: { color: '#2a2a2a' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Gráfico qtd pessoas (orçamentos)
+  const pessoasMap = { '1-50': 0, '51-100': 0, '101-200': 0, '201-500': 0, '500+': 0 };
+  _contratos.forEach(c => {
+    const p = parseInt(c.qtd_pessoas) || 0;
+    if (p <= 0) return;
+    if (p <= 50) pessoasMap['1-50']++;
+    else if (p <= 100) pessoasMap['51-100']++;
+    else if (p <= 200) pessoasMap['101-200']++;
+    else if (p <= 500) pessoasMap['201-500']++;
+    else pessoasMap['500+']++;
+  });
+
+  criarChart('chart-pessoas', {
+    type: 'bar',
+    data: {
+      labels: Object.keys(pessoasMap),
+      datasets: [{
+        label: 'Qtd eventos',
+        data: Object.values(pessoasMap),
+        backgroundColor: 'rgba(37,211,102,0.6)',
+        borderColor: '#25D366', borderWidth: 1, borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false }, title: { display: true, text: 'Convidados por evento', color: '#777', font: { size: 11 } } },
+      scales: {
+        y: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Tabela clientes
+  const tbody = document.getElementById('tbody-clientes');
+  if (!cliList.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Nenhum cliente no período.</td></tr>'; return; }
+  tbody.innerHTML = cliList.slice(0, 30).map((cli, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td style="font-weight:600">${cli.nome}</td>
+      <td class="r">${cli.contratos}</td>
+      <td class="r" style="color:var(--gold)">${frs(cli.total)}</td>
+      <td class="r">${frs(cli.ticket)}</td>
+      <td>${cli.ultimo ? cli.ultimo.toLocaleDateString('pt-BR') : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// TAB 4 – SAZONALIDADE
+// ══════════════════════════════════════════
+function renderSazonalidade() {
+  // Histograma por mês (todos os anos)
+  const volMes = Array(12).fill(0);
+  const recMes = Array(12).fill(0);
+  _contratos.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c))).forEach(c => {
+    const d = tsToDate(c.criadoEm);
+    if (!d) return;
+    volMes[d.getMonth()]++;
+    recMes[d.getMonth()] += getValorContrato(c);
+  });
+
+  criarChart('chart-saz-volume', {
+    type: 'bar',
+    data: {
+      labels: MESES_FULL,
+      datasets: [{
+        label: 'Qtd contratos',
+        data: volMes,
+        backgroundColor: MESES_FULL.map((_, i) => volMes[i] === Math.max(...volMes) ? 'rgba(200,169,74,0.9)' : 'rgba(200,169,74,0.4)'),
+        borderColor: '#C8A94A', borderWidth: 1, borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  criarChart('chart-saz-receita', {
+    type: 'line',
+    data: {
+      labels: MESES,
+      datasets: [{
+        label: 'Receita',
+        data: recMes,
+        borderColor: '#E8A838',
+        backgroundColor: 'rgba(232,168,56,0.12)',
+        tension: 0.35, fill: true, pointRadius: 5, pointBackgroundColor: '#E8A838'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => frsShort(v) }, grid: { color: '#2a2a2a' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Tipos mais contratados (histórico completo)
+  const tipoHist = {};
+  _contratos.forEach(c => {
+    const t = tipoEv(c) || 'Outros';
+    tipoHist[t] = (tipoHist[t] || 0) + 1;
+  });
+  const tipoSort = Object.entries(tipoHist).sort((a,b) => b[1]-a[1]).slice(0, 8);
+  const CORES2 = ['#C8A94A','#4A90C8','#25D366','#8B5CF6','#E8A838','#e05c5c','#38bdf8','#f472b6'];
+
+  criarChart('chart-saz-tipo', {
+    type: 'doughnut',
+    data: {
+      labels: tipoSort.map(x => x[0]),
+      datasets: [{ data: tipoSort.map(x => x[1]), backgroundColor: CORES2, borderColor: '#1a1a1a', borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } }
+    }
+  });
+
+  // Previsão: próximos 3 meses (contratos com data_evento no futuro)
+  const hoje = new Date();
+  const proximos3 = [];
+  for (let i = 1; i <= 3; i++) {
+    const m = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+    const mFim = new Date(hoje.getFullYear(), hoje.getMonth() + i + 1, 0);
+    const eventosNoMes = _contratos.filter(c => {
+      const de = c.ev_data || c.data_evento || c.dataEvt;
+      if (!de) return false;
+      const dev = new Date(de + 'T00:00:00');
+      return dev >= m && dev <= mFim && !c.removido_manualmente;
+    });
+    proximos3.push({
+      label: MESES_FULL[m.getMonth()] + ' ' + m.getFullYear(),
+      qtd: eventosNoMes.length,
+      receita: eventosNoMes.reduce((s,c) => s + getValorContrato(c), 0),
+      confirmados: eventosNoMes.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c))).length
+    });
+  }
+
+  document.getElementById('kpi-previsao').innerHTML = proximos3.map(p => `
+    <div class="kpi-card blue">
+      <div class="kpi-label">${p.label}</div>
+      <div class="kpi-value">${p.qtd}</div>
+      <div class="kpi-sub">${p.confirmados} confirmados · ${frsShort(p.receita)} previsto</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// TAB 5 – CONTABILIDADE
+// ══════════════════════════════════════════
+function renderContabilidade() {
+  const cons = contratosFiltrados();
+  const ativos = cons.filter(c => !c.removido_manualmente);
+  const confirmados = ativos.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
+
+  const recBruta = confirmados.reduce((s,c) => s + getValorContrato(c), 0);
+  const recPotencial = ativos.reduce((s,c) => s + getValorContrato(c), 0);
+
+  // Label período
+  const ini = _dataIni ? _dataIni.toLocaleDateString('pt-BR') : 'Início';
+  const fim = _dataFim ? _dataFim.toLocaleDateString('pt-BR') : 'Atual';
+  document.getElementById('cont-periodo').textContent = ini + ' a ' + fim;
+  document.getElementById('cont-cnpj').textContent = '(a preencher)';
+
+  document.getElementById('kpi-cont').innerHTML = `
+    <div class="kpi-card gold">
+      <div class="kpi-label">Receita bruta (confirmados)</div>
+      <div class="kpi-value">${frsShort(recBruta)}</div>
+      <div class="kpi-sub">${confirmados.length} contratos</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Receita potencial (todos ativos)</div>
+      <div class="kpi-value">${frsShort(recPotencial)}</div>
+      <div class="kpi-sub">${ativos.length} contratos</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Ticket médio</div>
+      <div class="kpi-value">${frsShort(confirmados.length ? recBruta / confirmados.length : 0)}</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">Contratos a receber</div>
+      <div class="kpi-value">${ativos.filter(c => !['confirmado','concluido'].includes(getStatusContrato(c))).length}</div>
+      <div class="kpi-sub">${frsShort(ativos.filter(c => !['confirmado','concluido'].includes(getStatusContrato(c))).reduce((s,c)=>s+getValorContrato(c),0))}</div>
+    </div>
+  `;
+
+  // Tabela extrato
+  const tbody = document.getElementById('tbody-cont');
+  if (!ativos.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum contrato no período.</td></tr>'; }
+  else {
+    tbody.innerHTML = ativos.map(c => {
+      const d = tsToDate(c.criadoEm);
+      const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '—';
+      const st = getStatusContrato(c);
+      return `<tr>
+        <td>${comp}</td>
+        <td>${nomeCli(c)}</td>
+        <td>${tipoEv(c)}</td>
+        <td>${dataEv(c)}</td>
+        <td>${getPgtoLabel(c)}</td>
+        <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorContrato(c))}</td>
+        <td><span class="badge ${st}">${st}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Tabela mensal
+  const mensal = {};
+  ativos.forEach(c => {
+    const d = tsToDate(c.criadoEm);
+    if (!d) return;
+    const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    const label = MESES_FULL[d.getMonth()] + ' ' + d.getFullYear();
+    if (!mensal[k]) mensal[k] = { label, qtd: 0, receita: 0 };
+    mensal[k].qtd++;
+    if (['confirmado','concluido'].includes(getStatusContrato(c))) mensal[k].receita += getValorContrato(c);
+  });
+
+  const mensalList = Object.entries(mensal).sort((a,b) => a[0].localeCompare(b[0]));
+  const tbodyCM = document.getElementById('tbody-cont-mensal');
+  if (!mensalList.length) tbodyCM.innerHTML = '<tr><td colspan="4" class="empty-state">Sem dados.</td></tr>';
+  else {
+    const totalRec = mensalList.reduce((s,x) => s + x[1].receita, 0);
+    const totalQtd = mensalList.reduce((s,x) => s + x[1].qtd, 0);
+    tbodyCM.innerHTML = mensalList.map(([k,v]) => `
+      <tr>
+        <td>${v.label}</td>
+        <td class="r">${v.qtd}</td>
+        <td class="r" style="color:var(--gold)">${frs(v.receita)}</td>
+        <td class="r">${v.qtd ? frs(v.receita / v.qtd) : '—'}</td>
+      </tr>
+    `).join('') + `
+      <tr style="background:rgba(200,169,74,0.06);font-weight:700">
+        <td style="color:var(--gold)">TOTAL</td>
+        <td class="r">${totalQtd}</td>
+        <td class="r" style="color:var(--gold)">${frs(totalRec)}</td>
+        <td class="r">${totalQtd ? frs(totalRec / totalQtd) : '—'}</td>
+      </tr>
+    `;
+  }
+}
+
+// ══════════════════════════════════════════
+// EXPORTAR CSV
+// ══════════════════════════════════════════
+function exportarCSV() {
+  const cons = contratosFiltrados();
+  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Criado em'];
+  const rows = cons.map(c => [
+    nomeCli(c), tipoEv(c), dataEv(c),
+    c.ev_local || c.local_evento || '',
+    getValorContrato(c).toFixed(2).replace('.', ','),
+    getPgtoLabel(c), getStatusContrato(c),
+    formatDateBR(c.criadoEm)
+  ]);
+  downloadCSV([header, ...rows], 'relatorio_contratos');
+}
+
+function exportarContabilidade() {
+  const cons = contratosFiltrados().filter(c => !c.removido_manualmente);
+  const header = ['Competência','Cliente','Tipo Evento','Data Evento','Forma Pgto','Valor Contrato','Status'];
+  const rows = cons.map(c => {
+    const d = tsToDate(c.criadoEm);
+    const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '';
+    return [comp, nomeCli(c), tipoEv(c), dataEv(c), getPgtoLabel(c),
+      getValorContrato(c).toFixed(2).replace('.', ','), getStatusContrato(c)];
+  });
+  downloadCSV([header, ...rows], 'relatorio_contabil');
+}
+
+function downloadCSV(rows, nome) {
+  const bom = '\uFEFF';
+  const csv = bom + rows.map(r => r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(';')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nome + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
