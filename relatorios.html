@@ -1115,24 +1115,27 @@ function getValorContrato(c) {
 }
 
 function getStatusContrato(c) {
-  // Cancelado tem prioridade máxima (flag ou status explícito)
+  // Cancelado tem prioridade máxima
   if (c.removido_manualmente || c.status_contrato === 'cancelado') return 'cancelado';
 
-  // Se o contrato (origem = contrato) está no painel, sobrepõe o status para 'painel'
-  if (c._origem === 'contrato' && c.etapa) return 'painel';
+  // Etapa do painel tem precedência — usa o valor REAL da etapa para calculos financeiros
+  // NUNCA retorna 'painel' aqui — isso e so para badge visual (ver getBadgeStatus)
+  if (c.etapa === 'concluido')  return 'concluido';
+  if (c.etapa === 'confirmado') return 'confirmado';
+  if (c.etapa === 'andamento')  return 'andamento';
+  if (c.etapa === 'assinado')   return 'assinado';
+  if (c.etapa === 'enviado')    return 'enviado';
+  if (c.etapa === 'cancelado')  return 'cancelado';
 
-  // Se status_contrato está definido explicitamente, usar diretamente —
-  // evita que campos legados (aprovado, link_assinatura) sobrescrevam o valor correto
-  if (c.status_contrato === 'pendente') return 'pendente';
-  if (c.status_contrato === 'enviado')  return 'enviado';
-  if (c.status_contrato === 'assinado') return 'assinado';
+  // status_contrato explicito
+  if (c.status_contrato === 'pendente')   return 'pendente';
+  if (c.status_contrato === 'enviado')    return 'enviado';
+  if (c.status_contrato === 'assinado')   return 'assinado';
+  if (c.status_contrato === 'concluido')  return 'concluido';
+  if (c.status_contrato === 'confirmado') return 'confirmado';
+  if (c.status_contrato === 'andamento')  return 'andamento';
 
-  // Etapa do painel (concluido/confirmado/andamento) tem precedência sobre status
-  if (c.status_contrato === 'concluido' || c.etapa === 'concluido') return 'concluido';
-  if (c.status_contrato === 'confirmado' || c.etapa === 'confirmado') return 'confirmado';
-  if (c.status_contrato === 'andamento' || c.etapa === 'andamento') return 'andamento';
-
-  // Fallback legado (contratos salvos antes do campo status_contrato existir)
+  // Fallback legado
   if (c.aprovado) return 'assinado';
   if (c.link_assinatura) return 'enviado';
 
@@ -1140,6 +1143,12 @@ function getStatusContrato(c) {
   if (c._origem === 'nota') return c.status || 'nota';
 
   return 'pendente';
+}
+
+// Badge visual separado — retorna 'painel' apenas para exibicao nas tabelas
+function getBadgeStatus(c) {
+  if (c._origem === 'contrato' && c.etapa) return 'painel';
+  return getStatusContrato(c);
 }
 
 function getPgtoLabel(c) {
@@ -1881,24 +1890,16 @@ function renderContabilidade() {
 // EXPORTAR CSV
 // ══════════════════════════════════════════
 function exportarCSV() {
-  // Inclui contratos E notas (eventos criados manualmente), sem duplicatas
-  const todos = todoEventosFiltrados();
-  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Origem','Criado em'];
-  const rows = todos.map(e => {
-    const valor = e._origem === 'nota'
-      ? (parseBRL(e.val_total) || parseBRL(e.valorTotal) || parseBRL(e.valor) || 0)
-      : getValorContrato(e);
-    const local = e.ev_local || e.local_evento || e.local || '';
-    return [
-      nomeCli(e), tipoEv(e), dataEv(e),
-      local,
-      valor.toFixed(2).replace('.', ','),
-      getPgtoLabel(e), getStatusContrato(e),
-      e._origem === 'nota' ? 'nota' : 'contrato',
-      formatDateBR(e.criadoEm)
-    ];
-  });
-  downloadCSV([header, ...rows], 'relatorio_eventos');
+  const cons = contratosFiltrados();
+  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Criado em'];
+  const rows = cons.map(c => [
+    nomeCli(c), tipoEv(c), dataEv(c),
+    c.ev_local || c.local_evento || '',
+    getValorContrato(c).toFixed(2).replace('.', ','),
+    getPgtoLabel(c), getStatusContrato(c),
+    formatDateBR(c.criadoEm)
+  ]);
+  downloadCSV([header, ...rows], 'relatorio_contratos');
 }
 
 function exportarContabilidade() {
