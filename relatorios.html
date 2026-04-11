@@ -308,14 +308,15 @@ header {
   border-radius: 3px;
   border: 1px solid;
 }
-.badge.aprovado   { color: var(--blue);   border-color: var(--blue);   background: rgba(74,144,200,0.1); }
-.badge.assinado   { color: var(--blue);   border-color: var(--blue);   background: rgba(74,144,200,0.1); }
-.badge.enviado    { color: var(--gold);   border-color: var(--gold);   background: rgba(200,169,74,0.1); }
-.badge.confirmado { color: var(--green);  border-color: var(--green);  background: rgba(37,211,102,0.1); }
-.badge.pendente   { color: var(--gold);   border-color: var(--gold);   background: rgba(200,169,74,0.1); }
-.badge.cancelado  { color: var(--red);    border-color: var(--red);    background: rgba(224,92,92,0.1); }
-.badge.andamento  { color: var(--orange); border-color: var(--orange); background: rgba(232,168,56,0.1); }
-.badge.concluido  { color: var(--green);  border-color: var(--green);  background: rgba(37,211,102,0.1); }
+/* badges — mesmas cores dos cards de contratos no index */
+.badge.pendente   { color: #777;     border-color: #555;     background: rgba(120,120,120,0.08); }
+.badge.enviado    { color: #C8A94A;  border-color: #C8A94A;  background: rgba(200,169,74,0.10); }
+.badge.assinado   { color: #4A90C8;  border-color: #4A90C8;  background: rgba(74,144,200,0.10); }
+.badge.aprovado   { color: #4A90C8;  border-color: #4A90C8;  background: rgba(74,144,200,0.10); }
+.badge.confirmado { color: #25D366;  border-color: #25D366;  background: rgba(37,211,102,0.10); }
+.badge.andamento  { color: #C8A94A;  border-color: #C8A94A;  background: rgba(200,169,74,0.10); }
+.badge.concluido  { color: #25D366;  border-color: #25D366;  background: rgba(37,211,102,0.10); }
+.badge.cancelado  { color: #e05c5c;  border-color: #e05c5c;  background: rgba(224,92,92,0.10); }
 
 /* ── LOADING / AUTH ── */
 .screen {
@@ -1107,7 +1108,8 @@ function renderContratos() {
   const cons = contratosFiltrados();
   const orcs = orcamentosFiltrados();
   const confirmados = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
-  const pendentes   = cons.filter(c => getStatusContrato(c) === 'pendente');
+  const assinados   = cons.filter(c => getStatusContrato(c) === 'assinado');
+  const pendentes   = cons.filter(c => ['pendente','enviado'].includes(getStatusContrato(c)));
   const andamento   = cons.filter(c => getStatusContrato(c) === 'andamento');
   const cancelados  = cons.filter(c => getStatusContrato(c) === 'cancelado');
 
@@ -1116,6 +1118,7 @@ function renderContratos() {
   document.getElementById('kpi-con').innerHTML = `
     <div class="kpi-card gold"><div class="kpi-label">Total contratos</div><div class="kpi-value">${cons.length}</div></div>
     <div class="kpi-card green"><div class="kpi-label">Confirmados</div><div class="kpi-value">${confirmados.length}</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Assinados</div><div class="kpi-value">${assinados.length}</div></div>
     <div class="kpi-card blue"><div class="kpi-label">Em andamento</div><div class="kpi-value">${andamento.length}</div></div>
     <div class="kpi-card orange"><div class="kpi-label">Pendentes</div><div class="kpi-value">${pendentes.length}</div></div>
     <div class="kpi-card red"><div class="kpi-label">Cancelados</div><div class="kpi-value">${cancelados.length}</div></div>
@@ -1126,10 +1129,10 @@ function renderContratos() {
   criarChart('chart-status', {
     type: 'doughnut',
     data: {
-      labels: ['Confirmados','Andamento','Pendentes','Cancelados'],
+      labels: ['Confirmados','Assinados','Andamento','Pendentes','Cancelados'],
       datasets: [{
-        data: [confirmados.length, andamento.length, pendentes.length, cancelados.length],
-        backgroundColor: ['#25D366','#E8A838','#C8A94A','#e05c5c'],
+        data: [confirmados.length, assinados.length, andamento.length, pendentes.length, cancelados.length],
+        backgroundColor: ['#25D366','#4A90C8','#C8A94A','#666','#e05c5c'],
         borderColor: '#1a1a1a', borderWidth: 2
       }]
     },
