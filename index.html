@@ -8991,6 +8991,8 @@ var _metasConfig = { receita: 0, eventos: 0, ticket: 0, anual: 0 }; // metas do 
 var _metasAllData = {}; // todos os dados do Firestore (cache)
 var _metaNotificado = {};
 var _metaListenerUnsubscribe = null; // controla o listener em tempo real
+// Cache dos valores reais calculados — lido pelo modal de troféu sem depender do DOM admin
+var _metasValoresAtuais = { receita: 0, eventos: 0, ticket: 0, anual: 0, checklistOk: false, checklistTotal: 0, checklistCompletos: 0, sequencia: 0, sequenciaLabel: '' };
 
 function _metaChaveMes(mes, ano) {
   return ano + '-' + String(mes + 1).padStart(2, '0');
@@ -9180,6 +9182,12 @@ function _calcularProgressoMetas() {
 
       var ticketMedio = totalEventos > 0 ? totalReceita / totalEventos : 0;
 
+      // Salvar no cache global para o modal de troféu ler sem depender do DOM admin
+      _metasValoresAtuais.receita  = totalReceita;
+      _metasValoresAtuais.eventos  = totalEventos;
+      _metasValoresAtuais.ticket   = ticketMedio;
+      _metasValoresAtuais.anual    = totalAnual;
+
       _renderProgressoMeta('receita', totalReceita, _metasConfig.receita, true);
       _renderProgressoMeta('eventos', totalEventos, _metasConfig.eventos, false);
       _renderProgressoMeta('ticket', ticketMedio, _metasConfig.ticket, true);
@@ -9188,6 +9196,7 @@ function _calcularProgressoMetas() {
 
       // Checklist: buscar eventos_campo do mês, depois verificar conquistas com tudo
       _calcularChecklist(inicioMes, fimMes, function(checklistOk) {
+        _metasValoresAtuais.checklistOk = checklistOk;
         _verificarConquistas(totalReceita, totalEventos, ticketMedio, totalAnual, checklistOk);
         // Notificação imediata usando os valores já calculados (sem nova query ao Firestore)
         _verificarConquistasImediato(totalReceita, totalEventos, ticketMedio, totalAnual, checklistOk);
@@ -9266,7 +9275,9 @@ function _calcularSequenciaMetas(receitaPorMes) {
     if (k.match(/^\d{4}-\d{2}$/) && _metasAllData[k] && _metasAllData[k].receita > 0) temAlgumaMeta = true;
   });
 
-  if (!numEl || !temAlgumaMeta) {
+  if (!temAlgumaMeta) {
+    _metasValoresAtuais.sequencia = 0;
+    _metasValoresAtuais.sequenciaLabel = 'Defina metas de receita';
     if (numEl) numEl.textContent = '–';
     if (labelEl) labelEl.textContent = 'defina metas de receita';
     return;
@@ -9292,15 +9303,20 @@ function _calcularSequenciaMetas(receitaPorMes) {
     if (m < 0) { m = 11; a--; }
   }
 
-  numEl.textContent = seq;
-  numEl.style.color = seq >= 3 ? '#25D366' : seq >= 1 ? '#C8A94A' : '#555';
-  labelEl.textContent = seq === 1 ? 'mês consecutivo' : 'meses consecutivos';
-  if (detalheEl) {
-    if (seq >= 6) detalheEl.textContent = 'Excelente consistência!';
-    else if (seq >= 3) detalheEl.textContent = 'Boa sequência!';
-    else if (seq === 0) detalheEl.textContent = 'Bata a meta este mês para iniciar';
-    else detalheEl.textContent = '';
+  var seqLabel = seq === 1 ? 'mês consecutivo' : 'meses consecutivos';
+  var seqDetalhe = seq >= 6 ? 'Excelente consistência!' : seq >= 3 ? 'Boa sequência!' : seq === 0 ? 'Bata a meta este mês para iniciar' : '';
+
+  // Salvar no cache global
+  _metasValoresAtuais.sequencia = seq;
+  _metasValoresAtuais.sequenciaLabel = seqDetalhe || seqLabel;
+
+  // Atualizar DOM do painel admin se estiver aberto
+  if (numEl) {
+    numEl.textContent = seq;
+    numEl.style.color = seq >= 3 ? '#25D366' : seq >= 1 ? '#C8A94A' : '#555';
   }
+  if (labelEl) labelEl.textContent = seqLabel;
+  if (detalheEl) detalheEl.textContent = seqDetalhe;
 }
 
 function _calcularChecklist(inicioMes, fimMes, callback) {
@@ -9348,24 +9364,28 @@ function _calcularChecklist(inicioMes, fimMes, callback) {
 
     var checklistCompleto = false;
 
-    if (!bar || !valor) {
-      if (callback) callback(false);
-      return;
-    }
+    // Salvar no cache global independente do DOM do painel admin estar aberto
+    _metasValoresAtuais.checklistTotal    = totalEventosMes;
+    _metasValoresAtuais.checklistCompletos = eventosCompletos;
 
-    if (totalEventosMes === 0) {
-      bar.style.width = '0%';
-      valor.textContent = 'Sem eventos no mês';
-      if (pctEl) pctEl.textContent = '';
-    } else {
+    if (totalEventosMes > 0) {
       var pct = (eventosCompletos / totalEventosMes) * 100;
-      bar.style.width = pct.toFixed(1) + '%';
-      valor.textContent = eventosCompletos + ' / ' + totalEventosMes + ' eventos';
-      if (pctEl) {
-        pctEl.textContent = pct.toFixed(0) + '%';
-        pctEl.style.color = pct >= 100 ? '#25D366' : pct >= 70 ? '#C8A94A' : '#555';
-      }
       checklistCompleto = (pct >= 100);
+      // Atualizar DOM do painel admin se estiver aberto
+      if (bar && valor) {
+        bar.style.width = pct.toFixed(1) + '%';
+        valor.textContent = eventosCompletos + ' / ' + totalEventosMes + ' eventos';
+        if (pctEl) {
+          pctEl.textContent = pct.toFixed(0) + '%';
+          pctEl.style.color = pct >= 100 ? '#25D366' : pct >= 70 ? '#C8A94A' : '#555';
+        }
+      }
+    } else {
+      if (bar && valor) {
+        bar.style.width = '0%';
+        valor.textContent = 'Sem eventos no mês';
+        if (pctEl) pctEl.textContent = '';
+      }
     }
 
     if (callback) callback(checklistCompleto);
@@ -9377,7 +9397,10 @@ function _renderProgressoMeta(tipo, atual, meta, isCurrency) {
   var valor = document.getElementById('meta-' + tipo + '-valor');
   var pct = document.getElementById('meta-' + tipo + '-pct');
 
-  if (!bar || !valor) return;
+  // Sempre atualiza o modal de troféu se estiver aberto
+  _atualizarModalMetas();
+
+  if (!bar || !valor) return; // DOM do painel admin não está aberto — ok
 
   if (meta <= 0) {
     bar.style.width = '0%';
@@ -10033,6 +10056,106 @@ function _calendarNota(nota, btn) {
 
 // ── MODAL METAS (somente leitura, visível para todos) ─────────────────────────
 
+function _atualizarModalMetas() {
+  var modal = document.getElementById('modal-metas-view');
+  if (!modal) return;
+  // Re-renderiza o conteúdo interno com dados frescos do cache
+  _renderizarConteudoModalMetas(modal);
+}
+
+function _renderizarConteudoModalMetas(modal) {
+  var v = _metasValoresAtuais;
+  var cfg = _metasConfig;
+
+  function _pct(atual, meta) {
+    if (!meta || meta <= 0) return -1; // sem meta
+    return Math.min((atual / meta) * 100, 100);
+  }
+  function _frs(val) {
+    return 'R$ ' + Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  var metasCfg = [
+    { tipo: 'receita',    label: 'Receita Mensal',    icon: '💰', cor: '#C8A94A', bg: 'rgba(200,169,74,0.08)',   grad: 'linear-gradient(90deg,#C8A94A,#d4b85a)', atual: v.receita,  meta: cfg.receita,  currency: true  },
+    { tipo: 'eventos',    label: 'Eventos no Mês',    icon: '🎵', cor: '#4A90C8', bg: 'rgba(74,144,200,0.08)',   grad: 'linear-gradient(90deg,#4A90C8,#5aa0d8)', atual: v.eventos,  meta: cfg.eventos,  currency: false },
+    { tipo: 'ticket',     label: 'Ticket Médio',      icon: '📊', cor: '#8B5CF6', bg: 'rgba(139,92,246,0.08)',   grad: 'linear-gradient(90deg,#8B5CF6,#a78bfa)', atual: v.ticket,   meta: cfg.ticket,   currency: true  },
+    { tipo: 'anual',      label: 'Faturamento Anual', icon: '🏆', cor: '#E8A838', bg: 'rgba(232,168,56,0.08)',   grad: 'linear-gradient(90deg,#E8A838,#f0c060)', atual: v.anual,    meta: cfg.anual,    currency: true  },
+  ];
+
+  function _blocoMeta(m) {
+    var p = _pct(m.atual, m.meta);
+    var semMeta = p < 0;
+    var atingida = p >= 100;
+    var pctStr = semMeta ? '' : Math.round(p) + '%';
+    var atualStr = m.currency ? _frs(m.atual) : m.atual;
+    var metaStr  = m.currency ? _frs(m.meta)  : m.meta;
+    var valorStr = semMeta ? (atualStr + ' · sem meta') : (atualStr + ' / ' + metaStr);
+    var barW     = semMeta ? '0%' : p.toFixed(1) + '%';
+    var barBg    = atingida ? 'linear-gradient(90deg,#25D366,#30e876)' : m.grad;
+    var borda    = atingida ? m.cor : '#2a2a2a';
+    var sombra   = atingida ? 'box-shadow:0 0 12px ' + m.cor + '22;' : '';
+
+    return '<div style="background:' + m.bg + ';border:1px solid ' + borda + ';border-radius:8px;padding:14px 16px;' + sombra + 'transition:border-color 0.4s">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span style="font-size:1rem">' + m.icon + '</span>' +
+          '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:' + m.cor + '">' + m.label + '</span>' +
+        '</div>' +
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:' + (atingida ? m.cor : '#555') + '">' + pctStr + '</span>' +
+      '</div>' +
+      '<div style="position:relative;height:22px;background:#111;border-radius:5px;overflow:hidden;margin-bottom:' + (atingida ? '8px' : '0') + '">' +
+        '<div style="height:100%;border-radius:5px;width:' + barW + ';background:' + barBg + '"></div>' +
+        '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8)">' + valorStr + '</div>' +
+      '</div>' +
+      (atingida ? '<div style="text-align:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;font-weight:700;color:' + m.cor + ';text-transform:uppercase;letter-spacing:0.1em;margin-top:6px">✓ Meta atingida!</div>' : '') +
+    '</div>';
+  }
+
+  // Checklist
+  var ckTotal = v.checklistTotal || 0;
+  var ckOk    = v.checklistCompletos || 0;
+  var ckPct   = ckTotal > 0 ? (ckOk / ckTotal) * 100 : 0;
+  var ckAtingida = v.checklistOk;
+  var ckValorStr = ckTotal === 0 ? 'Sem eventos no mês' : (ckOk + ' / ' + ckTotal + ' eventos');
+  var ckBg    = ckAtingida ? 'linear-gradient(90deg,#25D366,#30e876)' : 'linear-gradient(90deg,#25D366,#30e876)';
+  var blocoChecklist =
+    '<div style="background:rgba(37,211,102,0.08);border:1px solid ' + (ckAtingida ? '#25D366' : '#2a2a2a') + ';border-radius:8px;padding:14px 16px;' + (ckAtingida ? 'box-shadow:0 0 12px #25D36622;' : '') + '">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span style="font-size:1rem">✅</span>' +
+          '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#25D366">Checklist Painel</span>' +
+        '</div>' +
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:' + (ckAtingida ? '#25D366' : '#555') + '">' + (ckTotal > 0 ? Math.round(ckPct) + '%' : '') + '</span>' +
+      '</div>' +
+      '<div style="position:relative;height:22px;background:#111;border-radius:5px;overflow:hidden' + (ckAtingida ? ';margin-bottom:8px' : '') + '">' +
+        '<div style="height:100%;border-radius:5px;width:' + (ckTotal > 0 ? ckPct.toFixed(1) : '0') + '%;background:' + ckBg + '"></div>' +
+        '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8)">' + ckValorStr + '</div>' +
+      '</div>' +
+      (ckAtingida ? '<div style="text-align:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.1em;margin-top:6px">✓ Meta atingida!</div>' : '') +
+    '</div>';
+
+  // Sequência
+  var seq = v.sequencia || 0;
+  var seqCor = seq >= 3 ? '#25D366' : seq >= 1 ? '#C8A94A' : '#555';
+  var seqLabel = seq === 1 ? 'mês consecutivo' : 'meses consecutivos';
+  var blocoSeq =
+    '<div style="background:rgba(200,169,74,0.06);border:1px solid #2a2a2a;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px">' +
+      '<div style="text-align:center;min-width:48px">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:2rem;font-weight:800;color:' + seqCor + ';line-height:1">' + seq + '</div>' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em">meses</div>' +
+      '</div>' +
+      '<div>' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.08em">Sequência de Metas</div>' +
+        '<div style="font-size:0.68rem;color:#555;margin-top:2px">' + (v.sequenciaLabel || seqLabel) + '</div>' +
+      '</div>' +
+    '</div>';
+
+  var corpo = modal.querySelector('#mv-corpo');
+  if (corpo) {
+    corpo.innerHTML = metasCfg.map(_blocoMeta).join('') + blocoChecklist + blocoSeq;
+  }
+}
+
 function abrirModalMetas() {
   var existe = document.getElementById('modal-metas-view');
   if (existe) { existe.remove(); return; }
@@ -10042,71 +10165,12 @@ function abrirModalMetas() {
   var labelMes = meses[_metaMesAtual] + ' ' + _metaAnoAtual;
   var isMesAtual = _metaMesAtual === hoje.getMonth() && _metaAnoAtual === hoje.getFullYear();
 
-  // Ler valores atuais das barras do painel admin para espelhar
-  function _lerBarra(tipo) {
-    var bar   = document.getElementById('meta-' + tipo + '-bar');
-    var valor = document.getElementById('meta-' + tipo + '-valor');
-    var pct   = document.getElementById('meta-' + tipo + '-pct');
-    return {
-      width: bar   ? bar.style.width   : '0%',
-      bg:    bar   ? bar.style.background : '#333',
-      valor: valor ? valor.textContent  : '–',
-      pct:   pct   ? pct.textContent   : ''
-    };
-  }
-  function _lerChecklistBarra() {
-    var bar   = document.getElementById('meta-checklist-bar');
-    var valor = document.getElementById('meta-checklist-valor');
-    var pct   = document.getElementById('meta-checklist-pct');
-    return {
-      width: bar   ? bar.style.width   : '0%',
-      bg:    bar   ? bar.style.background : '#333',
-      valor: valor ? valor.textContent  : '–',
-      pct:   pct   ? pct.textContent   : ''
-    };
-  }
-
-  var r  = _lerBarra('receita');
-  var ev = _lerBarra('eventos');
-  var tk = _lerBarra('ticket');
-  var an = _lerBarra('anual');
-  var ck = _lerChecklistBarra();
-
-  var metasCores = {
-    receita: { label: 'Receita Mensal',    icon: '💰', cor: '#C8A94A', bg: 'rgba(200,169,74,0.08)'  },
-    eventos: { label: 'Eventos no Mês',    icon: '🎵', cor: '#4A90C8', bg: 'rgba(74,144,200,0.08)'  },
-    ticket:  { label: 'Ticket Médio',      icon: '📊', cor: '#8B5CF6', bg: 'rgba(139,92,246,0.08)'  },
-    anual:   { label: 'Faturamento Anual', icon: '🏆', cor: '#E8A838', bg: 'rgba(232,168,56,0.08)'  },
-    checklist:{ label: 'Checklist Painel', icon: '✅', cor: '#25D366', bg: 'rgba(37,211,102,0.08)'  }
-  };
-
-  function _blocoMeta(tipo, dados) {
-    var cfg = metasCores[tipo];
-    var pctNum = parseFloat(dados.pct) || 0;
-    var atingida = pctNum >= 100;
-    return '<div style="background:' + cfg.bg + ';border:1px solid ' + (atingida ? cfg.cor : '#2a2a2a') + ';border-radius:8px;padding:14px 16px;' + (atingida ? 'box-shadow:0 0 12px ' + cfg.cor + '22;' : '') + '">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
-        '<div style="display:flex;align-items:center;gap:8px">' +
-          '<span style="font-size:1rem">' + cfg.icon + '</span>' +
-          '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:' + cfg.cor + '">' + cfg.label + '</span>' +
-        '</div>' +
-        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:' + (atingida ? cfg.cor : '#555') + '">' + (dados.pct || '–') + (dados.pct ? '' : '') + '</span>' +
-      '</div>' +
-      '<div style="position:relative;height:22px;background:#111;border-radius:5px;overflow:hidden;margin-bottom:8px">' +
-        '<div style="height:100%;border-radius:5px;transition:width 0.8s ease;width:' + dados.width + ';background:' + dados.bg + '"></div>' +
-        '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8)">' + dados.valor + '</div>' +
-      '</div>' +
-      (atingida ? '<div style="text-align:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;font-weight:700;color:' + cfg.cor + ';text-transform:uppercase;letter-spacing:0.1em">✓ Meta atingida!</div>' : '') +
-    '</div>';
-  }
-
   var overlay = document.createElement('div');
   overlay.id = 'modal-metas-view';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:9100;display:flex;align-items:flex-start;justify-content:flex-end;padding:56px 16px 0 16px;';
 
   overlay.innerHTML =
     '<div style="background:#1a1a1a;border:1px solid #333;border-radius:10px;width:100%;max-width:360px;max-height:calc(100vh - 72px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 8px 40px rgba(0,0,0,0.6)">' +
-      // Header
       '<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #2a2a2a;position:sticky;top:0;background:#1a1a1a;z-index:1">' +
         '<div style="display:flex;align-items:center;gap:10px">' +
           '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C8A94A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12"/><path d="M6 3v6a6 6 0 0 0 12 0V3"/><path d="M6 7H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 7h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M12 15v4"/><path d="M9 19h6"/></svg>' +
@@ -10117,43 +10181,14 @@ function abrirModalMetas() {
           '<button onclick="document.getElementById(\'modal-metas-view\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;transition:all 0.15s" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">✕</button>' +
         '</div>' +
       '</div>' +
-      // Barras de progresso
-      '<div style="padding:16px 16px 20px;display:flex;flex-direction:column;gap:10px">' +
-        _blocoMeta('receita',   r)  +
-        _blocoMeta('eventos',   ev) +
-        _blocoMeta('ticket',    tk) +
-        _blocoMeta('anual',     an) +
-        _blocoMeta('checklist', ck) +
-      '</div>' +
-      // Sequência
-      '<div style="margin:0 16px 20px;background:rgba(200,169,74,0.06);border:1px solid #2a2a2a;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px">' +
-        '<div style="text-align:center;min-width:48px">' +
-          '<div id="mv-seq-num" style="font-family:\'Barlow Condensed\',sans-serif;font-size:2rem;font-weight:800;color:#C8A94A;line-height:1">' + (document.getElementById('meta-sequencia-num') ? document.getElementById('meta-sequencia-num').textContent : '0') + '</div>' +
-          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em">meses</div>' +
-        '</div>' +
-        '<div>' +
-          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.08em">Sequência de Metas</div>' +
-          '<div style="font-size:0.68rem;color:#555;margin-top:2px">' + (document.getElementById('meta-sequencia-detalhe') ? document.getElementById('meta-sequencia-detalhe').textContent || 'Meses consecutivos batendo receita' : 'Meses consecutivos batendo receita') + '</div>' +
-        '</div>' +
-      '</div>' +
+      '<div id="mv-corpo" style="padding:16px 16px 20px;display:flex;flex-direction:column;gap:10px"></div>' +
     '</div>';
 
-  // Fechar ao clicar fora
-  overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) overlay.remove();
-  });
-
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
 
-  // Animar barras após render
-  setTimeout(function() {
-    var barras = overlay.querySelectorAll('[style*="transition:width"]');
-    barras.forEach(function(b) {
-      var w = b.style.width;
-      b.style.width = '0%';
-      setTimeout(function() { b.style.width = w; }, 30);
-    });
-  }, 50);
+  // Preencher com dados do cache imediatamente
+  _renderizarConteudoModalMetas(overlay);
 }
 
 // Fechar modal de metas ao pressionar ESC
