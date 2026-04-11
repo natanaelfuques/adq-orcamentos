@@ -1578,12 +1578,13 @@ function trocarTab(tab, animate) {
   // mover slider
   const slider = document.getElementById('tab-slider');
   if (slider) {
+    const W = slider.offsetWidth;
     if (animate !== false) {
       slider.style.transition = 'transform 0.28s cubic-bezier(0.4,0,0.2,1)';
     } else {
       slider.style.transition = 'none';
     }
-    slider.style.transform = 'translateX(-' + (idx * 100) + '%)';
+    slider.style.transform = 'translateX(-' + (idx * W) + 'px)';
   }
 
   // renderizar aba correspondente
@@ -1607,7 +1608,8 @@ function trocarTab(tab, animate) {
 
   function getOffset() {
     const idx = _TAB_NAMES.indexOf(_tabAtiva);
-    return idx * 100; // em percent
+    const slider = document.getElementById('tab-slider');
+    return idx * (slider ? slider.offsetWidth : window.innerWidth);
   }
 
   function onTouchStart(e) {
@@ -1647,15 +1649,14 @@ function trocarTab(tab, animate) {
     const slider = document.getElementById('tab-slider');
     if (!slider) return;
     const W = slider.offsetWidth;
-    const dxPct = (dx / W) * 100;
-    const idx = _TAB_NAMES.indexOf(_tabAtiva);
-    // resistência nas bordas
-    let newOffset = _startOffset - dxPct;
+    const dxPx = dx;
+    let newOffset = _startOffset - dxPx;
+    const maxOffset = (_TAB_NAMES.length - 1) * W;
     if (newOffset < 0) newOffset = newOffset * 0.3;
-    if (newOffset > (_TAB_NAMES.length - 1) * 100) {
-      newOffset = (_TAB_NAMES.length - 1) * 100 + (newOffset - (_TAB_NAMES.length - 1) * 100) * 0.3;
+    if (newOffset > maxOffset) {
+      newOffset = maxOffset + (newOffset - maxOffset) * 0.3;
     }
-    slider.style.transform = 'translateX(-' + newOffset + '%)';
+    slider.style.transform = 'translateX(-' + newOffset + 'px)';
   }
 
   function onTouchEnd(e) {
@@ -1678,7 +1679,7 @@ function trocarTab(tab, animate) {
     const slider = document.getElementById('tab-slider');
     if (slider) {
       slider.style.transition = 'transform 0.28s cubic-bezier(0.4,0,0.2,1)';
-      slider.style.transform = 'translateX(-' + _startOffset + '%)';
+      slider.style.transform = 'translateX(-' + _startOffset + 'px)';
     }
   }
 
@@ -1697,7 +1698,16 @@ function trocarTab(tab, animate) {
       tabsWrap.style.top = hdr.offsetHeight + 'px';
     }
     calcStickyTop();
-    window.addEventListener('resize', calcStickyTop);
+    window.addEventListener('resize', function() {
+      calcStickyTop();
+      // reposiciona slider sem animação após resize
+      const slider = document.getElementById('tab-slider');
+      if (slider) {
+        const idx = _TAB_NAMES.indexOf(_tabAtiva);
+        slider.style.transition = 'none';
+        slider.style.transform = 'translateX(-' + (idx * slider.offsetWidth) + 'px)';
+      }
+    });
   });
 })();
 
