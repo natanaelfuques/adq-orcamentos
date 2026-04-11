@@ -1400,9 +1400,10 @@ function getStatusContrato(c) {
   return 'pendente';
 }
 
-// Badge visual separado — retorna 'painel' apenas para exibicao nas tabelas
+// Badge visual separado — retorna 'painel' apenas quando etapa === 'eventos' (estado inicial no painel)
+// Para etapas com progressão real (confirmado, andamento, concluido etc.) exibe o status efetivo
 function getBadgeStatus(c) {
-  if (c._origem === 'contrato' && c.etapa) return 'painel';
+  if (c._origem === 'contrato' && c.etapa === 'eventos') return 'painel';
   return getStatusContrato(c);
 }
 
