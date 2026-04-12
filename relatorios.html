@@ -1289,6 +1289,16 @@ function _enriquecerContratos() {
   _contratos = _contratos.map(c => ({ ...c, etapa: _etapaMap[c.id] || '' }));
 }
 
+function _enriquecerNotas() {
+  // Injeta etapa do eventos_campo nas notas via painel_id
+  // Isso permite que notas com etapa 'concluido'/'confirmado' no painel sejam reconhecidas
+  _notas = _notas.map(n => {
+    if (!n.painel_id) return n;
+    const etapa = _etapaMap[n.painel_id] || '';
+    return { ...n, etapa };
+  });
+}
+
 function carregarDados() {
   // Listener em tempo real — eventos_campo (etapas do painel)
   // Carregado PRIMEIRO para que os contratos já venham enriquecidos
@@ -1296,8 +1306,10 @@ function carregarDados() {
     _etapaMap = {};
     snap.forEach(function(d) { _etapaMap[d.id] = d.data().etapa || 'eventos'; });
     _etapasCarregadas = true;
-    // Re-enriquecer contratos já carregados e re-renderizar
-    if (_contratosCarregados) { _enriquecerContratos(); renderTudo(); }
+    // Re-enriquecer contratos e notas já carregados e re-renderizar
+    if (_contratosCarregados) { _enriquecerContratos(); }
+    if (_notasCarregadas) { _enriquecerNotas(); }
+    if (_contratosCarregados && _notasCarregadas) { renderTudo(); }
     _verificarPronto();
   }, function() {
     // eventos_campo pode não existir — não bloquear
@@ -1327,6 +1339,7 @@ function carregarDados() {
   // Listener em tempo real — notas (eventos criados manualmente)
   db.collection('notas').orderBy('criadoEm', 'desc').onSnapshot(function(snap) {
     _notas = snap.docs.map(d => ({ id: d.id, _origem: 'nota', ...d.data() }));
+    _enriquecerNotas(); // injeta etapa do painel
     _notasCarregadas = true;
     _verificarPronto();
   }, function(e) {
@@ -1499,8 +1512,18 @@ function getStatusContrato(c) {
   if (c.aprovado) return 'assinado';
   if (c.link_assinatura) return 'enviado';
 
-  // Para notas — usa status salvo; fallback 'pendente' (tratado como ativo não confirmado)
-  if (c._origem === 'nota') return c.status || 'pendente';
+  // Para notas — tenta todos os campos possíveis de status
+  if (c._origem === 'nota') {
+    const s = c.status || c.situacao || c.status_contrato || c.etapa_nota || '';
+    if (!s) return 'pendente';
+    const sl = s.toLowerCase().trim();
+    if (sl === 'concluido' || sl === 'concluído' || sl === 'realizado' || sl === 'feito') return 'concluido';
+    if (sl === 'confirmado' || sl === 'confirmada' || sl === 'aprovado' || sl === 'aprovada') return 'confirmado';
+    if (sl === 'cancelado' || sl === 'cancelada') return 'cancelado';
+    if (sl === 'andamento' || sl === 'em andamento') return 'andamento';
+    if (sl === 'assinado' || sl === 'assinada') return 'assinado';
+    return sl || 'pendente';
+  }
 
   return 'pendente';
 }
