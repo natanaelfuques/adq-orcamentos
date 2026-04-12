@@ -9923,7 +9923,19 @@ function _mostrarNotificacaoMeta(conquistas, progressoMetas) {
       '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">' + texto + '</div>' +
       '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;color:#7a6a30;margin-top:1px;letter-spacing:0.05em">Toque para ver detalhes</div>' +
     '</div>' +
-    '<svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><path d="M3 3L9 9M9 3L3 9"/></svg>';
+    '<button id="meta-notif-close" style="background:transparent;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.7" aria-label="Fechar"><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round"><path d="M3 3L9 9M9 3L3 9"/></svg></button>';
+
+  // Botão X: apenas fecha o banner, sem abrir modal
+  var btnClose = banner.querySelector('#meta-notif-close');
+  if (btnClose) {
+    btnClose.addEventListener('click', function(e) {
+      e.stopPropagation();
+      banner.style.transition = 'transform 0.4s ease, opacity 0.3s ease';
+      banner.style.transform = 'translateY(-100%)';
+      banner.style.opacity = '0';
+      setTimeout(function() { if (banner.parentNode) banner.remove(); }, 400);
+    });
+  }
 
   // Swipe horizontal para dispensar
   var _swStartX = 0, _swStartY = 0, _swiping = false, _swipeDismissed = false;
