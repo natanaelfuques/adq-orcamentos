@@ -876,7 +876,7 @@ header {
 <div id="app-screen">
   <header style="display:flex;align-items:center;justify-content:space-between;gap:12px">
     <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;min-width:0">
-      <a href="https://natanaelfuques.github.io/adq-orcamentos/" target="_self" id="btn-voltar-shortcut" title="Voltar para Orçamento e Contrato" style="display:flex;flex-direction:row;align-items:center;justify-content:center;text-decoration:none;background:rgba(200,169,74,0.08);border:1px solid rgba(200,169,74,0.35);border-radius:5px;width:26px;min-width:26px;height:52px;color:#C8A94A;flex-shrink:0;line-height:0;transition:background 0.18s,border-color 0.18s,box-shadow 0.18s" onmouseover="this.style.background='rgba(200,169,74,0.22)';this.style.borderColor='rgba(200,169,74,0.75)';this.style.boxShadow='0 0 10px rgba(200,169,74,0.35)'" onmouseout="this.style.background='rgba(200,169,74,0.08)';this.style.borderColor='rgba(200,169,74,0.35)';this.style.boxShadow='none'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 6 5 12 11 18"/></svg></a>
+      <a href="https://natanaelfuques.github.io/adq-orcamentos/" target="_self" id="btn-voltar-shortcut" title="Voltar para Orçamento e Contrato" style="display:none;flex-direction:row;align-items:center;justify-content:center;text-decoration:none;background:rgba(200,169,74,0.08);border:1px solid rgba(200,169,74,0.35);border-radius:5px;width:26px;min-width:26px;height:52px;color:#C8A94A;flex-shrink:0;line-height:0;transition:background 0.18s,border-color 0.18s,box-shadow 0.18s" onmouseover="this.style.background='rgba(200,169,74,0.22)';this.style.borderColor='rgba(200,169,74,0.75)';this.style.boxShadow='0 0 10px rgba(200,169,74,0.35)'" onmouseout="this.style.background='rgba(200,169,74,0.08)';this.style.borderColor='rgba(200,169,74,0.35)';this.style.boxShadow='none'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:block"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 6 5 12 11 18"/></svg></a>
       <div style="min-width:0">
         <div class="hd-title">Painel de Eventos</div>
         <div class="hd-sub">Áudio de Qualidade</div>
@@ -968,6 +968,18 @@ const db = firebase.firestore();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // ── Auth ──
+// E-mails com permissão de acesso ao botão de orçamentos (fallback local)
+var EMAILS_ORCAMENTO_PADRAO = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
+
+function _aplicarPermissaoVoltar(emailUsuario, permissoes) {
+  var lista = permissoes || EMAILS_ORCAMENTO_PADRAO;
+  var btn = document.getElementById('btn-voltar-shortcut');
+  if (btn) {
+    var visivel = lista.indexOf(emailUsuario) >= 0;
+    btn.style.display = visivel ? 'flex' : 'none';
+  }
+}
+
 auth.onAuthStateChanged(function(user) {
   if (user) {
     document.getElementById('login-screen').style.display = 'none';
@@ -978,6 +990,18 @@ auth.onAuthStateChanged(function(user) {
     if (btnAdmin) {
       btnAdmin.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'flex' : 'none';
     }
+
+    // Buscar permissões do Firestore para o botão de orçamentos
+    db.collection('configuracoes').doc('permissoes_orcamento').get()
+      .then(function(doc) {
+        var lista = doc.exists && doc.data().emails ? doc.data().emails : EMAILS_ORCAMENTO_PADRAO;
+        _aplicarPermissaoVoltar(user.email, lista);
+      })
+      .catch(function() {
+        // Se falhar, usa fallback local
+        _aplicarPermissaoVoltar(user.email, EMAILS_ORCAMENTO_PADRAO);
+      });
+
     registrarAcesso(user);
     iniciarBoard();
   } else {
@@ -2013,7 +2037,8 @@ function abrirPainelAdmin() {
       <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">\
         <button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Editor</button>\
         <button id="adm-tab-notif" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Notificações</button>\
-        <button id="adm-tab-hist" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Histórico</button>\
+        <button id="adm-tab-perm" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Permissões</button>\
+        <button id="adm-tab-hist" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Histórico</button>\
       </div>\
       <div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">\
         <div id="adm-panel-editor" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
@@ -2040,6 +2065,17 @@ function abrirPainelAdmin() {
             <div style="font-size:0.78rem;color:#555;line-height:1.6">Configuração de notificações<br>para eventos e lembretes.</div>\
           </div>\
         </div>\
+        <div id="adm-panel-perm" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
+          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Botão de Orçamentos</div>\
+            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Defina quais e-mails podem ver o botão de acesso à página de orçamentos e contratos.</div>\
+            <div id="adm-perm-lista" style="margin-bottom:10px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
+            <div style="display:flex;gap:6px;margin-top:8px">\
+              <input id="adm-perm-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.75rem;padding:7px 10px;outline:none;box-sizing:border-box" />\
+              <button onclick="_admPermAdicionar()" style="background:#C8A94A;color:#111;border:none;border-radius:4px;padding:7px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">+ Adicionar</button>\
+            </div>\
+          </div>\
+        </div>\
         <div id="adm-panel-hist" style="min-width:100%;padding:0;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
           <div id="adm-acessos-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
         </div>\
@@ -2062,7 +2098,7 @@ function abrirPainelAdmin() {
 }
 
 function _admAba(idx, fromScroll) {
-  var keys = ['editor','notif','hist'];
+  var keys = ['editor','notif','perm','hist'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('adm-tab-' + k);
     if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
@@ -2072,7 +2108,77 @@ function _admAba(idx, fromScroll) {
     if (slider) slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
   }
   // Carregar histórico ao entrar na aba
-  if (idx === 2) { _carregarAcessosAdmin(); }
+  if (idx === 3) { _carregarAcessosAdmin(); }
+  // Carregar permissões ao entrar na aba
+  if (idx === 2) { _admPermCarregar(); }
+}
+
+// ── Permissões de orçamento ──
+var _admPermEmailsAtuais = [];
+
+function _admPermCarregar() {
+  var lista = document.getElementById('adm-perm-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div style="font-size:0.75rem;color:#555">Carregando...</div>';
+  db.collection('configuracoes').doc('permissoes_orcamento').get()
+    .then(function(doc) {
+      _admPermEmailsAtuais = doc.exists && doc.data().emails ? doc.data().emails : EMAILS_ORCAMENTO_PADRAO.slice();
+      _admPermRenderLista();
+    })
+    .catch(function() {
+      _admPermEmailsAtuais = EMAILS_ORCAMENTO_PADRAO.slice();
+      _admPermRenderLista();
+    });
+}
+
+function _admPermRenderLista() {
+  var lista = document.getElementById('adm-perm-lista');
+  if (!lista) return;
+  if (!_admPermEmailsAtuais.length) {
+    lista.innerHTML = '<div style="font-size:0.72rem;color:#555;font-style:italic">Nenhum e-mail com permissão.</div>';
+    return;
+  }
+  lista.innerHTML = _admPermEmailsAtuais.map(function(email, i) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1e1e1e">' +
+      '<span style="font-size:0.74rem;color:#ccc">' + email + '</span>' +
+      '<button onclick="_admPermRemover(' + i + ')" title="Remover" style="background:none;border:none;color:#555;cursor:pointer;font-size:1rem;padding:0 2px;line-height:1" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'">×</button>' +
+      '</div>';
+  }).join('');
+}
+
+function _admPermAdicionar() {
+  var input = document.getElementById('adm-perm-novo-email');
+  if (!input) return;
+  var email = input.value.trim().toLowerCase();
+  if (!email || email.indexOf('@') < 0) {
+    input.style.borderColor = '#e05c5c';
+    setTimeout(function() { input.style.borderColor = '#2a2a2a'; }, 1500);
+    return;
+  }
+  if (_admPermEmailsAtuais.indexOf(email) >= 0) {
+    input.value = '';
+    return;
+  }
+  _admPermEmailsAtuais.push(email);
+  input.value = '';
+  _admPermSalvar();
+}
+
+function _admPermRemover(idx) {
+  _admPermEmailsAtuais.splice(idx, 1);
+  _admPermSalvar();
+}
+
+function _admPermSalvar() {
+  db.collection('configuracoes').doc('permissoes_orcamento').set({ emails: _admPermEmailsAtuais })
+    .then(function() {
+      _admPermRenderLista();
+      // Reaplicar permissão ao usuário atual imediatamente
+      var u = auth.currentUser;
+      if (u) _aplicarPermissaoVoltar(u.email, _admPermEmailsAtuais);
+      _editorToast('Permissões atualizadas!');
+    })
+    .catch(function(err) { _editorToast('Erro ao salvar: ' + err.message, true); });
 }
 
 function _carregarAcessosAdmin() {
