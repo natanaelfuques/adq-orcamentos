@@ -1,35 +1,41 @@
 {
-  "name": "Orçamento e Contrato – Áudio de Qualidade",
-  "short_name": "Áudio de Qualidade",
-  "description": "Sistema de orçamento e contrato para eventos de áudio",
-  "start_url": "./index.html",
+  "name": "Áudio de Qualidade — Orçamentos",
+  "short_name": "AdQ",
+  "description": "Sistema de orçamentos e contratos – Áudio de Qualidade",
+  "start_url": "/adq-orcamentos/index.html",
+  "id": "/adq-orcamentos/index.html",
+  "scope": "/adq-orcamentos/",
   "display": "standalone",
   "background_color": "#111111",
-  "theme_color": "#111111",
+  "theme_color": "#1a1a1a",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon-192.png?v=3",
+      "src": "/adq-orcamentos/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png?v=3",
+      "src": "/adq-orcamentos/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
     {
-      "src": "icon-192-maskable.png?v=3",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icon-512-maskable.png?v=3",
+      "src": "/adq-orcamentos/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "form_factor": "wide",
+      "label": "Orçamentos AdQ"
+    },
+    {
+      "src": "/adq-orcamentos/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "label": "Orçamentos AdQ"
     }
   ]
 }
