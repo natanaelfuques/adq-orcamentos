@@ -19,8 +19,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
 
 :root {
-  --gold: #C8A94A;
-  --gold2: #d4b85a;
+  --green: #2E9E4F;
+  --green2: #3BB865;
   --dark: #1a1a1a;
   --darker: #111111;
   --surface: #242424;
@@ -33,7 +33,7 @@
   --blue: #4A90C8;
   --purple: #8B5CF6;
   --red: #e05c5c;
-  --orange: #E8A838;
+  --orange: #27AE60;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -50,7 +50,7 @@ body {
 /* ── HEADER ── */
 header {
   background: var(--dark);
-  border-bottom: 2px solid var(--gold);
+  border-bottom: 2px solid var(--green);
   padding: 14px 28px;
   display: flex;
   align-items: center;
@@ -65,7 +65,7 @@ header {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--gold);
+  color: var(--green);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -81,8 +81,8 @@ header {
   align-items: center;
   gap: 6px;
   background: transparent;
-  border: 1px solid var(--gold);
-  color: var(--gold);
+  border: 1px solid var(--green);
+  color: var(--green);
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
@@ -94,7 +94,7 @@ header {
   transition: all 0.15s;
   white-space: nowrap;
 }
-#btn-pwa:hover { background: var(--gold); color: #111; }
+#btn-pwa:hover { background: var(--green); color: #111; }
 #btn-pwa svg { flex-shrink: 0; }
 
 /* ── PERÍODO SELECTOR ── */
@@ -121,8 +121,8 @@ header {
   cursor: pointer;
   transition: all 0.15s;
 }
-.pbtn:hover { border-color: var(--gold); color: var(--gold); }
-.pbtn.active { background: var(--gold); border-color: var(--gold); color: #111; }
+.pbtn:hover { border-color: var(--green); color: var(--green); }
+.pbtn.active { background: var(--green); border-color: var(--green); color: #111; }
 
 .periodo-custom { display: flex; align-items: center; gap: 6px; }
 .periodo-custom input {
@@ -137,7 +137,7 @@ header {
   width: 120px;
   color-scheme: dark;
 }
-.periodo-custom input:focus { border-color: var(--gold); }
+.periodo-custom input:focus { border-color: var(--green); }
 
 .export-btn {
   margin-left: auto;
@@ -154,7 +154,7 @@ header {
   cursor: pointer;
   transition: all 0.15s;
 }
-.export-btn:hover { border-color: var(--gold); color: var(--gold); }
+.export-btn:hover { border-color: var(--green); color: var(--green); }
 
 /* ── MAIN ── */
 .main {
@@ -197,7 +197,7 @@ header {
   flex-shrink: 0;
 }
 .tab-btn:hover { color: var(--text); }
-.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
 
 /* Painéis de aba */
 .main {
@@ -258,7 +258,7 @@ header {
   top: 0; left: 0; right: 0;
   height: 2px;
 }
-.kpi-card.gold::before  { background: var(--gold); }
+.kpi-card.gold::before  { background: var(--green); }
 .kpi-card.green::before { background: var(--green); }
 .kpi-card.blue::before  { background: var(--blue); }
 .kpi-card.purple::before { background: var(--purple); }
@@ -298,7 +298,7 @@ header {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--gold);
+  color: var(--green);
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 16px;
@@ -372,7 +372,7 @@ header {
 }
 .table-card td.r { text-align: right; font-weight: 600; }
 .table-card tr:last-child td { border-bottom: none; }
-.table-card tr:hover td { background: rgba(200,169,74,0.04); }
+.table-card tr:hover td { background: rgba(46,158,79,0.04); }
 
 /* STATUS BADGES */
 .badge {
@@ -387,12 +387,12 @@ header {
 }
 /* badges — mesmas cores dos cards de contratos no index */
 .badge.pendente   { color: #777;     border-color: #555;     background: rgba(120,120,120,0.08); }
-.badge.nota       { color: #E8A838;  border-color: #E8A838;  background: rgba(232,168,56,0.10); }
-.badge.enviado    { color: #C8A94A;  border-color: #C8A94A;  background: rgba(200,169,74,0.10); }
+.badge.nota       { color: #27AE60;  border-color: #27AE60;  background: rgba(39,174,96,0.10); }
+.badge.enviado    { color: #2E9E4F;  border-color: #2E9E4F;  background: rgba(46,158,79,0.10); }
 .badge.assinado   { color: #4A90C8;  border-color: #4A90C8;  background: rgba(74,144,200,0.10); }
 .badge.aprovado   { color: #4A90C8;  border-color: #4A90C8;  background: rgba(74,144,200,0.10); }
 .badge.confirmado { color: #25D366;  border-color: #25D366;  background: rgba(37,211,102,0.10); }
-.badge.andamento  { color: #C8A94A;  border-color: #C8A94A;  background: rgba(200,169,74,0.10); }
+.badge.andamento  { color: #2E9E4F;  border-color: #2E9E4F;  background: rgba(46,158,79,0.10); }
 .badge.concluido  { color: #25D366;  border-color: #25D366;  background: rgba(37,211,102,0.10); }
 .badge.cancelado  { color: #e05c5c;  border-color: #e05c5c;  background: rgba(224,92,92,0.10); }
 .badge.painel     { color: #8B5CF6;  border-color: #8B5CF6;  background: rgba(139,92,246,0.15); }
@@ -410,7 +410,7 @@ header {
 .spinner {
   width: 36px; height: 36px;
   border: 3px solid var(--border2);
-  border-top-color: var(--gold);
+  border-top-color: var(--green);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -419,6 +419,7 @@ header {
 .login-card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 3px solid var(--green);
   border-radius: 10px;
   padding: 36px 40px;
   width: 340px;
@@ -428,7 +429,7 @@ header {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 1.2rem;
   font-weight: 800;
-  color: var(--gold);
+  color: var(--green);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 4px;
@@ -446,10 +447,10 @@ header {
   outline: none;
   margin-bottom: 10px;
 }
-.login-card input:focus { border-color: var(--gold); }
+.login-card input:focus { border-color: var(--green); }
 .login-card button {
   width: 100%;
-  background: var(--gold);
+  background: var(--green);
   border: none;
   color: #111;
   font-family: 'Barlow Condensed', sans-serif;
@@ -484,13 +485,13 @@ header {
   color: var(--muted);
   line-height: 1.6;
 }
-.info-box strong { color: var(--gold); display: block; margin-bottom: 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.info-box strong { color: var(--green); display: block; margin-bottom: 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
 
 .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .tag {
-  background: rgba(200,169,74,0.08);
-  border: 1px solid rgba(200,169,74,0.2);
-  color: var(--gold);
+  background: rgba(46,158,79,0.08);
+  border: 1px solid rgba(46,158,79,0.2);
+  color: var(--green);
   font-size: 0.68rem;
   font-weight: 700;
   padding: 3px 10px;
@@ -537,7 +538,7 @@ header {
   vertical-align: middle;
 }
 .badge-origem.contrato { background: rgba(74,144,200,0.15); color: #4A90C8; border: 1px solid rgba(74,144,200,0.3); }
-.badge-origem.nota     { background: rgba(232,168,56,0.15);  color: #E8A838; border: 1px solid rgba(232,168,56,0.3); }
+.badge-origem.nota     { background: rgba(39,174,96,0.15);  color: #27AE60; border: 1px solid rgba(39,174,96,0.3); }
 
 /* ── MOBILE FIXES ── */
 @media (max-width: 600px) {
@@ -630,16 +631,16 @@ header {
 /* ── EDITOR MODE ── */
 .editor-mode .row-field-editable {
   cursor: pointer;
-  border-bottom: 1px dashed rgba(200,169,74,0.25);
+  border-bottom: 1px dashed rgba(46,158,79,0.25);
   transition: border-color 0.15s;
 }
 .editor-mode .row-field-editable:hover {
-  border-bottom-color: var(--gold);
-  color: var(--gold);
+  border-bottom-color: var(--green);
+  color: var(--green);
 }
 .editor-input-inline {
   background: #0e0e0e;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--green);
   color: #ccc;
   padding: 2px 6px;
   border-radius: 3px;
@@ -648,15 +649,15 @@ header {
   width: 100%;
   box-sizing: border-box;
 }
-.editor-input-inline:focus { outline: none; border-color: #d4b85a; }
+.editor-input-inline:focus { outline: none; border-color: #3BB865; }
 .editor-banner {
   position: fixed;
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   background: #1a1a0a;
-  border: 1px solid var(--gold);
-  color: var(--gold);
+  border: 1px solid var(--green);
+  color: var(--green);
   padding: 8px 20px;
   border-radius: 20px;
   font-family: 'Barlow Condensed', sans-serif;
@@ -674,7 +675,7 @@ header {
 }
 @keyframes editorPulse {
   from { box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
-  to   { box-shadow: 0 4px 16px rgba(200,169,74,0.25); }
+  to   { box-shadow: 0 4px 16px rgba(46,158,79,0.25); }
 }
 .btn-admin {
   background: transparent;
@@ -690,7 +691,7 @@ header {
   gap: 6px;
   transition: all 0.15s;
 }
-.btn-admin:hover { border-color: var(--gold); color: var(--gold); }
+.btn-admin:hover { border-color: var(--green); color: var(--green); }
 
 /* ── PAGAMENTOS ── */
 .pgto-card {
@@ -711,7 +712,7 @@ header {
   gap: 10px;
   flex-wrap: wrap;
 }
-.pgto-card-header:hover { background: rgba(200,169,74,0.03); }
+.pgto-card-header:hover { background: rgba(46,158,79,0.03); }
 .pgto-card-info { flex: 1; min-width: 0; }
 .pgto-card-nome {
   font-weight: 700;
@@ -739,7 +740,7 @@ header {
   gap: 2px;
   flex-shrink: 0;
 }
-.pgto-valor-total { font-size: 1rem; font-weight: 800; color: var(--gold); }
+.pgto-valor-total { font-size: 1rem; font-weight: 800; color: var(--green); }
 .pgto-valor-restante { font-size: 0.75rem; }
 .pgto-valor-restante.pago { color: var(--green); }
 .pgto-valor-restante.parcial { color: var(--orange); }
@@ -787,7 +788,7 @@ header {
 }
 .pgto-parcela-info { flex: 1; min-width: 0; }
 .pgto-parcela-label { font-size: 0.75rem; font-weight: 700; }
-.pgto-parcela-valor { font-size: 0.78rem; color: var(--gold); }
+.pgto-parcela-valor { font-size: 0.78rem; color: var(--green); }
 .pgto-parcela-status { font-size: 0.65rem; color: var(--muted); margin-top: 1px; }
 .pgto-filtros {
   display: flex;
@@ -810,8 +811,8 @@ header {
   cursor: pointer;
   transition: all 0.15s;
 }
-.pgto-filtro-btn:hover { border-color: var(--gold); color: var(--gold); }
-.pgto-filtro-btn.active { background: var(--gold); border-color: var(--gold); color: #111; }
+.pgto-filtro-btn:hover { border-color: var(--green); color: var(--green); }
+.pgto-filtro-btn.active { background: var(--green); border-color: var(--green); color: #111; }
 .pgto-busca {
   background: var(--surface);
   border: 1px solid var(--border2);
@@ -824,7 +825,7 @@ header {
   width: 180px;
   margin-left: auto;
 }
-.pgto-busca:focus { border-color: var(--gold); }
+.pgto-busca:focus { border-color: var(--green); }
 .pgto-resumo-pgto {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -839,7 +840,7 @@ header {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--gold);
+  color: var(--green);
   margin-bottom: 8px;
 }
 .pgto-resumo-row {
@@ -852,8 +853,8 @@ header {
 }
 .pgto-resumo-row:last-child { border-bottom: none; }
 .pgto-calc {
-  background: rgba(200,169,74,0.06);
-  border: 1px solid rgba(200,169,74,0.2);
+  background: rgba(46,158,79,0.06);
+  border: 1px solid rgba(46,158,79,0.2);
   border-radius: 6px;
   padding: 12px 14px;
   margin-top: 12px;
@@ -864,7 +865,7 @@ header {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--gold);
+  color: var(--green);
   margin-bottom: 8px;
 }
 .pgto-calc-row {
@@ -874,7 +875,7 @@ header {
   font-size: 0.82rem;
   padding: 3px 0;
 }
-.pgto-calc-row.total { font-weight: 800; font-size: 0.92rem; padding-top: 8px; border-top: 1px solid rgba(200,169,74,0.2); margin-top: 4px; }
+.pgto-calc-row.total { font-weight: 800; font-size: 0.92rem; padding-top: 8px; border-top: 1px solid rgba(46,158,79,0.2); margin-top: 4px; }
 .pgto-status-badge {
   display: inline-block;
   font-size: 0.62rem;
@@ -887,7 +888,7 @@ header {
   margin-left: 6px;
 }
 .pgto-status-badge.quitado { color: var(--green); border-color: var(--green); background: rgba(37,211,102,0.08); }
-.pgto-status-badge.parcial { color: var(--orange); border-color: var(--orange); background: rgba(232,168,56,0.08); }
+.pgto-status-badge.parcial { color: var(--orange); border-color: var(--orange); background: rgba(39,174,96,0.08); }
 .pgto-status-badge.pendente { color: var(--red); border-color: var(--red); background: rgba(224,92,92,0.08); }
 .pgto-status-badge.naovence { color: var(--muted); border-color: var(--border2); background: rgba(120,120,120,0.08); }
 .pgto-input-pago {
@@ -901,9 +902,9 @@ header {
   outline: none;
   width: 130px;
 }
-.pgto-input-pago:focus { border-color: var(--gold); }
+.pgto-input-pago:focus { border-color: var(--green); }
 .pgto-btn-salvar {
-  background: var(--gold);
+  background: var(--green);
   border: none;
   color: #111;
   font-family: 'Barlow Condensed', sans-serif;
@@ -948,12 +949,12 @@ header {
 <header>
 <div class="hdr-left">
 <svg fill="none" height="38" style="flex-shrink:0" viewbox="0 0 38 38" width="38" xmlns="http://www.w3.org/2000/svg">
-<rect fill="#1a1a1a" height="36" rx="7" stroke="#C8A94A" stroke-width="1.5" width="36" x="1" y="1"></rect>
-<rect fill="#C8A94A" height="10" opacity="0.5" rx="1.5" width="5" x="8" y="20"></rect>
-<rect fill="#C8A94A" height="17" opacity="0.75" rx="1.5" width="5" x="16" y="13"></rect>
-<rect fill="#C8A94A" height="22" rx="1.5" width="5" x="24" y="8"></rect>
-<polyline opacity="0.6" points="10.5,19 18.5,12 26.5,7" stroke="#C8A94A" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></polyline>
-<circle cx="26.5" cy="7" fill="#C8A94A" r="2"></circle>
+<rect fill="#1a1a1a" height="36" rx="7" stroke="#2E9E4F" stroke-width="1.5" width="36" x="1" y="1"></rect>
+<rect fill="#2E9E4F" height="10" opacity="0.5" rx="1.5" width="5" x="8" y="20"></rect>
+<rect fill="#2E9E4F" height="17" opacity="0.75" rx="1.5" width="5" x="16" y="13"></rect>
+<rect fill="#2E9E4F" height="22" rx="1.5" width="5" x="24" y="8"></rect>
+<polyline opacity="0.6" points="10.5,19 18.5,12 26.5,7" stroke="#2E9E4F" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></polyline>
+<circle cx="26.5" cy="7" fill="#2E9E4F" r="2"></circle>
 </svg>
 <div>
 <div class="hdr-title">Relatórios</div>
@@ -1192,7 +1193,7 @@ header {
 </table>
 </div>
 <div style="text-align:right;margin-top:8px">
-<button class="export-btn" onclick="exportarContabilidade()" style="border-color:var(--gold);color:var(--gold)">
+<button class="export-btn" onclick="exportarContabilidade()" style="border-color:var(--green);color:var(--green)">
           ⬇ Exportar relatório contábil (CSV)
         </button>
 </div>
@@ -1902,11 +1903,11 @@ function renderPgtoCalc(ev, docId) {
 }
 
 function buildPgtoCalcHTML(total, pago, restante, pct, statusPgto) {
-  const fillColor = statusPgto === 'quitado' ? '#25D366' : statusPgto === 'parcial' ? '#E8A838' : '#e05c5c';
+  const fillColor = statusPgto === 'quitado' ? '#25D366' : statusPgto === 'parcial' ? '#27AE60' : '#e05c5c';
   return '<div class="pgto-progress-bar"><div class="pgto-progress-fill" style="width:' + pct.toFixed(1) + '%;background:' + fillColor + '"></div></div>' +
     '<div class="pgto-calc">' +
       '<div class="pgto-calc-title">Calculadora de Pagamento</div>' +
-      '<div class="pgto-calc-row"><span style="color:var(--muted)">Valor total contratado</span><span style="color:var(--gold);font-weight:700">' + frs(total) + '</span></div>' +
+      '<div class="pgto-calc-row"><span style="color:var(--muted)">Valor total contratado</span><span style="color:var(--green);font-weight:700">' + frs(total) + '</span></div>' +
       '<div class="pgto-calc-row"><span style="color:var(--muted)">Total recebido</span><span style="color:' + (pago > 0 ? '#25D366' : 'var(--muted)') + ';font-weight:700">' + frs(pago) + '</span></div>' +
       '<div class="pgto-calc-row total"><span>Saldo a receber</span><span style="color:' + (restante <= 0 ? '#25D366' : '#e05c5c') + '">' + (restante <= 0 ? '✓ Quitado' : frs(restante)) + '</span></div>' +
       '<div class="pgto-calc-row" style="margin-top:6px"><span style="color:var(--muted);font-size:0.75rem">Progresso</span><span style="color:var(--muted);font-size:0.75rem">' + pct.toFixed(0) + '%</span></div>' +
@@ -1984,7 +1985,7 @@ function renderPagamentos() {
     const statusPgto = getStatusPgto(ev);
     const badgeClass = statusPgto === 'quitado' ? 'quitado' : statusPgto === 'parcial' ? 'parcial' : 'pendente';
     const badgeTxt = statusPgto === 'quitado' ? 'Quitado' : statusPgto === 'parcial' ? 'Parcial' : 'Pendente';
-    const fillColor = statusPgto === 'quitado' ? '#25D366' : statusPgto === 'parcial' ? '#E8A838' : '#e05c5c';
+    const fillColor = statusPgto === 'quitado' ? '#25D366' : statusPgto === 'parcial' ? '#27AE60' : '#e05c5c';
     const restanteCor = restante <= 0 ? 'pago' : pago > 0 ? 'parcial' : 'pendente';
     const isOpen = !!_pgtoAbertos[docId];
     const origem = ev._origem === 'nota' ? 'nota' : 'contrato';
@@ -2208,8 +2209,8 @@ function renderFinanceiro() {
       datasets: [{
         label: 'Receita (R$)',
         data: dataFat,
-        backgroundColor: 'rgba(200,169,74,0.7)',
-        borderColor: '#C8A94A',
+        backgroundColor: 'rgba(46,158,79,0.7)',
+        borderColor: '#2E9E4F',
         borderWidth: 1,
         borderRadius: 4
       }]
@@ -2231,7 +2232,7 @@ function renderFinanceiro() {
     tipoMap[t] = (tipoMap[t] || 0) + getValorEvento(e);
   });
   const tipoEntries = Object.entries(tipoMap).sort((a,b) => b[1]-a[1]).slice(0, 8);
-  const CORES = ['#C8A94A','#4A90C8','#25D366','#8B5CF6','#E8A838','#e05c5c','#38bdf8','#f472b6'];
+  const CORES = ['#2E9E4F','#4A90C8','#25D366','#8B5CF6','#27AE60','#e05c5c','#38bdf8','#f472b6'];
 
   criarChart('chart-tipo-evento', {
     type: 'doughnut',
@@ -2318,7 +2319,7 @@ function renderContratos() {
       labels: ['Confirmados','Assinados','Andamento','Pendentes','Cancelados'],
       datasets: [{
         data: [confirmados.length, assinados.length, andamento.length, pendentes.length, cancelados.length],
-        backgroundColor: ['#25D366','#4A90C8','#C8A94A','#666','#e05c5c'],
+        backgroundColor: ['#25D366','#4A90C8','#2E9E4F','#666','#e05c5c'],
         borderColor: '#1a1a1a', borderWidth: 2
       }]
     },
@@ -2335,8 +2336,8 @@ function renderContratos() {
       labels: ['Orçamentos','Contratos','Confirmados'],
       datasets: [{
         data: [orcs.length, cons.length, confirmados.length],
-        backgroundColor: ['rgba(200,169,74,0.6)','rgba(74,144,200,0.6)','rgba(37,211,102,0.6)'],
-        borderColor: ['#C8A94A','#4A90C8','#25D366'],
+        backgroundColor: ['rgba(46,158,79,0.6)','rgba(74,144,200,0.6)','rgba(37,211,102,0.6)'],
+        borderColor: ['#2E9E4F','#4A90C8','#25D366'],
         borderWidth: 1, borderRadius: 6
       }]
     },
@@ -2367,7 +2368,7 @@ function renderContratos() {
       <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:220px">${desc}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="contratos">${c.ev_local || c.local_evento || '—'}</td>
-      <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorEvento(c))}</td>
+      <td class="r" style="color:var(--green);font-weight:700">${frs(getValorEvento(c))}</td>
       <td>${statusBadge}</td>
       <td>${formatDateBR(c.criadoEm)}</td>
       <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="contratos" title="Excluir">×</button></td>
@@ -2420,7 +2421,7 @@ function renderEventos() {
     const fieldNome = origem === 'nota' ? 'titulo' : 'cli_nome';
     const val = valorEv(e);
     const valorTxt = val > 0 ? frs(val) : '—';
-    const valorStyle = val > 0 ? 'color:var(--gold);font-weight:700' : 'color:var(--muted)';
+    const valorStyle = val > 0 ? 'color:var(--green);font-weight:700' : 'color:var(--muted)';
     const nomeExib = nomeCli(e);
     const tipoExib = e._origem === 'nota' ? (e.titulo || '—') : tipoEv(e);
     const cli = nomeExib; const tipo = tipoExib;
@@ -2556,7 +2557,7 @@ function renderClientes() {
       <td style="font-weight:600">${cli.nome}</td>
       <td>${cli.contatoHTML}</td>
       <td class="r">${cli.contratos}</td>
-      <td class="r" style="color:var(--gold)">${frs(cli.total)}</td>
+      <td class="r" style="color:var(--green)">${frs(cli.total)}</td>
       <td class="r">${frs(cli.ticket)}</td>
       <td>${cli.ultimo ? cli.ultimo.toLocaleDateString('pt-BR') : '—'}</td>
     </tr>
@@ -2597,8 +2598,8 @@ function renderSazonalidade() {
       datasets: [{
         label: 'Qtd contratos',
         data: volMes,
-        backgroundColor: MESES_FULL.map((_, i) => volMes[i] === Math.max(...volMes) ? 'rgba(200,169,74,0.9)' : 'rgba(200,169,74,0.4)'),
-        borderColor: '#C8A94A', borderWidth: 1, borderRadius: 4
+        backgroundColor: MESES_FULL.map((_, i) => volMes[i] === Math.max(...volMes) ? 'rgba(46,158,79,0.9)' : 'rgba(46,158,79,0.4)'),
+        borderColor: '#2E9E4F', borderWidth: 1, borderRadius: 4
       }]
     },
     options: {
@@ -2618,9 +2619,9 @@ function renderSazonalidade() {
       datasets: [{
         label: 'Receita',
         data: recMes,
-        borderColor: '#E8A838',
-        backgroundColor: 'rgba(232,168,56,0.12)',
-        tension: 0.35, fill: true, pointRadius: 5, pointBackgroundColor: '#E8A838'
+        borderColor: '#27AE60',
+        backgroundColor: 'rgba(39,174,96,0.12)',
+        tension: 0.35, fill: true, pointRadius: 5, pointBackgroundColor: '#27AE60'
       }]
     },
     options: {
@@ -2640,7 +2641,7 @@ function renderSazonalidade() {
     tipoHist[t] = (tipoHist[t] || 0) + 1;
   });
   const tipoSort = Object.entries(tipoHist).sort((a,b) => b[1]-a[1]).slice(0, 8);
-  const CORES2 = ['#C8A94A','#4A90C8','#25D366','#8B5CF6','#E8A838','#e05c5c','#38bdf8','#f472b6'];
+  const CORES2 = ['#2E9E4F','#4A90C8','#25D366','#8B5CF6','#27AE60','#e05c5c','#38bdf8','#f472b6'];
 
   criarChart('chart-saz-tipo', {
     type: 'doughnut',
@@ -2742,7 +2743,7 @@ function renderContabilidade() {
         <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${col}" style="max-width:200px">${desc}${origemBadge}</td>
         <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${col}">${dataEv(e)}</td>
         <td>${getPgtoLabel(e)}</td>
-        <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorEvento(e))}</td>
+        <td class="r" style="color:var(--green);font-weight:700">${frs(getValorEvento(e))}</td>
         <td><span class="badge ${st}">${st}</span></td>
         <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="${col}" title="Excluir">×</button></td>
       </tr>`;
@@ -2777,14 +2778,14 @@ function renderContabilidade() {
       <tr>
         <td>${v.label}</td>
         <td class="r">${v.qtd}</td>
-        <td class="r" style="color:var(--gold)">${frs(v.receita)}</td>
+        <td class="r" style="color:var(--green)">${frs(v.receita)}</td>
         <td class="r">${v.qtd ? frs(v.receita / v.qtd) : '—'}</td>
       </tr>
     `).join('') + `
-      <tr style="background:rgba(200,169,74,0.06);font-weight:700">
-        <td style="color:var(--gold)">TOTAL</td>
+      <tr style="background:rgba(46,158,79,0.06);font-weight:700">
+        <td style="color:var(--green)">TOTAL</td>
         <td class="r">${totalQtd}</td>
-        <td class="r" style="color:var(--gold)">${frs(totalRec)}</td>
+        <td class="r" style="color:var(--green)">${frs(totalRec)}</td>
         <td class="r">${totalQtd ? frs(totalRec / totalQtd) : '—'}</td>
       </tr>
     `;
@@ -2853,13 +2854,13 @@ function abrirPainelAdmin() {
 
   var edOn = _editorModeAtivo;
   modal.innerHTML =
-    '<div style="background:#1a1a1a;border:1px solid #C8A94A;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">' +
+    '<div style="background:#1a1a1a;border:1px solid #2E9E4F;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">' +
       '<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0 22px">' +
-        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>' +
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:#2E9E4F;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>' +
         '<button onclick="document.body.style.overflow=\'\';document.getElementById(\'modal-admin-rel\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>' +
       '</div>' +
       '<div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">' +
-        '<button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Editor</button>' +
+        '<button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #2E9E4F;color:#2E9E4F;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Editor</button>' +
         '<button id="adm-tab-info" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Informações</button>' +
       '</div>' +
       '<div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">' +
@@ -2868,15 +2869,15 @@ function abrirPainelAdmin() {
           '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
               '<div>' +
-                '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Modo Editor</div>' +
+                '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#2E9E4F;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Modo Editor</div>' +
                 '<div style="font-size:0.68rem;color:#555;line-height:1.5">Ativa edição inline nas tabelas.<br>Toque em qualquer célula para editar.</div>' +
               '</div>' +
-              '<div id="adm-editor-toggle" onclick="_toggleEditorMode()" style="width:44px;height:24px;background:' + (edOn ? '#C8A94A' : '#2a2a2a') + ';border-radius:12px;cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0">' +
+              '<div id="adm-editor-toggle" onclick="_toggleEditorMode()" style="width:44px;height:24px;background:' + (edOn ? '#2E9E4F' : '#2a2a2a') + ';border-radius:12px;cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0">' +
                 '<div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;' + (edOn ? 'left:23px' : 'left:3px') + ';transition:left 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>' +
               '</div>' +
             '</div>' +
             '<div style="font-size:0.68rem;color:#444;line-height:1.5;border-top:1px solid #1e1e1e;padding-top:10px;margin-top:4px">' +
-              '<div style="margin-bottom:4px"><span style="color:#C8A94A;font-weight:700">Campos editáveis:</span></div>' +
+              '<div style="margin-bottom:4px"><span style="color:#2E9E4F;font-weight:700">Campos editáveis:</span></div>' +
               '<div style="color:#555">Cliente, tipo de evento, data, local, valor. Alterações salvas direto no Firestore (contratos ou notas).</div>' +
             '</div>' +
           '</div>' +
@@ -2884,7 +2885,7 @@ function abrirPainelAdmin() {
         // ABA INFO
         '<div id="adm-panel-info" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">' +
           '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:10px">' +
-            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Base de dados</div>' +
+            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#2E9E4F;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Base de dados</div>' +
             '<div style="font-size:0.78rem;color:#888;line-height:1.8">' +
               'Contratos: <span style="color:#ccc" id="adm-count-contratos">—</span><br>' +
               'Orçamentos: <span style="color:#ccc" id="adm-count-orcamentos">—</span><br>' +
@@ -2892,7 +2893,7 @@ function abrirPainelAdmin() {
             '</div>' +
           '</div>' +
           '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px">' +
-            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Filtro ativo</div>' +
+            '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#2E9E4F;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Filtro ativo</div>' +
             '<div style="font-size:0.78rem;color:#888" id="adm-filtro-info">—</div>' +
           '</div>' +
         '</div>' +
@@ -2932,7 +2933,7 @@ function _admAba(idx, fromScroll) {
   var keys = ['editor','info'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('adm-tab-' + k);
-    if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
+    if (tab) { tab.style.borderBottomColor = i === idx ? '#2E9E4F' : 'transparent'; tab.style.color = i === idx ? '#2E9E4F' : '#555'; }
   });
   if (!fromScroll) {
     var slider = document.getElementById('adm-slider');
@@ -2944,7 +2945,7 @@ function _toggleEditorMode() {
   _editorModeAtivo = !_editorModeAtivo;
   var toggle = document.getElementById('adm-editor-toggle');
   if (toggle) {
-    toggle.style.background = _editorModeAtivo ? '#C8A94A' : '#2a2a2a';
+    toggle.style.background = _editorModeAtivo ? '#2E9E4F' : '#2a2a2a';
     var knob = toggle.firstElementChild;
     if (knob) knob.style.left = _editorModeAtivo ? '23px' : '3px';
   }
