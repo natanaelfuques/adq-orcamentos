@@ -1615,12 +1615,16 @@ function registrarLog(tipo, item, contexto) {
   var mf = JSON.stringify({
     name: "Painel de Eventos - AdQ",
     short_name: "Painel AdQ",
-    start_url: "/adq-orcamentos/painel_eventos.html",
-    scope: "/adq-orcamentos/",
+    start_url: window.location.origin + window.location.pathname,
+    scope: window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, "/"),
+    id: window.location.pathname,
     display: "standalone",
     background_color: "#111111",
     theme_color: "#1a1a1a",
-    icons: [{src: icon, sizes: "1024x1024", type: "image/png", purpose: "any maskable"}]
+    icons: [
+      {src: icon, sizes: "1024x1024", type: "image/png", purpose: "any maskable"},
+      {src: icon, sizes: "512x512",   type: "image/png", purpose: "any maskable"}
+    ]
   });
   var b = new Blob([mf], {type:"application/json"});
   var l = document.createElement("link");
