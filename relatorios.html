@@ -44,15 +44,24 @@ body {
   min-height: 100vh;
 }
 
-/* ── HEADER ── */
-header {
-  background: var(--dark);
-  border-bottom: 2px solid var(--gold);
-  padding: 14px 28px;
+/* ── PAGE MAX-WIDTH WRAPPER ── */
+.inner-wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--dark);
+  border-bottom: 2px solid var(--gold);
+  padding: 14px 0;
+  display: block;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -98,11 +107,13 @@ header {
 .periodo-bar {
   background: var(--dark);
   border-bottom: 1px solid var(--border);
-  padding: 10px 28px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  padding: 10px 0;
+  display: block;
+}
+.periodo-bar .inner-wrap {
+  padding: 0 28px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 .periodo-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
 .periodo-btns { display: flex; gap: 6px; }
@@ -168,12 +179,18 @@ header {
   background: var(--darker);
   border-bottom: 2px solid var(--border);
 }
+.tabs-wrap .inner-wrap {
+  padding: 0;
+  justify-content: flex-start;
+  align-items: stretch;
+}
 .tabs {
   display: flex;
   gap: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  width: 100%;
 }
 .tabs::-webkit-scrollbar { display: none; }
 .tab-btn {
@@ -220,9 +237,14 @@ header {
   min-width: 100%;
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  padding: 24px 20px 80px;
+  padding: 24px 0 80px;
   box-sizing: border-box;
   display: block;
+}
+.tab-panel-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 .tab-panel.anim {}
 
@@ -932,6 +954,7 @@ header {
 <div id="screen-app" style="display:none">
 
   <header>
+    <div class="inner-wrap">
     <div class="hdr-left">
       <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
         <rect x="1" y="1" width="36" height="36" rx="7" fill="#1a1a1a" stroke="#C8A94A" stroke-width="1.5"/>
@@ -958,9 +981,11 @@ header {
       </button>
       <button class="btn-logout" onclick="fazerLogout()">Sair</button>
     </div>
+    </div>
   </header>
 
   <div class="periodo-bar">
+    <div class="inner-wrap">
     <span class="periodo-label">Período:</span>
     <div class="periodo-btns">
       <button class="pbtn" onclick="setPeriodo('mes')">Este mês</button>
@@ -975,9 +1000,11 @@ header {
       <input type="date" id="data-fim" onchange="aplicarCustom()">
     </div>
     <button class="export-btn" onclick="exportarCSV()">⬇ Exportar CSV</button>
+    </div>
   </div>
 
   <div class="tabs-wrap" id="tabs-wrap">
+    <div class="inner-wrap" style="padding:0 0; justify-content:flex-start; max-width:1400px; margin:0 auto;">
     <div class="tabs" id="tabs-nav">
       <button class="tab-btn active" onclick="trocarTab('pagamentos')">Pagamentos</button>
       <button class="tab-btn" onclick="trocarTab('financeiro')">Financeiro</button>
@@ -987,6 +1014,7 @@ header {
       <button class="tab-btn" onclick="trocarTab('sazonalidade')">Sazonalidade</button>
       <button class="tab-btn" onclick="trocarTab('contabilidade')">Contabilidade</button>
     </div>
+    </div>
   </div>
 
   <div class="main">
@@ -994,6 +1022,7 @@ header {
 
     <!-- ════ TAB: PAGAMENTOS ════ -->
     <div id="tab-pagamentos" class="tab-panel active">
+      <div class="tab-panel-inner">
 
       <!-- KPIs -->
       <div class="pgto-kpi-grid" id="kpi-pgto"></div>
@@ -1011,10 +1040,12 @@ header {
       <!-- Lista de eventos / contratos -->
       <div id="pgto-lista"></div>
 
+      </div>
     </div><!-- /tab-pagamentos -->
 
     <!-- ════ TAB: FINANCEIRO ════ -->
     <div id="tab-financeiro" class="tab-panel">
+      <div class="tab-panel-inner">
       <div class="kpi-grid" id="kpi-fin"></div>
 
       <p class="sec-title">Faturamento Mensal</p>
@@ -1036,10 +1067,12 @@ header {
           <div class="chart-wrap"><canvas id="chart-servicos"></canvas></div>
         </div>
       </div>
+      </div>
     </div>
 
     <!-- ════ TAB: CONTRATOS ════ -->
     <div id="tab-contratos" class="tab-panel">
+      <div class="tab-panel-inner">
       <div class="kpi-grid" id="kpi-con"></div>
 
       <div class="chart-grid">
@@ -1070,10 +1103,12 @@ header {
           <tbody id="tbody-contratos"></tbody>
         </table>
       </div>
+      </div>
     </div>
 
     <!-- ════ TAB: EVENTOS ════ -->
     <div id="tab-eventos" class="tab-panel">
+      <div class="tab-panel-inner">
       <div class="kpi-grid" id="kpi-ev"></div>
 
       <p class="sec-title">Todos os eventos no período — contratos + notas</p>
@@ -1094,10 +1129,12 @@ header {
           <tbody id="tbody-eventos"></tbody>
         </table>
       </div>
+      </div>
     </div>
 
     <!-- ════ TAB: CLIENTES ════ -->
     <div id="tab-clientes" class="tab-panel">
+      <div class="tab-panel-inner">
       <div class="kpi-grid" id="kpi-cli"></div>
 
       <div class="chart-grid triple">
@@ -1127,10 +1164,12 @@ header {
           <tbody id="tbody-clientes"></tbody>
         </table>
       </div>
+      </div>
     </div>
 
     <!-- ════ TAB: SAZONALIDADE ════ -->
     <div id="tab-sazonalidade" class="tab-panel">
+      <div class="tab-panel-inner">
       <p class="sec-title">Volume de eventos por mês (histórico completo)</p>
       <div class="chart-card" style="margin-bottom:20px">
         <div class="chart-title">Quantidade de contratos por mês</div>
@@ -1150,10 +1189,12 @@ header {
 
       <p class="sec-title">Previsão de receita — próximos 3 meses</p>
       <div class="kpi-grid" id="kpi-previsao"></div>
+      </div>
     </div>
 
     <!-- ════ TAB: CONTABILIDADE ════ -->
     <div id="tab-contabilidade" class="tab-panel">
+      <div class="tab-panel-inner">
       <p class="sec-title">Resumo para contabilidade — período selecionado</p>
 
       <div class="cont-grid">
@@ -1208,6 +1249,7 @@ header {
         <button class="export-btn" onclick="exportarContabilidade()" style="border-color:var(--gold);color:var(--gold)">
           ⬇ Exportar relatório contábil (CSV)
         </button>
+      </div>
       </div>
     </div><!-- /tab-contabilidade -->
 
