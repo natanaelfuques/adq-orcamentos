@@ -1,33 +1,26 @@
-// AdQ — Service Worker
-// Necessário para instalação PWA no Chrome/GitHub Pages
+const CACHE = 'adq-orcamentos-v1';
 
-self.addEventListener('install', function(e) {
-  e.waitUntil(self.skipWaiting());
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => c.addAll(['./', './index.html']))
+      .catch(() => {})
+  );
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', function(e) {
-  e.waitUntil(self.clients.claim());
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
 });
 
-// Cache simples para funcionamento offline básico
-var CACHE = 'adq-v1';
-self.addEventListener('fetch', function(e) {
-  // Deixa passar requisições para Firebase/Autentique normalmente
-  if (e.request.url.includes('firestore') ||
-      e.request.url.includes('googleapis') ||
-      e.request.url.includes('autentique')) {
-    return;
-  }
-  // Para o próprio HTML: network first, cache fallback
-  if (e.request.mode === 'navigate') {
-    e.respondWith(
-      fetch(e.request).then(function(r) {
-        var clone = r.clone();
-        caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
-        return r;
-      }).catch(function() {
-        return caches.match(e.request);
-      })
-    );
-  }
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request).then(r => r || fetch(e.request))
+  );
 });

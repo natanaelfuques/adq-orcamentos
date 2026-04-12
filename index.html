@@ -4801,16 +4801,10 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
   mLink.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifestObj));
   document.head.appendChild(mLink);
 
-  // Service Worker (inline via Blob – funciona com arquivo local)
+  // Service Worker
   if ("serviceWorker" in navigator) {
-    var swCode = [
-      "const CACHE='adq-orcamentos-v1';",
-      "self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./',location.pathname])).catch(()=>{})));",
-      "self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});"
-    ].join('\n');
-    var blob = new Blob([swCode], { type: 'application/javascript' });
-    var swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl).catch(function(e){ console.warn("[AdQ] SW:", e); });
+    navigator.serviceWorker.register("/adq-orcamentos/sw.js", {scope: "/adq-orcamentos/"})
+      .catch(function(e){ console.warn("[AdQ] SW:", e); });
   }
 
   // Install button
