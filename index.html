@@ -4788,25 +4788,8 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
 </html>`;
 }
 
-// ═══ PWA: Manifest + Service Worker ═══
+// ═══ PWA: Service Worker ═══
 (function(){
-  var icon = "data:image/png;base64," + document.getElementById("logo-png-data").getAttribute("data-b64");
-  var manifest = JSON.stringify({
-    name: "\u00c1udio de Qualidade \u2014 Or\u00e7amentos",
-    short_name: "AdQ",
-    start_url: "/adq-orcamentos/",
-    scope: "/adq-orcamentos/",
-    display: "standalone",
-    background_color: "#111111",
-    theme_color: "#1a1a1a",
-    icons: [{src: icon, sizes: "1024x1024", type: "image/png", purpose: "any maskable"}]
-  });
-  var mBlob = new Blob([manifest], {type: "application/json"});
-  var mLink = document.createElement("link");
-  mLink.rel = "manifest";
-  mLink.href = URL.createObjectURL(mBlob);
-  document.head.appendChild(mLink);
-
   // Real Service Worker
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/adq-orcamentos/sw.js", {scope: "/adq-orcamentos/"})
