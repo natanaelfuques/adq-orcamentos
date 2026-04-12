@@ -4786,7 +4786,8 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
 
   // Manifest com ícone data: URL (Android/Chrome)
   var icon = "data:image/png;base64," + ICON_B64;
-  var manifest = JSON.stringify({
+  // Manifest via data: URL (compatível com Brave e Chrome)
+  var manifestObj = {
     name: "\u00c1udio de Qualidade \u2014 Or\u00e7amentos",
     short_name: "AdQ",
     id: "https://natanaelfuques.github.io/adq-orcamentos/",
@@ -4799,11 +4800,10 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
       {src: "https://natanaelfuques.github.io/adq-orcamentos/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any"},
       {src: "https://natanaelfuques.github.io/adq-orcamentos/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable"}
     ]
-  });
-  var mBlob = new Blob([manifest], {type: "application/json"});
+  };
   var mLink = document.createElement("link");
   mLink.rel = "manifest";
-  mLink.href = URL.createObjectURL(mBlob);
+  mLink.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifestObj));
   document.head.appendChild(mLink);
 
   // Service Worker via arquivo estático (blob: URL não é suportado pelo Chrome)
