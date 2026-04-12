@@ -44,24 +44,15 @@ body {
   min-height: 100vh;
 }
 
-/* ── PAGE MAX-WIDTH WRAPPER ── */
-.inner-wrap {
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 0 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 /* ── HEADER ── */
 header {
   background: var(--dark);
   border-bottom: 2px solid var(--gold);
-  padding: 14px 0;
-  display: block;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -107,13 +98,11 @@ header {
 .periodo-bar {
   background: var(--dark);
   border-bottom: 1px solid var(--border);
-  padding: 10px 0;
-  display: block;
-}
-.periodo-bar .inner-wrap {
-  padding: 0 28px;
-  flex-wrap: wrap;
+  padding: 10px 28px;
+  display: flex;
+  align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .periodo-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
 .periodo-btns { display: flex; gap: 6px; }
@@ -179,18 +168,12 @@ header {
   background: var(--darker);
   border-bottom: 2px solid var(--border);
 }
-.tabs-wrap .inner-wrap {
-  padding: 0;
-  justify-content: flex-start;
-  align-items: stretch;
-}
 .tabs {
   display: flex;
   gap: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  width: 100%;
 }
 .tabs::-webkit-scrollbar { display: none; }
 .tab-btn {
@@ -237,14 +220,9 @@ header {
   min-width: 100%;
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  padding: 24px 0 80px;
+  padding: 24px 20px 80px;
   box-sizing: border-box;
   display: block;
-}
-.tab-panel-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 20px;
 }
 .tab-panel.anim {}
 
@@ -954,7 +932,6 @@ header {
 <div id="screen-app" style="display:none">
 
   <header>
-    <div class="inner-wrap">
     <div class="hdr-left">
       <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
         <rect x="1" y="1" width="36" height="36" rx="7" fill="#1a1a1a" stroke="#C8A94A" stroke-width="1.5"/>
@@ -981,11 +958,9 @@ header {
       </button>
       <button class="btn-logout" onclick="fazerLogout()">Sair</button>
     </div>
-    </div>
   </header>
 
   <div class="periodo-bar">
-    <div class="inner-wrap">
     <span class="periodo-label">Período:</span>
     <div class="periodo-btns">
       <button class="pbtn" onclick="setPeriodo('mes')">Este mês</button>
@@ -1000,11 +975,9 @@ header {
       <input type="date" id="data-fim" onchange="aplicarCustom()">
     </div>
     <button class="export-btn" onclick="exportarCSV()">⬇ Exportar CSV</button>
-    </div>
   </div>
 
   <div class="tabs-wrap" id="tabs-wrap">
-    <div class="inner-wrap" style="padding:0 0; justify-content:flex-start; max-width:1400px; margin:0 auto;">
     <div class="tabs" id="tabs-nav">
       <button class="tab-btn active" onclick="trocarTab('pagamentos')">Pagamentos</button>
       <button class="tab-btn" onclick="trocarTab('financeiro')">Financeiro</button>
@@ -1014,7 +987,6 @@ header {
       <button class="tab-btn" onclick="trocarTab('sazonalidade')">Sazonalidade</button>
       <button class="tab-btn" onclick="trocarTab('contabilidade')">Contabilidade</button>
     </div>
-    </div>
   </div>
 
   <div class="main">
@@ -1022,7 +994,6 @@ header {
 
     <!-- ════ TAB: PAGAMENTOS ════ -->
     <div id="tab-pagamentos" class="tab-panel active">
-      <div class="tab-panel-inner">
 
       <!-- KPIs -->
       <div class="pgto-kpi-grid" id="kpi-pgto"></div>
@@ -1040,12 +1011,10 @@ header {
       <!-- Lista de eventos / contratos -->
       <div id="pgto-lista"></div>
 
-      </div>
     </div><!-- /tab-pagamentos -->
 
     <!-- ════ TAB: FINANCEIRO ════ -->
     <div id="tab-financeiro" class="tab-panel">
-      <div class="tab-panel-inner">
       <div class="kpi-grid" id="kpi-fin"></div>
 
       <p class="sec-title">Faturamento Mensal</p>
@@ -1067,12 +1036,10 @@ header {
           <div class="chart-wrap"><canvas id="chart-servicos"></canvas></div>
         </div>
       </div>
-      </div>
     </div>
 
     <!-- ════ TAB: CONTRATOS ════ -->
     <div id="tab-contratos" class="tab-panel">
-      <div class="tab-panel-inner">
       <div class="kpi-grid" id="kpi-con"></div>
 
       <div class="chart-grid">
@@ -1103,12 +1070,10 @@ header {
           <tbody id="tbody-contratos"></tbody>
         </table>
       </div>
-      </div>
     </div>
 
     <!-- ════ TAB: EVENTOS ════ -->
     <div id="tab-eventos" class="tab-panel">
-      <div class="tab-panel-inner">
       <div class="kpi-grid" id="kpi-ev"></div>
 
       <p class="sec-title">Todos os eventos no período — contratos + notas</p>
@@ -1129,12 +1094,10 @@ header {
           <tbody id="tbody-eventos"></tbody>
         </table>
       </div>
-      </div>
     </div>
 
     <!-- ════ TAB: CLIENTES ════ -->
     <div id="tab-clientes" class="tab-panel">
-      <div class="tab-panel-inner">
       <div class="kpi-grid" id="kpi-cli"></div>
 
       <div class="chart-grid triple">
@@ -1164,12 +1127,10 @@ header {
           <tbody id="tbody-clientes"></tbody>
         </table>
       </div>
-      </div>
     </div>
 
     <!-- ════ TAB: SAZONALIDADE ════ -->
     <div id="tab-sazonalidade" class="tab-panel">
-      <div class="tab-panel-inner">
       <p class="sec-title">Volume de eventos por mês (histórico completo)</p>
       <div class="chart-card" style="margin-bottom:20px">
         <div class="chart-title">Quantidade de contratos por mês</div>
@@ -1189,12 +1150,10 @@ header {
 
       <p class="sec-title">Previsão de receita — próximos 3 meses</p>
       <div class="kpi-grid" id="kpi-previsao"></div>
-      </div>
     </div>
 
     <!-- ════ TAB: CONTABILIDADE ════ -->
     <div id="tab-contabilidade" class="tab-panel">
-      <div class="tab-panel-inner">
       <p class="sec-title">Resumo para contabilidade — período selecionado</p>
 
       <div class="cont-grid">
@@ -1249,7 +1208,6 @@ header {
         <button class="export-btn" onclick="exportarContabilidade()" style="border-color:var(--gold);color:var(--gold)">
           ⬇ Exportar relatório contábil (CSV)
         </button>
-      </div>
       </div>
     </div><!-- /tab-contabilidade -->
 
@@ -1541,8 +1499,8 @@ function getStatusContrato(c) {
   if (c.aprovado) return 'assinado';
   if (c.link_assinatura) return 'enviado';
 
-  // Para notas
-  if (c._origem === 'nota') return c.status || 'nota';
+  // Para notas — usa status salvo; fallback 'pendente' (tratado como ativo não confirmado)
+  if (c._origem === 'nota') return c.status || 'pendente';
 
   return 'pendente';
 }
@@ -1563,8 +1521,8 @@ function getPgtoLabel(c) {
 }
 
 function nomeCli(c) {
-  // notas nao tem cli_nome — contato e telefone, nao nome
-  return c.cli_nome || c.nome_cliente || c.cliente || c.nome || '—';
+  // notas podem ter contato, nome, cli_nome etc.
+  return c.cli_nome || c.nome_cliente || c.cliente || c.nome || c.contato || '—';
 }
 
 function tipoEv(c) {
@@ -1585,7 +1543,7 @@ function localEv(c) {
 }
 
 function valorEv(c) {
-  return parseBRL(c.val_total) || parseBRL(c.valorTotal) || 0;
+  return parseBRL(c.val_total) || parseBRL(c.valorTotal) || parseBRL(c.valor) || 0;
 }
 
 function formatDateBR(ts) {
@@ -2109,11 +2067,8 @@ function togglePgtoCard(docId) {
 // TAB 1 – FINANCEIRO
 // ══════════════════════════════════════════
 function getValorEvento(e) {
-  // Valor unificado para contratos e notas
-  if (e._origem === 'nota') {
-    return parseBRL(e.val_total) || parseBRL(e.valorTotal) || parseBRL(e.valor) || 0;
-  }
-  return getValorContrato(e);
+  // Valor unificado — lê todos os campos possíveis de contratos e notas
+  return parseBRL(e.val_total) || parseBRL(e.valorTotal) || parseBRL(e.valor) || 0;
 }
 
 function renderFinanceiro() {
@@ -2127,9 +2082,13 @@ function renderFinanceiro() {
     .reduce((s,e) => s + getValorEvento(e), 0);
   const ticket = confirmados.length ? receitaTotal / confirmados.length : 0;
 
-  // Mês atual — contratos + notas
+  // Mês atual — contratos + notas, sem duplicatas (notas que viraram contrato não entram duas vezes)
   const hoje = new Date();
-  const todosMes = [..._contratos, ..._notas].filter(e => {
+  const _notaIdsComContMes = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  const todosMes = [
+    ..._contratos.map(c => ({ ...c, _origem: 'contrato' })),
+    ..._notas.filter(n => !_notaIdsComContMes.has(n.id))
+  ].filter(e => {
     const d = tsToDate(e.criadoEm);
     return d && d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
   });
@@ -2160,8 +2119,22 @@ function renderFinanceiro() {
     </div>
   `;
 
-  // Gráfico: faturamento mensal — contratos + notas
-  const todosParaGraf = [..._contratos.map(c => ({ ...c, _origem: 'contrato' })), ..._notas];
+  // Gráfico: faturamento mensal — contratos + notas, sem duplicatas
+  // Usa ev_data (data real do evento) para posicionar no mês correto; fallback para criadoEm
+  const _notaIdsDedup = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  const todosParaGraf = [
+    ..._contratos.map(c => ({ ...c, _origem: 'contrato' })),
+    ..._notas.filter(n => !_notaIdsDedup.has(n.id))
+  ];
+  function _dataRefEvento(e) {
+    // Prefere data real do evento; fallback para criadoEm
+    const evStr = e.ev_data || e.data_evento || e.dataEvt || '';
+    if (evStr) {
+      const p = evStr.split('-');
+      if (p.length === 3) return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+    }
+    return tsToDate(e.criadoEm);
+  }
   const meses12 = [];
   if (_dataIni && _dataFim) {
     // Período definido: iterar mês a mês dentro do intervalo
@@ -2172,15 +2145,15 @@ function renderFinanceiro() {
       cur.setMonth(cur.getMonth() + 1);
     }
   } else {
-    // "Tudo" ou período parcial: descobrir range a partir dos dados reais
+    // "Tudo" ou sem período: descobrir range usando data real do evento
     const datas = todosParaGraf
-      .map(e => tsToDate(e.criadoEm))
+      .map(e => _dataRefEvento(e))
       .filter(Boolean)
       .map(d => new Date(d.getFullYear(), d.getMonth(), 1));
     if (datas.length) {
       let cur = new Date(Math.min(...datas));
-      const hoje = new Date(); hoje.setDate(1); hoje.setHours(0,0,0,0);
-      const limFim = _dataFim ? new Date(_dataFim.getFullYear(), _dataFim.getMonth(), 1) : hoje;
+      const hojeRef = new Date(); hojeRef.setDate(1); hojeRef.setHours(0,0,0,0);
+      const limFim = _dataFim ? new Date(_dataFim.getFullYear(), _dataFim.getMonth(), 1) : hojeRef;
       while (cur <= limFim) {
         meses12.push({ label: MESES[cur.getMonth()] + '/' + String(cur.getFullYear()).slice(2), m: new Date(cur) });
         cur.setMonth(cur.getMonth() + 1);
@@ -2189,7 +2162,7 @@ function renderFinanceiro() {
   }
   const dataFat = meses12.map(({ m }) => {
     return todosParaGraf.filter(e => {
-      const d = tsToDate(e.criadoEm);
+      const d = _dataRefEvento(e);
       return d && d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear()
         && ['confirmado','concluido'].includes(getStatusContrato(e));
     }).reduce((s,e) => s + getValorEvento(e), 0);
@@ -2242,11 +2215,17 @@ function renderFinanceiro() {
     }
   });
 
-  // Gráfico: receita por serviço (contratos + notas)
+  // Gráfico: receita por serviço (contratos têm array 'servicos'; notas podem ter 'servico' singular ou 'tipo')
   const servMap = {};
   confirmados.forEach(e => {
-    const servicos = e.servicos || [];
-    servicos.forEach(s => { if (s) servMap[s] = (servMap[s] || 0) + 1; });
+    const servicos = e.servicos || (e.servico ? [e.servico] : []);
+    if (servicos.length) {
+      servicos.forEach(s => { if (s) servMap[s] = (servMap[s] || 0) + 1; });
+    } else if (e._origem === 'nota') {
+      // notas sem campo de serviço: usa tipo como fallback
+      const t = tipoEv(e);
+      if (t && t !== '—') servMap[t] = (servMap[t] || 0) + 1;
+    }
   });
   const servEntries = Object.entries(servMap).sort((a,b) => b[1]-a[1]).slice(0, 10);
 
@@ -2355,7 +2334,7 @@ function renderContratos() {
       <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:220px">${desc}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="contratos">${c.ev_local || c.local_evento || '—'}</td>
-      <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorContrato(c))}</td>
+      <td class="r" style="color:var(--gold);font-weight:700">${frs(getValorEvento(c))}</td>
       <td>${statusBadge}</td>
       <td>${formatDateBR(c.criadoEm)}</td>
       <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="contratos" title="Excluir">×</button></td>
@@ -2463,11 +2442,15 @@ function renderClientes() {
     <div class="kpi-card blue"><div class="kpi-label">Maior cliente</div><div class="kpi-value" style="font-size:1.1rem">${cliList[0]?.nome || '—'}</div><div class="kpi-sub">${cliList[0] ? frs(cliList[0].total) : ''}</div></div>
   `;
 
-  // Gráfico ticket médio por mês
+  // Gráfico ticket médio por mês — agrupa por mês do evento (ev_data), fallback criadoEm
   const mesesTick = {};
   confirmados.forEach(e => {
-    const k = mesAno(e.criadoEm);
-    if (!mesesTick[k]) mesesTick[k] = { soma: 0, qtd: 0, order: tsToDate(e.criadoEm) };
+    const evStr = e.ev_data || e.data_evento || e.dataEvt || '';
+    let dRef = null;
+    if (evStr) { const p = evStr.split('-'); if (p.length === 3) dRef = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2])); }
+    if (!dRef) dRef = tsToDate(e.criadoEm);
+    const k = dRef ? MESES[dRef.getMonth()] + '/' + String(dRef.getFullYear()).slice(2) : '?';
+    if (!mesesTick[k]) mesesTick[k] = { soma: 0, qtd: 0, order: dRef || new Date(0) };
     mesesTick[k].soma += getValorEvento(e);
     mesesTick[k].qtd++;
   });
@@ -2495,9 +2478,10 @@ function renderClientes() {
     }
   });
 
-  // Gráfico qtd pessoas — contratos + notas
+  // Gráfico qtd pessoas — contratos + notas, sem duplicatas
+  const _notaIdsComContCli = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
   const pessoasMap = { '1-50': 0, '51-100': 0, '101-200': 0, '201-500': 0, '500+': 0 };
-  [..._contratos, ..._notas].forEach(c => {
+  [..._contratos, ..._notas.filter(n => !_notaIdsComContCli.has(n.id))].forEach(c => {
     const p = parseInt(c.qtd_pessoas) || 0;
     if (p <= 0) return;
     if (p <= 50) pessoasMap['1-50']++;
@@ -2550,8 +2534,12 @@ function renderSazonalidade() {
   // Histograma por mês (todos os anos)
   const volMes = Array(12).fill(0);
   const recMes = Array(12).fill(0);
-  // Contratos + notas para sazonalidade
-  const todosParaSaz = [..._contratos.map(c => ({...c, _origem:'contrato'})), ..._notas];
+  // Contratos + notas para sazonalidade — sem duplicatas
+  const _notaIdsComContSaz = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  const todosParaSaz = [
+    ..._contratos.map(c => ({...c, _origem:'contrato'})),
+    ..._notas.filter(n => !_notaIdsComContSaz.has(n.id))
+  ];
   todosParaSaz.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e))).forEach(e => {
     // Usa a data REAL do evento (ev_data) para sazonalidade; fallback para criadoEm
     const dataEvtStr = e.ev_data || e.data_evento || e.dataEvt || '';
@@ -2609,9 +2597,9 @@ function renderSazonalidade() {
     }
   });
 
-  // Tipos mais contratados — histórico completo (contratos + notas)
+  // Tipos mais contratados — histórico completo (contratos + notas, sem duplicatas)
   const tipoHist = {};
-  [..._contratos.map(c => ({...c, _origem:'contrato'})), ..._notas].forEach(e => {
+  todosParaSaz.forEach(e => {
     const t = tipoEv(e) || 'Outros';
     tipoHist[t] = (tipoHist[t] || 0) + 1;
   });
@@ -2630,14 +2618,13 @@ function renderSazonalidade() {
     }
   });
 
-  // Previsão: próximos 3 meses (contratos com data_evento no futuro)
+  // Previsão: próximos 3 meses (contratos + notas sem duplicatas com data_evento no futuro)
   const hoje = new Date();
   const proximos3 = [];
   for (let i = 1; i <= 3; i++) {
     const m = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
     const mFim = new Date(hoje.getFullYear(), hoje.getMonth() + i + 1, 0);
-    const todosPrevisao = [..._contratos.map(c => ({...c, _origem:'contrato'})), ..._notas];
-    const eventosNoMes = todosPrevisao.filter(e => {
+    const eventosNoMes = todosParaSaz.filter(e => {
       const de = e.ev_data || e.data_evento || e.dataEvt;
       if (!de) return false;
       const dev = new Date(de + 'T00:00:00');
@@ -2726,10 +2713,16 @@ function renderContabilidade() {
     }).join('');
   }
 
-  // Tabela mensal — contratos + notas
+  // Tabela mensal — agrupa por mês do evento (ev_data), fallback criadoEm
   const mensal = {};
   ativos.forEach(e => {
-    const d = tsToDate(e.criadoEm);
+    const evStr = e.ev_data || e.data_evento || e.dataEvt || '';
+    let d = null;
+    if (evStr) {
+      const p = evStr.split('-');
+      if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+    }
+    if (!d) d = tsToDate(e.criadoEm);
     if (!d) return;
     const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
     const label = MESES_FULL[d.getMonth()] + ' ' + d.getFullYear();
@@ -2781,12 +2774,17 @@ function exportarCSV() {
 
 function exportarContabilidade() {
   const cons = todoEventosFiltrados().filter(e => !e.removido_manualmente);
-  const header = ['Competência','Cliente','Tipo Evento','Data Evento','Forma Pgto','Valor Contrato','Status'];
+  const header = ['Competência (ev)','Cliente','Tipo Evento','Data Evento','Forma Pgto','Valor Contrato','Status','Origem'];
   const rows = cons.map(c => {
-    const d = tsToDate(c.criadoEm);
+    // Competência = mês do evento real; fallback criadoEm
+    const evStr = c.ev_data || c.data_evento || c.dataEvt || '';
+    let d = null;
+    if (evStr) { const p = evStr.split('-'); if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2])); }
+    if (!d) d = tsToDate(c.criadoEm);
     const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '';
     return [comp, nomeCli(c), tipoEv(c), dataEv(c), getPgtoLabel(c),
-      getValorEvento(c).toFixed(2).replace('.', ','), getStatusContrato(c)];
+      getValorEvento(c).toFixed(2).replace('.', ','), getStatusContrato(c),
+      c._origem === 'nota' ? 'nota' : 'contrato'];
   });
   downloadCSV([header, ...rows], 'relatorio_contabil');
 }
