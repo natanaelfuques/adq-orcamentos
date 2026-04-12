@@ -4789,14 +4789,15 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
   var manifest = JSON.stringify({
     name: "\u00c1udio de Qualidade \u2014 Or\u00e7amentos",
     short_name: "AdQ",
-    start_url: "/adq-orcamentos/",
-    scope: "/adq-orcamentos/",
+    id: "https://natanaelfuques.github.io/adq-orcamentos/",
+    start_url: "https://natanaelfuques.github.io/adq-orcamentos/",
+    scope: "https://natanaelfuques.github.io/adq-orcamentos/",
     display: "standalone",
     background_color: "#111111",
     theme_color: "#1a1a1a",
     icons: [
-      {src: icon, sizes: "192x192", type: "image/png", purpose: "any maskable"},
-      {src: icon, sizes: "512x512", type: "image/png", purpose: "any maskable"}
+      {src: "https://natanaelfuques.github.io/adq-orcamentos/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any"},
+      {src: "https://natanaelfuques.github.io/adq-orcamentos/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable"}
     ]
   });
   var mBlob = new Blob([manifest], {type: "application/json"});
