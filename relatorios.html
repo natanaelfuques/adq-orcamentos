@@ -197,15 +197,34 @@ header {
 .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
 
 /* Painéis de aba */
-.tab-slider { display: block; width: 100%; }
-.tab-panel { display: none; padding: 24px 20px 80px; }
-.tab-panel.active { display: block; }
-.tab-panel.anim { animation: tabFadeIn 0.15s ease; }
-@keyframes tabFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+.main {
+  padding: 0;
+  max-width: none;
+  margin: 0;
+  overflow: hidden;
 }
-.main { padding: 0; max-width: none; margin: 0; }
+.tab-slider {
+  display: flex;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: auto;
+  width: 100%;
+}
+.tab-slider::-webkit-scrollbar { display: none; }
+.tab-panel {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  padding: 24px 20px 80px;
+  box-sizing: border-box;
+  display: block;
+}
+.tab-panel.anim {}
 
 /* ── KPI GRID ── */
 .kpi-grid {
@@ -547,7 +566,7 @@ header {
 
   .tab-btn { padding: 9px 13px; font-size: 0.72rem; }
 
-  .tab-panel { padding: 14px 12px 80px; }
+  .tab-panel { padding: 14px 12px 80px; min-width: 100%; }
 
   .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .kpi-value { font-size: 1.35rem; }
@@ -1329,6 +1348,9 @@ function _verificarPronto() {
   } else {
     renderTudo();
   }
+  // Garantir que o slider inicia na primeira aba sem animação
+  var slider = document.getElementById('tab-slider');
+  if (slider) slider.scrollLeft = 0;
 }
 
 // ══════════════════════════════════════════
@@ -1565,33 +1587,30 @@ function renderTudo() {
 // ── TAB SWITCH ──
 const _TAB_NAMES = ['pagamentos','financeiro','contratos','eventos','clientes','sazonalidade','contabilidade'];
 
-function trocarTab(tab) {
+function trocarTab(tab, smooth) {
   _tabAtiva = tab;
   const idx = _TAB_NAMES.indexOf(tab);
 
-  // botões nav
+  // Atualizar botões nav
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
     b.classList.toggle('active', i === idx);
   });
 
-  // scroll do nav para centrar o botão ativo
+  // Scroll do nav para centrar o botão ativo
   const activeBtn = document.querySelector('.tab-btn.active');
   if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
-  // mostrar painel correto
-  document.querySelectorAll('.tab-panel').forEach(p => {
-    p.classList.remove('active');
-    p.classList.remove('anim');
-  });
-  const panel = document.getElementById('tab-' + tab);
-  if (panel) {
-    panel.classList.add('active');
-    // força reflow para animação funcionar
-    void panel.offsetWidth;
-    panel.classList.add('anim');
+  // Rolar o slider para o painel correto
+  const slider = document.getElementById('tab-slider');
+  const panel  = document.getElementById('tab-' + tab);
+  if (slider && panel) {
+    slider.scrollTo({
+      left: panel.offsetLeft,
+      behavior: smooth === false ? 'auto' : 'smooth'
+    });
   }
 
-  // renderizar conteúdo
+  // Renderizar conteúdo da aba (lazy)
   const renderMap = {
     pagamentos: renderPagamentos,
     financeiro: renderFinanceiro,
@@ -1604,33 +1623,11 @@ function trocarTab(tab) {
   if (renderMap[tab]) renderMap[tab]();
 }
 
-// ── SWIPE ENTRE ABAS ──
+// ── SYNC NAV AO ARRASTAR (IntersectionObserver) ──
 (function() {
-  var _sx = 0, _sy = 0, _ativo = false;
-  var THRESHOLD = 50;
-
   window.addEventListener('load', function() {
-    var main = document.querySelector('.main');
-    if (!main) return;
-
-    main.addEventListener('touchstart', function(e) {
-      if (e.touches.length !== 1) return;
-      if (e.target.closest('.table-scroll, .tabs, .periodo-btns, .pgto-filtros')) return;
-      _sx = e.touches[0].clientX;
-      _sy = e.touches[0].clientY;
-      _ativo = true;
-    }, { passive: true });
-
-    main.addEventListener('touchend', function(e) {
-      if (!_ativo) return;
-      _ativo = false;
-      var dx = e.changedTouches[0].clientX - _sx;
-      var dy = e.changedTouches[0].clientY - _sy;
-      if (Math.abs(dx) < THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
-      var idx = _TAB_NAMES.indexOf(_tabAtiva);
-      if (dx < 0 && idx < _TAB_NAMES.length - 1) trocarTab(_TAB_NAMES[idx + 1]);
-      else if (dx > 0 && idx > 0) trocarTab(_TAB_NAMES[idx - 1]);
-    }, { passive: true });
+    const slider = document.getElementById('tab-slider');
+    if (!slider) return;
 
     // sticky top do tabs-wrap
     function calcTop() {
@@ -1640,6 +1637,40 @@ function trocarTab(tab) {
     }
     calcTop();
     window.addEventListener('resize', calcTop);
+
+    // IntersectionObserver: quando um painel fica ≥50% visível, atualiza a nav
+    var _scrolling = false;
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.intersectionRatio >= 0.5) {
+          var tab = entry.target.id.replace('tab-', '');
+          if (tab === _tabAtiva) return;
+          _tabAtiva = tab;
+          var idx = _TAB_NAMES.indexOf(tab);
+          document.querySelectorAll('.tab-btn').forEach(function(b, i) {
+            b.classList.toggle('active', i === idx);
+          });
+          var activeBtn = document.querySelector('.tab-btn.active');
+          if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          // Renderizar aba que entrou em foco
+          var renderMap = {
+            pagamentos: renderPagamentos,
+            financeiro: renderFinanceiro,
+            contratos: renderContratos,
+            eventos: renderEventos,
+            clientes: renderClientes,
+            sazonalidade: renderSazonalidade,
+            contabilidade: renderContabilidade
+          };
+          if (renderMap[tab]) renderMap[tab]();
+        }
+      });
+    }, { root: slider, threshold: 0.5 });
+
+    _TAB_NAMES.forEach(function(name) {
+      var panel = document.getElementById('tab-' + name);
+      if (panel) obs.observe(panel);
+    });
   });
 })();
 
