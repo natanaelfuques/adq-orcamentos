@@ -165,14 +165,19 @@ header {
 
 .btn-refresh {
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
+  border: 1px solid #444;
+  color: #aaa;
   border-radius: 4px;
-  padding: 5px 8px;
+  padding: 0;
+  width: 26px;
+  height: 26px;
+  box-sizing: border-box;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
 }
 .btn-refresh:hover { border-color: var(--gold); color: var(--gold); }
 .btn-refresh.spinning { border-color: var(--gold); color: var(--gold); }
@@ -180,29 +185,37 @@ header {
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .btn-sair {
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
+  border: 1px solid #444;
+  color: #aaa;
   border-radius: 4px;
-  padding: 5px 12px;
+  padding: 4px 10px;
   font-family: 'Barlow', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   cursor: pointer;
+  height: 26px;
+  box-sizing: border-box;
+  line-height: 1;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
 }
 .btn-sair:hover { border-color: #e55; color: #e55; }
 
 .btn-config-painel {
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
+  border: 1px solid #444;
+  color: #aaa;
   border-radius: 4px;
-  padding: 4px 6px;
+  padding: 0;
+  width: 26px;
+  height: 26px;
+  box-sizing: border-box;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   transition: border-color 0.15s, color 0.15s;
 }
 .btn-config-painel:hover { border-color: var(--gold); color: var(--gold); }
@@ -671,7 +684,7 @@ header {
 }
 
 .hd-date {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.07em;
