@@ -970,6 +970,14 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 // ── Auth ──
 // E-mails com permissão de acesso ao botão de orçamentos (fallback local)
 var EMAILS_ORCAMENTO_PADRAO = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
+// E-mails com permissão para usar o Modo Editor (fallback local)
+var EMAILS_EDITOR_PADRAO = ['natanael.fuques@gmail.com'];
+// E-mails com permissão para ver o Histórico (fallback local)
+var EMAILS_HISTORICO_PADRAO = ['natanael.fuques@gmail.com'];
+
+// Permissões carregadas do Firestore (atualizadas no login)
+var _permissoesEditor = EMAILS_EDITOR_PADRAO.slice();
+var _permissoesHistorico = EMAILS_HISTORICO_PADRAO.slice();
 
 function _aplicarPermissaoVoltar(emailUsuario, permissoes) {
   var lista = permissoes || EMAILS_ORCAMENTO_PADRAO;
@@ -978,6 +986,26 @@ function _aplicarPermissaoVoltar(emailUsuario, permissoes) {
     var visivel = lista.indexOf(emailUsuario) >= 0;
     btn.style.display = visivel ? 'flex' : 'none';
   }
+}
+
+function _aplicarPermissaoEditor(emailUsuario, permissoes) {
+  _permissoesEditor = permissoes || EMAILS_EDITOR_PADRAO;
+  // Ocultar toggle do editor no painel admin se não tiver permissão
+  var toggle = document.getElementById('adm-editor-toggle');
+  var editorBloco = document.getElementById('adm-editor-bloco');
+  var temPermissao = _permissoesEditor.indexOf(emailUsuario) >= 0;
+  if (editorBloco) editorBloco.style.display = temPermissao ? '' : 'none';
+  // Se o modo editor estava ativo mas perdeu permissão, desativa
+  if (!temPermissao && _editorModeAtivo) {
+    _editorModeAtivo = false;
+    document.body.classList.remove('editor-mode');
+    var banner = document.getElementById('editor-mode-banner');
+    if (banner) banner.remove();
+  }
+}
+
+function _aplicarPermissaoHistorico(emailUsuario, permissoes) {
+  _permissoesHistorico = permissoes || EMAILS_HISTORICO_PADRAO;
 }
 
 auth.onAuthStateChanged(function(user) {
@@ -1000,6 +1028,26 @@ auth.onAuthStateChanged(function(user) {
       .catch(function() {
         // Se falhar, usa fallback local
         _aplicarPermissaoVoltar(user.email, EMAILS_ORCAMENTO_PADRAO);
+      });
+
+    // Buscar permissões do modo editor
+    db.collection('configuracoes').doc('permissoes_editor').get()
+      .then(function(doc) {
+        var lista = doc.exists && doc.data().emails ? doc.data().emails : EMAILS_EDITOR_PADRAO;
+        _aplicarPermissaoEditor(user.email, lista);
+      })
+      .catch(function() {
+        _aplicarPermissaoEditor(user.email, EMAILS_EDITOR_PADRAO);
+      });
+
+    // Buscar permissões do histórico
+    db.collection('configuracoes').doc('permissoes_historico').get()
+      .then(function(doc) {
+        var lista = doc.exists && doc.data().emails ? doc.data().emails : EMAILS_HISTORICO_PADRAO;
+        _aplicarPermissaoHistorico(user.email, lista);
+      })
+      .catch(function() {
+        _aplicarPermissaoHistorico(user.email, EMAILS_HISTORICO_PADRAO);
       });
 
     registrarAcesso(user);
@@ -2042,7 +2090,7 @@ function abrirPainelAdmin() {
       </div>\
       <div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">\
         <div id="adm-panel-editor" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
-          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
+          <div id="adm-editor-bloco" style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">\
               <div>\
                 <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Modo Editor</div>\
@@ -2068,11 +2116,29 @@ function abrirPainelAdmin() {
         <div id="adm-panel-perm" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
           <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
             <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Botão de Orçamentos</div>\
-            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Defina quais e-mails podem ver o botão de acesso à página de orçamentos e contratos.</div>\
+            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Quem pode ver o botão de acesso à página de orçamentos e contratos.</div>\
             <div id="adm-perm-lista" style="margin-bottom:10px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
             <div style="display:flex;gap:6px;margin-top:8px">\
               <input id="adm-perm-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.75rem;padding:7px 10px;outline:none;box-sizing:border-box" />\
               <button onclick="_admPermAdicionar()" style="background:#C8A94A;color:#111;border:none;border-radius:4px;padding:7px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">+ Adicionar</button>\
+            </div>\
+          </div>\
+          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Modo Editor</div>\
+            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Quem pode ativar a edição de campos dos cards.</div>\
+            <div id="adm-perm-editor-lista" style="margin-bottom:10px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
+            <div style="display:flex;gap:6px;margin-top:8px">\
+              <input id="adm-perm-editor-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.75rem;padding:7px 10px;outline:none;box-sizing:border-box" />\
+              <button onclick="_admPermEditorAdicionar()" style="background:#C8A94A;color:#111;border:none;border-radius:4px;padding:7px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">+ Adicionar</button>\
+            </div>\
+          </div>\
+          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Histórico</div>\
+            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Quem pode acessar a aba de histórico de ações no painel.</div>\
+            <div id="adm-perm-hist-lista" style="margin-bottom:10px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
+            <div style="display:flex;gap:6px;margin-top:8px">\
+              <input id="adm-perm-hist-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.75rem;padding:7px 10px;outline:none;box-sizing:border-box" />\
+              <button onclick="_admPermHistAdicionar()" style="background:#C8A94A;color:#111;border:none;border-radius:4px;padding:7px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">+ Adicionar</button>\
             </div>\
           </div>\
         </div>\
@@ -2108,46 +2174,97 @@ function _admAba(idx, fromScroll) {
     if (slider) slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
   }
   // Carregar histórico ao entrar na aba
-  if (idx === 3) { _carregarAcessosAdmin(); }
+  if (idx === 3) {
+    var u = auth.currentUser;
+    if (u && _permissoesHistorico.indexOf(u.email) < 0) {
+      var lista = document.getElementById('adm-acessos-lista');
+      if (lista) lista.innerHTML = '<div style="padding:32px 22px;text-align:center;font-size:0.8rem;color:#555">Você não tem permissão para ver o histórico.</div>';
+      return;
+    }
+    _carregarAcessosAdmin();
+  }
   // Carregar permissões ao entrar na aba
   if (idx === 2) { _admPermCarregar(); }
 }
 
-// ── Permissões de orçamento ──
+// ── Permissões: Orçamento ──
 var _admPermEmailsAtuais = [];
 
 function _admPermCarregar() {
-  var lista = document.getElementById('adm-perm-lista');
+  _admPermCarregarSecao('permissoes_orcamento', EMAILS_ORCAMENTO_PADRAO, 'adm-perm-lista', function(list) { _admPermEmailsAtuais = list; });
+  _admPermCarregarSecao('permissoes_editor',    EMAILS_EDITOR_PADRAO,    'adm-perm-editor-lista', function(list) { _admPermEditorEmailsAtuais = list; });
+  _admPermCarregarSecao('permissoes_historico', EMAILS_HISTORICO_PADRAO, 'adm-perm-hist-lista',   function(list) { _admPermHistEmailsAtuais = list; });
+}
+
+function _admPermCarregarSecao(docId, padrao, listaId, onLoad) {
+  var lista = document.getElementById(listaId);
   if (!lista) return;
   lista.innerHTML = '<div style="font-size:0.75rem;color:#555">Carregando...</div>';
-  db.collection('configuracoes').doc('permissoes_orcamento').get()
+  db.collection('configuracoes').doc(docId).get()
     .then(function(doc) {
-      _admPermEmailsAtuais = doc.exists && doc.data().emails ? doc.data().emails : EMAILS_ORCAMENTO_PADRAO.slice();
-      _admPermRenderLista();
+      var emails = doc.exists && doc.data().emails ? doc.data().emails : padrao.slice();
+      onLoad(emails);
+      _admPermRenderSecao(listaId, emails, docId, padrao, onLoad);
     })
     .catch(function() {
-      _admPermEmailsAtuais = EMAILS_ORCAMENTO_PADRAO.slice();
-      _admPermRenderLista();
+      onLoad(padrao.slice());
+      _admPermRenderSecao(listaId, padrao.slice(), docId, padrao, onLoad);
     });
 }
 
-function _admPermRenderLista() {
-  var lista = document.getElementById('adm-perm-lista');
+function _admPermRenderSecao(listaId, emails, docId, padrao, onLoad) {
+  var lista = document.getElementById(listaId);
   if (!lista) return;
-  if (!_admPermEmailsAtuais.length) {
+  if (!emails.length) {
     lista.innerHTML = '<div style="font-size:0.72rem;color:#555;font-style:italic">Nenhum e-mail com permissão.</div>';
     return;
   }
-  lista.innerHTML = _admPermEmailsAtuais.map(function(email, i) {
+  lista.innerHTML = emails.map(function(email, i) {
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1e1e1e">' +
       '<span style="font-size:0.74rem;color:#ccc">' + email + '</span>' +
-      '<button onclick="_admPermRemover(' + i + ')" title="Remover" style="background:none;border:none;color:#555;cursor:pointer;font-size:1rem;padding:0 2px;line-height:1" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'">×</button>' +
+      '<button onclick="_admPermRemoverSecao(\'' + listaId + '\',\'' + docId + '\',' + i + ')" title="Remover" style="background:none;border:none;color:#555;cursor:pointer;font-size:1rem;padding:0 2px;line-height:1" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'">×</button>' +
       '</div>';
   }).join('');
 }
 
-function _admPermAdicionar() {
-  var input = document.getElementById('adm-perm-novo-email');
+// Mapa auxiliar para acessar os arrays corretos por docId
+function _admPermGetArray(docId) {
+  if (docId === 'permissoes_orcamento') return _admPermEmailsAtuais;
+  if (docId === 'permissoes_editor')    return _admPermEditorEmailsAtuais;
+  if (docId === 'permissoes_historico') return _admPermHistEmailsAtuais;
+  return [];
+}
+function _admPermSetArray(docId, arr) {
+  if (docId === 'permissoes_orcamento') _admPermEmailsAtuais = arr;
+  if (docId === 'permissoes_editor')    _admPermEditorEmailsAtuais = arr;
+  if (docId === 'permissoes_historico') _admPermHistEmailsAtuais = arr;
+}
+
+function _admPermRemoverSecao(listaId, docId, idx) {
+  var arr = _admPermGetArray(docId).slice();
+  arr.splice(idx, 1);
+  _admPermSetArray(docId, arr);
+  _admPermSalvarSecao(docId, arr, listaId);
+}
+
+function _admPermSalvarSecao(docId, arr, listaId) {
+  db.collection('configuracoes').doc(docId).set({ emails: arr })
+    .then(function() {
+      _admPermRenderSecao(listaId, arr, docId, [], function(l) { _admPermSetArray(docId, l); });
+      // Reaplicar permissão ao usuário atual imediatamente
+      var u = auth.currentUser;
+      if (u) {
+        if (docId === 'permissoes_orcamento') _aplicarPermissaoVoltar(u.email, arr);
+        if (docId === 'permissoes_editor')    _aplicarPermissaoEditor(u.email, arr);
+        if (docId === 'permissoes_historico') _aplicarPermissaoHistorico(u.email, arr);
+      }
+      _editorToast('Permissões atualizadas!');
+    })
+    .catch(function(err) { _editorToast('Erro ao salvar: ' + err.message, true); });
+}
+
+function _admPermAdicionarSecao(inputId, docId, listaId) {
+  var input = document.getElementById(inputId);
   if (!input) return;
   var email = input.value.trim().toLowerCase();
   if (!email || email.indexOf('@') < 0) {
@@ -2155,31 +2272,27 @@ function _admPermAdicionar() {
     setTimeout(function() { input.style.borderColor = '#2a2a2a'; }, 1500);
     return;
   }
-  if (_admPermEmailsAtuais.indexOf(email) >= 0) {
-    input.value = '';
-    return;
-  }
-  _admPermEmailsAtuais.push(email);
+  var arr = _admPermGetArray(docId);
+  if (arr.indexOf(email) >= 0) { input.value = ''; return; }
+  arr = arr.concat([email]);
+  _admPermSetArray(docId, arr);
   input.value = '';
-  _admPermSalvar();
+  _admPermSalvarSecao(docId, arr, listaId);
 }
 
-function _admPermRemover(idx) {
-  _admPermEmailsAtuais.splice(idx, 1);
-  _admPermSalvar();
-}
+// Atalhos para cada seção
+function _admPermAdicionar()       { _admPermAdicionarSecao('adm-perm-novo-email',       'permissoes_orcamento', 'adm-perm-lista'); }
+function _admPermEditorAdicionar() { _admPermAdicionarSecao('adm-perm-editor-novo-email','permissoes_editor',    'adm-perm-editor-lista'); }
+function _admPermHistAdicionar()   { _admPermAdicionarSecao('adm-perm-hist-novo-email',  'permissoes_historico', 'adm-perm-hist-lista'); }
 
-function _admPermSalvar() {
-  db.collection('configuracoes').doc('permissoes_orcamento').set({ emails: _admPermEmailsAtuais })
-    .then(function() {
-      _admPermRenderLista();
-      // Reaplicar permissão ao usuário atual imediatamente
-      var u = auth.currentUser;
-      if (u) _aplicarPermissaoVoltar(u.email, _admPermEmailsAtuais);
-      _editorToast('Permissões atualizadas!');
-    })
-    .catch(function(err) { _editorToast('Erro ao salvar: ' + err.message, true); });
-}
+// Manter compatibilidade com _admPermRemover legado (orçamento)
+function _admPermRemover(idx) { _admPermRemoverSecao('adm-perm-lista', 'permissoes_orcamento', idx); }
+
+// ── Permissões: Editor ──
+var _admPermEditorEmailsAtuais = [];
+
+// ── Permissões: Histórico ──
+var _admPermHistEmailsAtuais = [];
 
 function _carregarAcessosAdmin() {
   if (!db) return;
@@ -2258,6 +2371,11 @@ function _carregarAcessosAdmin() {
 // ── MODO EDITOR ──────────────────────────────────────────────────────────────
 
 function _toggleEditorMode() {
+  var u = auth.currentUser;
+  if (u && _permissoesEditor.indexOf(u.email) < 0) {
+    _editorToast('Você não tem permissão para usar o Modo Editor.', true);
+    return;
+  }
   _editorModeAtivo = !_editorModeAtivo;
   var toggle = document.getElementById('adm-editor-toggle');
   if (toggle) {
