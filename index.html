@@ -5246,21 +5246,47 @@ function handleSalvosClick(e) {
   else if (action === 'toggle-aprovado-contrato') {
     if (!db) return;
     var statusAtual = btn.getAttribute('data-status') || (btn.getAttribute('data-aprovado') === 'true' ? 'assinado' : 'pendente');
-    var novoStatus = statusAtual === 'pendente' ? 'enviado' : statusAtual === 'enviado' ? 'assinado' : statusAtual === 'assinado' ? 'confirmado' : statusAtual === 'confirmado' ? 'cancelado' : 'pendente';
-    var novoAprovado = novoStatus === 'assinado' || novoStatus === 'confirmado';
-    var novoLabel = novoStatus === 'confirmado' ? 'Confirmado' : novoStatus === 'assinado' ? 'Assinado' : novoStatus === 'enviado' ? 'Enviado' : novoStatus === 'cancelado' ? 'Cancelado' : 'Pendente';
-    var novaClasse = novoStatus === 'confirmado' ? 'confirmado' : novoStatus === 'assinado' ? 'aprovado' : novoStatus === 'enviado' ? 'enviado' : novoStatus === 'cancelado' ? 'cancelado' : '';
+    // Ciclo completo: Pendente → Enviado → Assinado → Confirmado → Em andamento → Concluído → Cancelado → Pendente
+    var novoStatus = statusAtual === 'pendente' ? 'enviado'
+                   : statusAtual === 'enviado' ? 'assinado'
+                   : statusAtual === 'assinado' ? 'confirmado'
+                   : statusAtual === 'confirmado' ? 'andamento'
+                   : statusAtual === 'andamento' ? 'concluido'
+                   : statusAtual === 'concluido' ? 'cancelado'
+                   : 'pendente';
+    // aprovado: true apenas a partir de confirmado
+    var novoAprovado = novoStatus === 'confirmado' || novoStatus === 'andamento' || novoStatus === 'concluido';
+    var novoLabel = novoStatus === 'confirmado' ? 'Confirmado'
+                  : novoStatus === 'assinado'   ? 'Assinado'
+                  : novoStatus === 'enviado'    ? 'Enviado'
+                  : novoStatus === 'andamento'  ? 'Em andamento'
+                  : novoStatus === 'concluido'  ? 'Concluído'
+                  : novoStatus === 'cancelado'  ? 'Cancelado' : 'Pendente';
+    var novaClasse = novoStatus === 'confirmado' ? 'confirmado'
+                   : novoStatus === 'assinado'   ? 'aprovado'
+                   : novoStatus === 'enviado'    ? 'enviado'
+                   : novoStatus === 'andamento'  ? 'andamento'
+                   : novoStatus === 'concluido'  ? 'concluido'
+                   : novoStatus === 'cancelado'  ? 'cancelado' : '';
     db.collection('contratos').doc(id).update({ status_contrato: novoStatus, aprovado: novoAprovado, removido_manualmente: (novoStatus === 'cancelado') })
       .catch(function(e) { console.warn('[AdQ] Toggle contrato erro:', e); });
-    // Se cancelou, remove do painel
-    if (novoStatus === 'cancelado') { removerDoPainel(id); delete _etapaMapContratos[id]; }
+    // Se cancelou, remove do painel; se andamento ou concluido, atualiza etapa no painel
+    if (novoStatus === 'cancelado') {
+      removerDoPainel(id); delete _etapaMapContratos[id];
+    } else if (novoStatus === 'andamento' || novoStatus === 'concluido') {
+      if (db && _etapaMapContratos[id]) {
+        db.collection('eventos_campo').doc(id).update({ etapa: novoStatus })
+          .catch(function(e) { console.warn('[AdQ] Atualizar etapa painel erro:', e); });
+      }
+    }
     btn.textContent = novoLabel;
     btn.setAttribute('data-status', novoStatus);
     btn.setAttribute('data-aprovado', novoAprovado);
-    btn.className = 'salvo-status' + (novaClasse ? ' ' + novaClasse : '');
-    btn.style.cssText = novoStatus === 'cancelado' ? 'cursor:pointer' : 'cursor:pointer;background:transparent';
+    var isReadonly = novoStatus === 'andamento' || novoStatus === 'concluido';
+    btn.className = (isReadonly ? 'salvo-status status-readonly' : 'salvo-status') + (novaClasse ? ' ' + novaClasse : '');
+    btn.style.cssText = isReadonly ? '' : (novoStatus === 'cancelado' ? 'cursor:pointer' : 'cursor:pointer;background:transparent');
     var monRow = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('.salvo-montagem-row');
-    if (monRow) monRow.style.display = novoStatus === 'confirmado' ? '' : 'none';
+    if (monRow) monRow.style.display = (novoStatus === 'confirmado' || novoStatus === 'andamento') ? '' : 'none';
   }
   else if (action === 'toggle-aprovado') {
     if (!db) return;
@@ -5845,8 +5871,8 @@ function iniciarListenerContratos() {
       if (change.type === 'removed') delete _etapaMapContratos[change.doc.id];
       var id = change.doc.id;
       var etapa = change.type === 'removed' ? '' : (change.doc.data().etapa || 'eventos');
-      var btn = document.querySelector('.salvo-card span.salvo-status[data-id="' + id + '"]')
-             || document.querySelector('.salvo-card button.salvo-status[data-id="' + id + '"]');
+      var btn = document.querySelector('.salvo-card [data-action="toggle-aprovado-contrato"][data-id="' + id + '"]')
+             || document.querySelector('.salvo-card span.salvo-status[data-id="' + id + '"]');
       if (!btn) return;
       var aprovado = btn.getAttribute('data-aprovado') === 'true';
       var statusClass, statusLabel, clickable;
@@ -5881,7 +5907,8 @@ function iniciarListenerContratos() {
       var cardEl = btn.closest('.salvo-card');
       if (cardEl) {
         var monRow = cardEl.querySelector('.salvo-montagem-row');
-        if (monRow) monRow.style.display = (aprovado && etapa !== 'concluido') ? '' : 'none';
+        var _sc = btn.getAttribute('data-status') || '';
+        if (monRow) monRow.style.display = ((_sc === 'confirmado' || _sc === 'andamento') && etapa !== 'concluido') ? '' : 'none';
         // Atualizar cor e clique da referência do contrato
         var refBtn = cardEl.querySelector('[data-ref-contrato]');
         if (refBtn) {
@@ -5982,9 +6009,22 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var etapa = etapaMap[id]; // 'eventos','andamento','concluido' ou undefined
     // Determinar estado visual do botão
     var _statusCon = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
-    var statusClass = _statusCon === 'confirmado' ? ' confirmado' : _statusCon === 'assinado' ? ' aprovado' : _statusCon === 'enviado' ? ' enviado' : _statusCon === 'cancelado' ? ' cancelado' : '';
-    var statusLabel = _statusCon === 'confirmado' ? 'Confirmado' : _statusCon === 'assinado' ? 'Assinado' : _statusCon === 'enviado' ? 'Enviado' : _statusCon === 'cancelado' ? 'Cancelado' : 'Pendente';
-    var statusClickable = true;
+    // Override visual por etapa do painel (andamento/concluido são readonly)
+    var _etapaOverride = etapa === 'andamento' || etapa === 'concluido';
+    var _dispStatus = _etapaOverride ? etapa : _statusCon;
+    var statusClass = _dispStatus === 'confirmado' ? ' confirmado'
+                    : _dispStatus === 'assinado'   ? ' aprovado'
+                    : _dispStatus === 'enviado'    ? ' enviado'
+                    : _dispStatus === 'andamento'  ? ' andamento'
+                    : _dispStatus === 'concluido'  ? ' concluido'
+                    : _dispStatus === 'cancelado'  ? ' cancelado' : '';
+    var statusLabel = _dispStatus === 'confirmado' ? 'Confirmado'
+                    : _dispStatus === 'assinado'   ? 'Assinado'
+                    : _dispStatus === 'enviado'    ? 'Enviado'
+                    : _dispStatus === 'andamento'  ? 'Em andamento'
+                    : _dispStatus === 'concluido'  ? 'Concluído'
+                    : _dispStatus === 'cancelado'  ? 'Cancelado' : 'Pendente';
+    var statusClickable = !_etapaOverride;
     var _criadorCon = doc.criador || '';
     var _classeBordaCon = _criadorCon === 'natanael.fuques@gmail.com' ? ' borda-azul' : _criadorCon === 'karielenmoreira@gmail.com' ? ' borda-rosa' : '';
     var _wFone = (doc.cli_fone || '').replace(/\D/g,'');
@@ -6029,7 +6069,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button' + (_temEvento ? ' onclick="irParaEventoRef(\'' + ref + '\')"' : '') + ' data-ref-contrato="' + ref + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:' + refColor + ';letter-spacing:0.1em;background:transparent;border:none;cursor:' + refCursor + ';padding:0;transition:color 0.15s"' + (_temEvento ? ' onmouseover="this.style.color=\'#C8A94A\'" onmouseout="this.style.color=\'#aaa\'"' : '') + '># ' + ref + '</button>';
     card += '</span>';
     card += '</div>';
-    card += '<div class="salvo-montagem-row" style="' + (_statusCon === 'confirmado' && etapa !== 'concluido' ? '' : 'display:none') + '">';
+    card += '<div class="salvo-montagem-row" style="' + ((_statusCon === 'confirmado' || _statusCon === 'andamento') && etapa !== 'concluido' ? '' : 'display:none') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
     card += '<input class="salvo-montagem-input" type="text" placeholder="Desmontagem" data-field="desmontagem" data-id="' + id + '" value="' + escHtml(doc.desmontagem || '') + '">';
     card += '</div>';
@@ -6823,7 +6863,7 @@ function verificarAssinaturaAutentique(contratoId, btn) {
       btn.textContent = '✓ ' + dataAssinatura;
       btn.className = 'salvo-status btn-autentique-check assinado-aut';
       if (db) {
-        db.collection('contratos').doc(contratoId).update({ status_contrato: 'assinado', aprovado: true })
+        db.collection('contratos').doc(contratoId).update({ status_contrato: 'assinado', aprovado: false })
           .catch(function(e) { console.warn('[AdQ] Erro ao atualizar status:', e); });
         var statusBtn = document.querySelector('[data-action="toggle-aprovado-contrato"][data-id="' + contratoId + '"]');
         if (statusBtn && statusBtn.getAttribute('data-status') !== 'assinado') {
@@ -6877,7 +6917,7 @@ function _pollingAutentique() {
           var sigs = (data.data && data.data.document && data.data.document.signatures) || [];
           var assinado = sigs.length > 0 && sigs.every(function(s) { return s.signed_at && s.signed_at.date; });
           if (!assinado) return;
-          db.collection('contratos').doc(cid).update({ status_contrato: 'assinado', aprovado: true })
+          db.collection('contratos').doc(cid).update({ status_contrato: 'assinado', aprovado: false })
             .catch(function(e) { console.warn('[AdQ] Polling erro update:', e); });
           var statusBtn = document.querySelector('[data-action="toggle-aprovado-contrato"][data-id="' + cid + '"]');
           if (statusBtn) {
