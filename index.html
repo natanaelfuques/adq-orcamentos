@@ -4781,19 +4781,27 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
 
 // ═══ PWA: Manifest + Service Worker ═══
 (function(){
-  var ICON_B64 = (document.querySelector('link[rel="apple-touch-icon"]').href.split(',')[1] || '').trim();
+  // Extrai o base64 do apple-touch-icon de forma segura
+  var iconEl = document.querySelector('link[rel="apple-touch-icon"]');
+  var iconAttr = iconEl ? iconEl.getAttribute('href') : '';
+  var ICON_B64 = '';
+  if (iconAttr && iconAttr.indexOf('base64,') !== -1) {
+    ICON_B64 = iconAttr.split('base64,')[1].trim();
+  }
+  var iconSrc = ICON_B64 ? ('data:image/png;base64,' + ICON_B64) : '/adq-orcamentos/icon-512.png';
 
   // Manifest via data: URL (compatível com Brave e Chrome)
   var manifestObj = {
     name: "\u00c1udio de Qualidade \u2014 Or\u00e7amentos",
     short_name: "AdQ",
-    start_url: "./index.html",
+    start_url: "/adq-orcamentos/index.html",
+    id: "/adq-orcamentos/index.html",
     display: "standalone",
     background_color: "#111111",
     theme_color: "#1a1a1a",
     icons: [
-      {src: "data:image/png;base64," + ICON_B64, sizes: "192x192", type: "image/png"},
-      {src: "data:image/png;base64," + ICON_B64, sizes: "512x512", type: "image/png"}
+      {src: iconSrc, sizes: "192x192", type: "image/png"},
+      {src: iconSrc, sizes: "512x512", type: "image/png"}
     ]
   };
   var mLink = document.createElement("link");
