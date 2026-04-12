@@ -1107,6 +1107,7 @@ header {
 <tr>
 <th>#</th>
 <th>Cliente</th>
+<th>Contato</th>
 <th class="r">Contratos</th>
 <th class="r">Total Faturado</th>
 <th class="r">Ticket Médio</th>
@@ -1522,8 +1523,19 @@ function getPgtoLabel(c) {
 }
 
 function nomeCli(c) {
-  // notas podem ter contato, nome, cli_nome etc.
-  return c.cli_nome || c.nome_cliente || c.cliente || c.nome || c.contato || '—';
+  // Contratos: nome do contratante em cli_nome
+  if (c.cli_nome) return c.cli_nome;
+  // Notas/eventos rápidos: título vem como "Nome — Descrição" ou "Nome: Descrição"
+  // O nome é sempre a primeira parte antes do separador
+  if (c._origem === 'nota' && c.titulo) {
+    const sep = c.titulo.match(/^(.+?)\s*[\u2014\-\u2013:]\s*.+/);
+    return sep ? sep[1].trim() : c.titulo.trim();
+  }
+  return c.nome_cliente || c.cliente || c.nome || c.contato || '—';
+}
+
+function contatoCli(c) {
+  return c.cli_telefone || c.telefone || c.contato || c.whatsapp || c.fone || '—';
 }
 
 function tipoEv(c) {
@@ -2421,11 +2433,13 @@ function renderClientes() {
   const cliMap = {};
   confirmados.forEach(e => {
     const nome = nomeCli(e);
-    if (!cliMap[nome]) cliMap[nome] = { contratos: 0, total: 0, ultimo: null };
+    if (!cliMap[nome]) cliMap[nome] = { contratos: 0, total: 0, ultimo: null, contato: contatoCli(e) };
     cliMap[nome].contratos++;
     cliMap[nome].total += getValorEvento(e);
     const d = tsToDate(e.criadoEm);
     if (!cliMap[nome].ultimo || d > cliMap[nome].ultimo) cliMap[nome].ultimo = d;
+    // Prefere contato com valor real
+    if (cliMap[nome].contato === '—') cliMap[nome].contato = contatoCli(e);
   });
 
   const cliList = Object.entries(cliMap)
@@ -2515,11 +2529,12 @@ function renderClientes() {
 
   // Tabela clientes
   const tbody = document.getElementById('tbody-clientes');
-  if (!cliList.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Nenhum cliente no período.</td></tr>'; return; }
+  if (!cliList.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum cliente no período.</td></tr>'; return; }
   tbody.innerHTML = cliList.slice(0, 30).map((cli, i) => `
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td style="font-weight:600">${cli.nome}</td>
+      <td style="color:var(--muted);font-size:0.82rem">${cli.contato}</td>
       <td class="r">${cli.contratos}</td>
       <td class="r" style="color:var(--gold)">${frs(cli.total)}</td>
       <td class="r">${frs(cli.ticket)}</td>
