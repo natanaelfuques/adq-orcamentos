@@ -508,6 +508,12 @@ header {
   margin-bottom: 4px;
 }
 
+.card-horario-block .horario-sep {
+  color: var(--muted);
+  margin: 0 3px;
+  font-weight: 400;
+}
+
 .card-horario-inline {
   font-size: 0.78rem;
   color: var(--text);
@@ -1408,8 +1414,19 @@ function buildCard(ev, past, col) {
     horarioLinha1 = l1.join(' · ');
     horarioLinha2 = l2.join(' · ');
   }
-  var horarioBlock = [horarioLinha1, horarioLinha2].filter(Boolean).join('\n');
+  var horarioBlock = '';
   var horarioInline = '';
+  if (ev.nota_id && temHorario) {
+    // Eventos de nota: Iníc. e Fim na mesma linha separados por " • "
+    var partes = [];
+    if (ev.ev_montagem) partes.push('Mont. ' + fmtHora(ev.ev_montagem));
+    if (ev.ev_inicio)   partes.push('Iníc. ' + fmtHora(ev.ev_inicio));
+    if (ev.ev_fim)      partes.push('Fim ' + fmtHora(ev.ev_fim));
+    if (ev.ev_desmontagem) partes.push('Desm. ' + fmtHora(ev.ev_desmontagem));
+    horarioBlock = partes.join('<span class="horario-sep">•</span>');
+  } else {
+    horarioBlock = [horarioLinha1, horarioLinha2].filter(Boolean).join('\n');
+  }
   var resp = ev.ev_resp ? '<div class="card-resp card-field-editable" data-field="ev_resp" data-evid="' + esc(ev.id) + '">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '';
   var itens = '';
   if ((ev.servicos && ev.servicos.length) || (ev.itens_extras && ev.itens_extras.length)) {
@@ -1481,7 +1498,7 @@ function buildCard(ev, past, col) {
     '</div>' +
     '<div class="card-body">' +
       '<div class="card-body-inner">' +
-        (horarioBlock ? '<div class="card-horario-block card-field-editable" data-field="ev_horarios" data-evid="' + esc(ev.id) + '">' + horarioBlock.split('\n').map(esc).join('<br>') + '</div>' : '') +
+        (horarioBlock ? '<div class="card-horario-block card-field-editable" data-field="ev_horarios" data-evid="' + esc(ev.id) + '">' + (ev.nota_id ? horarioBlock : horarioBlock.split('\n').map(esc).join('<br>')) + '</div>' : '') +
         '<div class="card-local">' +
           (function() {
             var wFone = ev.cli_fone || '';
