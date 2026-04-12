@@ -1,7 +1,12 @@
-const CACHE = 'adq-v2';
+const CACHE = 'adq-v3';
 const ASSETS = [
   '/adq-orcamentos/',
-  '/adq-orcamentos/index.html'
+  '/adq-orcamentos/index.html',
+  '/adq-orcamentos/manifest.json',
+  '/adq-orcamentos/favicon.ico',
+  '/adq-orcamentos/icon-192.png',
+  '/adq-orcamentos/icon-512.png',
+  '/adq-orcamentos/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', e => {
