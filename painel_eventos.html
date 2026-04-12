@@ -853,7 +853,13 @@ header {
 <div id="app-screen">
   <header>
     <div class="hd-row1">
-      <div class="hd-title">Painel de Eventos</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;min-width:0">
+        <a href="https://natanaelfuques.github.io/adq-orcamentos/" target="_self" id="btn-voltar-shortcut" title="Voltar para Orçamento e Contrato" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;background:rgba(200,169,74,0.08);border:1px solid rgba(200,169,74,0.35);border-radius:5px;width:26px;min-width:26px;height:52px;color:#C8A94A;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;flex-shrink:0;transition:background 0.18s,border-color 0.18s,box-shadow 0.18s" onmouseover="this.style.background='rgba(200,169,74,0.22)';this.style.borderColor='rgba(200,169,74,0.75)';this.style.boxShadow='0 0 10px rgba(200,169,74,0.35)'" onmouseout="this.style.background='rgba(200,169,74,0.08)';this.style.borderColor='rgba(200,169,74,0.35)';this.style.boxShadow='none'">←</a>
+        <div style="min-width:0">
+          <div class="hd-title">Painel de Eventos</div>
+          <div class="hd-sub" style="margin-top:2px">Áudio de Qualidade</div>
+        </div>
+      </div>
       <div class="hd-actions">
         <span class="hd-user" id="user-name"></span>
 
@@ -871,8 +877,7 @@ header {
         <button class="btn-sair" onclick="sair()">Sair</button>
       </div>
     </div>
-    <div class="hd-row2">
-      <div class="hd-sub">Áudio de Qualidade</div>
+    <div class="hd-row2" style="justify-content:flex-end">
       <div class="hd-date" id="header-date"></div>
     </div>
   
