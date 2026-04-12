@@ -1334,10 +1334,19 @@ function _verificarPronto() {
 // ══════════════════════════════════════════
 // PERÍODO
 // ══════════════════════════════════════════
-function setPeriodo(p) {
+function setPeriodo(p, btn) {
   _periodoAtivo = p;
   document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active'));
-  event && event.target && event.target.classList.add('active');
+  // Quando chamado via onclick, btn vem do argumento; fallback para event.target
+  const btnAtivo = btn || (typeof event !== 'undefined' && event && event.target) || null;
+  if (btnAtivo && btnAtivo.classList) btnAtivo.classList.add('active');
+  // Se chamado programaticamente (ex: setPeriodo('ano')), ativa o botão pelo texto
+  if (!btnAtivo) {
+    document.querySelectorAll('.pbtn').forEach(b => {
+      const mapa = { mes:'Este mês', trim:'Trimestre', ano:'Este ano', tudo:'Tudo', custom:'Personalizado' };
+      if (b.textContent.trim() === mapa[p]) b.classList.add('active');
+    });
+  }
 
   const hoje = new Date();
   const ano = hoje.getFullYear();
@@ -2074,15 +2083,32 @@ function renderFinanceiro() {
   `;
 
   // Gráfico: faturamento mensal — contratos + notas
-  const meses12 = [];
-  const ref = _dataIni || new Date(new Date().getFullYear(), 0, 1);
-  for (let i = 0; i < 12; i++) {
-    const m = new Date(ref.getFullYear(), ref.getMonth() + i, 1);
-    if (m > (_dataFim || new Date())) break;
-    meses12.push({ label: MESES[m.getMonth()] + '/' + String(m.getFullYear()).slice(2), m: m });
-  }
-
   const todosParaGraf = [..._contratos.map(c => ({ ...c, _origem: 'contrato' })), ..._notas];
+  const meses12 = [];
+  if (_dataIni && _dataFim) {
+    // Período definido: iterar mês a mês dentro do intervalo
+    let cur = new Date(_dataIni.getFullYear(), _dataIni.getMonth(), 1);
+    const fim = new Date(_dataFim.getFullYear(), _dataFim.getMonth(), 1);
+    while (cur <= fim) {
+      meses12.push({ label: MESES[cur.getMonth()] + '/' + String(cur.getFullYear()).slice(2), m: new Date(cur) });
+      cur.setMonth(cur.getMonth() + 1);
+    }
+  } else {
+    // "Tudo" ou período parcial: descobrir range a partir dos dados reais
+    const datas = todosParaGraf
+      .map(e => tsToDate(e.criadoEm))
+      .filter(Boolean)
+      .map(d => new Date(d.getFullYear(), d.getMonth(), 1));
+    if (datas.length) {
+      let cur = new Date(Math.min(...datas));
+      const hoje = new Date(); hoje.setDate(1); hoje.setHours(0,0,0,0);
+      const limFim = _dataFim ? new Date(_dataFim.getFullYear(), _dataFim.getMonth(), 1) : hoje;
+      while (cur <= limFim) {
+        meses12.push({ label: MESES[cur.getMonth()] + '/' + String(cur.getFullYear()).slice(2), m: new Date(cur) });
+        cur.setMonth(cur.getMonth() + 1);
+      }
+    }
+  }
   const dataFat = meses12.map(({ m }) => {
     return todosParaGraf.filter(e => {
       const d = tsToDate(e.criadoEm);
@@ -2449,7 +2475,14 @@ function renderSazonalidade() {
   // Contratos + notas para sazonalidade
   const todosParaSaz = [..._contratos.map(c => ({...c, _origem:'contrato'})), ..._notas];
   todosParaSaz.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e))).forEach(e => {
-    const d = tsToDate(e.criadoEm);
+    // Usa a data REAL do evento (ev_data) para sazonalidade; fallback para criadoEm
+    const dataEvtStr = e.ev_data || e.data_evento || e.dataEvt || '';
+    let d = null;
+    if (dataEvtStr) {
+      const p = dataEvtStr.split('-');
+      if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+    }
+    if (!d) d = tsToDate(e.criadoEm);
     if (!d) return;
     volMes[d.getMonth()]++;
     recMes[d.getMonth()] += getValorEvento(e);
