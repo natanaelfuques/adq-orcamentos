@@ -4112,9 +4112,7 @@ document.querySelectorAll('input[name=pgto]').forEach(r => {
     document.getElementById('pgto_parcelado_wrap').style.display =
       r.value === 'parcelado' && r.checked ? 'block' : 'none';
     if (r.value === 'parcelado') {
-      // Pre-fill data_entrada with ev_data
-      const de = document.getElementById('data_entrada');
-      if (de && !de.value) de.value = new Date().toISOString().split('T')[0];
+      // data_entrada deve ficar em branco para preenchimento manual
       selecionaParcelasIdeal();
       atualizaParceladoInfo();
     }
