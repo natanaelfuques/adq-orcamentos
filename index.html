@@ -4023,15 +4023,13 @@ function selecionaParcelasIdeal() {
     } else {
       if (alertaApos) alertaApos.style.display = 'none';
     }
-    // In the past
+    // In the past — apenas alerta, sem bloquear o cálculo
     if (de2 < hoje2) {
-      sel.innerHTML = '';
-      if (alerta) alerta.style.display = 'none';
       if (alertaPassado) alertaPassado.style.display = 'block';
       if (deInput) deInput.classList.add('doc-invalido');
-      return;
     } else {
       if (alertaPassado) alertaPassado.style.display = 'none';
+      if (deInput) deInput.classList.remove('doc-invalido');
     }
   } else {
     if (alertaApos) alertaApos.style.display = 'none';
