@@ -2582,7 +2582,34 @@ function _admUsersSelectCor(cor) {
   var dot = document.getElementById('adm-users-cor-selecionada');
   if (dot) dot.style.background = cor;
   _admUsersRenderColorSwatches();
+  // Se estiver editando um usuário existente, aplica e salva imediatamente
+  if (_admUserEditandoIdx !== null && _usuariosCadastrados[_admUserEditandoIdx]) {
+    _usuariosCadastrados[_admUserEditandoIdx].cor = cor;
+    _admUserEditandoIdx = null;
+    var picker = document.getElementById('adm-users-color-picker');
+    if (picker) picker.style.display = 'none';
+    _admUsersSalvar();
+  }
 }
+
+function _admUsersEditarCor(idx) {
+  // Modo edição: selecionar cor de um usuário já cadastrado
+  _admUserEditandoIdx = idx;
+  var u = _usuariosCadastrados[idx];
+  if (!u) return;
+  _admUserCorSelecionada = u.cor || '#888';
+  // Posiciona e exibe o picker inline abaixo da linha do usuário
+  var picker = document.getElementById('adm-users-color-picker');
+  if (!picker) return;
+  picker.style.display = 'block';
+  // Atualiza o dot do picker para refletir a cor atual
+  var dot = document.getElementById('adm-users-cor-selecionada');
+  if (dot) dot.style.background = _admUserCorSelecionada;
+  _admUsersRenderColorSwatches();
+  picker.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+var _admUserEditandoIdx = null;
 
 function _admUsersToggleColorPicker() {
   var picker = document.getElementById('adm-users-color-picker');
@@ -2600,7 +2627,7 @@ function _admUsersRender() {
   }
   lista.innerHTML = _usuariosCadastrados.map(function(u, i) {
     return '<div class="adm-user-row">' +
-      '<div class="adm-user-dot" style="background:' + (u.cor || '#888') + '"></div>' +
+      '<div class="adm-user-dot" style="background:' + (u.cor || '#888') + ';cursor:pointer" onclick="_admUsersEditarCor(' + i + ')" title="Trocar cor"></div>' +
       '<span class="adm-user-email">' + u.email + '</span>' +
       '<button onclick="_admUsersRemover(' + i + ')" title="Remover" style="background:none;border:none;color:#555;cursor:pointer;font-size:1rem;padding:0 4px;line-height:1" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'">x</button>' +
     '</div>';
