@@ -1047,7 +1047,7 @@ header {
 }
 .veiculo-icon-btn:hover { border-color: var(--border2); background: rgba(255,255,255,0.04); }
 .veiculo-icon-btn.tem-veiculo { border-color: rgba(180,180,180,0.25); }
-.veiculo-icon-btn img { height: 22px; width: auto; display: block; }
+.veiculo-icon-btn img { height: 22px; width: auto; display: block; vertical-align: middle; margin-top: -1px; }
 .veiculo-icon-btn .veiculo-label {
   font-size: 0.6rem;
   color: #888;
@@ -1764,12 +1764,12 @@ function buildCard(ev, past, col) {
     }).join('');
     itens = '<div class="card-itens">' +
       '<div class="veiculo-row">' +
-        '<div class="card-itens-title">Itens</div>' +
+        '<div class="card-itens-title">Itens / Veículos</div>' +
         (function() {
           var v = ev.veiculo ? _veiculosDisponiveis.find(function(x){return x.id===ev.veiculo;}) : null;
           return '<button class="veiculo-icon-btn' + (v ? ' tem-veiculo' : '') + '" data-evid="' + esc(ev.id) + '" data-veiculo="' + esc(ev.veiculo || '') + '" onclick="event.stopPropagation();_abrirVeiculoPopover(this)" title="Selecionar veículo">' +
-            (v ? '<img src="' + v.img + '" alt="' + esc(v.nome) + '">' : '<svg width="18" height="12" viewBox="0 0 36 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35"><rect x="1" y="7" width="34" height="11" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="18" r="3"/><circle cx="27" cy="18" r="3"/></svg>') +
-            '<span class="veiculo-label">' + (v ? esc(v.nome) : 'veículo') + '</span>' +
+            (v ? '<img src="' + v.img + '" alt="' + esc(v.nome) + '">' : '<svg width="18" height="12" viewBox="0 0 36 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35;vertical-align:middle;display:block"><rect x="1" y="7" width="34" height="11" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="18" r="3"/><circle cx="27" cy="18" r="3"/></svg>') +
+            '<span class="veiculo-label">Selecionar</span>' +
             '</button>';
         })() +
       '</div>' +
@@ -3195,7 +3195,7 @@ function _abrirVeiculoPopover(btn) {
   var pop = document.createElement('div');
   pop.className = 'veiculo-popover';
   pop.style.position = 'absolute';
-  var html = '<div class="veiculo-popover-title">Veículo</div>';
+  var html = '<div class="veiculo-popover-title">Veículos</div>';
   _veiculosDisponiveis.forEach(function(v) {
     html += '<div class="veiculo-opt' + (atual === v.id ? ' selecionado' : '') + '" data-vid="' + v.id + '" data-evid="' + evId + '">' +
       '<img src="' + v.img + '" alt="' + v.nome + '">' +
