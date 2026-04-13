@@ -1144,6 +1144,23 @@ header {
   margin-top: 2px;
 }
 .veiculo-opt-none:hover { background: rgba(224,92,92,0.18); border-color: rgba(224,92,92,0.7); color: #ff7b7b; }
+.veiculo-opt-ok {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #4AC87A;
+  border: 1px solid rgba(74,200,122,0.35);
+  background: rgba(74,200,122,0.07);
+  letter-spacing: 0.04em;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.veiculo-opt-ok:hover { background: rgba(74,200,122,0.18); border-color: rgba(74,200,122,0.7); color: #6fe89a; }
 
 </style>
 
@@ -2456,11 +2473,10 @@ function abrirPainelAdmin() {
         <button onclick="document.body.style.overflow=\'\';document.getElementById(\'modal-admin-painel\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>\
       </div>\
       <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px;overflow-x:auto;scrollbar-width:none">\
-        <button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #7B22B8;color:#7B22B8;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Editor</button>\
-        <button id="adm-tab-notif" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Notificações</button>\
-        <button id="adm-tab-users" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Usuários</button>\
-        <button id="adm-tab-hist" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0">Histórico</button>\
-        <button id="adm-tab-veic" onclick="_admAba(4)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:4px">Veículos</button>\
+        <button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #7B22B8;color:#7B22B8;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px;margin-bottom:-1px">Editor</button>\
+        <button id="adm-tab-users" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px;margin-bottom:-1px">Usuários</button>\
+        <button id="adm-tab-hist" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px;margin-bottom:-1px">Histórico</button>\
+        <button id="adm-tab-veic" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-bottom:-1px">Veículos</button>\
       </div>\
       <div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">\
         <div id="adm-panel-editor" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
@@ -2478,13 +2494,6 @@ function abrirPainelAdmin() {
               <div style="margin-bottom:4px"><span style="color:#7B22B8;font-weight:700">Campos editáveis:</span></div>\
               <div style="color:#555">Nome do evento, Cliente, Data, Local, Horários (montagem/início/fim/desmontagem), Responsável.</div>\
             </div>\
-          </div>\
-        </div>\
-        <div id="adm-panel-notif" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
-          <div style="text-align:center;padding:32px 0 24px 0">\
-            <div style="margin-bottom:12px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7B22B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>\
-            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">Em breve</div>\
-            <div style="font-size:0.78rem;color:#555;line-height:1.6">Configuração de notificações<br>para eventos e lembretes.</div>\
           </div>\
         </div>\
         <div id="adm-panel-users" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
@@ -2601,7 +2610,7 @@ function abrirPainelAdmin() {
 }
 
 function _admAba(idx, fromScroll) {
-  var keys = ['editor','notif','users','hist','veic'];
+  var keys = ['editor','users','hist','veic'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('adm-tab-' + k);
     if (tab) { tab.style.borderBottomColor = i === idx ? '#7B22B8' : 'transparent'; tab.style.color = i === idx ? '#7B22B8' : '#555'; }
@@ -2611,7 +2620,7 @@ function _admAba(idx, fromScroll) {
     if (slider) slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
   }
   // Carregar histórico ao entrar na aba
-  if (idx === 3) {
+  if (idx === 2) {
     var u = auth.currentUser;
     if (u && _permissoesHistorico.indexOf(u.email) < 0) {
       var lista = document.getElementById('adm-acessos-lista');
@@ -2621,9 +2630,9 @@ function _admAba(idx, fromScroll) {
     _carregarAcessosAdmin();
   }
   // Carregar usuários + permissões ao entrar na aba Usuários
-  if (idx === 2) { _admUsersCarregar(); _admPermCarregar(); }
+  if (idx === 1) { _admUsersCarregar(); _admPermCarregar(); }
   // Carregar veículos ao entrar na aba
-  if (idx === 4) { _admVeicCarregar(); }
+  if (idx === 3) { _admVeicCarregar(); }
 }
 
 // ── Admin: Veículos ──
@@ -3485,6 +3494,7 @@ function _abrirVeiculoPopover(btn) {
       '</div>';
   });
   html += '<div class="veiculo-opt-none">✕ Sem veículo</div>';
+  html += '<div class="veiculo-opt-ok">✓ Selecionar</div>';
   pop.innerHTML = html;
 
   var rect = btn.getBoundingClientRect();
@@ -3514,6 +3524,11 @@ function _abrirVeiculoPopover(btn) {
     pop.querySelectorAll('.veiculo-opt').forEach(function(o) { o.classList.remove('selecionado'); });
     _salvarVeiculos(evId, []);
     _atualizarBotaoVeiculo(evId, []);
+  });
+
+  pop.querySelector('.veiculo-opt-ok').addEventListener('click', function(e) {
+    e.stopPropagation();
+    _fecharVeiculoPopover();
   });
 
   setTimeout(function() {
