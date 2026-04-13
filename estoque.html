@@ -637,6 +637,7 @@
     font-size: 1rem;
     display: flex; align-items: center; justify-content: center;
     transition: border-color 0.15s, color 0.15s;
+    flex-shrink: 0;
   }
   .btn-modal-close:hover { border-color: var(--red); color: var(--red); }
 
@@ -833,7 +834,30 @@
   .mov-type-btn.active.manutencao { border-color: #E8A838; color: #E8A838; background: rgba(232,168,56,0.08); }
   .mov-type-btn.active.avaria { border-color: var(--red); color: var(--red); background: rgba(224,92,92,0.08); }
 
-  /* ── RESPONSIVE ── */
+  .cat-svg-icon {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin-right: 5px;
+    color: currentColor;
+  }
+  .cat-svg-icon svg { display: block; }
+
+  /* Emoji picker agora exibe SVGs */
+  .emoji-opt {
+    color: var(--muted);
+  }
+  .emoji-opt:hover { color: #ccc; }
+  .emoji-opt.selected { color: var(--gold); }
+
+  /* Eq-icon e eq-list-icon SVG color */
+  .eq-icon svg, .eq-list-icon svg {
+    display: block;
+    color: var(--gold);
+  }
+
+  /* Btn-add-eq + icon */
+  .btn-add-eq svg { color: #111; }
   @media (max-width: 600px) {
     .equip-grid { grid-template-columns: 1fr; padding: 0 12px 24px; }
     .toolbar { padding: 12px; gap: 8px; }
@@ -979,7 +1003,10 @@
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">📦 Estoque</div>
+    <div class="login-logo" style="display:flex;align-items:center;justify-content:center;gap:10px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold)"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      Estoque
+    </div>
     <div class="login-sub">Áudio de Qualidade</div>
     <div class="login-field">
       <label>E-mail</label>
@@ -1010,8 +1037,8 @@
     </div>
     <div class="hd-right">
       <span class="hd-user" id="user-name"></span>
-      <button class="btn-hd" onclick="abrirModalAdd()" title="Novo equipamento">+ Equipamento</button>
-      <button class="btn-hd danger" onclick="sair()">Sair</button>
+      <button class="btn-hd" onclick="abrirModalAdd()" title="Novo equipamento" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Equipamento</button>
+      <button class="btn-hd danger" onclick="sair()" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
     </div>
   </header>
 
@@ -1106,15 +1133,62 @@ var _equipamentos = {};
 var _catAtual = 'todos';
 var _viewAtual = 'grid';
 var _editandoId = null;
-var _emojiSelecionado = '🎛️';
+var _emojiSelecionado = 'mixer';
 
-var EMOJIS = ['🎛️','🔊','🎤','🎸','🎹','🎺','🎻','🥁','🎼','💡','🔦','🎬','📽️','📺','📡','🔋','🔌','⚡','🛠️','📦','🎚️','🎧','🖥️','📟','🔈','🔉','🔊','🎵','🎙️','🎞️'];
+var EMOJIS = EMOJIS_SVG.map(function(e) { return e.key; });
 
 var CATEGORIAS_ICONE = {
   'Som': '🔊', 'Iluminação': '💡', 'Microfone': '🎤',
   'Cabeamento': '🔌', 'Estrutura': '📦', 'Vídeo': '📽️',
   'Potência': '⚡', 'Periférico': '🎛️', 'Veículo': '🚚', 'Outros': '🛠️'
 };
+
+// SVGs estilizados por categoria
+var CATEGORIAS_SVG = {
+  'Som':       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>',
+  'Iluminação':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+  'Microfone': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
+  'Cabeamento':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4l6 6-4 2 8 8"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><line x1="16" y1="6" x2="12" y2="6"/><line x1="16" y1="18" x2="12" y2="18"/></svg>',
+  'Estrutura': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+  'Vídeo':     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
+  'Potência':  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+  'Periférico':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="2"/><line x1="6" y1="12" x2="6.01" y2="12"/><line x1="10" y1="12" x2="10.01" y2="12"/><line x1="14" y1="10" x2="14" y2="14"/><line x1="18" y1="10" x2="18" y2="14"/></svg>',
+  'Veículo':   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  'Outros':    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>'
+};
+
+// SVGs para emoji picker no modal (maior, 20px)
+var EMOJIS_SVG = [
+  { key:'mixer',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="2"/><line x1="6" y1="12" x2="6.01" y2="12"/><line x1="10" y1="12" x2="10.01" y2="12"/><line x1="14" y1="10" x2="14" y2="14"/><line x1="18" y1="10" x2="18" y2="14"/></svg>' },
+  { key:'speaker', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>' },
+  { key:'mic',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' },
+  { key:'guitar',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18c-2.5-1-4-3.5-4-6a7 7 0 0 1 14 0c0 2.5-1.5 5-4 6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="14" x2="12" y2="22"/></svg>' },
+  { key:'piano',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="7" y1="4" x2="7" y2="14"/><line x1="12" y1="4" x2="12" y2="14"/><line x1="17" y1="4" x2="17" y2="14"/><rect x="5" y="4" width="3" height="8" rx="1" fill="currentColor" opacity="0.4"/><rect x="10" y="4" width="3" height="8" rx="1" fill="currentColor" opacity="0.4"/><rect x="15" y="4" width="3" height="8" rx="1" fill="currentColor" opacity="0.4"/></svg>' },
+  { key:'bulb',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>' },
+  { key:'video',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>' },
+  { key:'tv',      svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>' },
+  { key:'antenna', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="22"/></svg>' },
+  { key:'battery', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/><line x1="6" y1="10" x2="6" y2="14"/><line x1="10" y1="10" x2="10" y2="14"/></svg>' },
+  { key:'plug',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3v2M6 3v2M6 5h12v5a6 6 0 0 1-12 0V5z"/><line x1="12" y1="16" x2="12" y2="21"/><line x1="9" y1="21" x2="15" y2="21"/></svg>' },
+  { key:'bolt',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' },
+  { key:'tool',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>' },
+  { key:'box',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+  { key:'fader',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>' },
+  { key:'headph',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>' },
+  { key:'monitor', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' },
+  { key:'pager',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="7.01" y2="9"/><line x1="7" y1="13" x2="7.01" y2="13"/><line x1="11" y1="9" x2="17" y2="9"/><line x1="11" y1="13" x2="17" y2="13"/></svg>' },
+  { key:'truck',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>' },
+  { key:'music',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>' },
+  { key:'radio',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>' },
+  { key:'film',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>' },
+  { key:'wifi',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="22"/></svg>' },
+  { key:'cpu',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>' },
+  { key:'vol2',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>' },
+  { key:'drum',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="10" ry="3"/><path d="M2 6v12c0 1.66 4.48 3 10 3s10-1.34 10-3V6"/></svg>' },
+  { key:'settings',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' },
+  { key:'camera',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' },
+  { key:'tape',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="12" rx="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M10 14h4"/></svg>' }
+];
 
 // ── Auth ──
 auth.onAuthStateChanged(function(user) {
@@ -1204,8 +1278,9 @@ function renderCatTabs() {
   var totalBtn = '<button class="cat-tab' + (_catAtual === 'todos' ? ' active' : '') + '" data-cat="todos" onclick="filtrarCategoria(\'todos\', this)">Todos <span class="cat-count" id="cnt-todos">' + equips.length + '</span></button>';
   var catBtns = Object.keys(catCount).sort().map(function(cat) {
     var ativo = _catAtual === cat ? ' active' : '';
+    var svgIcon = CATEGORIAS_SVG[cat] ? '<span class="cat-svg-icon">' + CATEGORIAS_SVG[cat] + '</span>' : '';
     return '<button class="cat-tab' + ativo + '" data-cat="' + esc(cat) + '" onclick="filtrarCategoria(\'' + esc(cat) + '\', this)">' +
-      (CATEGORIAS_ICONE[cat] || '📦') + ' ' + esc(cat) +
+      svgIcon + esc(cat) +
       ' <span class="cat-count">' + catCount[cat] + '</span></button>';
   }).join('');
   container.innerHTML = totalBtn + catBtns;
@@ -1247,6 +1322,15 @@ function renderEquipamentos() {
   }
 }
 
+// Helper: get SVG for equipment icon key
+function _getEqSvg(key, size) {
+  size = size || 18;
+  var found = EMOJIS_SVG.filter(function(e) { return e.key === key; })[0];
+  if (!found) found = EMOJIS_SVG.filter(function(e) { return e.key === 'box'; })[0];
+  // resize the SVG
+  return found ? found.svg.replace(/width="20" height="20"/, 'width="' + size + '" height="' + size + '"') : '';
+}
+
 function renderGrid(equips) {
   var grid = document.getElementById('equip-grid');
   if (!equips.length) {
@@ -1270,7 +1354,7 @@ function renderList(equips) {
     var disp = e.qtd_disponivel || 0;
     var dispClass = disp <= 0 ? ' zero' : '';
     return '<div class="eq-list-item" onclick="abrirDetalhe(\'' + e.id + '\')">' +
-      '<div class="eq-list-icon">' + (e.emoji || '📦') + '</div>' +
+      '<div class="eq-list-icon">' + _getEqSvg(e.emoji, 16) + '</div>' +
       '<div>' +
         '<div class="eq-list-name">' + esc(e.nome || 'Sem nome') + '</div>' +
         '<div style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-top:1px">' + esc(e.modelo || '') + '</div>' +
@@ -1312,7 +1396,7 @@ function buildCard(e) {
     '<div class="eq-status-bar ' + statusBarClass + '"></div>' +
     '<div class="eq-card-body">' +
       '<div class="eq-top">' +
-        '<div class="eq-icon">' + (e.emoji || '📦') + '</div>' +
+        '<div class="eq-icon">' + _getEqSvg(e.emoji, 18) + '</div>' +
         '<div class="eq-info">' +
           '<div class="eq-name" title="' + esc(e.nome || '') + '">' + esc(e.nome || 'Sem nome') + '</div>' +
           '<div class="eq-cat">' + esc(e.categoria || 'Sem categoria') + '</div>' +
@@ -1361,7 +1445,7 @@ function buildCard(e) {
 // ── Modal Add/Edit ──
 function abrirModalAdd() {
   _editandoId = null;
-  _emojiSelecionado = '🎛️';
+  _emojiSelecionado = 'mixer';
   abrirModalForm({});
 }
 
@@ -1369,7 +1453,7 @@ function abrirModalEdit(id) {
   var e = _equipamentos[id];
   if (!e) return;
   _editandoId = id;
-  _emojiSelecionado = e.emoji || '📦';
+  _emojiSelecionado = e.emoji || 'box';
   abrirModalForm(e);
 }
 
@@ -1381,8 +1465,8 @@ function abrirModalForm(e) {
   overlay.className = 'modal-overlay';
   overlay.id = 'modal-form';
 
-  var emojiPickerHtml = EMOJIS.map(function(em) {
-    return '<div class="emoji-opt' + (em === _emojiSelecionado ? ' selected' : '') + '" onclick="_selecionarEmoji(this, \'' + em + '\')">' + em + '</div>';
+  var emojiPickerHtml = EMOJIS_SVG.map(function(em) {
+    return '<div class="emoji-opt' + (em.key === _emojiSelecionado ? ' selected' : '') + '" onclick="_selecionarEmoji(this, \'' + em.key + '\')" title="' + em.key + '">' + em.svg + '</div>';
   }).join('');
 
   var catOptions = ['Som', 'Iluminação', 'Microfone', 'Cabeamento', 'Estrutura', 'Vídeo', 'Potência', 'Periférico', 'Veículo', 'Outros'].map(function(c) {
@@ -1392,8 +1476,8 @@ function abrirModalForm(e) {
   overlay.innerHTML =
     '<div class="modal-box">' +
       '<div class="modal-header">' +
-        '<div class="modal-title">' + (isEdit ? '✏️ Editar Equipamento' : '+ Novo Equipamento') + '</div>' +
-        '<button class="btn-modal-close" onclick="fecharTodosModais()">✕</button>' +
+        '<div class="modal-title">' + (isEdit ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar Equipamento' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo Equipamento') + '</div>' +
+        '<button class="btn-modal-close" onclick="fecharTodosModais()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
       '</div>' +
       '<div class="modal-body">' +
         '<div class="section-title">Ícone</div>' +
@@ -1457,8 +1541,8 @@ function abrirModalForm(e) {
         '</div>' +
       '</div>' +
       '<div class="modal-footer">' +
-        '<button class="btn-modal-cancel" onclick="fecharTodosModais()">Cancelar</button>' +
-        '<button class="btn-modal-save" onclick="salvarEquipamento()">' + (isEdit ? '✓ Salvar Alterações' : '+ Adicionar') + '</button>' +
+        '<button class="btn-modal-cancel" onclick="fecharTodosModais()" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancelar</button>' +
+        '<button class="btn-modal-save" onclick="salvarEquipamento()" style="display:flex;align-items:center;justify-content:center;gap:6px">' + (isEdit ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Salvar Alterações' : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar') + '</button>' +
       '</div>' +
     '</div>';
 
@@ -1552,13 +1636,13 @@ function abrirDetalhe(id) {
     '<div class="detail-modal-box">' +
       '<div class="modal-header">' +
         '<div style="display:flex;align-items:center;gap:10px">' +
-          '<span style="font-size:1.4rem">' + (e.emoji || '📦') + '</span>' +
+          '<div style="width:38px;height:38px;background:var(--gold-dim);border:1px solid rgba(200,169,74,0.25);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0">' + _getEqSvg(e.emoji, 20) + '</div>' +
           '<div>' +
             '<div class="modal-title" style="font-size:0.95rem">' + esc(e.nome || 'Equipamento') + '</div>' +
             '<div style="font-size:0.62rem;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:0.08em">' + esc(e.categoria || '') + (e.modelo ? ' · ' + esc(e.modelo) : '') + '</div>' +
           '</div>' +
         '</div>' +
-        '<button class="btn-modal-close" onclick="fecharTodosModais()">✕</button>' +
+        '<button class="btn-modal-close" onclick="fecharTodosModais()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
       '</div>' +
 
       '<div class="modal-body">' +
@@ -1576,10 +1660,10 @@ function abrirDetalhe(id) {
         '<div class="section-title">Movimentação Rápida</div>' +
         '<div class="mov-form">' +
           '<div class="mov-type-row">' +
-            '<button class="mov-type-btn active saida" id="mt-saida" onclick="_movTipo(\'saida\')">↗ Saída</button>' +
-            '<button class="mov-type-btn retorno" id="mt-retorno" onclick="_movTipo(\'retorno\')">↙ Retorno</button>' +
-            '<button class="mov-type-btn manutencao" id="mt-manutencao" onclick="_movTipo(\'manutencao\')">🔧 Manut.</button>' +
-            '<button class="mov-type-btn avaria" id="mt-avaria" onclick="_movTipo(\'avaria\')">⚠ Avaria</button>' +
+            '<button class="mov-type-btn active saida" id="mt-saida" onclick="_movTipo(\'saida\')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>Saída</button>' +
+            '<button class="mov-type-btn retorno" id="mt-retorno" onclick="_movTipo(\'retorno\')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><line x1="17" y1="7" x2="7" y2="17"/><polyline points="17 17 7 17 7 7"/></svg>Retorno</button>' +
+            '<button class="mov-type-btn manutencao" id="mt-manutencao" onclick="_movTipo(\'manutencao\')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Manut.</button>' +
+            '<button class="mov-type-btn avaria" id="mt-avaria" onclick="_movTipo(\'avaria\')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Avaria</button>' +
           '</div>' +
           '<div class="form-grid" style="margin-bottom:10px">' +
             '<div class="form-group" style="margin-bottom:0">' +
@@ -1732,7 +1816,7 @@ function confirmarDelete(id) {
   overlay.id = 'modal-confirm';
   overlay.innerHTML =
     '<div class="confirm-box">' +
-      '<div class="confirm-title">⚠ Excluir Equipamento</div>' +
+      '<div class="confirm-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:7px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Excluir Equipamento</div>' +
       '<div class="confirm-text">Tem certeza que deseja excluir <strong style="color:#ccc">' + esc(e.nome || 'este equipamento') + '</strong>?<br>Esta ação não pode ser desfeita.</div>' +
       '<div class="confirm-footer">' +
         '<button class="btn-modal-cancel" onclick="fecharTodosModais()">Cancelar</button>' +
