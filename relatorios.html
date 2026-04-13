@@ -2467,14 +2467,13 @@ function renderContratos() {
   tbody.innerHTML = cons.map(c => {
     const st = getStatusContrato(c);
     const id = c.id;
-    const cli = nomeCli(c); const tipo = tipoEv(c);
-    const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
+    const cli = nomeCli(c);
     // Badge de status: contratos com etapa no painel → "painel" (roxo)
     const statusBadge = (c.etapa && !c.removido_manualmente && c.status_contrato !== 'cancelado')
       ? '<span class="badge painel">painel</span>'
       : `<span class="badge ${st}">${st}</span>`;
     return `<tr>
-      <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:220px">${desc}</td>
+      <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:220px">${cli}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="contratos">${c.ev_local || c.local_evento || '—'}</td>
       <td class="r" style="color:var(--green);font-weight:700">${frs(getValorEvento(c))}</td>
@@ -2532,9 +2531,6 @@ function renderEventos() {
     const valorTxt = val > 0 ? frs(val) : '—';
     const valorStyle = val > 0 ? 'color:var(--green);font-weight:700' : 'color:var(--muted)';
     const nomeExib = nomeCli(e);
-    const tipoExib = e._origem === 'nota' ? (e.titulo || '—') : tipoEv(e);
-    const cli = nomeExib; const tipo = tipoExib;
-    const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
     const id = e.id;
     // Badge de status: notas com painel_id → "painel" (roxo)
     const statusBadge = (e._origem === 'nota' && e.painel_id) ? '<span class="badge painel">painel</span>' : `<span class="badge ${st}">${st}</span>`;
@@ -2542,7 +2538,7 @@ function renderEventos() {
       ? '<span class="badge-origem evento-rapido">Evento rápido</span>'
       : '<span class="badge-origem contrato">Contrato</span>';
     return `<tr>
-      <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${colName}" style="max-width:220px">${desc}</td>
+      <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${colName}" style="max-width:220px">${nomeExib}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${colName}">${dataEv(e)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="${colName}">${localEv(e)}</td>
       <td class="r" style="${valorStyle}">${valorTxt}</td>
@@ -2859,8 +2855,7 @@ function renderContabilidade() {
       const id = e.id;
       const col = e._origem === 'nota' ? 'notas' : 'contratos';
       const fieldNome = e._origem === 'nota' ? 'titulo' : 'cli_nome';
-      const cli = nomeCli(e); const tipo = tipoEv(e);
-      const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
+      const cli = nomeCli(e);
       const isNota = e._origem === 'nota';
       const tipoBadge = isNota
         ? '<span class="badge-origem evento-rapido">Evento rápido</span>'
@@ -2868,7 +2863,7 @@ function renderContabilidade() {
       const pgto = isNota ? 'À vista' : getPgtoLabel(e);
       return `<tr>
         <td>${comp}</td>
-        <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${col}" style="max-width:200px">${desc}</td>
+        <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${col}" style="max-width:200px">${cli}</td>
         <td>${tipoBadge}</td>
         <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${col}">${dataEv(e)}</td>
         <td>${pgto}</td>
