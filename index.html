@@ -1980,10 +1980,14 @@ Revestimento</textarea>
           <input type="text" id="cli_doc" placeholder="000.000.000-00" oninput="validarDoc(this)">
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 180px;gap:16px;margin-top:0;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:1fr 160px 140px;gap:16px;margin-top:0;margin-bottom:16px">
         <div>
           <label>Endereço</label>
-          <input type="text" id="cli_end" placeholder="Rua, nº, Bairro, Cidade/UF">
+          <input type="text" id="cli_end" placeholder="Rua, nº, Bairro">
+        </div>
+        <div>
+          <label>Cidade</label>
+          <input type="text" id="cli_cidade" placeholder="Ex: Brusque/SC">
         </div>
         <div>
           <label>CEP</label>
@@ -3028,7 +3032,7 @@ function resetFormularioOrcamento() {
 }
 
 function resetFormularioContrato() {
-  ['cli_nome','cli_doc','cli_end','cli_cep','cli_email','cli_fone',
+  ['cli_nome','cli_doc','cli_end','cli_cidade','cli_cep','cli_email','cli_fone',
    'ev_nome','ev_resp','ev_local','ev_data','ev_inicio','ev_fim',
    'val_total','pgto_custom','data_entrada'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -3697,7 +3701,7 @@ var _DRAFT_KEY = 'adq_contrato_draft';
 var _draftTimer = null;
 
 var _DRAFT_CAMPOS = [
-  'cli_nome','cli_doc','cli_end','cli_cep','cli_email','cli_fone',
+  'cli_nome','cli_doc','cli_end','cli_cidade','cli_cep','cli_email','cli_fone',
   'ev_nome','ev_resp','ev_local','ev_maps','ev_data','ev_inicio','ev_fim',
   'val_total','pgto_custom','data_entrada'
 ];
@@ -4538,7 +4542,8 @@ function baixarDadosContrato() {
     _tipo: 'contrato',
     cli_nome:  document.getElementById('cli_nome').value,
     cli_doc:   document.getElementById('cli_doc').value,
-    cli_end:   document.getElementById('cli_end').value,
+    cli_end:    document.getElementById('cli_end').value,
+    cli_cidade: document.getElementById('cli_cidade').value,
     cli_cep:   document.getElementById('cli_cep').value,
     cli_email: document.getElementById('cli_email').value,
     cli_fone:  document.getElementById('cli_fone').value,
@@ -4670,7 +4675,8 @@ function preencherContratoDados() {
   const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
   set('cli_nome',  d.cli_nome);
   set('cli_doc',   d.cli_doc);
-  set('cli_end',   d.cli_end);
+  set('cli_end',    d.cli_end);
+  set('cli_cidade', d.cli_cidade);
   set('cli_cep',   d.cli_cep);
   set('cli_email', d.cli_email);
   set('cli_fone',  d.cli_fone);
@@ -6009,7 +6015,8 @@ function coletarDadosContrato() {
     _tipo: 'contrato',
     cli_nome:  get('cli_nome'),
     cli_doc:   get('cli_doc'),
-    cli_end:   get('cli_end'),
+    cli_end:    get('cli_end'),
+    cli_cidade: get('cli_cidade'),
     cli_cep:   get('cli_cep'),
     cli_email: get('cli_email'),
     cli_fone:  get('cli_fone'),
@@ -6347,7 +6354,8 @@ function abrirContrato(id) {
     var set = function(elId, val) { var el = document.getElementById(elId); if (el && val !== undefined) el.value = val; };
     set('cli_nome',  d.cli_nome  || '');
     set('cli_doc',   d.cli_doc   || '');
-    set('cli_end',   d.cli_end   || '');
+    set('cli_end',    d.cli_end    || '');
+    set('cli_cidade', d.cli_cidade || '');
     set('cli_cep',   d.cli_cep   || '');
     set('cli_email', d.cli_email || '');
     set('cli_fone',  d.cli_fone  || '');
@@ -8895,7 +8903,8 @@ function _aplicarIA(d, destino) {
     setTimeout(function() {
       setVal('cli_nome',  d.cli_nome  || d.nome_cliente);
       setVal('cli_doc',   d.cli_doc);
-      setVal('cli_end',   d.cli_end);
+      setVal('cli_end',    d.cli_end);
+      setVal('cli_cidade', d.cli_cidade);
       setVal('cli_cep',   d.cli_cep);
       setVal('cli_email', d.cli_email);
       setVal('cli_fone',  d.cli_fone  || d.whatsapp_cliente);
