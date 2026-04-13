@@ -2528,7 +2528,7 @@ function _buildRespBarHTML(responsaveis) {
   var segs = '<div class="card-resp-bar-seg" style="background:rgba(80,80,80,0.3)"></div>';
   colors.forEach(function(c) {
     // listras diagonais: cor alternando com cor mais clara, espaçamento fino
-    var stripe = 'repeating-linear-gradient(60deg,' + c + ' 0px,' + c + ' 3px,rgba(255,255,255,0.18) 3px,rgba(255,255,255,0.18) 5px)';
+    var stripe = 'repeating-linear-gradient(-60deg,' + c + ' 0px,' + c + ' 3px,rgba(255,255,255,0.18) 3px,rgba(255,255,255,0.18) 5px)';
     segs += '<div class="card-resp-bar-seg" style="background:' + stripe + '"></div>';
   });
   return '<div class="card-resp-bar">' + segs + '</div>';
