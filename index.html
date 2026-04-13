@@ -4777,12 +4777,13 @@ function togglePreviaContrato() {
 }
 
 function gerarContrato() {
-  const cliNome  = document.getElementById('cli_nome').value.trim() || 'CONTRATANTE';
-  const cliDoc   = formatDoc(document.getElementById('cli_doc').value.trim());
-  const cliEnd   = document.getElementById('cli_end').value.trim();
-  const cliCep   = formatCep(document.getElementById('cli_cep').value.trim());
-  const cliEmail = document.getElementById('cli_email').value.trim();
-  const cliFone  = formatFone(document.getElementById('cli_fone').value.trim());
+  const cliNome   = document.getElementById('cli_nome').value.trim() || 'CONTRATANTE';
+  const cliDoc    = formatDoc(document.getElementById('cli_doc').value.trim());
+  const cliEnd    = document.getElementById('cli_end').value.trim();
+  const cliCidade = document.getElementById('cli_cidade').value.trim();
+  const cliCep    = formatCep(document.getElementById('cli_cep').value.trim());
+  const cliEmail  = document.getElementById('cli_email').value.trim();
+  const cliFone   = formatFone(document.getElementById('cli_fone').value.trim());
   const evNome   = document.getElementById('ev_nome').value.trim()  || '—';
   const evResp   = document.getElementById('ev_resp').value.trim()  || '—';
   const evLocal  = document.getElementById('ev_local').value.trim() || '—';
@@ -4799,6 +4800,7 @@ function gerarContrato() {
   let cliLinha = cliNome;
   if (cliDoc) cliLinha += `, ${cliDoc}`;
   if (cliEnd) cliLinha += `, ${cliEnd}`;
+  if (cliCidade) cliLinha += `, ${cliCidade}`;
   if (cliCep) cliLinha += `, CEP: ${cliCep}`;
   if (cliEmail) cliLinha += `, e-mail: ${cliEmail}`;
   if (cliFone) cliLinha += `, contato: ${cliFone}`;
