@@ -548,7 +548,7 @@ header {
 .card-resp-bar-track {
   flex: 1;
   height: 100%;
-  background: rgba(120,120,130,0.25);
+  background: linear-gradient(to right, rgba(120,120,130,0.25), rgba(120,120,130,0.45));
   border-radius: 6px 0 0 0;
 }
 .card-resp-bar-colors {
@@ -2536,8 +2536,7 @@ function _buildRespBarHTML(responsaveis) {
   // Canto direito: listras coloridas finas por responsável (discreto, identificável)
   var colorSegs = '';
   colors.forEach(function(c) {
-    var stripe = 'repeating-linear-gradient(-60deg,' + c + ' 0px,' + c + ' 4px,rgba(0,0,0,0.15) 4px,rgba(0,0,0,0.15) 7px)';
-    colorSegs += '<div class="card-resp-bar-color" style="background:' + stripe + '"></div>';
+    colorSegs += '<div class="card-resp-bar-color" style="background:' + c + '"></div>';
   });
   return '<div class="card-resp-bar"><div class="card-resp-bar-track"></div><div class="card-resp-bar-colors">' + colorSegs + '</div></div>';
 }
