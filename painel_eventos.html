@@ -1824,10 +1824,14 @@ function buildCard(ev, past, col) {
             btnContent = '<svg width="18" height="12" viewBox="0 0 36 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35;vertical-align:middle;display:block"><rect x="1" y="7" width="34" height="11" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="18" r="3"/><circle cx="27" cy="18" r="3"/></svg>' +
               '<span class="veiculo-label">Selecionar</span>';
           } else if (selObjs.length === 1) {
-            btnContent = '<img src="' + selObjs[0].img + '" alt="' + esc(selObjs[0].nome) + '">' +
+            var aj0 = selObjs[0].ajuste || { x: 0, y: 0, scale: 1 };
+            btnContent = '<img src="' + selObjs[0].img + '" alt="' + esc(selObjs[0].nome) + '" style="height:' + (22 * aj0.scale) + 'px;transform:translate(' + aj0.x + 'px,' + aj0.y + 'px)">' +
               '<span class="veiculo-label">' + esc(selObjs[0].nome) + '</span>';
           } else {
-            btnContent = selObjs.map(function(v) { return '<img src="' + v.img + '" alt="' + esc(v.nome) + '" title="' + esc(v.nome) + '">'; }).join('');
+            btnContent = selObjs.map(function(v) {
+              var aj = v.ajuste || { x: 0, y: 0, scale: 1 };
+              return '<img src="' + v.img + '" alt="' + esc(v.nome) + '" title="' + esc(v.nome) + '" style="height:' + (22 * aj.scale) + 'px;transform:translate(' + aj.x + 'px,' + aj.y + 'px)">';
+            }).join('');
           }
           return '<button class="veiculo-icon-btn' + (temVeiculo ? ' tem-veiculo' : '') + '" data-evid="' + esc(ev.id) + '" data-veiculos="' + esc(JSON.stringify(sels)) + '" onclick="event.stopPropagation();_abrirVeiculoPopover(this)" title="Selecionar veículo">' +
             btnContent + '</button>';
@@ -2663,11 +2667,127 @@ function _admVeicRenderLista(lista, veics) {
       '</div>' +
       '<span id="adm-veic-nome-label-' + i + '" onclick="_admVeicEditarNome(' + i + ')" title="Clique para editar" style="flex:1;min-width:80px;font-size:0.78rem;color:#ccc;font-weight:600;cursor:text;border-bottom:1px dashed transparent;transition:border-color 0.15s;padding-bottom:1px" onmouseover="this.style.borderBottomColor=\'#444\'" onmouseout="this.style.borderBottomColor=\'transparent\'">' + esc(v.nome) + '</span>' +
       '<div style="display:flex;gap:5px;flex-shrink:0;margin-left:auto">' +
+        '<button onclick="_admVeicEditar(' + i + ')" style="background:none;border:1px solid rgba(180,180,180,0.25);color:#aaa;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s;white-space:nowrap" onmouseover="this.style.background=\'rgba(255,255,255,0.07)\'" onmouseout="this.style.background=\'none\'">Editar</button>' +
         '<button onclick="_admVeicDuplicar(' + i + ')" style="background:none;border:1px solid rgba(100,160,255,0.3);color:#6aa0ff;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s;white-space:nowrap" onmouseover="this.style.background=\'rgba(100,160,255,0.1)\'" onmouseout="this.style.background=\'none\'">Duplicar</button>' +
         '<button onclick="_admVeicRemover(' + i + ')" style="background:none;border:1px solid rgba(224,92,92,0.3);color:#e05c5c;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s;white-space:nowrap" onmouseover="this.style.background=\'rgba(224,92,92,0.12)\'" onmouseout="this.style.background=\'none\'">Remover</button>' +
       '</div>' +
     '</div>';
   }).join('');
+}
+
+function _admVeicEditar(idx) {
+  db.collection('configuracoes').doc('veiculos').get().then(function(doc) {
+    var veics = (doc.exists && doc.data().lista) ? doc.data().lista : _veiculosDisponiveis.slice();
+    var v = veics[idx];
+    if (!v) return;
+
+    // Estado atual (salvo) ou padrão
+    var saved = v.ajuste || { x: 0, y: 0, scale: 1 };
+    var cur = { x: saved.x, y: saved.y, scale: saved.scale };
+
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+
+    overlay.innerHTML =
+      '<div style="background:#1a1a1a;border:1px solid #3a3a3a;border-radius:10px;width:100%;max-width:340px;padding:22px;box-sizing:border-box">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px">Ajustar imagem</div>' +
+        '<div style="font-size:0.65rem;color:#555;margin-bottom:18px">' + esc(v.nome) + '</div>' +
+
+        // Preview box — replica exato do card: bg escuro, 80px wide, 30px tall
+        '<div style="display:flex;justify-content:center;margin-bottom:20px">' +
+          '<div style="position:relative;width:120px;height:36px;background:#0d0d0d;border:1px dashed #444;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center">' +
+            '<img id="veic-edit-preview" src="' + v.img + '" style="position:absolute;height:' + (22 * cur.scale) + 'px;width:auto;transform:translate(' + cur.x + 'px,' + cur.y + 'px);transition:none;user-select:none;pointer-events:none">' +
+          '</div>' +
+        '</div>' +
+
+        // Controles de mover
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:16px">' +
+          '<button id="veic-mv-up" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center">▲</button>' +
+          '<div style="display:flex;gap:4px">' +
+            '<button id="veic-mv-left" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center">◀</button>' +
+            '<div style="width:36px;height:30px;background:#111;border:1px solid #222;border-radius:4px;display:flex;align-items:center;justify-content:center"><svg width="14" height="10" viewBox="0 0 36 24" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="7" width="34" height="13" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="20" r="2.5"/><circle cx="27" cy="20" r="2.5"/></svg></div>' +
+            '<button id="veic-mv-right" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center">▶</button>' +
+          '</div>' +
+          '<button id="veic-mv-down" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center">▼</button>' +
+        '</div>' +
+
+        // Controles de escala
+        '<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:22px">' +
+          '<button id="veic-scale-down" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center">−</button>' +
+          '<span style="font-size:0.7rem;color:#666;min-width:60px;text-align:center" id="veic-scale-label">Tamanho: ' + Math.round(cur.scale * 100) + '%</span>' +
+          '<button id="veic-scale-up" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center">+</button>' +
+        '</div>' +
+
+        // Botões de ação
+        '<div style="display:flex;gap:8px">' +
+          '<button id="veic-edit-reset" style="flex:1;background:none;border:1px solid #333;color:#666;border-radius:4px;padding:8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer">↺ Desfazer</button>' +
+          '<button id="veic-edit-ok" style="flex:1;background:#7B22B8;border:none;color:#fff;border-radius:4px;padding:8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer">✓ OK</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+
+    var preview = document.getElementById('veic-edit-preview');
+    var scaleLabel = document.getElementById('veic-scale-label');
+    var STEP_PX = 1;
+    var STEP_SCALE = 0.05;
+
+    function applyPreview() {
+      preview.style.height = (22 * cur.scale) + 'px';
+      preview.style.transform = 'translate(' + cur.x + 'px,' + cur.y + 'px)';
+      scaleLabel.textContent = 'Tamanho: ' + Math.round(cur.scale * 100) + '%';
+    }
+
+    // Suporte a pressionar e segurar
+    function makeRepeater(fn) {
+      var timer = null;
+      var interval = null;
+      function start(e) {
+        e.preventDefault();
+        fn();
+        timer = setTimeout(function() { interval = setInterval(fn, 80); }, 350);
+      }
+      function stop() { clearTimeout(timer); clearInterval(interval); }
+      return { start: start, stop: stop };
+    }
+
+    var actions = {
+      'veic-mv-up':      function() { cur.y -= STEP_PX; applyPreview(); },
+      'veic-mv-down':    function() { cur.y += STEP_PX; applyPreview(); },
+      'veic-mv-left':    function() { cur.x -= STEP_PX; applyPreview(); },
+      'veic-mv-right':   function() { cur.x += STEP_PX; applyPreview(); },
+      'veic-scale-up':   function() { cur.scale = Math.round((cur.scale + STEP_SCALE) * 100) / 100; applyPreview(); },
+      'veic-scale-down': function() { cur.scale = Math.max(0.1, Math.round((cur.scale - STEP_SCALE) * 100) / 100); applyPreview(); }
+    };
+
+    Object.keys(actions).forEach(function(id) {
+      var btn = document.getElementById(id);
+      var r = makeRepeater(actions[id]);
+      btn.addEventListener('mousedown', r.start);
+      btn.addEventListener('touchstart', r.start, { passive: false });
+      document.addEventListener('mouseup', r.stop);
+      document.addEventListener('touchend', r.stop);
+    });
+
+    document.getElementById('veic-edit-reset').addEventListener('click', function() {
+      cur = { x: 0, y: 0, scale: 1 };
+      applyPreview();
+    });
+
+    document.getElementById('veic-edit-ok').addEventListener('click', function() {
+      db.collection('configuracoes').doc('veiculos').get().then(function(doc2) {
+        var veics2 = (doc2.exists && doc2.data().lista) ? doc2.data().lista : _veiculosDisponiveis.slice();
+        if (veics2[idx]) veics2[idx].ajuste = { x: cur.x, y: cur.y, scale: cur.scale };
+        return db.collection('configuracoes').doc('veiculos').set({ lista: veics2 }).then(function() { return veics2; });
+      }).then(function(veics2) {
+        _veiculosDisponiveis = veics2;
+        overlay.remove();
+        _admVeicCarregar();
+      }).catch(function(e) { alert('Erro ao salvar: ' + e.message); });
+    });
+
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  });
 }
 
 function _admVeicEditarNome(idx) {
@@ -3546,9 +3666,13 @@ function _atualizarBotaoVeiculo(evId, sels) {
   if (!temVeiculo) {
     btnContent = '<svg width="18" height="12" viewBox="0 0 36 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35;vertical-align:middle;display:block"><rect x="1" y="7" width="34" height="11" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="18" r="3"/><circle cx="27" cy="18" r="3"/></svg><span class="veiculo-label">Selecionar</span>';
   } else if (selObjs.length === 1) {
-    btnContent = '<img src="' + selObjs[0].img + '" alt="' + selObjs[0].nome + '"><span class="veiculo-label">' + selObjs[0].nome + '</span>';
+    var aj0 = selObjs[0].ajuste || { x: 0, y: 0, scale: 1 };
+    btnContent = '<img src="' + selObjs[0].img + '" alt="' + selObjs[0].nome + '" style="height:' + (22 * aj0.scale) + 'px;transform:translate(' + aj0.x + 'px,' + aj0.y + 'px)"><span class="veiculo-label">' + selObjs[0].nome + '</span>';
   } else {
-    btnContent = selObjs.map(function(v) { return '<img src="' + v.img + '" alt="' + v.nome + '" title="' + v.nome + '">'; }).join('');
+    btnContent = selObjs.map(function(v) {
+      var aj = v.ajuste || { x: 0, y: 0, scale: 1 };
+      return '<img src="' + v.img + '" alt="' + v.nome + '" title="' + v.nome + '" style="height:' + (22 * aj.scale) + 'px;transform:translate(' + aj.x + 'px,' + aj.y + 'px)">';
+    }).join('');
   }
   btn.innerHTML = btnContent;
 }
