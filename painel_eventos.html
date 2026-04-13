@@ -2525,10 +2525,11 @@ function _buildRespBarHTML(responsaveis) {
     var u = (_usuariosCadastrados || []).find(function(x) { return x.uid === uid; });
     return u ? u.cor : '#888';
   });
-  // segmento cinza + um segmento por usuário com glow
   var segs = '<div class="card-resp-bar-seg" style="background:rgba(80,80,80,0.35)"></div>';
   colors.forEach(function(c) {
-    segs += '<div class="card-resp-bar-seg" style="background:' + c + ';box-shadow:0 0 6px ' + c + ';filter:brightness(1.15)"></div>';
+    // reflexo de luz no topo do segmento: cor sólida com faixa clara no centro
+    var bg = 'linear-gradient(180deg, rgba(255,255,255,0.45) 0%, ' + c + ' 40%, ' + c + ' 100%)';
+    segs += '<div class="card-resp-bar-seg" style="background:' + bg + '"></div>';
   });
   return '<div class="card-resp-bar">' + segs + '</div>';
 }
