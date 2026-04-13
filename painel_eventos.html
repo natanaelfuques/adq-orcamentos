@@ -1411,6 +1411,14 @@ var _todosEventos = [];
 
 function iniciarBoard() {
   sincronizarPainel();
+  // Carregar veículos do Firestore ao iniciar (sobrescreve os hardcoded)
+  db.collection('configuracoes').doc('veiculos').get()
+    .then(function(doc) {
+      if (doc.exists && doc.data().lista && doc.data().lista.length) {
+        _veiculosDisponiveis = doc.data().lista;
+      }
+    })
+    .catch(function() {});
   db.collection('eventos_campo')
     .orderBy('criadoEm', 'desc')
     .onSnapshot(function(snap) {
@@ -2417,6 +2425,7 @@ function abrirPainelAdmin() {
         <button id="adm-tab-notif" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Notificações</button>\
         <button id="adm-tab-users" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Usuários</button>\
         <button id="adm-tab-hist" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0">Histórico</button>\
+        <button id="adm-tab-veic" onclick="_admAba(4)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:4px">Veículos</button>\
       </div>\
       <div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">\
         <div id="adm-panel-editor" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
@@ -2510,6 +2519,34 @@ function abrirPainelAdmin() {
         <div id="adm-panel-hist" style="min-width:100%;padding:0;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
           <div id="adm-acessos-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
         </div>\
+        <div id="adm-panel-veic" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
+          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Veículos cadastrados</div>\
+            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Estes veículos aparecem no seletor de cada card de evento.</div>\
+            <div id="adm-veic-lista" style="margin-bottom:4px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
+          </div>\
+          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px">\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Adicionar veículo</div>\
+            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Carregue uma imagem (fundo preto ou branco) — ela será recortada e otimizada automaticamente.</div>\
+            <div id="adm-veic-dropzone" onclick="document.getElementById(\'adm-veic-file\').click()" style="border:2px dashed #2a2a2a;border-radius:6px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:12px">\
+              <svg width="28" height="20" viewBox="0 0 36 24" fill="none" stroke="#444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="8" width="34" height="13" rx="3"/><path d="M4 8V7a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="21" r="2.5"/><circle cx="27" cy="21" r="2.5"/></svg>\
+              <div style="font-size:0.7rem;color:#444;margin-top:8px">Clique para selecionar imagem</div>\
+              <div style="font-size:0.62rem;color:#333;margin-top:3px">PNG, JPG — fundo preto ou branco</div>\
+            </div>\
+            <input id="adm-veic-file" type="file" accept="image/*" style="display:none" onchange="_admVeicPreview(this)" />\
+            <div id="adm-veic-preview-area" style="display:none;margin-bottom:12px">\
+              <div style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Preview (fundo removido)</div>\
+              <div style="background:#0e0e0e;border:1px solid #222;border-radius:5px;padding:10px;display:flex;align-items:center;justify-content:center;min-height:60px">\
+                <img id="adm-veic-preview-img" style="max-height:50px;max-width:180px" />\
+              </div>\
+            </div>\
+            <div style="display:flex;gap:8px;align-items:center">\
+              <input id="adm-veic-nome" type="text" placeholder="Nome do veículo (ex: Sprinter)" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.78rem;padding:8px 10px;outline:none;box-sizing:border-box" />\
+              <button onclick="_admVeicAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:8px 16px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;white-space:nowrap;flex-shrink:0">Salvar</button>\
+            </div>\
+            <div id="adm-veic-status" style="margin-top:8px;font-size:0.68rem;min-height:16px"></div>\
+          </div>\
+        </div>\
       </div>\
     </div>';
 
@@ -2529,7 +2566,7 @@ function abrirPainelAdmin() {
 }
 
 function _admAba(idx, fromScroll) {
-  var keys = ['editor','notif','users','hist'];
+  var keys = ['editor','notif','users','hist','veic'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('adm-tab-' + k);
     if (tab) { tab.style.borderBottomColor = i === idx ? '#7B22B8' : 'transparent'; tab.style.color = i === idx ? '#7B22B8' : '#555'; }
@@ -2550,6 +2587,168 @@ function _admAba(idx, fromScroll) {
   }
   // Carregar usuários + permissões ao entrar na aba Usuários
   if (idx === 2) { _admUsersCarregar(); _admPermCarregar(); }
+  // Carregar veículos ao entrar na aba
+  if (idx === 4) { _admVeicCarregar(); }
+}
+
+// ── Admin: Veículos ──
+var _admVeicB64 = null; // base64 da imagem processada pronta para salvar
+
+function _admVeicCarregar() {
+  var lista = document.getElementById('adm-veic-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div style="font-size:0.75rem;color:#555">Carregando...</div>';
+  db.collection('configuracoes').doc('veiculos').get()
+    .then(function(doc) {
+      var veics = (doc.exists && doc.data().lista) ? doc.data().lista : [];
+      // Mescla com os hardcoded se Firestore vazio
+      if (!veics.length) veics = _veiculosDisponiveis.map(function(v) { return { id: v.id, nome: v.nome, img: v.img }; });
+      _admVeicRenderLista(lista, veics);
+    })
+    .catch(function() { lista.innerHTML = '<div style="font-size:0.73rem;color:#e05c5c">Erro ao carregar.</div>'; });
+}
+
+function _admVeicRenderLista(lista, veics) {
+  if (!veics.length) {
+    lista.innerHTML = '<div style="font-size:0.73rem;color:#555;padding:6px 0">Nenhum veículo cadastrado.</div>';
+    return;
+  }
+  lista.innerHTML = veics.map(function(v, i) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #1a1a1a">' +
+      '<div style="background:#0e0e0e;border:1px solid #1e1e1e;border-radius:4px;padding:4px 8px;display:flex;align-items:center;justify-content:center;width:80px;height:36px;flex-shrink:0">' +
+        '<img src="' + v.img + '" style="max-height:28px;max-width:72px;object-fit:contain">' +
+      '</div>' +
+      '<span style="flex:1;font-size:0.78rem;color:#ccc;font-weight:600">' + esc(v.nome) + '</span>' +
+      '<button onclick="_admVeicRemover(' + i + ')" style="background:none;border:1px solid rgba(224,92,92,0.3);color:#e05c5c;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s" onmouseover="this.style.background=\'rgba(224,92,92,0.12)\'" onmouseout="this.style.background=\'none\'">Remover</button>' +
+    '</div>';
+  }).join('');
+}
+
+function _admVeicRemover(idx) {
+  if (!confirm('Remover este veículo?')) return;
+  db.collection('configuracoes').doc('veiculos').get()
+    .then(function(doc) {
+      var veics = (doc.exists && doc.data().lista) ? doc.data().lista : _veiculosDisponiveis.map(function(v) { return { id: v.id, nome: v.nome, img: v.img }; });
+      veics.splice(idx, 1);
+      return db.collection('configuracoes').doc('veiculos').set({ lista: veics }).then(function() { return veics; });
+    })
+    .then(function(veics) {
+      _veiculosDisponiveis = veics;
+      _admVeicCarregar();
+    })
+    .catch(function(e) { alert('Erro ao remover: ' + e.message); });
+}
+
+function _admVeicPreview(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var status = document.getElementById('adm-veic-status');
+  status.style.color = '#888';
+  status.textContent = 'Processando imagem...';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      // Detectar cor de fundo: pegar pixel do canto superior esquerdo
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      var px = ctx.getImageData(0, 0, 1, 1).data;
+      var bgDark = (px[0] + px[1] + px[2]) < 120; // fundo escuro
+      // Remover fundo
+      var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var d = imgData.data;
+      for (var i = 0; i < d.length; i += 4) {
+        var r = d[i], g = d[i+1], b = d[i+2];
+        var brightness = r + g + b;
+        if (bgDark ? brightness < 90 : brightness > 660) {
+          d[i+3] = 0; // transparente
+        } else if (bgDark ? brightness < 150 : brightness > 600) {
+          // suavizar borda
+          d[i+3] = Math.round(bgDark ? (brightness - 90) / 60 * 255 : (660 - brightness) / 60 * 255);
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+      // Recortar bounding box (remover espaço em branco ao redor)
+      var bounds = _admVeicBoundingBox(ctx, canvas.width, canvas.height);
+      var outW = Math.min(240, bounds.w);
+      var outH = Math.round(outW * bounds.h / bounds.w);
+      var out = document.createElement('canvas');
+      out.width = outW;
+      out.height = outH;
+      var octx = out.getContext('2d');
+      octx.drawImage(canvas, bounds.x, bounds.y, bounds.w, bounds.h, 0, 0, outW, outH);
+      _admVeicB64 = out.toDataURL('image/png');
+      // Mostrar preview
+      var prevArea = document.getElementById('adm-veic-preview-area');
+      var prevImg = document.getElementById('adm-veic-preview-img');
+      prevImg.src = _admVeicB64;
+      prevArea.style.display = 'block';
+      status.style.color = '#4AC87A';
+      status.textContent = 'Imagem processada. Defina um nome e salve.';
+      // Sugerir nome pelo nome do arquivo
+      var nome = document.getElementById('adm-veic-nome');
+      if (!nome.value) {
+        var fn = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+        nome.value = fn.substring(0, 30);
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function _admVeicBoundingBox(ctx, w, h) {
+  var d = ctx.getImageData(0, 0, w, h).data;
+  var minX = w, maxX = 0, minY = h, maxY = 0;
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      var a = d[(y * w + x) * 4 + 3];
+      if (a > 20) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < minX) return { x: 0, y: 0, w: w, h: h };
+  // Adicionar pequena margem
+  var pad = 4;
+  minX = Math.max(0, minX - pad);
+  minY = Math.max(0, minY - pad);
+  maxX = Math.min(w - 1, maxX + pad);
+  maxY = Math.min(h - 1, maxY + pad);
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+function _admVeicAdicionar() {
+  var nome = (document.getElementById('adm-veic-nome').value || '').trim();
+  var status = document.getElementById('adm-veic-status');
+  if (!nome) { status.style.color = '#e05c5c'; status.textContent = 'Informe o nome do veículo.'; return; }
+  if (!_admVeicB64) { status.style.color = '#e05c5c'; status.textContent = 'Carregue uma imagem primeiro.'; return; }
+  status.style.color = '#888';
+  status.textContent = 'Salvando...';
+  var id = nome.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') + '_' + Date.now();
+  db.collection('configuracoes').doc('veiculos').get()
+    .then(function(doc) {
+      var veics = (doc.exists && doc.data().lista) ? doc.data().lista : _veiculosDisponiveis.map(function(v) { return { id: v.id, nome: v.nome, img: v.img }; });
+      veics.push({ id: id, nome: nome, img: _admVeicB64 });
+      return db.collection('configuracoes').doc('veiculos').set({ lista: veics }).then(function() { return veics; });
+    })
+    .then(function(veics) {
+      _veiculosDisponiveis = veics;
+      status.style.color = '#4AC87A';
+      status.textContent = 'Veículo "' + nome + '" salvo com sucesso!';
+      document.getElementById('adm-veic-nome').value = '';
+      document.getElementById('adm-veic-file').value = '';
+      document.getElementById('adm-veic-preview-area').style.display = 'none';
+      _admVeicB64 = null;
+      _admVeicCarregar();
+    })
+    .catch(function(e) { status.style.color = '#e05c5c'; status.textContent = 'Erro: ' + e.message; });
 }
 
 // ── Permissões: Orçamento ──
