@@ -3312,7 +3312,9 @@ function aplicarOpcaoSelecionada() {
   setVal('ev_nome',  d.evento || d.tipo_evento || '');
   setVal('ev_local', d.local || d.local_evento || '');
   setVal('ev_maps',  d.local_evento_maps || d.ev_maps || d.maps_link || (document.getElementById('ev_maps')||{}).value || ''); _atualizarBtnMaps();
-  setVal('ev_data',  d.dataEvt || '');
+  setVal('ev_data',   d.dataEvt    || '');
+  setVal('ev_inicio', d.ev_inicio  || '');
+  setVal('ev_fim',    d.ev_fim     || '');
   if (d.whatsapp_cliente) setVal('cli_fone', d.whatsapp_cliente);
 
   // ── Serviços ──
