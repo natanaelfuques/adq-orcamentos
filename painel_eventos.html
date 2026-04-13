@@ -543,20 +543,28 @@ header {
   display: flex;
   flex-shrink: 0;
   overflow: hidden;
-  gap: 3px;
-  opacity: 0.9;
+  opacity: 0.85;
 }
-.card-resp-bar-seg {
-  height: 100%;
+.card-resp-bar-track {
   flex: 1;
-  border-radius: 2px;
-}
-.card-resp-bar-seg:first-child {
+  height: 100%;
+  background: rgba(120,120,130,0.25);
   border-radius: 6px 0 0 0;
 }
-.card-resp-bar-seg:last-child {
+.card-resp-bar-colors {
+  display: flex;
+  height: 100%;
+  gap: 2px;
+  overflow: hidden;
+}
+.card-resp-bar-color {
+  width: 18px;
+  height: 100%;
+}
+.card-resp-bar-colors .card-resp-bar-color:last-child {
   border-radius: 0 6px 0 0;
 }
+
 
 /* Referência clicável no card */
 .card-ref-link {
@@ -2524,13 +2532,14 @@ function _buildRespBarHTML(responsaveis) {
     var u = (_usuariosCadastrados || []).find(function(x) { return x.uid === uid; });
     return u ? u.cor : '#888';
   });
-  var segs = '';
+  // Barra: fundo neutro cinza ocupando quase toda a largura
+  // Canto direito: listras coloridas finas por responsável (discreto, identificável)
+  var colorSegs = '';
   colors.forEach(function(c) {
-    // listras diagonais: cor alternando com cor mais clara, espaçamento fino
-    var stripe = 'repeating-linear-gradient(-60deg,' + c + ' 0px,' + c + ' 3px,rgba(255,255,255,0.18) 3px,rgba(255,255,255,0.18) 5px)';
-    segs += '<div class="card-resp-bar-seg" style="background:' + stripe + '"></div>';
+    var stripe = 'repeating-linear-gradient(-60deg,' + c + ' 0px,' + c + ' 4px,rgba(0,0,0,0.15) 4px,rgba(0,0,0,0.15) 7px)';
+    colorSegs += '<div class="card-resp-bar-color" style="background:' + stripe + '"></div>';
   });
-  return '<div class="card-resp-bar">' + segs + '</div>';
+  return '<div class="card-resp-bar"><div class="card-resp-bar-track"></div><div class="card-resp-bar-colors">' + colorSegs + '</div></div>';
 }
 
 // ── Permissões: Histórico ──
