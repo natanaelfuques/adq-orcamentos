@@ -2660,7 +2660,7 @@ function _admUsersRemover(idx) {
 function _admUsersSalvar() {
   if (!db) return;
   db.collection('configuracoes').doc('usuarios_cadastrados').set({ usuarios: _usuariosCadastrados })
-    .then(function() { _admUsersRender(); _editorToast('Usuarios salvos!'); })
+    .then(function() { _admUsersRender(); _editorToast('Usuarios salvos!'); renderBoard(); })
     .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
 }
 
