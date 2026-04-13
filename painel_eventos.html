@@ -1100,6 +1100,31 @@ header {
   font-weight: 700;
   color: #ccc;
   white-space: nowrap;
+  flex: 1;
+}
+.veiculo-opt-check {
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid #444;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.veiculo-opt.selecionado .veiculo-opt-check {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.veiculo-opt.selecionado .veiculo-opt-check::after {
+  content: '';
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid #111;
+  border-bottom: 2px solid #111;
+  transform: rotate(-45deg) translateY(-1px);
+  display: block;
 }
 .veiculo-opt-none {
   display: flex;
@@ -1774,11 +1799,21 @@ function buildCard(ev, past, col) {
       '<div class="veiculo-row">' +
         '<div class="card-itens-title">Itens / Veículos</div>' +
         (function() {
-          var v = ev.veiculo ? _veiculosDisponiveis.find(function(x){return x.id===ev.veiculo;}) : null;
-          return '<button class="veiculo-icon-btn' + (v ? ' tem-veiculo' : '') + '" data-evid="' + esc(ev.id) + '" data-veiculo="' + esc(ev.veiculo || '') + '" onclick="event.stopPropagation();_abrirVeiculoPopover(this)" title="Selecionar veículo">' +
-            (v ? '<img src="' + v.img + '" alt="' + esc(v.nome) + '">' : '<svg width="18" height="12" viewBox="0 0 36 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35;vertical-align:middle;display:block"><rect x="1" y="7" width="34" height="11" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="18" r="3"/><circle cx="27" cy="18" r="3"/></svg>') +
-            '<span class="veiculo-label">Selecionar</span>' +
-            '</button>';
+          var sels = ev.veiculos && ev.veiculos.length ? ev.veiculos : (ev.veiculo ? [ev.veiculo] : []);
+          var selObjs = sels.map(function(id) { return _veiculosDisponiveis.find(function(x){ return x.id === id; }); }).filter(Boolean);
+          var temVeiculo = selObjs.length > 0;
+          var btnContent = '';
+          if (!temVeiculo) {
+            btnContent = '<svg width="18" height="12" viewBox="0 0 36 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35;vertical-align:middle;display:block"><rect x="1" y="7" width="34" height="11" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="18" r="3"/><circle cx="27" cy="18" r="3"/></svg>' +
+              '<span class="veiculo-label">Selecionar</span>';
+          } else if (selObjs.length === 1) {
+            btnContent = '<img src="' + selObjs[0].img + '" alt="' + esc(selObjs[0].nome) + '">' +
+              '<span class="veiculo-label">' + esc(selObjs[0].nome) + '</span>';
+          } else {
+            btnContent = selObjs.map(function(v) { return '<img src="' + v.img + '" alt="' + esc(v.nome) + '" title="' + esc(v.nome) + '">'; }).join('');
+          }
+          return '<button class="veiculo-icon-btn' + (temVeiculo ? ' tem-veiculo' : '') + '" data-evid="' + esc(ev.id) + '" data-veiculos="' + esc(JSON.stringify(sels)) + '" onclick="event.stopPropagation();_abrirVeiculoPopover(this)" title="Selecionar veículo">' +
+            btnContent + '</button>';
         })() +
       '</div>' +
       itensHtml + extrasHtml +
@@ -2614,14 +2649,58 @@ function _admVeicRenderLista(lista, veics) {
     return;
   }
   lista.innerHTML = veics.map(function(v, i) {
-    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #1a1a1a">' +
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #1a1a1a" id="adm-veic-row-' + i + '">' +
       '<div style="background:#0e0e0e;border:1px solid #1e1e1e;border-radius:4px;padding:4px 8px;display:flex;align-items:center;justify-content:center;width:80px;height:36px;flex-shrink:0">' +
         '<img src="' + v.img + '" style="max-height:28px;max-width:72px;object-fit:contain">' +
       '</div>' +
-      '<span style="flex:1;font-size:0.78rem;color:#ccc;font-weight:600">' + esc(v.nome) + '</span>' +
-      '<button onclick="_admVeicRemover(' + i + ')" style="background:none;border:1px solid rgba(224,92,92,0.3);color:#e05c5c;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s" onmouseover="this.style.background=\'rgba(224,92,92,0.12)\'" onmouseout="this.style.background=\'none\'">Remover</button>' +
+      '<span id="adm-veic-nome-label-' + i + '" onclick="_admVeicEditarNome(' + i + ')" title="Clique para editar" style="flex:1;font-size:0.78rem;color:#ccc;font-weight:600;cursor:text;border-bottom:1px dashed transparent;transition:border-color 0.15s;padding-bottom:1px" onmouseover="this.style.borderBottomColor=\'#444\'" onmouseout="this.style.borderBottomColor=\'transparent\'">' + esc(v.nome) + '</span>' +
+      '<div style="display:flex;gap:5px;flex-shrink:0">' +
+        '<button onclick="_admVeicDuplicar(' + i + ')" style="background:none;border:1px solid rgba(100,160,255,0.3);color:#6aa0ff;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s" onmouseover="this.style.background=\'rgba(100,160,255,0.1)\'" onmouseout="this.style.background=\'none\'">Duplicar</button>' +
+        '<button onclick="_admVeicRemover(' + i + ')" style="background:none;border:1px solid rgba(224,92,92,0.3);color:#e05c5c;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s" onmouseover="this.style.background=\'rgba(224,92,92,0.12)\'" onmouseout="this.style.background=\'none\'">Remover</button>' +
+      '</div>' +
     '</div>';
   }).join('');
+}
+
+function _admVeicEditarNome(idx) {
+  var label = document.getElementById('adm-veic-nome-label-' + idx);
+  if (!label || label.querySelector('input')) return;
+  var nomeAtual = label.textContent.trim();
+  label.innerHTML = '';
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = nomeAtual;
+  input.style.cssText = 'flex:1;width:100%;background:#0e0e0e;border:1px solid #7B22B8;border-radius:3px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.78rem;font-weight:600;padding:3px 6px;outline:none;box-sizing:border-box';
+  label.appendChild(input);
+  input.focus();
+  input.select();
+  function salvar() {
+    var novo = input.value.trim();
+    if (!novo) { _admVeicCarregar(); return; }
+    db.collection('configuracoes').doc('veiculos').get()
+      .then(function(doc) {
+        var veics = (doc.exists && doc.data().lista) ? doc.data().lista : _veiculosDisponiveis.slice();
+        if (veics[idx]) veics[idx].nome = novo;
+        return db.collection('configuracoes').doc('veiculos').set({ lista: veics }).then(function() { return veics; });
+      })
+      .then(function(veics) { _veiculosDisponiveis = veics; _admVeicCarregar(); })
+      .catch(function() { _admVeicCarregar(); });
+  }
+  input.addEventListener('blur', salvar);
+  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { input.blur(); } if (e.key === 'Escape') { _admVeicCarregar(); } });
+}
+
+function _admVeicDuplicar(idx) {
+  db.collection('configuracoes').doc('veiculos').get()
+    .then(function(doc) {
+      var veics = (doc.exists && doc.data().lista) ? doc.data().lista : _veiculosDisponiveis.slice();
+      var orig = veics[idx];
+      var copia = { id: orig.id + '_copia_' + Date.now(), nome: orig.nome + ' (cópia)', img: orig.img };
+      veics.splice(idx + 1, 0, copia);
+      return db.collection('configuracoes').doc('veiculos').set({ lista: veics }).then(function() { return veics; });
+    })
+    .then(function(veics) { _veiculosDisponiveis = veics; _admVeicCarregar(); })
+    .catch(function(e) { alert('Erro ao duplicar: ' + e.message); });
 }
 
 function _admVeicRemover(idx) {
@@ -3390,44 +3469,74 @@ var _veiculoPopoverEl = null;
 function _abrirVeiculoPopover(btn) {
   _fecharVeiculoPopover();
   var evId = btn.getAttribute('data-evid');
-  var atual = btn.getAttribute('data-veiculo') || '';
+  var atuais = [];
+  try { atuais = JSON.parse(btn.getAttribute('data-veiculos') || '[]'); } catch(e) {}
+  if (!Array.isArray(atuais)) atuais = atuais ? [atuais] : [];
+
   var pop = document.createElement('div');
   pop.className = 'veiculo-popover';
-  pop.style.position = 'absolute';
   var html = '<div class="veiculo-popover-title">Veículos</div>';
   _veiculosDisponiveis.forEach(function(v) {
-    html += '<div class="veiculo-opt' + (atual === v.id ? ' selecionado' : '') + '" data-vid="' + v.id + '" data-evid="' + evId + '">' +
+    var sel = atuais.indexOf(v.id) >= 0;
+    html += '<div class="veiculo-opt' + (sel ? ' selecionado' : '') + '" data-vid="' + v.id + '">' +
       '<img src="' + v.img + '" alt="' + v.nome + '">' +
       '<span class="veiculo-opt-nome">' + v.nome + '</span>' +
+      '<div class="veiculo-opt-check"></div>' +
       '</div>';
   });
-  html += '<div class="veiculo-opt-none" data-evid="' + evId + '">✕ Sem veículo</div>';
+  html += '<div class="veiculo-opt-none">✕ Sem veículo</div>';
   pop.innerHTML = html;
-  // Position relative to button
+
   var rect = btn.getBoundingClientRect();
   pop.style.position = 'fixed';
   pop.style.top = (rect.bottom + 6) + 'px';
   pop.style.left = Math.min(rect.left, window.innerWidth - 200) + 'px';
   document.body.appendChild(pop);
   _veiculoPopoverEl = pop;
+
+  // Toggle selection without closing
   pop.querySelectorAll('.veiculo-opt').forEach(function(opt) {
     opt.addEventListener('click', function(e) {
       e.stopPropagation();
       var vid = opt.getAttribute('data-vid');
-      var eid = opt.getAttribute('data-evid');
-      _salvarVeiculo(eid, vid);
-      _fecharVeiculoPopover();
+      var idx = atuais.indexOf(vid);
+      if (idx >= 0) { atuais.splice(idx, 1); opt.classList.remove('selecionado'); }
+      else { atuais.push(vid); opt.classList.add('selecionado'); }
+      _salvarVeiculos(evId, atuais.slice());
+      // Update button immediately
+      _atualizarBotaoVeiculo(evId, atuais.slice());
     });
   });
+
   pop.querySelector('.veiculo-opt-none').addEventListener('click', function(e) {
     e.stopPropagation();
-    var eid = pop.querySelector('.veiculo-opt-none').getAttribute('data-evid');
-    _salvarVeiculo(eid, '');
-    _fecharVeiculoPopover();
+    atuais = [];
+    pop.querySelectorAll('.veiculo-opt').forEach(function(o) { o.classList.remove('selecionado'); });
+    _salvarVeiculos(evId, []);
+    _atualizarBotaoVeiculo(evId, []);
   });
+
   setTimeout(function() {
     document.addEventListener('click', _fecharVeiculoPopover, { once: true });
   }, 0);
+}
+
+function _atualizarBotaoVeiculo(evId, sels) {
+  var btn = document.querySelector('.veiculo-icon-btn[data-evid="' + evId + '"]');
+  if (!btn) return;
+  var selObjs = sels.map(function(id) { return _veiculosDisponiveis.find(function(x){ return x.id === id; }); }).filter(Boolean);
+  var temVeiculo = selObjs.length > 0;
+  btn.setAttribute('data-veiculos', JSON.stringify(sels));
+  btn.className = 'veiculo-icon-btn' + (temVeiculo ? ' tem-veiculo' : '');
+  var btnContent = '';
+  if (!temVeiculo) {
+    btnContent = '<svg width="18" height="12" viewBox="0 0 36 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35;vertical-align:middle;display:block"><rect x="1" y="7" width="34" height="11" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="18" r="3"/><circle cx="27" cy="18" r="3"/></svg><span class="veiculo-label">Selecionar</span>';
+  } else if (selObjs.length === 1) {
+    btnContent = '<img src="' + selObjs[0].img + '" alt="' + selObjs[0].nome + '"><span class="veiculo-label">' + selObjs[0].nome + '</span>';
+  } else {
+    btnContent = selObjs.map(function(v) { return '<img src="' + v.img + '" alt="' + v.nome + '" title="' + v.nome + '">'; }).join('');
+  }
+  btn.innerHTML = btnContent;
 }
 
 function _fecharVeiculoPopover() {
@@ -3437,8 +3546,14 @@ function _fecharVeiculoPopover() {
   }
 }
 
+function _salvarVeiculos(evId, veiculoIds) {
+  db.collection('eventos_campo').doc(evId).update({ veiculos: veiculoIds })
+    .catch(function(e) { console.error('Erro ao salvar veículos:', e); });
+}
+
 function _salvarVeiculo(evId, veiculoId) {
-  db.collection('eventos_campo').doc(evId).update({ veiculo: veiculoId })
+  var ids = veiculoId ? [veiculoId] : [];
+  db.collection('eventos_campo').doc(evId).update({ veiculos: ids })
     .catch(function(e) { console.error('Erro ao salvar veículo:', e); });
 }
 
