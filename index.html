@@ -3035,6 +3035,13 @@ function resetFormularioContrato() {
    'val_total','pgto_custom','data_entrada'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  // Resetar modo texto livre da data
+  var chkLivre   = document.getElementById('ev_data_livre_chk');
+  var inputDate  = document.getElementById('ev_data');
+  var inputLivre = document.getElementById('ev_data_texto_livre');
+  if (chkLivre)  chkLivre.checked = false;
+  if (inputDate)  inputDate.style.display  = '';
+  if (inputLivre) { inputLivre.style.display = 'none'; inputLivre.value = ''; }
   // Reset forma pagamento
   const vista = document.querySelector('input[name="pgto"][value="vista"]');
   if (vista) { vista.checked = true; vista.dispatchEvent(new Event('change')); }
@@ -4650,21 +4657,28 @@ function preencherContratoDados() {
   const d = _contratoDados;
   if (!d) return;
   _currentOrcRef = d.orc_ref || '';
-  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
-  set('cli_nome',  d.cli_nome);
-  set('cli_doc',   d.cli_doc);
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('cli_nome',   d.cli_nome);
+  set('cli_doc',    d.cli_doc);
   set('cli_end',    d.cli_end);
   set('cli_cidade', d.cli_cidade);
-  set('cli_cep',   d.cli_cep);
-  set('cli_email', d.cli_email);
-  set('cli_fone',  d.cli_fone);
-  set('ev_nome',   d.ev_nome);
-  set('ev_resp',   d.ev_resp);
-  set('ev_local',  d.ev_local);
-  set('ev_maps',   d.ev_maps); _atualizarBtnMaps();
-  set('ev_data',   d.ev_data);
-  set('ev_inicio', d.ev_inicio);
-  set('ev_fim',    d.ev_fim);
+  set('cli_cep',    d.cli_cep);
+  set('cli_email',  d.cli_email);
+  set('cli_fone',   d.cli_fone);
+  set('ev_nome',    d.ev_nome);
+  set('ev_resp',    d.ev_resp);
+  set('ev_local',   d.ev_local);
+  set('ev_maps',    d.ev_maps); _atualizarBtnMaps();
+  // Resetar modo texto livre da data antes de preencher
+  var chkLivre = document.getElementById('ev_data_livre_chk');
+  var inputDate  = document.getElementById('ev_data');
+  var inputLivre = document.getElementById('ev_data_texto_livre');
+  if (chkLivre) chkLivre.checked = false;
+  if (inputDate)  inputDate.style.display  = '';
+  if (inputLivre) { inputLivre.style.display = 'none'; inputLivre.value = ''; }
+  set('ev_data',    d.ev_data);
+  set('ev_inicio',  d.ev_inicio);
+  set('ev_fim',     d.ev_fim);
   set('val_total', d.val_total);
   set('pgto_custom', d.pgto_custom);
   set('data_entrada', d.data_entrada);
