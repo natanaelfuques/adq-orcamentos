@@ -540,8 +540,22 @@ header {
   width: calc(100% + 32px);
   margin: -12px -16px 10px -16px;
   border-radius: 6px 6px 0 0;
-  display: block;
+  display: flex;
   flex-shrink: 0;
+  overflow: hidden;
+  gap: 2px;
+}
+.card-resp-bar-seg {
+  height: 100%;
+  flex: 1;
+  border-radius: 2px;
+}
+.card-resp-bar-seg:first-child {
+  border-radius: 6px 0 0 0;
+  flex: 2.5;
+}
+.card-resp-bar-seg:last-child {
+  border-radius: 0 6px 0 0;
 }
 
 /* Referência clicável no card */
@@ -1649,28 +1663,7 @@ function buildCard(ev, past, col) {
   }
 
   // Barrinha de responsáveis no topo
-  var respBar = '';
-  var responsaveis = ev.responsaveis || [];
-  if (responsaveis.length > 0) {
-    var respColors = responsaveis.map(function(uid) {
-      var u = (_usuariosCadastrados || []).find(function(x){ return x.uid === uid; });
-      return u ? u.cor : '#888';
-    });
-    var gradStops = [];
-    // cinza até 40% depois distribui as cores
-    var grayEnd = 40;
-    gradStops.push('rgba(80,80,80,0.5) 0%');
-    gradStops.push('rgba(80,80,80,0.5) ' + grayEnd + '%');
-    var colorSegSize = (100 - grayEnd) / respColors.length;
-    respColors.forEach(function(c, i) {
-      var start = grayEnd + i * colorSegSize;
-      var end = start + colorSegSize;
-      gradStops.push(c + ' ' + start.toFixed(1) + '%');
-      gradStops.push(c + ' ' + end.toFixed(1) + '%');
-    });
-    var gradient = 'linear-gradient(90deg, ' + gradStops.join(', ') + ')';
-    respBar = '<div class="card-resp-bar" style="background:' + gradient + '"></div>';
-  }
+  var respBar = _buildRespBarHTML(ev.responsaveis || []);
 
   // Referência clicável
   var refId = ev.contrato_id || ev.id;
@@ -2524,6 +2517,21 @@ function _admPermRemover(idx) { _admPermRemoverSecao('adm-perm-lista', 'permisso
 // ── Permissões: Editor ──
 var _admPermEditorEmailsAtuais = [];
 
+// Helper: gera HTML da barrinha de responsáveis (segmentos com gap)
+function _buildRespBarHTML(responsaveis) {
+  if (!responsaveis || !responsaveis.length) return '';
+  var colors = responsaveis.map(function(uid) {
+    var u = (_usuariosCadastrados || []).find(function(x) { return x.uid === uid; });
+    return u ? u.cor : '#888';
+  });
+  // segmento cinza + um segmento por usuário
+  var segs = '<div class="card-resp-bar-seg" style="background:rgba(80,80,80,0.35)"></div>';
+  colors.forEach(function(c) {
+    segs += '<div class="card-resp-bar-seg" style="background:' + c + '"></div>';
+  });
+  return '<div class="card-resp-bar">' + segs + '</div>';
+}
+
 // ── Permissões: Histórico ──
 var _admPermHistEmailsAtuais = [];
 
@@ -2723,36 +2731,13 @@ function _atualizarBarrinhaCard(evid, responsaveis) {
   var card = document.querySelector('.evento-card[data-id="' + evid + '"]');
   if (!card) return;
   var bar = card.querySelector('.card-resp-bar');
+  if (bar) bar.remove();
 
-  if (!responsaveis || !responsaveis.length) {
-    if (bar) bar.remove();
-    return;
-  }
-
-  var respColors = responsaveis.map(function(uid) {
-    var u = (_usuariosCadastrados || []).find(function(x) { return x.uid === uid; });
-    return u ? u.cor : '#888';
-  });
-
-  var grayEnd = 40;
-  var gradStops = ['rgba(80,80,80,0.5) 0%', 'rgba(80,80,80,0.5) ' + grayEnd + '%'];
-  var colorSegSize = (100 - grayEnd) / respColors.length;
-  respColors.forEach(function(c, i) {
-    var start = grayEnd + i * colorSegSize;
-    var end = start + colorSegSize;
-    gradStops.push(c + ' ' + start.toFixed(1) + '%');
-    gradStops.push(c + ' ' + end.toFixed(1) + '%');
-  });
-  var gradient = 'linear-gradient(90deg, ' + gradStops.join(', ') + ')';
-
-  if (bar) {
-    bar.style.background = gradient;
-  } else {
-    var newBar = document.createElement('div');
-    newBar.className = 'card-resp-bar';
-    newBar.style.background = gradient;
-    card.insertBefore(newBar, card.firstChild);
-  }
+  var html = _buildRespBarHTML(responsaveis);
+  if (!html) return;
+  var tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  card.insertBefore(tmp.firstChild, card.firstChild);
 }
 
 
