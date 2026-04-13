@@ -2061,8 +2061,13 @@ Revestimento</textarea>
           <input type="text" id="val_total" placeholder="Ex: 4.900,00" oninput="calcEntrada()">
         </div>
         <div>
-          <label style="color:var(--muted)">Entrada para Reserva (20%)</label>
-          <div id="val_entrada" style="background:var(--darker);border:1px solid var(--border);border-radius:4px;padding:10px 13px;font-size:0.95rem;color:var(--gold);font-weight:700;">—</div>
+          <label style="color:var(--muted)">Entrada para Reserva (<span id="lbl_pct_entrada">20%</span>)</label>
+          <input type="text" id="val_entrada" placeholder="—" readonly
+            style="background:var(--darker);border:1px solid var(--border);border-radius:4px;font-size:0.95rem;color:var(--gold);font-weight:700;cursor:pointer;"
+            title="Clique para editar o valor da entrada"
+            onfocus="ativarEdicaoEntrada(this)"
+            oninput="onEditEntrada(this)"
+            onblur="onBlurEntrada(this)">
         </div>
       </div>
 
@@ -2967,6 +2972,12 @@ function resetFormularioOrcamento() {
   try { localStorage.removeItem(_DRAFT_ORC_KEY); } catch(e) {}
   var bannerOrc = document.getElementById('adq-draft-orc-banner');
   if (bannerOrc) bannerOrc.remove();
+  // Reset entrada manual
+  _entradaManual = false;
+  var entradaEl = document.getElementById('val_entrada');
+  if (entradaEl) { entradaEl.value = ''; entradaEl.style.color = 'var(--gold)'; entradaEl.setAttribute('readonly',''); entradaEl.style.cursor = 'pointer'; }
+  var lblPct = document.getElementById('lbl_pct_entrada');
+  if (lblPct) lblPct.textContent = '20%';
   // Dados do cliente / evento
   ['nome_cliente','tipo_evento','local_evento','data_evento','whatsapp_cliente','qtd_pessoas'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -3945,14 +3956,88 @@ function syncText(timeEl, textId) {
   document.getElementById(textId).value = h + 'h' + m;
 }
 
+// Controle de edição manual da entrada
+var _entradaManual = false;
+
+function getEntradaValor() {
+  // Retorna o valor numérico atual do campo entrada
+  const el = document.getElementById('val_entrada');
+  if (!el || !el.value || el.value === '—') return null;
+  return parseBRL(el.value);
+}
+
+function ativarEdicaoEntrada(el) {
+  el.removeAttribute('readonly');
+  el.style.cursor = 'text';
+  // Se tiver valor formatado, mantém para edição
+  const num = getEntradaValor();
+  if (num !== null) {
+    el.value = formatBRL(num);
+    el.select();
+  }
+}
+
+function onEditEntrada(el) {
+  _entradaManual = true;
+  el.style.color = '#ffffff';
+  // Atualiza % em tempo real
+  const total = parseBRL(document.getElementById('val_total').value);
+  const entradaNum = parseBRL(el.value);
+  const lblPct = document.getElementById('lbl_pct_entrada');
+  if (total > 0 && entradaNum > 0 && lblPct) {
+    const pct = (entradaNum / total) * 100;
+    lblPct.textContent = pct.toFixed(1).replace('.', ',') + '%';
+  } else if (lblPct) {
+    lblPct.textContent = '—%';
+  }
+  // Atualiza parcelas em tempo real
+  atualizaParceladoInfo();
+}
+
+function onBlurEntrada(el) {
+  // Formata o valor ao sair do campo
+  const num = parseBRL(el.value);
+  if (num > 0) {
+    el.value = 'R$ ' + formatBRL(num);
+  } else if (!el.value.trim()) {
+    // Se apagou tudo, volta ao automático
+    _entradaManual = false;
+    el.style.color = 'var(--gold)';
+    calcEntrada();
+    return;
+  }
+  el.setAttribute('readonly', '');
+  el.style.cursor = 'pointer';
+  atualizaParceladoInfo();
+}
+
 function calcEntrada() {
   const val = parseBRL(document.getElementById('val_total').value);
-  const entrada = document.getElementById('val_entrada');
-  if (val > 0) {
-    entrada.textContent = 'R$ ' + formatBRL(val * 0.2);
+  const entradaEl = document.getElementById('val_entrada');
+  const lblPct = document.getElementById('lbl_pct_entrada');
+  if (!entradaEl) return;
+  if (!_entradaManual) {
+    // Modo automático: calcula 20%
+    if (val > 0) {
+      entradaEl.value = 'R$ ' + formatBRL(val * 0.2);
+      entradaEl.style.color = 'var(--gold)';
+      if (lblPct) lblPct.textContent = '20%';
+    } else {
+      entradaEl.value = '';
+      entradaEl.placeholder = '—';
+      if (lblPct) lblPct.textContent = '20%';
+    }
   } else {
-    entrada.textContent = '—';
+    // Em modo manual, recalcula apenas o percentual exibido
+    const entradaNum = getEntradaValor();
+    if (val > 0 && entradaNum !== null && entradaNum > 0 && lblPct) {
+      const pct = (entradaNum / val) * 100;
+      lblPct.textContent = pct.toFixed(1).replace('.', ',') + '%';
+    } else if (lblPct) {
+      lblPct.textContent = '—%';
+    }
   }
+  atualizaParceladoInfo();
 }
 
 function switchMain(name, direction) {
@@ -4084,9 +4169,13 @@ function atualizaParceladoInfo() {
   const total = parseBRL(document.getElementById('val_total').value);
   const n = document.querySelector('input[name=nparcelas]:checked');
   const info = document.getElementById('pgto_parcelado_info');
+  if (!info) return;
   if (!n || total <= 0) { info.textContent = ''; return; }
-  const entrada = total * 0.2;
-  const saldo = total * 0.8;
+
+  // Usa o valor da entrada editável se disponível
+  let entrada = getEntradaValor();
+  if (entrada === null || entrada <= 0) entrada = total * 0.2;
+  const saldo = total - entrada;
   const parc = saldo / parseInt(n.value);
   info.innerHTML = '<span style="color:var(--gold);font-weight:700">Entrada: R$ ' + formatBRL(entrada) + '</span>'
     + ' + ' + n.value + 'x de <span style="color:var(--gold);font-weight:700">R$ ' + formatBRL(parc) + '</span>';
@@ -4120,9 +4209,14 @@ function fmtHora(val) { return val ? val.replace(':', 'h') : '___h___'; }
 function pgtoTexto() {
   const sel   = document.querySelector('input[name=pgto]:checked').value;
   const total = parseBRL(document.getElementById('val_total').value);
-  const entrada20 = total > 0 ? 'R$ ' + formatBRL(total * 0.2) : '20%';
+
+  // Usa valor da entrada editável se disponível
+  let entradaNum = getEntradaValor();
+  if (entradaNum === null || entradaNum <= 0) entradaNum = total * 0.2;
+  const entrada20 = total > 0 ? 'R$ ' + formatBRL(entradaNum) : '20%';
   const metade    = total > 0 ? 'R$ ' + formatBRL(total * 0.5) : '50%';
-  const saldo80   = total > 0 ? 'R$ ' + formatBRL(total * 0.8) : 'o saldo restante';
+  const saldo80   = total > 0 ? 'R$ ' + formatBRL(total - entradaNum) : 'o saldo restante';
+  const pctEntrada = total > 0 ? ((entradaNum / total) * 100).toFixed(0) : '20';
 
   if (sel === 'vista')
     return 'Integralmente na assinatura do contrato, no valor de R$ ' + (total > 0 ? formatBRL(total) : '______') + '.';
@@ -4138,11 +4232,11 @@ function pgtoTexto() {
   if (sel === 'parcelado') {
     const n = document.querySelector('input[name=nparcelas]:checked');
     const parcelas = n ? parseInt(n.value) : 0;
-    const saldo80  = total > 0 ? 'R$ ' + formatBRL(total * 0.8) : 'o saldo restante';
-    const valorParc = (total > 0 && parcelas > 0) ? 'R$ ' + formatBRL((total * 0.8) / parcelas) : '______';
+    const saldoParc = total > 0 ? 'R$ ' + formatBRL(total - entradaNum) : 'o saldo restante';
+    const valorParc = (total > 0 && parcelas > 0) ? 'R$ ' + formatBRL((total - entradaNum) / parcelas) : '______';
     const nTexto = parcelas > 0 ? parcelas + ' (${numPorExtenso(parcelas)})' : '______';
-    return '20% (vinte por cento) na assinatura do contrato a título de reserva de agenda, correspondente a ' + entrada20 +
-      ', e o saldo restante de ' + saldo80 + ' parcelado em ' + (parcelas > 0 ? parcelas : '______') +
+    return pctEntrada + '% na assinatura do contrato a título de reserva de agenda, correspondente a ' + entrada20 +
+      ', e o saldo restante de ' + saldoParc + ' parcelado em ' + (parcelas > 0 ? parcelas : '______') +
       ' parcelas iguais de ' + valorParc + '.';
   }
   return document.getElementById('pgto_custom').value.trim() || '____________________________________________.';
