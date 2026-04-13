@@ -3709,7 +3709,7 @@ var _draftTimer = null;
 
 var _DRAFT_CAMPOS = [
   'cli_nome','cli_doc','cli_end','cli_cidade','cli_cep','cli_email','cli_fone',
-  'ev_nome','ev_resp','ev_local','ev_maps','ev_data','ev_inicio','ev_fim',
+  'ev_nome','ev_resp','ev_local','ev_maps','ev_data','ev_data_texto_livre','ev_inicio','ev_fim',
   'val_total','pgto_custom','data_entrada'
 ];
 
@@ -3719,7 +3719,8 @@ function _salvarRascunhoContrato() {
     var servicos = Array.from(servInputs).map(function(i) { return i.value; });
     var pgtoRadio = document.querySelector('input[name="pgto"]:checked');
     var nParc = document.querySelector('input[name="nparcelas"]:checked');
-    var dados = { _ts: Date.now(), servicos: servicos, pgto_sel: pgtoRadio ? pgtoRadio.value : 'vista', nparcelas: nParc ? nParc.value : '' };
+    var dados = { _ts: Date.now(), servicos: servicos, pgto_sel: pgtoRadio ? pgtoRadio.value : 'vista', nparcelas: nParc ? nParc.value : '',
+                  ev_data_livre_chk: !!(document.getElementById('ev_data_livre_chk') || {}).checked };
     _DRAFT_CAMPOS.forEach(function(id) {
       var el = document.getElementById(id);
       if (el) dados[id] = el.value;
@@ -3769,6 +3770,12 @@ function _aplicarRascunhoContrato() {
     var d = JSON.parse(raw);
     var set = function(id, val) { var el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
     _DRAFT_CAMPOS.forEach(function(id) { set(id, d[id] || ''); });
+    // Restaurar modo texto livre
+    var chkLivreR = document.getElementById('ev_data_livre_chk');
+    if (chkLivreR) {
+      chkLivreR.checked = !!d.ev_data_livre_chk;
+      _toggleEvDataLivre(chkLivreR);
+    }
     var pgtoRadio = document.querySelector('input[name="pgto"][value="' + (d.pgto_sel || 'vista') + '"]');
     if (pgtoRadio) { pgtoRadio.checked = true; pgtoRadio.dispatchEvent(new Event('change')); }
     if (d.pgto_sel === 'parcelado' && d.nparcelas) {
@@ -6023,7 +6030,9 @@ function coletarDadosContrato() {
     ev_resp:   get('ev_resp'),
     ev_local:  get('ev_local'),
     ev_maps:   get('ev_maps'),
-    ev_data:   get('ev_data'),
+    ev_data:             get('ev_data'),
+    ev_data_livre_chk:   !!(document.getElementById('ev_data_livre_chk') || {}).checked,
+    ev_data_texto_livre: (document.getElementById('ev_data_texto_livre') || {}).value || '',
     ev_inicio: get('ev_inicio'),
     ev_fim:    get('ev_fim'),
     val_total: get('val_total'),
@@ -6266,8 +6275,10 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
   lista.innerHTML = docs.map(function(doc) {
     var nome    = doc.cli_nome || '';
     var evento  = doc.ev_nome  || '';
-    var data    = doc.ev_data  || '';
-    var dataFmt = data ? data.split('-').reverse().join('/') : '';
+    var data    = doc.ev_data_livre_chk ? (doc.ev_data_texto_livre || doc.ev_data || '') : (doc.ev_data || '');
+    var dataFmt = data
+      ? (data.indexOf('-') !== -1 && data.length === 10 ? data.split('-').reverse().join('/') : data)
+      : '';
     var valor   = doc.val_total ? 'R$ ' + doc.val_total : '';
     var aprovado = doc.aprovado ? true : false;
     var id = doc.id;
@@ -6363,6 +6374,16 @@ function abrirContrato(id) {
     set('ev_local',  d.ev_local  || '');
     set('ev_maps',   d.ev_maps   || ''); _atualizarBtnMaps();
     set('ev_data',   d.ev_data   || '');
+    // Restaurar modo texto livre
+    var chkLivreA = document.getElementById('ev_data_livre_chk');
+    if (chkLivreA) {
+      chkLivreA.checked = !!d.ev_data_livre_chk;
+      _toggleEvDataLivre(chkLivreA);
+    }
+    if (d.ev_data_texto_livre) {
+      var elLivreA = document.getElementById('ev_data_texto_livre');
+      if (elLivreA) elLivreA.value = d.ev_data_texto_livre;
+    }
     set('ev_inicio', d.ev_inicio || '');
     set('ev_fim',    d.ev_fim    || '');
     set('val_total', d.val_total || '');
