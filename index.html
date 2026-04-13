@@ -1402,7 +1402,21 @@ header {
       <div class="grid-2">
         <div>
           <label>Data do Evento</label>
-          <input type="date" id="data_evento" onchange="validarDataEvento(this)" />
+          <div style="position:relative;display:flex;align-items:center">
+            <input type="text" id="data_evento_texto" placeholder="dd/mm/aaaa"
+              style="padding-right:38px"
+              oninput="sincronizarDataTexto(this)"
+              onblur="validarDataEventoTexto(this)" />
+            <input type="date" id="data_evento" tabindex="-1"
+              style="position:absolute;opacity:0;width:0;height:0;pointer-events:none"
+              onchange="sincronizarDataDate(this)" />
+            <button type="button" onclick="abrirCalendarioData()" title="Selecionar data"
+              style="position:absolute;right:0;top:0;height:100%;width:36px;background:transparent;border:none;border-left:1px solid var(--border);color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:0 4px 4px 0;transition:background 0.15s"
+              onmouseover="this.style.background='rgba(200,169,74,0.1)'"
+              onmouseout="this.style.background='transparent'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </button>
+          </div>
         </div>
         <div>
           <label>WhatsApp do Cliente</label>
@@ -2019,7 +2033,21 @@ Revestimento</textarea>
       <div class="grid-3">
         <div>
           <label>Data do Evento</label>
-          <input type="date" id="ev_data" onchange="validarDataEvento(this);if(document.querySelector('input[name=pgto]:checked')?.value==='parcelado'){selecionaParcelasIdeal();atualizaParceladoInfo();}">
+          <div style="position:relative;display:flex;align-items:center">
+            <input type="text" id="ev_data_texto" placeholder="dd/mm/aaaa"
+              style="padding-right:38px"
+              oninput="sincronizarDataTextoEv(this)"
+              onblur="validarDataEventoTextoEv(this)" />
+            <input type="date" id="ev_data" tabindex="-1"
+              style="position:absolute;opacity:0;width:0;height:0;pointer-events:none"
+              onchange="sincronizarDataDateEv(this)" />
+            <button type="button" onclick="abrirCalendarioDataEv()" title="Selecionar data"
+              style="position:absolute;right:0;top:0;height:100%;width:36px;background:transparent;border:none;border-left:1px solid var(--border);color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:0 4px 4px 0;transition:background 0.15s"
+              onmouseover="this.style.background='rgba(200,169,74,0.1)'"
+              onmouseout="this.style.background='transparent'">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </button>
+          </div>
         </div>
         <div>
           <label>Hora Início</label>
@@ -4350,6 +4378,119 @@ function validarDataEvento(input) {
   const data = new Date(input.value + 'T00:00:00');
   input.classList.toggle('doc-invalido', data < hoje);
 }
+
+// ── DATA_EVENTO: campo texto + seletor ──────────────────────────────────────
+function _textoParaIso(txt) {
+  // Aceita dd/mm/aaaa ou dd-mm-aaaa
+  var m = txt.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (!m) return '';
+  return m[3] + '-' + m[2].padStart(2,'0') + '-' + m[1].padStart(2,'0');
+}
+function _isoParaTexto(iso) {
+  var p = iso.split('-');
+  if (p.length !== 3) return iso;
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+function _validarTextoData(textoInput) {
+  var iso = _textoParaIso(textoInput.value.trim());
+  if (!textoInput.value.trim()) { textoInput.classList.remove('doc-invalido'); return; }
+  if (!iso) { textoInput.classList.add('doc-invalido'); return; }
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var data = new Date(iso + 'T00:00:00');
+  textoInput.classList.toggle('doc-invalido', data < hoje);
+}
+
+// Campo principal (data_evento)
+function sincronizarDataTexto(textoInput) {
+  var iso = _textoParaIso(textoInput.value.trim());
+  var hidden = document.getElementById('data_evento');
+  if (hidden) hidden.value = iso || '';
+  _validarTextoData(textoInput);
+}
+function validarDataEventoTexto(textoInput) {
+  _validarTextoData(textoInput);
+}
+function sincronizarDataDate(dateInput) {
+  var texto = document.getElementById('data_evento_texto');
+  if (texto) {
+    texto.value = dateInput.value ? _isoParaTexto(dateInput.value) : '';
+    _validarTextoData(texto);
+  }
+  // Acionar side effects originais do ev_data se necessário (nenhum neste campo)
+}
+function abrirCalendarioData() {
+  var hidden = document.getElementById('data_evento');
+  if (!hidden) return;
+  // Sincroniza valor antes de abrir
+  var texto = document.getElementById('data_evento_texto');
+  if (texto) { var iso = _textoParaIso(texto.value.trim()); if (iso) hidden.value = iso; }
+  hidden.showPicker ? hidden.showPicker() : hidden.click();
+}
+
+// Campo ev_data
+function sincronizarDataTextoEv(textoInput) {
+  var iso = _textoParaIso(textoInput.value.trim());
+  var hidden = document.getElementById('ev_data');
+  if (hidden) hidden.value = iso || '';
+  _validarTextoData(textoInput);
+  if (iso && document.querySelector('input[name=pgto]:checked')?.value === 'parcelado') {
+    selecionaParcelasIdeal(); atualizaParceladoInfo();
+  }
+}
+function validarDataEventoTextoEv(textoInput) {
+  _validarTextoData(textoInput);
+}
+function sincronizarDataDateEv(dateInput) {
+  var texto = document.getElementById('ev_data_texto');
+  if (texto) {
+    texto.value = dateInput.value ? _isoParaTexto(dateInput.value) : '';
+    _validarTextoData(texto);
+  }
+  if (document.querySelector('input[name=pgto]:checked')?.value === 'parcelado') {
+    selecionaParcelasIdeal(); atualizaParceladoInfo();
+  }
+}
+function abrirCalendarioDataEv() {
+  var hidden = document.getElementById('ev_data');
+  if (!hidden) return;
+  var texto = document.getElementById('ev_data_texto');
+  if (texto) { var iso = _textoParaIso(texto.value.trim()); if (iso) hidden.value = iso; }
+  hidden.showPicker ? hidden.showPicker() : hidden.click();
+}
+
+// Patch: ao carregar dados salvos, preencher os campos texto
+(function _patchCarregarDatas() {
+  var origSet = window._origSetData;
+  // Observador para sincronizar campos hidden → texto ao setar via .value
+  function _watchDate(hiddenId, textoId) {
+    var hidden = document.getElementById(hiddenId);
+    var texto  = document.getElementById(textoId);
+    if (!hidden || !texto) return;
+    // Proxy via Object.defineProperty para capturar atribuições externas
+    var _val = hidden.value;
+    try {
+      Object.defineProperty(hidden, 'value', {
+        get: function() { return _val; },
+        set: function(v) {
+          _val = v;
+          if (texto) texto.value = v ? _isoParaTexto(v) : '';
+          if (texto) _validarTextoData(texto);
+        },
+        configurable: true
+      });
+    } catch(e) {}
+  }
+  // Executar após o DOM estar pronto
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      _watchDate('data_evento', 'data_evento_texto');
+      _watchDate('ev_data',     'ev_data_texto');
+    });
+  } else {
+    _watchDate('data_evento', 'data_evento_texto');
+    _watchDate('ev_data',     'ev_data_texto');
+  }
+})();
 
 function validarCep(input) {
   const d = input.value.replace(/\D/g, '');
