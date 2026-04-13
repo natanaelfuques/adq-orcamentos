@@ -553,7 +553,6 @@ header {
 }
 .card-resp-bar-seg:first-child {
   border-radius: 6px 0 0 0;
-  flex: 6;
 }
 .card-resp-bar-seg:last-child {
   border-radius: 0 6px 0 0;
@@ -2525,7 +2524,7 @@ function _buildRespBarHTML(responsaveis) {
     var u = (_usuariosCadastrados || []).find(function(x) { return x.uid === uid; });
     return u ? u.cor : '#888';
   });
-  var segs = '<div class="card-resp-bar-seg" style="background:rgba(80,80,80,0.3)"></div>';
+  var segs = '';
   colors.forEach(function(c) {
     // listras diagonais: cor alternando com cor mais clara, espaçamento fino
     var stripe = 'repeating-linear-gradient(-60deg,' + c + ' 0px,' + c + ' 3px,rgba(255,255,255,0.18) 3px,rgba(255,255,255,0.18) 5px)';
