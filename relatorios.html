@@ -1401,7 +1401,7 @@ function setPeriodo(p, btn) {
   const ano = hoje.getFullYear();
   const mes = hoje.getMonth();
 
-  document.getElementById('custom-wrap').style.display = (p === 'custom') ? 'flex' : 'none';
+  var _cw = document.getElementById('custom-wrap'); if (_cw) _cw.style.display = (p === 'custom') ? 'flex' : 'none';
 
   if (p === 'mes') {
     _dataIni = new Date(ano, mes, 1);
@@ -1421,8 +1421,8 @@ function setPeriodo(p, btn) {
 }
 
 function aplicarCustom() {
-  const ini = document.getElementById('data-ini').value;
-  const fim = document.getElementById('data-fim').value;
+  const _diEl = document.getElementById('data-ini'); const _dfEl = document.getElementById('data-fim');
+  const ini = _diEl ? _diEl.value : ''; const fim = _dfEl ? _dfEl.value : '';
   if (ini) _dataIni = new Date(ini + 'T00:00:00');
   if (fim) _dataFim = new Date(fim + 'T23:59:59');
   if (ini && fim) renderTudo();
