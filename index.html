@@ -2037,10 +2037,19 @@ Revestimento</textarea>
       </div>
       <div class="grid-3">
         <div>
-          <label>Data do Evento</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <label style="margin-bottom:0">Data do Evento</label>
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin-bottom:0">
+              <input type="checkbox" id="ev_data_livre_chk" onchange="_toggleEvDataLivre(this)"
+                style="width:13px;height:13px;accent-color:var(--gold);cursor:pointer;margin:0">
+              <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Texto livre</span>
+            </label>
+          </div>
           <input type="date" id="ev_data"
             style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
-            onchange="sincronizarDataDateEv(this)" />
+            onchange="sincronizarDataDateEv(this);_validarDataEvPassada(this)" />
+          <input type="text" id="ev_data_texto_livre" placeholder="Ex: A definir, Março/2026..."
+            style="width:100%;display:none" oninput="_agendarRascunho()" />
         </div>
         <div>
           <label>Hora Início</label>
@@ -4434,6 +4443,25 @@ function sincronizarDataDateEv(dateInput) {
     selecionaParcelasIdeal(); atualizaParceladoInfo();
   }
 }
+function _validarDataEvPassada(input) {
+  if (!input.value) { input.style.borderColor = ''; return; }
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var data = new Date(input.value + 'T00:00:00');
+  input.style.borderColor = data < hoje ? '#e05555' : '';
+}
+function _toggleEvDataLivre(chk) {
+  var inputDate  = document.getElementById('ev_data');
+  var inputLivre = document.getElementById('ev_data_texto_livre');
+  if (!inputDate || !inputLivre) return;
+  if (chk.checked) {
+    inputDate.style.display  = 'none';
+    inputLivre.style.display = '';
+    inputLivre.focus();
+  } else {
+    inputDate.style.display  = '';
+    inputLivre.style.display = 'none';
+  }
+}
 function abrirCalendarioDataEv() {
   var hidden = document.getElementById('ev_data');
   if (!hidden) return;
@@ -4728,7 +4756,11 @@ function gerarContrato() {
   const evNome   = document.getElementById('ev_nome').value.trim()  || '—';
   const evResp   = document.getElementById('ev_resp').value.trim()  || '—';
   const evLocal  = document.getElementById('ev_local').value.trim() || '—';
-  const evData   = document.getElementById('ev_data').value;
+  const _evDataLivre = document.getElementById('ev_data_livre_chk')?.checked;
+  const evData = _evDataLivre
+    ? (document.getElementById('ev_data_texto_livre')?.value.trim() || '—')
+    : document.getElementById('ev_data').value;
+  const _evDataEhISO = !_evDataLivre;
   const evIni    = _resolverHora(document.getElementById('ev_inicio').value);
   const evFim    = _resolverHora(document.getElementById('ev_fim').value);
   const valTotal = formatBRL(parseBRL(document.getElementById('val_total').value)) || '—';
@@ -4746,7 +4778,7 @@ function gerarContrato() {
   if (cliEmail) cliLinha += `, e-mail: ${cliEmail}`;
   if (cliFone) cliLinha += `, contato: ${cliFone}`;
   const dataEntradaVal = document.getElementById('data_entrada') ? document.getElementById('data_entrada').value : '';
-  const contratoHTML = buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evIni, evFim, valTotal, servicos, pgto: pgtoTexto(), dataEntrada: dataEntradaVal });
+  const contratoHTML = buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataLivre: !!_evDataLivre, evIni, evFim, valTotal, servicos, pgto: pgtoTexto(), dataEntrada: dataEntradaVal });
   const iframe = document.getElementById('pdf-frame-contrato');
   iframe.srcdoc = contratoHTML;
   document.getElementById('preview-area-contrato').style.display = 'block';
@@ -4767,7 +4799,8 @@ function imprimirContrato() {
   }
 }
 
-function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evIni, evFim, valTotal, servicos, pgto, dataEntrada }) {
+function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataLivre, evIni, evFim, valTotal, servicos, pgto, dataEntrada }) {
+  const _fmtEvData = evDataLivre ? (evData || '—') : fmtData(evData);
   const itensLi = servicos.length
     ? servicos.map(s => `<li>${s}</li>`).join('')
     : '<li>—</li>';
@@ -4776,7 +4809,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Contrato – ${cliNome} – ${fmtData(evData)}</title>
+<title>Contrato – ${cliNome} – ${_fmtEvData}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
   * { box-sizing:border-box; margin:0; padding:0; }
@@ -4888,7 +4921,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
           <div class="ev-campo"><div class="ev-label">Responsável</div><div class="ev-val">${evResp}</div></div>
           <div class="ev-campo"><div class="ev-label">Local</div><div class="ev-val">${evLocal}</div></div>
           <div class="ev-campo"><div class="ev-label">Hora Início</div><div class="ev-val">${evIni || "___:___"}</div></div>
-          <div class="ev-campo"><div class="ev-label">Data</div><div class="ev-val">${fmtData(evData)}</div></div>
+          <div class="ev-campo"><div class="ev-label">Data</div><div class="ev-val">${_fmtEvData}</div></div>
           <div class="ev-campo"><div class="ev-label">Hora Término</div><div class="ev-val">${evFim || "___:___"}</div></div>
         </div>
         </div>
