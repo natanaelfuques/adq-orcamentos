@@ -534,6 +534,162 @@ header {
 
 .card-resp span { color: var(--text); }
 
+/* Barrinha de responsáveis no topo do card */
+.card-resp-bar {
+  height: 4px;
+  width: calc(100% + 32px);
+  margin: -12px -16px 10px -16px;
+  border-radius: 6px 6px 0 0;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Referência clicável no card */
+.card-ref-link {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  margin-left: 8px;
+  transition: color 0.15s;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  user-select: none;
+}
+.card-ref-link:hover {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+/* Modal de responsáveis */
+.modal-resp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-resp-box {
+  background: #1a1a1a;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 380px;
+  overflow: hidden;
+}
+.modal-resp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px 20px;
+  border-bottom: 1px solid #2a2a2a;
+}
+.modal-resp-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.modal-resp-list {
+  padding: 12px 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.modal-resp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: 4px;
+}
+.modal-resp-item:hover { background: #252525; }
+.modal-resp-item.selected { background: rgba(123,34,184,0.12); }
+.modal-resp-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.modal-resp-name {
+  font-size: 0.78rem;
+  color: #ccc;
+  flex: 1;
+}
+.modal-resp-check {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #444;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.modal-resp-item.selected .modal-resp-check {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.modal-resp-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #2a2a2a;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Seletor de cor inline no painel admin */
+.color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.active { border-color: #fff; }
+.color-picker-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* Usuário no painel admin */
+.adm-user-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #1e1e1e;
+}
+.adm-user-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.adm-user-email {
+  font-size: 0.74rem;
+  color: #ccc;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .card-itens {
   border-top: 1px solid var(--border);
   padding-top: 10px;
@@ -1057,6 +1213,13 @@ auth.onAuthStateChanged(function(user) {
       });
 
     registrarAcesso(user);
+    // Pré-carregar usuários cadastrados para as barrinhas dos cards
+    if (db) {
+      db.collection('configuracoes').doc('usuarios_cadastrados').get()
+        .then(function(doc) {
+          _usuariosCadastrados = doc.exists && doc.data().usuarios ? doc.data().usuarios : [];
+        }).catch(function(){});
+    }
     iniciarBoard();
   } else {
     document.getElementById('login-screen').style.display = 'flex';
@@ -1485,7 +1648,36 @@ function buildCard(ev, past, col) {
       '</div>';
   }
 
+  // Barrinha de responsáveis no topo
+  var respBar = '';
+  var responsaveis = ev.responsaveis || [];
+  if (responsaveis.length > 0) {
+    var respColors = responsaveis.map(function(uid) {
+      var u = (_usuariosCadastrados || []).find(function(x){ return x.uid === uid; });
+      return u ? u.cor : '#888';
+    });
+    var gradStops = [];
+    // cinza até 40% depois distribui as cores
+    var grayEnd = 40;
+    gradStops.push('rgba(80,80,80,0.5) 0%');
+    gradStops.push('rgba(80,80,80,0.5) ' + grayEnd + '%');
+    var colorSegSize = (100 - grayEnd) / respColors.length;
+    respColors.forEach(function(c, i) {
+      var start = grayEnd + i * colorSegSize;
+      var end = start + colorSegSize;
+      gradStops.push(c + ' ' + start.toFixed(1) + '%');
+      gradStops.push(c + ' ' + end.toFixed(1) + '%');
+    });
+    var gradient = 'linear-gradient(90deg, ' + gradStops.join(', ') + ')';
+    respBar = '<div class="card-resp-bar" style="background:' + gradient + '"></div>';
+  }
+
+  // Referência clicável
+  var refId = ev.contrato_id || ev.id;
+  var refLabel = '# ' + esc(refId.substring(0, 8).toUpperCase());
+
   return '<div class="evento-card' + (past ? ' passado' : '') + '" draggable="true" data-id="' + esc(ev.id) + '">' +
+    respBar +
     '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
       '<div class="card-summary-left">' +
         (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
@@ -1515,7 +1707,7 @@ function buildCard(ev, past, col) {
             : '<span class="card-field-editable" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') +
                 (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
               '</span>') +
-          (ev.contrato_id || ev.id ? '<span style="font-size:0.65rem;font-weight:700;color:var(--muted);letter-spacing:0.05em;flex-shrink:0;margin-left:8px"># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>' : '') +
+          (ev.contrato_id || ev.id ? '<span class="card-ref-link" data-evid="' + esc(ev.id) + '" onclick="event.stopPropagation();_abrirModalResponsaveis(\'' + esc(ev.id) + '\')" title="Clique para definir responsável"># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>' : '') +
         '</div>' +
         resp + itens +
       '</div>' +
@@ -2099,64 +2291,88 @@ function abrirPainelAdmin() {
         <span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>\
         <button onclick="document.body.style.overflow=\'\';document.getElementById(\'modal-admin-painel\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>\
       </div>\
-      <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px">\
-        <button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #C8A94A;color:#C8A94A;padding:8px 18px 10px 0;cursor:pointer;margin-right:6px">Editor</button>\
-        <button id="adm-tab-notif" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Notificações</button>\
-        <button id="adm-tab-perm" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Permissões</button>\
-        <button id="adm-tab-hist" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 18px 10px 0;cursor:pointer">Histórico</button>\
+      <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px;overflow-x:auto;scrollbar-width:none">\
+        <button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #7B22B8;color:#7B22B8;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Editor</button>\
+        <button id="adm-tab-notif" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Notificações</button>\
+        <button id="adm-tab-users" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Usuários</button>\
+        <button id="adm-tab-hist" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0">Histórico</button>\
       </div>\
       <div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">\
         <div id="adm-panel-editor" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
           <div id="adm-editor-bloco" style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">\
               <div>\
-                <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Modo Editor</div>\
+                <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Modo Editor</div>\
                 <div style="font-size:0.68rem;color:#555;line-height:1.5">Ativa a edição dos campos dos cards.<br>Toque em qualquer campo para editar.</div>\
               </div>\
-              <div id="adm-editor-toggle" onclick="_toggleEditorMode()" style="width:44px;height:24px;background:' + (_editorModeAtivo ? '#C8A94A' : '#2a2a2a') + ';border-radius:12px;cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0">\
+              <div id="adm-editor-toggle" onclick="_toggleEditorMode()" style="width:44px;height:24px;background:' + (_editorModeAtivo ? '#7B22B8' : '#2a2a2a') + ';border-radius:12px;cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0">\
                 <div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;' + (_editorModeAtivo ? 'left:23px' : 'left:3px') + ';transition:left 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>\
               </div>\
             </div>\
             <div style="font-size:0.68rem;color:#444;line-height:1.5;border-top:1px solid #1e1e1e;padding-top:10px;margin-top:4px">\
-              <div style="margin-bottom:4px"><span style="color:#C8A94A;font-weight:700">Campos editáveis:</span></div>\
+              <div style="margin-bottom:4px"><span style="color:#7B22B8;font-weight:700">Campos editáveis:</span></div>\
               <div style="color:#555">Nome do evento, Cliente, Data, Local, Horários (montagem/início/fim/desmontagem), Responsável.</div>\
             </div>\
           </div>\
         </div>\
         <div id="adm-panel-notif" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
           <div style="text-align:center;padding:32px 0 24px 0">\
-            <div style="margin-bottom:12px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8A94A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>\
-            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">Em breve</div>\
+            <div style="margin-bottom:12px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7B22B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">Em breve</div>\
             <div style="font-size:0.78rem;color:#555;line-height:1.6">Configuração de notificações<br>para eventos e lembretes.</div>\
           </div>\
         </div>\
-        <div id="adm-panel-perm" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
+        <div id="adm-panel-users" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
           <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
-            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Botão de Orçamentos</div>\
-            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Quem pode ver o botão de acesso à página de orçamentos e contratos.</div>\
-            <div id="adm-perm-lista" style="margin-bottom:10px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
-            <div style="display:flex;gap:6px;margin-top:8px">\
-              <input id="adm-perm-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.75rem;padding:7px 10px;outline:none;box-sizing:border-box" />\
-              <button onclick="_admPermAdicionar()" style="background:#C8A94A;color:#111;border:none;border-radius:4px;padding:7px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">+ Adicionar</button>\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Usuários</div>\
+            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:12px">Cadastre usuários e defina uma cor para identificá-los nos cards.</div>\
+            <div id="adm-users-lista" style="margin-bottom:10px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
+            <div style="display:flex;gap:6px;margin-top:8px;align-items:center">\
+              <input id="adm-users-novo-email" type="email" placeholder="email@usuario.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.75rem;padding:7px 10px;outline:none;box-sizing:border-box" />\
+              <div id="adm-users-cor-selecionada" style="width:24px;height:24px;border-radius:50%;background:#4A90C8;border:2px solid #444;cursor:pointer;flex-shrink:0" onclick="_admUsersToggleColorPicker()" title="Escolher cor"></div>\
+              <button onclick="_admUsersAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:7px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">+</button>\
+            </div>\
+            <div id="adm-users-color-picker" style="display:none;margin-top:10px">\
+              <div style="font-size:0.65rem;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Cor do usuário</div>\
+              <div class="color-picker-row" id="adm-users-color-swatches"></div>\
             </div>\
           </div>\
           <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
-            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Modo Editor</div>\
-            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Quem pode ativar a edição de campos dos cards.</div>\
-            <div id="adm-perm-editor-lista" style="margin-bottom:10px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
-            <div style="display:flex;gap:6px;margin-top:8px">\
-              <input id="adm-perm-editor-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.75rem;padding:7px 10px;outline:none;box-sizing:border-box" />\
-              <button onclick="_admPermEditorAdicionar()" style="background:#C8A94A;color:#111;border:none;border-radius:4px;padding:7px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">+ Adicionar</button>\
-            </div>\
-          </div>\
-          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
-            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Histórico</div>\
-            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Quem pode acessar a aba de histórico de ações no painel.</div>\
-            <div id="adm-perm-hist-lista" style="margin-bottom:10px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
-            <div style="display:flex;gap:6px;margin-top:8px">\
-              <input id="adm-perm-hist-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.75rem;padding:7px 10px;outline:none;box-sizing:border-box" />\
-              <button onclick="_admPermHistAdicionar()" style="background:#C8A94A;color:#111;border:none;border-radius:4px;padding:7px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">+ Adicionar</button>\
-            </div>\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Permissões</div>\
+            <div style="font-size:0.68rem;color:#555;margin-bottom:12px">Controle quem pode acessar cada funcionalidade do painel.</div>\
+            <details style="margin-bottom:8px">\
+              <summary style="font-size:0.73rem;color:#aaa;cursor:pointer;padding:6px 0;list-style:none">▸ Botão de Orçamentos</summary>\
+              <div style="padding-top:8px">\
+                <div style="font-size:0.67rem;color:#555;margin-bottom:8px">Quem pode ver o botão de acesso à página de orçamentos.</div>\
+                <div id="adm-perm-lista" style="margin-bottom:8px"><div style="font-size:0.73rem;color:#555">Carregando...</div></div>\
+                <div style="display:flex;gap:6px">\
+                  <input id="adm-perm-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.73rem;padding:6px 8px;outline:none;box-sizing:border-box" />\
+                  <button onclick="_admPermAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;cursor:pointer">+</button>\
+                </div>\
+              </div>\
+            </details>\
+            <details style="margin-bottom:8px">\
+              <summary style="font-size:0.73rem;color:#aaa;cursor:pointer;padding:6px 0;list-style:none">▸ Modo Editor</summary>\
+              <div style="padding-top:8px">\
+                <div style="font-size:0.67rem;color:#555;margin-bottom:8px">Quem pode ativar a edição de campos dos cards.</div>\
+                <div id="adm-perm-editor-lista" style="margin-bottom:8px"><div style="font-size:0.73rem;color:#555">Carregando...</div></div>\
+                <div style="display:flex;gap:6px">\
+                  <input id="adm-perm-editor-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.73rem;padding:6px 8px;outline:none;box-sizing:border-box" />\
+                  <button onclick="_admPermEditorAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;cursor:pointer">+</button>\
+                </div>\
+              </div>\
+            </details>\
+            <details>\
+              <summary style="font-size:0.73rem;color:#aaa;cursor:pointer;padding:6px 0;list-style:none">▸ Histórico</summary>\
+              <div style="padding-top:8px">\
+                <div style="font-size:0.67rem;color:#555;margin-bottom:8px">Quem pode acessar a aba de histórico.</div>\
+                <div id="adm-perm-hist-lista" style="margin-bottom:8px"><div style="font-size:0.73rem;color:#555">Carregando...</div></div>\
+                <div style="display:flex;gap:6px">\
+                  <input id="adm-perm-hist-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.73rem;padding:6px 8px;outline:none;box-sizing:border-box" />\
+                  <button onclick="_admPermHistAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;cursor:pointer">+</button>\
+                </div>\
+              </div>\
+            </details>\
           </div>\
         </div>\
         <div id="adm-panel-hist" style="min-width:100%;padding:0;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
@@ -2181,10 +2397,10 @@ function abrirPainelAdmin() {
 }
 
 function _admAba(idx, fromScroll) {
-  var keys = ['editor','notif','perm','hist'];
+  var keys = ['editor','notif','users','hist'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('adm-tab-' + k);
-    if (tab) { tab.style.borderBottomColor = i === idx ? '#C8A94A' : 'transparent'; tab.style.color = i === idx ? '#C8A94A' : '#555'; }
+    if (tab) { tab.style.borderBottomColor = i === idx ? '#7B22B8' : 'transparent'; tab.style.color = i === idx ? '#7B22B8' : '#555'; }
   });
   if (!fromScroll) {
     var slider = document.getElementById('adm-slider');
@@ -2200,8 +2416,8 @@ function _admAba(idx, fromScroll) {
     }
     _carregarAcessosAdmin();
   }
-  // Carregar permissões ao entrar na aba
-  if (idx === 2) { _admPermCarregar(); }
+  // Carregar usuários + permissões ao entrar na aba Usuários
+  if (idx === 2) { _admUsersCarregar(); _admPermCarregar(); }
 }
 
 // ── Permissões: Orçamento ──
@@ -2310,6 +2526,235 @@ var _admPermEditorEmailsAtuais = [];
 
 // ── Permissões: Histórico ──
 var _admPermHistEmailsAtuais = [];
+
+// ── Usuários cadastrados (cache global) ──
+var _usuariosCadastrados = [];
+var _admUserCorSelecionada = '#4A90C8';
+
+// Paleta de cores disponíveis
+var _CORES_USUARIOS = [
+  '#4A90C8', '#C8A94A', '#4AC87A', '#7B22B8',
+  '#e05c5c', '#4AC8C8', '#C84A90', '#C8784A',
+  '#888888', '#FFD600'
+];
+
+function _admUsersCarregar() {
+  if (!db) return;
+  var lista = document.getElementById('adm-users-lista');
+  if (lista) lista.innerHTML = '<div style="font-size:0.75rem;color:#555">Carregando...</div>';
+  _admUsersRenderColorSwatches();
+  db.collection('configuracoes').doc('usuarios_cadastrados').get()
+    .then(function(doc) {
+      _usuariosCadastrados = doc.exists && doc.data().usuarios ? doc.data().usuarios : [];
+      _admUsersRender();
+    })
+    .catch(function() { _usuariosCadastrados = []; _admUsersRender(); });
+}
+
+function _admUsersRenderColorSwatches() {
+  var container = document.getElementById('adm-users-color-swatches');
+  if (!container) return;
+  container.innerHTML = _CORES_USUARIOS.map(function(cor) {
+    var active = cor === _admUserCorSelecionada ? ' active' : '';
+    return '<div class="color-swatch' + active + '" style="background:' + cor + '" data-cor="' + cor + '" onclick="_admUsersSelectCor(\'' + cor + '\')"></div>';
+  }).join('');
+}
+
+function _admUsersSelectCor(cor) {
+  _admUserCorSelecionada = cor;
+  var dot = document.getElementById('adm-users-cor-selecionada');
+  if (dot) dot.style.background = cor;
+  _admUsersRenderColorSwatches();
+}
+
+function _admUsersToggleColorPicker() {
+  var picker = document.getElementById('adm-users-color-picker');
+  if (!picker) return;
+  picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+  _admUsersRenderColorSwatches();
+}
+
+function _admUsersRender() {
+  var lista = document.getElementById('adm-users-lista');
+  if (!lista) return;
+  if (!_usuariosCadastrados.length) {
+    lista.innerHTML = '<div style="font-size:0.72rem;color:#555;font-style:italic">Nenhum usuário cadastrado.</div>';
+    return;
+  }
+  lista.innerHTML = _usuariosCadastrados.map(function(u, i) {
+    return '<div class="adm-user-row">' +
+      '<div class="adm-user-dot" style="background:' + (u.cor || '#888') + '"></div>' +
+      '<span class="adm-user-email">' + u.email + '</span>' +
+      '<button onclick="_admUsersRemover(' + i + ')" title="Remover" style="background:none;border:none;color:#555;cursor:pointer;font-size:1rem;padding:0 4px;line-height:1" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'">x</button>' +
+    '</div>';
+  }).join('');
+}
+
+function _admUsersAdicionar() {
+  var input = document.getElementById('adm-users-novo-email');
+  if (!input) return;
+  var email = input.value.trim().toLowerCase();
+  if (!email || email.indexOf('@') < 0) {
+    input.style.borderColor = '#e05c5c';
+    setTimeout(function() { input.style.borderColor = '#2a2a2a'; }, 1500);
+    return;
+  }
+  var uid = email;
+  if (_usuariosCadastrados.find(function(u) { return u.uid === uid; })) { input.value = ''; return; }
+  _usuariosCadastrados = _usuariosCadastrados.concat([{ uid: uid, email: email, cor: _admUserCorSelecionada }]);
+  input.value = '';
+  _admUsersSalvar();
+  var picker = document.getElementById('adm-users-color-picker');
+  if (picker) picker.style.display = 'none';
+}
+
+function _admUsersRemover(idx) {
+  _usuariosCadastrados = _usuariosCadastrados.filter(function(_, i) { return i !== idx; });
+  _admUsersSalvar();
+}
+
+function _admUsersSalvar() {
+  if (!db) return;
+  db.collection('configuracoes').doc('usuarios_cadastrados').set({ usuarios: _usuariosCadastrados })
+    .then(function() { _admUsersRender(); _editorToast('Usuarios salvos!'); })
+    .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+}
+
+
+function _abrirModalResponsaveis(evid) {
+  var existing = document.getElementById('modal-responsaveis');
+  if (existing) existing.remove();
+
+  var abrirCom = function(usuarios) {
+    var evData = _eventosCache ? _eventosCache[evid] : null;
+    var selecionados = (evData && evData.responsaveis) ? evData.responsaveis.slice() : [];
+
+    var overlay = document.createElement('div');
+    overlay.id = 'modal-responsaveis';
+    overlay.className = 'modal-resp-overlay';
+
+    var listaHtml = '';
+    if (!usuarios.length) {
+      listaHtml = '<div style="padding:20px 0;text-align:center;font-size:0.78rem;color:#555">Nenhum usuario cadastrado.<br>Adicione em Painel Admin > Usuarios.</div>';
+    } else {
+      listaHtml = usuarios.map(function(u) {
+        var sel = selecionados.indexOf(u.uid) >= 0;
+        var checkSvg = sel ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 4,7 9,1"/></svg>' : '';
+        return '<div class="modal-resp-item' + (sel ? ' selected' : '') + '" data-uid="' + u.uid + '" onclick="_toggleResponsavelItem(this)">' +
+          '<div class="modal-resp-dot" style="background:' + (u.cor || '#888') + '"></div>' +
+          '<span class="modal-resp-name">' + u.email + '</span>' +
+          '<div class="modal-resp-check">' + checkSvg + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    overlay.innerHTML =
+      '<div class="modal-resp-box">' +
+        '<div class="modal-resp-header">' +
+          '<span class="modal-resp-title">Responsaveis pelo evento</span>' +
+          '<button id="btn-close-resp-modal" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:28px;height:28px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">x</button>' +
+        '</div>' +
+        '<div class="modal-resp-list" id="modal-resp-list-inner">' + listaHtml + '</div>' +
+        '<div class="modal-resp-footer">' +
+          '<button id="btn-cancel-resp-modal" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;padding:7px 16px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">Cancelar</button>' +
+          '<button id="btn-save-resp-modal" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:7px 16px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">Salvar</button>' +
+        '</div>' +
+      '</div>';
+
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+
+    document.getElementById('btn-close-resp-modal').onclick = function() { overlay.remove(); };
+    document.getElementById('btn-cancel-resp-modal').onclick = function() { overlay.remove(); };
+    document.getElementById('btn-save-resp-modal').onclick = function() { _salvarResponsaveis(evid); };
+  };
+
+  if (_usuariosCadastrados && _usuariosCadastrados.length) {
+    abrirCom(_usuariosCadastrados);
+  } else if (db) {
+    db.collection('configuracoes').doc('usuarios_cadastrados').get()
+      .then(function(doc) {
+        _usuariosCadastrados = doc.exists && doc.data().usuarios ? doc.data().usuarios : [];
+        abrirCom(_usuariosCadastrados);
+      })
+      .catch(function() { abrirCom([]); });
+  } else {
+    abrirCom([]);
+  }
+}
+
+function _toggleResponsavelItem(el) {
+  el.classList.toggle('selected');
+  var check = el.querySelector('.modal-resp-check');
+  if (check) {
+    check.innerHTML = el.classList.contains('selected')
+      ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 4,7 9,1"/></svg>'
+      : '';
+  }
+}
+
+function _salvarResponsaveis(evid) {
+  var list = document.getElementById('modal-resp-list-inner');
+  if (!list) return;
+  var selecionados = [];
+  list.querySelectorAll('.modal-resp-item.selected').forEach(function(el) {
+    selecionados.push(el.getAttribute('data-uid'));
+  });
+
+  if (!db) {
+    var modal = document.getElementById('modal-responsaveis');
+    if (modal) modal.remove();
+    return;
+  }
+  db.collection('eventos_campo').doc(evid).update({ responsaveis: selecionados })
+    .then(function() {
+      if (_eventosCache && _eventosCache[evid]) {
+        _eventosCache[evid].responsaveis = selecionados;
+      }
+      var modal = document.getElementById('modal-responsaveis');
+      if (modal) modal.remove();
+      _editorToast('Responsaveis salvos!');
+      _atualizarBarrinhaCard(evid, selecionados);
+    })
+    .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+}
+
+function _atualizarBarrinhaCard(evid, responsaveis) {
+  var card = document.querySelector('.evento-card[data-id="' + evid + '"]');
+  if (!card) return;
+  var bar = card.querySelector('.card-resp-bar');
+
+  if (!responsaveis || !responsaveis.length) {
+    if (bar) bar.remove();
+    return;
+  }
+
+  var respColors = responsaveis.map(function(uid) {
+    var u = (_usuariosCadastrados || []).find(function(x) { return x.uid === uid; });
+    return u ? u.cor : '#888';
+  });
+
+  var grayEnd = 40;
+  var gradStops = ['rgba(80,80,80,0.5) 0%', 'rgba(80,80,80,0.5) ' + grayEnd + '%'];
+  var colorSegSize = (100 - grayEnd) / respColors.length;
+  respColors.forEach(function(c, i) {
+    var start = grayEnd + i * colorSegSize;
+    var end = start + colorSegSize;
+    gradStops.push(c + ' ' + start.toFixed(1) + '%');
+    gradStops.push(c + ' ' + end.toFixed(1) + '%');
+  });
+  var gradient = 'linear-gradient(90deg, ' + gradStops.join(', ') + ')';
+
+  if (bar) {
+    bar.style.background = gradient;
+  } else {
+    var newBar = document.createElement('div');
+    newBar.className = 'card-resp-bar';
+    newBar.style.background = gradient;
+    card.insertBefore(newBar, card.firstChild);
+  }
+}
+
 
 function _carregarAcessosAdmin() {
   if (!db) return;
