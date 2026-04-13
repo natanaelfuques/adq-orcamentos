@@ -999,11 +999,11 @@ header {
 <div class="tabs-wrap" id="tabs-wrap">
 <div class="tabs" id="tabs-nav">
 <button class="tab-btn active" onclick="trocarTab('pagamentos')">Pagamentos</button>
-<button class="tab-btn" onclick="trocarTab('financeiro')">Financeiro</button>
-<button class="tab-btn" onclick="trocarTab('contratos')">Contratos</button>
 <button class="tab-btn" onclick="trocarTab('eventos')">Eventos</button>
-<button class="tab-btn" onclick="trocarTab('clientes')">Clientes</button>
+<button class="tab-btn" onclick="trocarTab('contratos')">Contratos</button>
+<button class="tab-btn" onclick="trocarTab('financeiro')">Financeiro</button>
 <button class="tab-btn" onclick="trocarTab('sazonalidade')">Sazonalidade</button>
+<button class="tab-btn" onclick="trocarTab('clientes')">Clientes</button>
 <button class="tab-btn" onclick="trocarTab('contabilidade')">Contabilidade</button>
 </div>
 </div>
@@ -1026,26 +1026,26 @@ header {
 <!-- Lista de eventos / contratos -->
 <div id="pgto-lista"></div>
 </div></div><!-- /tab-pagamentos -->
-<!-- ════ TAB: FINANCEIRO ════ -->
-<div class="tab-panel" id="tab-financeiro"><div class="tab-panel-inner">
-<div class="kpi-grid" id="kpi-fin"></div>
-<p class="sec-title">Faturamento Mensal</p>
-<div class="chart-grid single" style="margin-bottom:24px">
-<div class="chart-card">
-<div class="chart-title">Receita por mês (contratos confirmados/concluídos)</div>
-<div class="chart-wrap"><canvas id="chart-faturamento"></canvas></div>
-</div>
-</div>
-<p class="sec-title">Composição de Receita</p>
-<div class="chart-grid">
-<div class="chart-card">
-<div class="chart-title">Receita por tipo de evento</div>
-<div class="chart-wrap"><canvas id="chart-tipo-evento"></canvas></div>
-</div>
-<div class="chart-card">
-<div class="chart-title">Receita por serviço</div>
-<div class="chart-wrap"><canvas id="chart-servicos"></canvas></div>
-</div>
+<!-- ════ TAB: EVENTOS ════ -->
+<div class="tab-panel" id="tab-eventos"><div class="tab-panel-inner">
+<div class="kpi-grid" id="kpi-ev"></div>
+<p class="sec-title">Todos os eventos no período — contratos + notas</p>
+<div class="table-card table-scroll">
+<table>
+<thead>
+<tr>
+<th>Evento</th>
+<th>Data Evento</th>
+<th>Local</th>
+<th class="r">Valor</th>
+<th>Status</th>
+<th>Origem</th>
+<th>Criado em</th>
+<th class="col-del"></th>
+</tr>
+</thead>
+<tbody id="tbody-eventos"></tbody>
+</table>
 </div>
 </div></div>
 <!-- ════ TAB: CONTRATOS ════ -->
@@ -1079,27 +1079,47 @@ header {
 </table>
 </div>
 </div></div>
-<!-- ════ TAB: EVENTOS ════ -->
-<div class="tab-panel" id="tab-eventos"><div class="tab-panel-inner">
-<div class="kpi-grid" id="kpi-ev"></div>
-<p class="sec-title">Todos os eventos no período — contratos + notas</p>
-<div class="table-card table-scroll">
-<table>
-<thead>
-<tr>
-<th>Evento</th>
-<th>Data Evento</th>
-<th>Local</th>
-<th class="r">Valor</th>
-<th>Status</th>
-<th>Origem</th>
-<th>Criado em</th>
-<th class="col-del"></th>
-</tr>
-</thead>
-<tbody id="tbody-eventos"></tbody>
-</table>
+<!-- ════ TAB: FINANCEIRO ════ -->
+<div class="tab-panel" id="tab-financeiro"><div class="tab-panel-inner">
+<div class="kpi-grid" id="kpi-fin"></div>
+<p class="sec-title">Faturamento Mensal</p>
+<div class="chart-grid single" style="margin-bottom:24px">
+<div class="chart-card">
+<div class="chart-title">Receita por mês (contratos confirmados/concluídos)</div>
+<div class="chart-wrap"><canvas id="chart-faturamento"></canvas></div>
 </div>
+</div>
+<p class="sec-title">Composição de Receita</p>
+<div class="chart-grid">
+<div class="chart-card">
+<div class="chart-title">Receita por tipo de evento</div>
+<div class="chart-wrap"><canvas id="chart-tipo-evento"></canvas></div>
+</div>
+<div class="chart-card">
+<div class="chart-title">Receita por serviço</div>
+<div class="chart-wrap"><canvas id="chart-servicos"></canvas></div>
+</div>
+</div>
+</div></div>
+<!-- ════ TAB: SAZONALIDADE ════ -->
+<div class="tab-panel" id="tab-sazonalidade"><div class="tab-panel-inner">
+<p class="sec-title">Volume de eventos por mês (histórico completo)</p>
+<div class="chart-card" style="margin-bottom:20px">
+<div class="chart-title">Quantidade de contratos por mês</div>
+<div class="chart-wrap"><canvas id="chart-saz-volume"></canvas></div>
+</div>
+<div class="chart-grid">
+<div class="chart-card">
+<div class="chart-title">Receita histórica por mês</div>
+<div class="chart-wrap"><canvas id="chart-saz-receita"></canvas></div>
+</div>
+<div class="chart-card">
+<div class="chart-title">Tipos de evento mais contratados</div>
+<div class="chart-wrap"><canvas id="chart-saz-tipo"></canvas></div>
+</div>
+</div>
+<p class="sec-title">Previsão de receita — próximos 3 meses</p>
+<div class="kpi-grid" id="kpi-previsao"></div>
 </div></div>
 <!-- ════ TAB: CLIENTES ════ -->
 <div class="tab-panel" id="tab-clientes"><div class="tab-panel-inner">
@@ -1131,26 +1151,6 @@ header {
 <tbody id="tbody-clientes"></tbody>
 </table>
 </div>
-</div></div>
-<!-- ════ TAB: SAZONALIDADE ════ -->
-<div class="tab-panel" id="tab-sazonalidade"><div class="tab-panel-inner">
-<p class="sec-title">Volume de eventos por mês (histórico completo)</p>
-<div class="chart-card" style="margin-bottom:20px">
-<div class="chart-title">Quantidade de contratos por mês</div>
-<div class="chart-wrap"><canvas id="chart-saz-volume"></canvas></div>
-</div>
-<div class="chart-grid">
-<div class="chart-card">
-<div class="chart-title">Receita histórica por mês</div>
-<div class="chart-wrap"><canvas id="chart-saz-receita"></canvas></div>
-</div>
-<div class="chart-card">
-<div class="chart-title">Tipos de evento mais contratados</div>
-<div class="chart-wrap"><canvas id="chart-saz-tipo"></canvas></div>
-</div>
-</div>
-<p class="sec-title">Previsão de receita — próximos 3 meses</p>
-<div class="kpi-grid" id="kpi-previsao"></div>
 </div></div>
 <!-- ════ TAB: CONTABILIDADE ════ -->
 <div class="tab-panel" id="tab-contabilidade"><div class="tab-panel-inner">
@@ -1716,7 +1716,7 @@ function renderTudo() {
 }
 
 // ── TAB SWITCH ──
-const _TAB_NAMES = ['pagamentos','financeiro','contratos','eventos','clientes','sazonalidade','contabilidade'];
+const _TAB_NAMES = ['pagamentos','eventos','contratos','financeiro','sazonalidade','clientes','contabilidade'];
 
 function trocarTab(tab, smooth) {
   _tabAtiva = tab;
