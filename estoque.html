@@ -775,6 +775,72 @@
   .toast.error { background: #1a0a0a; border-color: var(--red); color: var(--red); }
   @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
+  /* ── TAG FILTER BAR ── */
+  .tag-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 24px 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+  .tag-filter-bar::-webkit-scrollbar { display: none; }
+
+  .tag-filter-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .tag-filter-chip {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border2);
+    color: #555;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tag-filter-chip:hover {
+    border-color: #555;
+    color: #ccc;
+    background: rgba(255,255,255,0.07);
+  }
+  .tag-filter-chip.active {
+    background: rgba(74,144,217,0.15);
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 8px rgba(74,144,217,0.2);
+  }
+  .tag-filter-chip.clear {
+    background: rgba(224,92,92,0.08);
+    border-color: rgba(224,92,92,0.3);
+    color: var(--red);
+  }
+  .tag-filter-chip.clear:hover {
+    background: rgba(224,92,92,0.18);
+    border-color: var(--red);
+  }
+
+  /* highlight de tag no card quando filtro ativo */
+  .eq-tag.highlighted {
+    background: rgba(74,144,217,0.2);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
   /* ── SECTION TITLE ── */
   .section-title {
     font-family: 'Barlow Condensed', sans-serif;
@@ -1126,6 +1192,12 @@
     </button>
   </div>
 
+  <!-- TAG FILTER BAR -->
+  <div class="tag-filter-bar" id="tag-filter-bar" style="display:none">
+    <span class="tag-filter-label">Tags:</span>
+    <!-- chips renderizados via JS -->
+  </div>
+
   <!-- GRID VIEW -->
   <div class="equip-grid" id="equip-grid">
     <div class="loading-state">Carregando estoque...</div>
@@ -1159,6 +1231,7 @@ var _catAtual = 'todos';
 var _viewAtual = 'grid';
 var _editandoId = null;
 var _emojiSelecionado = 'mixer';
+var _tagAtiva = null; // tag selecionada para filtro
 
 var CATEGORIAS_ICONE = {
   'Som': '🔊', 'Iluminação': '💡', 'Microfone': '🎤',
@@ -1270,6 +1343,7 @@ function iniciarEstoque() {
 function renderTudo() {
   renderStats();
   renderCatTabs();
+  renderTagBar();
   renderEquipamentos();
 }
 
@@ -1313,8 +1387,71 @@ function renderCatTabs() {
 
 function filtrarCategoria(cat, el) {
   _catAtual = cat;
+  _tagAtiva = null; // limpa tag ao trocar categoria
   document.querySelectorAll('.cat-tab').forEach(function(b) { b.classList.remove('active'); });
   if (el) el.classList.add('active');
+  renderTagBar();
+  renderEquipamentos();
+}
+
+function renderTagBar() {
+  var bar = document.getElementById('tag-filter-bar');
+  if (!bar) return;
+
+  // Coletar todas as tags dos equipamentos visíveis na categoria atual
+  var equips = Object.values(_equipamentos).filter(function(e) {
+    return _catAtual === 'todos' || e.categoria === _catAtual;
+  });
+
+  var tagCount = {};
+  equips.forEach(function(e) {
+    if (e.tags) {
+      e.tags.split(',').forEach(function(t) {
+        var tag = t.trim().toLowerCase();
+        if (tag) tagCount[tag] = (tagCount[tag] || 0) + 1;
+      });
+    }
+    // também considera o modelo e categoria como tags "implícitas"
+  });
+
+  var tags = Object.keys(tagCount).sort();
+  if (!tags.length) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  bar.style.display = 'flex';
+  var html = '<span class="tag-filter-label">Tags:</span>';
+
+  if (_tagAtiva) {
+    html += '<div class="tag-filter-chip clear" onclick="limparTagFiltro()" title="Limpar filtro">' +
+      '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="vertical-align:middle;margin-right:3px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+      esc(_tagAtiva) + '</div>';
+  }
+
+  tags.forEach(function(tag) {
+    var isActive = _tagAtiva === tag;
+    html += '<div class="tag-filter-chip' + (isActive ? ' active' : '') + '" onclick="filtrarPorTag(\'' + esc(tag) + '\')" title="' + tagCount[tag] + ' equipamento(s)">' +
+      esc(tag) + ' <span style="opacity:0.55;font-weight:400">×' + tagCount[tag] + '</span>' +
+    '</div>';
+  });
+
+  bar.innerHTML = html;
+}
+
+function filtrarPorTag(tag) {
+  if (_tagAtiva === tag) {
+    _tagAtiva = null;
+  } else {
+    _tagAtiva = tag;
+  }
+  renderTagBar();
+  renderEquipamentos();
+}
+
+function limparTagFiltro() {
+  _tagAtiva = null;
+  renderTagBar();
   renderEquipamentos();
 }
 
@@ -1328,7 +1465,8 @@ function renderEquipamentos() {
       (e.categoria || '').toLowerCase().includes(busca) ||
       (e.modelo || '').toLowerCase().includes(busca) ||
       (e.tags || '').toLowerCase().includes(busca);
-    return matchCat && matchBusca;
+    var matchTag = !_tagAtiva || (e.tags || '').toLowerCase().split(',').map(function(t){return t.trim();}).indexOf(_tagAtiva) >= 0;
+    return matchCat && matchBusca && matchTag;
   });
 
   // Sort
@@ -1416,6 +1554,14 @@ function buildCard(e) {
   if (manut > 0) tags += '<span class="eq-tag manut">' + manut + ' em manutenção</span>';
   if (e.valor_unitario) tags += '<span class="eq-tag info">R$ ' + Number(e.valor_unitario).toLocaleString('pt-BR') + '/un</span>';
   if (e.modelo) tags += '<span class="eq-tag">' + esc(e.modelo) + '</span>';
+  if (e.tags) {
+    e.tags.split(',').forEach(function(t) {
+      var tag = t.trim();
+      if (!tag) return;
+      var isActive = _tagAtiva === tag.toLowerCase();
+      tags += '<span class="eq-tag' + (isActive ? ' highlighted' : '') + '" style="cursor:pointer" onclick="event.stopPropagation();filtrarPorTag(\'' + esc(tag.toLowerCase()) + '\')" title="Filtrar por \'' + esc(tag) + '\'">&#127991; ' + esc(tag) + '</span>';
+    });
+  }
 
   return '<div class="eq-card' + cardClass + '">' +
     '<div class="eq-status-bar ' + statusBarClass + '"></div>' +
