@@ -107,6 +107,15 @@ header {
   gap: 10px;
   flex-wrap: wrap;
 }
+/* Barra de período dentro da aba Contabilidade */
+.cont-periodo-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+  padding: 12px 18px;
+}
 .periodo-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
 .periodo-btns { display: flex; gap: 6px; }
 .pbtn {
@@ -638,6 +647,17 @@ header {
   border-bottom-color: var(--green);
   color: var(--green);
 }
+/* Campos de config (empresa) editáveis no modo editor */
+.editor-mode .config-field-editable {
+  cursor: pointer;
+  border-bottom: 1px dashed rgba(46,158,79,0.25);
+  transition: border-color 0.15s;
+  display: inline;
+}
+.editor-mode .config-field-editable:hover {
+  border-bottom-color: var(--green);
+  color: var(--green);
+}
 .editor-input-inline {
   background: #0e0e0e;
   border: 1px solid var(--green);
@@ -988,7 +1008,7 @@ header {
 <span style="color:var(--muted)">até</span>
 <input id="data-fim" onchange="aplicarCustom()" type="date"/>
 </div>
-<button class="export-btn" onclick="exportarCSV()">⬇ Exportar CSV</button>
+<button class="export-btn" onclick="exportarCSV()" id="global-export-btn">⬇ Exportar CSV</button>
 </div>
 <div class="tabs-wrap" id="tabs-wrap">
 <div class="tabs" id="tabs-nav">
@@ -1148,35 +1168,29 @@ header {
 </div></div>
 <!-- ════ TAB: CONTABILIDADE ════ -->
 <div class="tab-panel" id="tab-contabilidade"><div class="tab-panel-inner">
+<div class="periodo-bar cont-periodo-bar">
+<span class="periodo-label">Período:</span>
+<div class="periodo-btns">
+<button class="pbtn cont-pbtn" onclick="setContPeriodo('mes')">Este mês</button>
+<button class="pbtn cont-pbtn" onclick="setContPeriodo('trim')">Trimestre</button>
+<button class="pbtn cont-pbtn active" onclick="setContPeriodo('ano')">Este ano</button>
+<button class="pbtn cont-pbtn" onclick="setContPeriodo('tudo')">Tudo</button>
+<button class="pbtn cont-pbtn" onclick="setContPeriodo('custom')">Personalizado</button>
+</div>
+<div class="periodo-custom" id="cont-custom-wrap" style="display:none">
+<input id="cont-data-ini" onchange="aplicarContCustom()" type="date"/>
+<span style="color:var(--muted)">até</span>
+<input id="cont-data-fim" onchange="aplicarContCustom()" type="date"/>
+</div>
+<button class="export-btn" onclick="exportarCSV()" style="margin-left:auto">⬇ Exportar CSV</button>
+</div>
 <p class="sec-title">Resumo para contabilidade — período selecionado</p>
 <div class="cont-grid">
-<div class="info-box info-box-empresa" style="position:relative">
-<strong>Empresa
-  <button onclick="toggleEmpresaEditor()" title="Editar dados da empresa" style="background:transparent;border:none;cursor:pointer;color:var(--muted);padding:0 0 0 6px;font-size:0.85rem;vertical-align:middle;line-height:1" id="btn-edit-empresa">✏️</button>
-</strong>
-<span id="empresa-view">
-  <span id="cont-nome">NF Soluções para Eventos Ltda (SLU)</span><br/>
-  CNPJ: <span id="cont-cnpj">—</span><br/>
-  Regime: <span id="cont-regime">Simples Nacional</span>
-</span>
-<div id="empresa-editor" style="display:none;margin-top:10px;display:none">
-  <div style="margin-bottom:6px">
-    <label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:3px">Nome da empresa</label>
-    <input id="inp-empresa-nome" type="text" style="width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:5px 9px;border-radius:4px;outline:none;box-sizing:border-box"/>
-  </div>
-  <div style="margin-bottom:6px">
-    <label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:3px">CNPJ</label>
-    <input id="inp-empresa-cnpj" type="text" placeholder="00.000.000/0001-00" style="width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:5px 9px;border-radius:4px;outline:none;box-sizing:border-box"/>
-  </div>
-  <div style="margin-bottom:10px">
-    <label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:3px">Regime tributário</label>
-    <input id="inp-empresa-regime" type="text" style="width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:5px 9px;border-radius:4px;outline:none;box-sizing:border-box"/>
-  </div>
-  <div style="display:flex;gap:8px">
-    <button onclick="salvarEmpresa()" style="background:var(--green);border:none;color:#111;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:5px 14px;border-radius:4px;cursor:pointer">Salvar</button>
-    <button onclick="toggleEmpresaEditor()" style="background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:5px 14px;border-radius:4px;cursor:pointer">Cancelar</button>
-  </div>
-</div>
+<div class="info-box">
+<strong>Empresa</strong>
+<span class="config-field-editable" data-config="empresa" data-field="nome" id="cont-nome">NF Soluções para Eventos Ltda (SLU)</span><br/>
+CNPJ: <span class="config-field-editable" data-config="empresa" data-field="cnpj" id="cont-cnpj">—</span><br/>
+Regime: <span class="config-field-editable" data-config="empresa" data-field="regime" id="cont-regime">Simples Nacional</span>
 </div>
 <div class="info-box">
 <strong>Período do relatório</strong>
@@ -1191,6 +1205,7 @@ header {
 <tr>
 <th>Competência</th>
 <th>Evento</th>
+<th>Tipo</th>
 <th>Data Evento</th>
 <th>Forma Pgto</th>
 <th class="r">Valor Contrato</th>
@@ -1423,6 +1438,43 @@ function aplicarCustom() {
   if (ini && fim) renderTudo();
 }
 
+// Período exclusivo da aba Contabilidade
+function setContPeriodo(p) {
+  _periodoAtivo = p;
+  document.querySelectorAll('.cont-pbtn').forEach(b => b.classList.remove('active'));
+  const mapa = { mes:'Este mês', trim:'Trimestre', ano:'Este ano', tudo:'Tudo', custom:'Personalizado' };
+  document.querySelectorAll('.cont-pbtn').forEach(b => {
+    if (b.textContent.trim() === mapa[p]) b.classList.add('active');
+  });
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = hoje.getMonth();
+  document.getElementById('cont-custom-wrap').style.display = (p === 'custom') ? 'flex' : 'none';
+  if (p === 'mes') {
+    _dataIni = new Date(ano, mes, 1);
+    _dataFim = new Date(ano, mes + 1, 0, 23, 59, 59);
+  } else if (p === 'trim') {
+    const trimStart = Math.floor(mes / 3) * 3;
+    _dataIni = new Date(ano, trimStart, 1);
+    _dataFim = new Date(ano, trimStart + 3, 0, 23, 59, 59);
+  } else if (p === 'ano') {
+    _dataIni = new Date(ano, 0, 1);
+    _dataFim = new Date(ano, 11, 31, 23, 59, 59);
+  } else if (p === 'tudo') {
+    _dataIni = null;
+    _dataFim = null;
+  }
+  if (p !== 'custom') renderContabilidade();
+}
+
+function aplicarContCustom() {
+  const ini = document.getElementById('cont-data-ini').value;
+  const fim = document.getElementById('cont-data-fim').value;
+  if (ini) _dataIni = new Date(ini + 'T00:00:00');
+  if (fim) _dataFim = new Date(fim + 'T23:59:59');
+  if (ini && fim) renderContabilidade();
+}
+
 // ── FILTRO DE PERÍODO ──
 function tsToDate(ts) {
   if (!ts) return null;
@@ -1645,6 +1697,19 @@ function trocarTab(tab, smooth) {
   _tabAtiva = tab;
   const idx = _TAB_NAMES.indexOf(tab);
 
+  // Mostrar/ocultar barra de período global e recalcular sticky
+  const globalBar = document.querySelector('.periodo-bar:not(.cont-periodo-bar)');
+  const globalExportBtn = document.getElementById('global-export-btn');
+  if (globalBar) {
+    globalBar.style.display = (tab === 'contabilidade') ? 'none' : '';
+    const hdr = document.querySelector('header');
+    const tw  = document.getElementById('tabs-wrap');
+    if (tw && hdr) {
+      const pbH = (tab !== 'contabilidade') ? globalBar.offsetHeight : 0;
+      tw.style.top = (hdr.offsetHeight + pbH) + 'px';
+    }
+  }
+
   // Atualizar botões nav
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
     b.classList.toggle('active', i === idx);
@@ -1706,6 +1771,17 @@ function trocarTab(tab, smooth) {
           });
           var activeBtn = document.querySelector('.tab-btn.active');
           if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          // Mostrar/ocultar barra global ao arrastar
+          var globalBar2 = document.querySelector('.periodo-bar:not(.cont-periodo-bar)');
+          if (globalBar2) {
+            globalBar2.style.display = (tab === 'contabilidade') ? 'none' : '';
+            var hdr2 = document.querySelector('header');
+            var tw2  = document.getElementById('tabs-wrap');
+            if (tw2 && hdr2) {
+              var pbH2 = (tab !== 'contabilidade') ? globalBar2.offsetHeight : 0;
+              tw2.style.top = (hdr2.offsetHeight + pbH2) + 'px';
+            }
+          }
           // Renderizar aba que entrou em foco
           var renderMap = {
             pagamentos: renderPagamentos,
@@ -2733,16 +2809,13 @@ function renderContabilidade() {
   const ini = _dataIni ? _dataIni.toLocaleDateString('pt-BR') : 'Início';
   const fim = _dataFim ? _dataFim.toLocaleDateString('pt-BR') : 'Atual';
   document.getElementById('cont-periodo').textContent = ini + ' a ' + fim;
-  // Carregar dados da empresa do Firestore (config/empresa)
+  // Carregar dados da empresa do Firestore
   if (db) {
     db.collection('config').doc('empresa').get().then(function(snap) {
       const d = snap.exists ? snap.data() : {};
-      const nome = d.nome || 'NF Soluções para Eventos Ltda (SLU)';
-      const cnpj = d.cnpj || '(a preencher)';
-      const regime = d.regime || 'Simples Nacional';
-      document.getElementById('cont-nome').textContent = nome;
-      document.getElementById('cont-cnpj').textContent = cnpj;
-      document.getElementById('cont-regime').textContent = regime;
+      document.getElementById('cont-nome').textContent   = d.nome   || 'NF Soluções para Eventos Ltda (SLU)';
+      document.getElementById('cont-cnpj').textContent   = d.cnpj   || '(a preencher)';
+      document.getElementById('cont-regime').textContent = d.regime || 'Simples Nacional';
     }).catch(function() {
       document.getElementById('cont-cnpj').textContent = '(a preencher)';
     });
@@ -2774,7 +2847,7 @@ function renderContabilidade() {
 
   // Tabela extrato — contratos + notas
   const tbody = document.getElementById('tbody-cont');
-  if (!ativos.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum evento no período.</td></tr>'; }
+  if (!ativos.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum evento no período.</td></tr>'; }
   else {
     tbody.innerHTML = ativos.map(e => {
       const d = tsToDate(e.criadoEm);
@@ -2785,12 +2858,17 @@ function renderContabilidade() {
       const fieldNome = e._origem === 'nota' ? 'titulo' : 'cli_nome';
       const cli = nomeCli(e); const tipo = tipoEv(e);
       const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
-      const origemBadge = e._origem === 'nota' ? ' <span class="badge-origem nota">nota</span>' : '';
+      const isNota = e._origem === 'nota';
+      const tipoBadge = isNota
+        ? '<span class="badge-origem nota" style="font-size:0.68rem;padding:2px 7px;border-radius:3px">Evento rápido</span>'
+        : '<span style="font-size:0.75rem;color:var(--muted)">Contrato</span>';
+      const pgto = isNota ? 'À vista' : getPgtoLabel(e);
       return `<tr>
         <td>${comp}</td>
-        <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${col}" style="max-width:200px">${desc}${origemBadge}</td>
+        <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${col}" style="max-width:200px">${desc}</td>
+        <td>${tipoBadge}</td>
         <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${col}">${dataEv(e)}</td>
-        <td>${getPgtoLabel(e)}</td>
+        <td>${pgto}</td>
         <td class="r" style="color:var(--green);font-weight:700">${frs(getValorEvento(e))}</td>
         <td><span class="badge ${st}">${st}</span></td>
         <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="${col}" title="Excluir">×</button></td>
@@ -2859,17 +2937,18 @@ function exportarCSV() {
 
 function exportarContabilidade() {
   const cons = todoEventosFiltrados().filter(e => !e.removido_manualmente);
-  const header = ['Competência (ev)','Cliente','Tipo Evento','Data Evento','Forma Pgto','Valor Contrato','Status','Origem'];
+  const header = ['Competência (ev)','Cliente','Tipo Evento','Tipo Registro','Data Evento','Forma Pgto','Valor Contrato','Status'];
   const rows = cons.map(c => {
-    // Competência = mês do evento real; fallback criadoEm
     const evStr = c.ev_data || c.data_evento || c.dataEvt || '';
     let d = null;
     if (evStr) { const p = evStr.split('-'); if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2])); }
     if (!d) d = tsToDate(c.criadoEm);
     const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '';
-    return [comp, nomeCli(c), tipoEv(c), dataEv(c), getPgtoLabel(c),
-      getValorEvento(c).toFixed(2).replace('.', ','), getStatusContrato(c),
-      c._origem === 'nota' ? 'nota' : 'contrato'];
+    const isNota = c._origem === 'nota';
+    const tipoRegistro = isNota ? 'Evento rápido' : 'Contrato';
+    const pgto = isNota ? 'À vista' : getPgtoLabel(c);
+    return [comp, nomeCli(c), tipoEv(c), tipoRegistro, dataEv(c), pgto,
+      getValorEvento(c).toFixed(2).replace('.', ','), getStatusContrato(c)];
   });
   downloadCSV([header, ...rows], 'relatorio_contabil');
 }
@@ -2926,7 +3005,7 @@ function abrirPainelAdmin() {
             '</div>' +
             '<div style="font-size:0.68rem;color:#444;line-height:1.5;border-top:1px solid #1e1e1e;padding-top:10px;margin-top:4px">' +
               '<div style="margin-bottom:4px"><span style="color:#2E9E4F;font-weight:700">Campos editáveis:</span></div>' +
-              '<div style="color:#555">Cliente, tipo de evento, data, local, valor. Alterações salvas direto no Firestore (contratos ou notas).</div>' +
+              '<div style="color:#555">Cliente, tipo de evento, data, local, valor. Na aba Contabilidade: nome da empresa, CNPJ e regime tributário. Alterações salvas direto no Firestore.</div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -3084,6 +3163,59 @@ document.addEventListener('click', function(e) {
   });
 }, true);
 
+// Delegação de cliques para campos de config (empresa) no modo editor
+document.addEventListener('click', function(e) {
+  if (!_editorModeAtivo) return;
+  var el = e.target.closest('.config-field-editable');
+  if (!el) return;
+  e.stopPropagation();
+  e.preventDefault();
+  if (el.querySelector('.editor-input-inline')) return;
+
+  var field = el.dataset.field; // 'nome', 'cnpj', 'regime'
+  var originalHtml = el.innerHTML;
+  var valorAtual = el.textContent.trim();
+
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'editor-input-inline';
+  input.value = (valorAtual === '(a preencher)' || valorAtual === '—') ? '' : valorAtual;
+  input.style.minWidth = '160px';
+
+  el.innerHTML = '';
+  el.appendChild(input);
+  input.focus();
+  input.select();
+
+  function salvarConfig() {
+    var novoValor = input.value.trim();
+    el.textContent = novoValor || originalHtml;
+    if (!novoValor) { el.innerHTML = originalHtml; return; }
+    if (!db) { _editorToast('Sem conexão com banco de dados', true); return; }
+    var upd = {};
+    upd[field] = novoValor;
+    // Atualizar os outros campos em memória para não perder valores já carregados
+    var nomeEl   = document.getElementById('cont-nome');
+    var cnpjEl   = document.getElementById('cont-cnpj');
+    var regimeEl = document.getElementById('cont-regime');
+    var dadosAtuais = {
+      nome:   nomeEl   ? nomeEl.textContent   : 'NF Soluções para Eventos Ltda (SLU)',
+      cnpj:   cnpjEl   ? cnpjEl.textContent   : '(a preencher)',
+      regime: regimeEl ? regimeEl.textContent : 'Simples Nacional'
+    };
+    dadosAtuais[field] = novoValor;
+    db.collection('config').doc('empresa').set(dadosAtuais, { merge: true })
+      .then(function() { _editorToast('Salvo!'); })
+      .catch(function(err) { el.innerHTML = originalHtml; _editorToast('Erro: ' + err.message, true); });
+  }
+
+  input.addEventListener('blur', salvarConfig);
+  input.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+    if (ev.key === 'Escape') { el.innerHTML = originalHtml; }
+  });
+}, true);
+
 
 // ── PWA INSTALL ──
 var _pwaPrompt = null;
@@ -3164,40 +3296,6 @@ document.addEventListener('click', function(e) {
       .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
   }
 });
-
-// ── EDITOR DE DADOS DA EMPRESA ──
-function toggleEmpresaEditor() {
-  const editor = document.getElementById('empresa-editor');
-  const view   = document.getElementById('empresa-view');
-  const isOpen = editor.style.display !== 'none';
-  if (isOpen) {
-    editor.style.display = 'none';
-    view.style.display   = '';
-  } else {
-    // Preencher inputs com valores atuais
-    document.getElementById('inp-empresa-nome').value   = document.getElementById('cont-nome').textContent;
-    document.getElementById('inp-empresa-cnpj').value   = document.getElementById('cont-cnpj').textContent;
-    document.getElementById('inp-empresa-regime').value = document.getElementById('cont-regime').textContent;
-    view.style.display   = 'none';
-    editor.style.display = 'block';
-  }
-}
-
-function salvarEmpresa() {
-  if (!db) { _editorToast('Sem conexão com banco de dados', true); return; }
-  const nome   = document.getElementById('inp-empresa-nome').value.trim();
-  const cnpj   = document.getElementById('inp-empresa-cnpj').value.trim();
-  const regime = document.getElementById('inp-empresa-regime').value.trim();
-  db.collection('config').doc('empresa').set({ nome, cnpj, regime }, { merge: true })
-    .then(function() {
-      document.getElementById('cont-nome').textContent   = nome   || 'NF Soluções para Eventos Ltda (SLU)';
-      document.getElementById('cont-cnpj').textContent   = cnpj   || '(a preencher)';
-      document.getElementById('cont-regime').textContent = regime || 'Simples Nacional';
-      toggleEmpresaEditor();
-      _editorToast('Dados da empresa salvos!');
-    })
-    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
-}
 
 function _editorToast(msg, isError) {
   var existing = document.getElementById('editor-toast');
