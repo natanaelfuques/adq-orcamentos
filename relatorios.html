@@ -1150,12 +1150,34 @@ header {
 <div class="tab-panel" id="tab-contabilidade"><div class="tab-panel-inner">
 <p class="sec-title">Resumo para contabilidade — período selecionado</p>
 <div class="cont-grid">
-<div class="info-box">
-<strong>Empresa</strong>
-          NF Soluções para Eventos Ltda (SLU)<br/>
-          CNPJ: <span id="cont-cnpj">—</span><br/>
-          Regime: Simples Nacional
-        </div>
+<div class="info-box info-box-empresa" style="position:relative">
+<strong>Empresa
+  <button onclick="toggleEmpresaEditor()" title="Editar dados da empresa" style="background:transparent;border:none;cursor:pointer;color:var(--muted);padding:0 0 0 6px;font-size:0.85rem;vertical-align:middle;line-height:1" id="btn-edit-empresa">✏️</button>
+</strong>
+<span id="empresa-view">
+  <span id="cont-nome">NF Soluções para Eventos Ltda (SLU)</span><br/>
+  CNPJ: <span id="cont-cnpj">—</span><br/>
+  Regime: <span id="cont-regime">Simples Nacional</span>
+</span>
+<div id="empresa-editor" style="display:none;margin-top:10px;display:none">
+  <div style="margin-bottom:6px">
+    <label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:3px">Nome da empresa</label>
+    <input id="inp-empresa-nome" type="text" style="width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:5px 9px;border-radius:4px;outline:none;box-sizing:border-box"/>
+  </div>
+  <div style="margin-bottom:6px">
+    <label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:3px">CNPJ</label>
+    <input id="inp-empresa-cnpj" type="text" placeholder="00.000.000/0001-00" style="width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:5px 9px;border-radius:4px;outline:none;box-sizing:border-box"/>
+  </div>
+  <div style="margin-bottom:10px">
+    <label style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;display:block;margin-bottom:3px">Regime tributário</label>
+    <input id="inp-empresa-regime" type="text" style="width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:'Barlow',sans-serif;font-size:0.82rem;padding:5px 9px;border-radius:4px;outline:none;box-sizing:border-box"/>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button onclick="salvarEmpresa()" style="background:var(--green);border:none;color:#111;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:5px 14px;border-radius:4px;cursor:pointer">Salvar</button>
+    <button onclick="toggleEmpresaEditor()" style="background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:5px 14px;border-radius:4px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+</div>
 <div class="info-box">
 <strong>Período do relatório</strong>
 <span id="cont-periodo">—</span>
@@ -2711,7 +2733,22 @@ function renderContabilidade() {
   const ini = _dataIni ? _dataIni.toLocaleDateString('pt-BR') : 'Início';
   const fim = _dataFim ? _dataFim.toLocaleDateString('pt-BR') : 'Atual';
   document.getElementById('cont-periodo').textContent = ini + ' a ' + fim;
-  document.getElementById('cont-cnpj').textContent = '(a preencher)';
+  // Carregar dados da empresa do Firestore (config/empresa)
+  if (db) {
+    db.collection('config').doc('empresa').get().then(function(snap) {
+      const d = snap.exists ? snap.data() : {};
+      const nome = d.nome || 'NF Soluções para Eventos Ltda (SLU)';
+      const cnpj = d.cnpj || '(a preencher)';
+      const regime = d.regime || 'Simples Nacional';
+      document.getElementById('cont-nome').textContent = nome;
+      document.getElementById('cont-cnpj').textContent = cnpj;
+      document.getElementById('cont-regime').textContent = regime;
+    }).catch(function() {
+      document.getElementById('cont-cnpj').textContent = '(a preencher)';
+    });
+  } else {
+    document.getElementById('cont-cnpj').textContent = '(a preencher)';
+  }
 
   document.getElementById('kpi-cont').innerHTML = `
     <div class="kpi-card gold">
@@ -3127,6 +3164,40 @@ document.addEventListener('click', function(e) {
       .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
   }
 });
+
+// ── EDITOR DE DADOS DA EMPRESA ──
+function toggleEmpresaEditor() {
+  const editor = document.getElementById('empresa-editor');
+  const view   = document.getElementById('empresa-view');
+  const isOpen = editor.style.display !== 'none';
+  if (isOpen) {
+    editor.style.display = 'none';
+    view.style.display   = '';
+  } else {
+    // Preencher inputs com valores atuais
+    document.getElementById('inp-empresa-nome').value   = document.getElementById('cont-nome').textContent;
+    document.getElementById('inp-empresa-cnpj').value   = document.getElementById('cont-cnpj').textContent;
+    document.getElementById('inp-empresa-regime').value = document.getElementById('cont-regime').textContent;
+    view.style.display   = 'none';
+    editor.style.display = 'block';
+  }
+}
+
+function salvarEmpresa() {
+  if (!db) { _editorToast('Sem conexão com banco de dados', true); return; }
+  const nome   = document.getElementById('inp-empresa-nome').value.trim();
+  const cnpj   = document.getElementById('inp-empresa-cnpj').value.trim();
+  const regime = document.getElementById('inp-empresa-regime').value.trim();
+  db.collection('config').doc('empresa').set({ nome, cnpj, regime }, { merge: true })
+    .then(function() {
+      document.getElementById('cont-nome').textContent   = nome   || 'NF Soluções para Eventos Ltda (SLU)';
+      document.getElementById('cont-cnpj').textContent   = cnpj   || '(a preencher)';
+      document.getElementById('cont-regime').textContent = regime || 'Simples Nacional';
+      toggleEmpresaEditor();
+      _editorToast('Dados da empresa salvos!');
+    })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
 
 function _editorToast(msg, isError) {
   var existing = document.getElementById('editor-toast');
