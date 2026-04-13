@@ -2369,19 +2369,42 @@ function renderFinanceiro() {
     }
   });
 
-  // Gráfico: receita por serviço (contratos têm array 'servicos'; notas podem ter 'servico' singular ou 'tipo')
+  // Gráfico: receita por serviço
+  // Itens ficam em e.servicos (array de strings como "Sonorização de palco: detalhes...")
+  // Extrai só o nome antes do ":" e remove prefixos de bullet (•, *, -)
+  function extrairNomeServico(s) {
+    if (!s) return null;
+    // Remove bullet prefix: "• ", "* ", "- "
+    s = s.replace(/^[\u2022\*\-]\s*/, '').trim();
+    // Pega só a parte antes do primeiro ":"
+    const idx = s.indexOf(':');
+    return (idx > 0 ? s.slice(0, idx) : s).trim();
+  }
+
   const servMap = {};
   confirmados.forEach(e => {
     const servicos = e.servicos || (e.servico ? [e.servico] : []);
     if (servicos.length) {
-      servicos.forEach(s => { if (s) servMap[s] = (servMap[s] || 0) + 1; });
+      // Divide a receita do evento igualmente entre os serviços
+      const valorPorServico = getValorEvento(e) / servicos.length;
+      servicos.forEach(s => {
+        const nome = extrairNomeServico(s);
+        if (nome) {
+          if (!servMap[nome]) servMap[nome] = { qtd: 0, receita: 0 };
+          servMap[nome].qtd++;
+          servMap[nome].receita += valorPorServico;
+        }
+      });
     } else if (e._origem === 'nota') {
-      // notas sem campo de serviço: usa tipo como fallback
       const t = tipoEv(e);
-      if (t && t !== '—') servMap[t] = (servMap[t] || 0) + 1;
+      if (t && t !== '—') {
+        if (!servMap[t]) servMap[t] = { qtd: 0, receita: 0 };
+        servMap[t].qtd++;
+        servMap[t].receita += getValorEvento(e);
+      }
     }
   });
-  const servEntries = Object.entries(servMap).sort((a,b) => b[1]-a[1]).slice(0, 10);
+  const servEntries = Object.entries(servMap).sort((a,b) => b[1].qtd - a[1].qtd).slice(0, 10);
 
   criarChart('chart-servicos', {
     type: 'bar',
@@ -2389,7 +2412,7 @@ function renderFinanceiro() {
       labels: servEntries.map(x => x[0]),
       datasets: [{
         label: 'Qtd contratos',
-        data: servEntries.map(x => x[1]),
+        data: servEntries.map(x => x[1].qtd),
         backgroundColor: 'rgba(74,144,200,0.7)',
         borderColor: '#4A90C8',
         borderWidth: 1,
@@ -2399,7 +2422,18 @@ function renderFinanceiro() {
     options: {
       indexAxis: 'y',
       responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const entry = servEntries[ctx.dataIndex];
+              const receita = entry ? entry[1].receita : 0;
+              return ctx.parsed.x + ' contrato(s) — R$ ' + receita.toLocaleString('pt-BR', {minimumFractionDigits:2});
+            }
+          }
+        }
+      },
       scales: {
         x: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
         y: { grid: { display: false }, ticks: { font: { size: 11 } } }
