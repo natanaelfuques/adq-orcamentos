@@ -1235,6 +1235,16 @@ auth.onAuthStateChanged(function(user) {
         _aplicarPermissaoHistorico(user.email, EMAILS_HISTORICO_PADRAO);
       });
 
+    // Buscar permissões de seleção de responsáveis
+    db.collection('configuracoes').doc('permissoes_responsaveis').get()
+      .then(function(doc) {
+        _admPermRespEmailsAtuais = doc.exists && doc.data().emails ? doc.data().emails : [];
+        renderBoard();
+      })
+      .catch(function() {
+        _admPermRespEmailsAtuais = [];
+      });
+
     registrarAcesso(user);
     // Pré-carregar usuários cadastrados para as barrinhas dos cards
     if (db) {
@@ -1709,7 +1719,12 @@ function buildCard(ev, past, col) {
             : '<span class="card-field-editable" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') +
                 (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
               '</span>') +
-          (ev.contrato_id || ev.id ? '<span class="card-ref-link" data-evid="' + esc(ev.id) + '" onclick="event.stopPropagation();_abrirModalResponsaveis(\'' + esc(ev.id) + '\')" title="Clique para definir responsável"># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>' : '') +
+          (ev.contrato_id || ev.id ? (function() {
+            var temPermResp = !_admPermRespEmailsAtuais || !_admPermRespEmailsAtuais.length || (auth && auth.currentUser && _admPermRespEmailsAtuais.indexOf(auth.currentUser.email) >= 0);
+            return temPermResp
+              ? '<span class="card-ref-link" data-evid="' + esc(ev.id) + '" onclick="event.stopPropagation();_abrirModalResponsaveis(\'' + esc(ev.id) + '\')" title="Clique para definir responsável"># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>'
+              : '<span class="card-ref-link" style="cursor:default;pointer-events:none;opacity:0.4" title=""># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>';
+          })() : '') +
         '</div>' +
         resp + itens +
       '</div>' +
@@ -2506,6 +2521,7 @@ function _admPermSalvarSecao(docId, arr, listaId) {
         if (docId === 'permissoes_orcamento') _aplicarPermissaoVoltar(u.email, arr);
         if (docId === 'permissoes_editor')    _aplicarPermissaoEditor(u.email, arr);
         if (docId === 'permissoes_historico') _aplicarPermissaoHistorico(u.email, arr);
+        if (docId === 'permissoes_responsaveis') renderBoard();
       }
       _editorToast('Permissões atualizadas!');
     })
@@ -2685,14 +2701,6 @@ function _admUsersSalvar() {
 
 
 function _abrirModalResponsaveis(evid) {
-  // Verificar permissão: se lista vazia, todos podem; senão, apenas os e-mails listados
-  var u = auth && auth.currentUser;
-  if (_admPermRespEmailsAtuais && _admPermRespEmailsAtuais.length > 0 && u) {
-    if (_admPermRespEmailsAtuais.indexOf(u.email) < 0) {
-      _editorToast('Sem permissão para definir responsáveis.', true);
-      return;
-    }
-  }
   var existing = document.getElementById('modal-responsaveis');
   if (existing) existing.remove();
 
