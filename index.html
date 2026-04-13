@@ -1420,10 +1420,10 @@ header {
               style="padding-right:38px;width:100%"
               oninput="sincronizarDataTexto(this)"
               onblur="validarDataEventoTexto(this)" />
-            <div style="position:absolute;right:0;top:0;height:100%;width:36px;border-left:1px solid var(--border);border-radius:0 4px 4px 0;overflow:hidden;display:flex;align-items:center;justify-content:center">
-              <svg style="position:absolute;pointer-events:none;z-index:1;color:var(--gold)" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <div onclick="abrirCalendarioData()" style="position:absolute;right:0;top:0;height:100%;width:36px;border-left:1px solid var(--border);border-radius:0 4px 4px 0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2">
+              <svg style="pointer-events:none;color:var(--gold)" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <input type="date" id="data_evento" tabindex="-1" class="date-picker-hidden"
-                style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;margin:0;border:none;background:transparent"
+                style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;padding:0;margin:0;border:none;background:transparent"
                 onchange="sincronizarDataDate(this)" />
             </div>
           </div>
@@ -2052,10 +2052,10 @@ Revestimento</textarea>
               style="padding-right:38px;width:100%"
               oninput="sincronizarDataTextoEv(this)"
               onblur="validarDataEventoTextoEv(this)" />
-            <div style="position:absolute;right:0;top:0;height:100%;width:36px;border-left:1px solid var(--border);border-radius:0 4px 4px 0;overflow:hidden;display:flex;align-items:center;justify-content:center">
-              <svg style="position:absolute;pointer-events:none;z-index:1;color:var(--gold)" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <div onclick="abrirCalendarioDataEv()" style="position:absolute;right:0;top:0;height:100%;width:36px;border-left:1px solid var(--border);border-radius:0 4px 4px 0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2">
+              <svg style="pointer-events:none;color:var(--gold)" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <input type="date" id="ev_data" tabindex="-1" class="date-picker-hidden"
-                style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;margin:0;border:none;background:transparent"
+                style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;padding:0;margin:0;border:none;background:transparent"
                 onchange="sincronizarDataDateEv(this)" />
             </div>
           </div>
