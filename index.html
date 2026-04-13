@@ -4543,14 +4543,15 @@ function preencherContratoDados() {
   set('val_total', d.val_total);
   set('pgto_custom', d.pgto_custom);
   set('data_entrada', d.data_entrada);
-  const pgtoRadio = document.querySelector('input[name="pgto"][value="' + d.pgto_sel + '"]');
+  const pgtoVal = d.pgto_sel || d.pgto_tipo || 'vista';
+  const pgtoRadio = document.querySelector('input[name="pgto"][value="' + pgtoVal + '"]');
   if (pgtoRadio) { pgtoRadio.checked = true; pgtoRadio.dispatchEvent(new Event('change')); }
   if (d.nparcelas) {
     selecionaParcelasIdeal();
     const pr = document.querySelector('input[name="nparcelas"][value="' + d.nparcelas + '"]');
     if (pr) { pr.checked = true; atualizaParceladoInfo(); }
   }
-  if (d.pgto_sel === 'custom') document.getElementById('pgto_custom_wrap').style.display = 'block';
+  if (pgtoVal === 'custom') document.getElementById('pgto_custom_wrap').style.display = 'block';
   const lista = document.getElementById('lista-servicos');
   lista.innerHTML = '';
   (d.servicos || []).forEach(s => {
@@ -4560,6 +4561,26 @@ function preencherContratoDados() {
     lista.appendChild(div);
   });
   if (!lista.children.length) addServico();
+  // Restaurar valor de entrada customizado salvo no Firestore
+  if (d.entrada_manual && d.val_entrada) {
+    _entradaManual = true;
+    const entradaEl = document.getElementById('val_entrada');
+    const lblPct    = document.getElementById('lbl_pct_entrada');
+    if (entradaEl) {
+      entradaEl.value = d.val_entrada;
+      entradaEl.style.color = '#e8a838';
+      entradaEl.removeAttribute('readonly');
+      entradaEl.style.cursor = 'text';
+    }
+    const total = parseBRL(d.val_total);
+    const entNum = parseBRL(d.val_entrada);
+    if (lblPct && total > 0 && entNum > 0) {
+      const pct = (entNum / total) * 100;
+      lblPct.textContent = pct.toFixed(1).replace('.', ',') + '%';
+    }
+  } else {
+    _entradaManual = false;
+  }
   calcEntrada();
   // Navegar para a aba Contrato e depois fazer o scroll
   if (window._goToVirtual) {
@@ -5863,6 +5884,8 @@ function coletarDadosContrato() {
     nparcelas: nParcRadio ? nParcRadio.value : '',
     pgto_custom: get('pgto_custom'),
     data_entrada: get('data_entrada'),
+    val_entrada: _entradaManual ? (get('val_entrada') || '') : '',
+    entrada_manual: _entradaManual ? true : false,
     servicos:  servicos,
     aprovado:  false,
     orc_ref:   _currentOrcRef || ''
