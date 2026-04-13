@@ -1415,18 +1415,9 @@ header {
       <div class="grid-2">
         <div>
           <label>Data do Evento</label>
-          <div style="position:relative;display:flex;align-items:center">
-            <input type="text" id="data_evento_texto" placeholder="dd/mm/aaaa"
-              style="padding-right:38px;width:100%"
-              oninput="sincronizarDataTexto(this)"
-              onblur="validarDataEventoTexto(this)" />
-            <div style="position:absolute;right:0;top:0;height:100%;width:36px;border-left:1px solid var(--border);border-radius:0 4px 4px 0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2">
-              <svg style="position:absolute;pointer-events:none;z-index:1;color:var(--gold)" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <input type="date" id="data_evento" tabindex="-1" class="date-picker-hidden"
-                style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;margin:0;border:none;background:transparent"
-                onchange="sincronizarDataDate(this)" />
-            </div>
-          </div>
+          <input type="date" id="data_evento"
+            style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
+            onchange="sincronizarDataDate(this)" />
         </div>
         <div>
           <label>WhatsApp do Cliente</label>
@@ -2047,18 +2038,9 @@ Revestimento</textarea>
       <div class="grid-3">
         <div>
           <label>Data do Evento</label>
-          <div style="position:relative;display:flex;align-items:center">
-            <input type="text" id="ev_data_texto" placeholder="dd/mm/aaaa"
-              style="padding-right:38px;width:100%"
-              oninput="sincronizarDataTextoEv(this)"
-              onblur="validarDataEventoTextoEv(this)" />
-            <div style="position:absolute;right:0;top:0;height:100%;width:36px;border-left:1px solid var(--border);border-radius:0 4px 4px 0;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2">
-              <svg style="position:absolute;pointer-events:none;z-index:1;color:var(--gold)" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <input type="date" id="ev_data" tabindex="-1" class="date-picker-hidden"
-                style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;margin:0;border:none;background:transparent"
-                onchange="sincronizarDataDateEv(this)" />
-            </div>
-          </div>
+          <input type="date" id="ev_data"
+            style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
+            onchange="sincronizarDataDateEv(this)" />
         </div>
         <div>
           <label>Hora Início</label>
@@ -4422,12 +4404,7 @@ function validarDataEventoTexto(textoInput) {
   _validarTextoData(textoInput);
 }
 function sincronizarDataDate(dateInput) {
-  var texto = document.getElementById('data_evento_texto');
-  if (texto) {
-    texto.value = dateInput.value ? _isoParaTexto(dateInput.value) : '';
-    _validarTextoData(texto);
-  }
-  // Acionar side effects originais do ev_data se necessário (nenhum neste campo)
+  // input[type=date] nativo — nenhum campo texto para sincronizar
 }
 function abrirCalendarioData() {
   var hidden = document.getElementById('data_evento');
@@ -4452,11 +4429,7 @@ function validarDataEventoTextoEv(textoInput) {
   _validarTextoData(textoInput);
 }
 function sincronizarDataDateEv(dateInput) {
-  var texto = document.getElementById('ev_data_texto');
-  if (texto) {
-    texto.value = dateInput.value ? _isoParaTexto(dateInput.value) : '';
-    _validarTextoData(texto);
-  }
+  // input[type=date] nativo — nenhum campo texto para sincronizar
   if (document.querySelector('input[name=pgto]:checked')?.value === 'parcelado') {
     selecionaParcelasIdeal(); atualizaParceladoInfo();
   }
@@ -4469,39 +4442,7 @@ function abrirCalendarioDataEv() {
   hidden.showPicker ? hidden.showPicker() : hidden.click();
 }
 
-// Patch: ao carregar dados salvos, preencher os campos texto
-(function _patchCarregarDatas() {
-  var origSet = window._origSetData;
-  // Observador para sincronizar campos hidden → texto ao setar via .value
-  function _watchDate(hiddenId, textoId) {
-    var hidden = document.getElementById(hiddenId);
-    var texto  = document.getElementById(textoId);
-    if (!hidden || !texto) return;
-    // Proxy via Object.defineProperty para capturar atribuições externas
-    var _val = hidden.value;
-    try {
-      Object.defineProperty(hidden, 'value', {
-        get: function() { return _val; },
-        set: function(v) {
-          _val = v;
-          if (texto) texto.value = v ? _isoParaTexto(v) : '';
-          if (texto) _validarTextoData(texto);
-        },
-        configurable: true
-      });
-    } catch(e) {}
-  }
-  // Executar após o DOM estar pronto
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      _watchDate('data_evento', 'data_evento_texto');
-      _watchDate('ev_data',     'ev_data_texto');
-    });
-  } else {
-    _watchDate('data_evento', 'data_evento_texto');
-    _watchDate('ev_data',     'ev_data_texto');
-  }
-})();
+// Patch removido: _watchDate não é mais necessário (campos texto foram substituídos por input[type=date] nativos)
 
 function validarCep(input) {
   const d = input.value.replace(/\D/g, '');
