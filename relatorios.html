@@ -995,22 +995,7 @@ header {
 <button class="btn-logout" onclick="fazerLogout()">Sair</button>
 </div>
 </header>
-<div class="periodo-bar" style="display:none">
-<span class="periodo-label">Período:</span>
-<div class="periodo-btns">
-<button class="pbtn" onclick="setPeriodo('mes')">Este mês</button>
-<button class="pbtn" onclick="setPeriodo('trim')">Trimestre</button>
-<button class="pbtn active" onclick="setPeriodo('ano')">Este ano</button>
-<button class="pbtn" onclick="setPeriodo('tudo')">Tudo</button>
-<button class="pbtn" onclick="setPeriodo('custom')">Personalizado</button>
-</div>
-<div class="periodo-custom" id="custom-wrap" style="display:none">
-<input id="data-ini" onchange="aplicarCustom()" type="date"/>
-<span style="color:var(--muted)">até</span>
-<input id="data-fim" onchange="aplicarCustom()" type="date"/>
-</div>
-<button class="export-btn" onclick="exportarCSV()" id="global-export-btn">⬇ Exportar CSV</button>
-</div>
+
 <div class="tabs-wrap" id="tabs-wrap">
 <div class="tabs" id="tabs-nav">
 <button class="tab-btn active" onclick="trocarTab('pagamentos')">Pagamentos</button>
@@ -1519,6 +1504,41 @@ function todoEventosFiltrados() {
   });
 }
 
+// Filtro por data DO EVENTO (ev_data) — usado exclusivamente na aba Contabilidade
+function dentroDoPeríodoContabilidade(doc) {
+  if (!_dataIni && !_dataFim) return true;
+  const evStr = doc.ev_data || doc.data_evento || doc.dataEvt || '';
+  let d = null;
+  if (evStr) {
+    const p = evStr.split('-');
+    if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+  }
+  if (!d) d = tsToDate(doc.criadoEm);
+  if (!d) return true;
+  if (_dataIni && d < _dataIni) return false;
+  if (_dataFim && d > _dataFim) return false;
+  return true;
+}
+
+// Todos os eventos filtrados pela data DO EVENTO (para Contabilidade)
+function todoEventosFiltradosContabilidade() {
+  const cons = _contratos.filter(dentroDoPeríodoContabilidade).map(c => ({ ...c, _origem: 'contrato' }));
+  const notaIdsComContrato = new Set(cons.map(c => c.nota_id).filter(Boolean));
+  const notas = _notas.filter(dentroDoPeríodoContabilidade).filter(n => !notaIdsComContrato.has(n.id));
+  const parseEv = (doc) => {
+    const s = doc.ev_data || doc.data_evento || doc.dataEvt || '';
+    if (s) { const p = s.split('-'); if (p.length === 3) return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2])); }
+    return tsToDate(doc.criadoEm);
+  };
+  return [...cons, ...notas].sort((a, b) => {
+    const da = parseEv(a), db_ = parseEv(b);
+    if (!da && !db_) return 0;
+    if (!da) return 1;
+    if (!db_) return -1;
+    return da - db_;
+  });
+}
+
 // ══════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════
@@ -1698,17 +1718,7 @@ function trocarTab(tab, smooth) {
   _tabAtiva = tab;
   const idx = _TAB_NAMES.indexOf(tab);
 
-  // Barra de período global: visível APENAS na aba Contabilidade
-  const globalBar = document.querySelector('.periodo-bar:not(.cont-periodo-bar)');
-  if (globalBar) {
-    globalBar.style.display = (tab === 'contabilidade') ? '' : 'none';
-    const hdr = document.querySelector('header');
-    const tw  = document.getElementById('tabs-wrap');
-    if (tw && hdr) {
-      const pbH = (tab === 'contabilidade') ? globalBar.offsetHeight : 0;
-      tw.style.top = (hdr.offsetHeight + pbH) + 'px';
-    }
-  }
+
 
   // Atualizar botões nav
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
@@ -1771,17 +1781,7 @@ function trocarTab(tab, smooth) {
           });
           var activeBtn = document.querySelector('.tab-btn.active');
           if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-          // Barra global: visível APENAS na aba Contabilidade
-          var globalBar2 = document.querySelector('.periodo-bar:not(.cont-periodo-bar)');
-          if (globalBar2) {
-            globalBar2.style.display = (tab === 'contabilidade') ? '' : 'none';
-            var hdr2 = document.querySelector('header');
-            var tw2  = document.getElementById('tabs-wrap');
-            if (tw2 && hdr2) {
-              var pbH2 = (tab === 'contabilidade') ? globalBar2.offsetHeight : 0;
-              tw2.style.top = (hdr2.offsetHeight + pbH2) + 'px';
-            }
-          }
+
           // Renderizar aba que entrou em foco
           var renderMap = {
             pagamentos: renderPagamentos,
@@ -2800,8 +2800,8 @@ function renderSazonalidade() {
 // TAB 5 – CONTABILIDADE
 // ══════════════════════════════════════════
 function renderContabilidade() {
-  // Contratos + notas, sem duplicatas
-  const todos = todoEventosFiltrados();
+  // Contratos + notas, sem duplicatas — filtra pela data DO EVENTO
+  const todos = todoEventosFiltradosContabilidade();
   const ativos = todos.filter(e => !e.removido_manualmente);
   const confirmados = ativos.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
 
@@ -2939,7 +2939,7 @@ function exportarCSV() {
 }
 
 function exportarContabilidade() {
-  const cons = todoEventosFiltrados().filter(e => !e.removido_manualmente);
+  const cons = todoEventosFiltradosContabilidade().filter(e => !e.removido_manualmente);
   const header = ['Competência (ev)','Cliente','Tipo Evento','Tipo Registro','Data Evento','Forma Pgto','Valor Contrato','Status'];
   const rows = cons.map(c => {
     const evStr = c.ev_data || c.data_evento || c.dataEvt || '';
