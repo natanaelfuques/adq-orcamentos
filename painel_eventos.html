@@ -2472,11 +2472,14 @@ function abrirPainelAdmin() {
         <span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:#C8A94A;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>\
         <button onclick="document.body.style.overflow=\'\';document.getElementById(\'modal-admin-painel\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>\
       </div>\
-      <div style="display:flex;gap:0;padding:14px 22px 0 22px;border-bottom:1px solid #2a2a2a;margin-top:14px;overflow-x:auto;scrollbar-width:none">\
-        <button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #7B22B8;color:#7B22B8;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px;margin-bottom:-1px">Editor</button>\
-        <button id="adm-tab-users" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px;margin-bottom:-1px">Usuários</button>\
-        <button id="adm-tab-hist" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px;margin-bottom:-1px">Histórico</button>\
-        <button id="adm-tab-veic" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 10px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-bottom:-1px">Veículos</button>\
+      <div style="position:relative;padding:14px 22px 0 22px;margin-top:14px">\
+        <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1">\
+        <button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #7B22B8;color:#7B22B8;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Editor</button>\
+        <button id="adm-tab-users" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Usuários</button>\
+        <button id="adm-tab-hist" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\
+        <button id="adm-tab-veic" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0">Veículos</button>\
+        </div>\
+        <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:#2a2a2a;z-index:0"></div>\
       </div>\
       <div id="adm-slider" style="display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none">\
         <div id="adm-panel-editor" style="min-width:100%;padding:20px 22px 22px 22px;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
@@ -2602,10 +2605,22 @@ function abrirPainelAdmin() {
   setTimeout(function() {
     var slider = document.getElementById('adm-slider');
     if (!slider) return;
+    var _scrollTimer = null;
+    var _isAnimating = false;
     slider.addEventListener('scroll', function() {
-      var idx = Math.round(slider.scrollLeft / slider.offsetWidth);
-      _admAba(idx, true);
+      if (_isAnimating) return;
+      clearTimeout(_scrollTimer);
+      _scrollTimer = setTimeout(function() {
+        var idx = Math.round(slider.scrollLeft / slider.offsetWidth);
+        _admAba(idx, true);
+      }, 80);
     }, { passive: true });
+    // Mark animation done after programmatic scroll
+    slider._scrollTo = function(left) {
+      _isAnimating = true;
+      slider.scrollTo({ left: left, behavior: 'smooth' });
+      setTimeout(function() { _isAnimating = false; }, 400);
+    };
   }, 80);
 }
 
@@ -2617,7 +2632,10 @@ function _admAba(idx, fromScroll) {
   });
   if (!fromScroll) {
     var slider = document.getElementById('adm-slider');
-    if (slider) slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
+    if (slider) {
+      if (slider._scrollTo) slider._scrollTo(idx * slider.offsetWidth);
+      else slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
+    }
   }
   // Carregar histórico ao entrar na aba
   if (idx === 2) {
