@@ -1009,7 +1009,8 @@ header {
 <div class="pgto-kpi-grid" id="kpi-pgto"></div>
 <!-- Filtros -->
 <div class="pgto-filtros">
-<button class="pgto-filtro-btn active" onclick="filtroPgto('todos',this)">Todos</button>
+<button class="pgto-filtro-btn active" id="btn-filtro-30dias" onclick="filtroPgto('30dias',this)">30 Dias</button>
+<button class="pgto-filtro-btn" onclick="filtroPgto('todos',this)">Todos</button>
 <button class="pgto-filtro-btn" onclick="filtroPgto('pendentes',this)">Pendentes</button>
 <button class="pgto-filtro-btn" onclick="filtroPgto('parcial',this)">Parcial</button>
 <button class="pgto-filtro-btn" onclick="filtroPgto('quitados',this)">Quitados</button>
@@ -1709,7 +1710,7 @@ function trocarTab(tab, smooth) {
 // TAB: PAGAMENTOS
 // ══════════════════════════════════════════
 
-let _pgtoFiltro = 'todos';
+let _pgtoFiltro = '30dias';
 let _pgtoAbertos = {}; // { docId: true/false }
 
 /* Retorna a coleção de pagamentos registrados de um evento (salvo no Firestore como campo pgto_registros) */
@@ -1939,6 +1940,16 @@ function renderPagamentos() {
       if (!nome.includes(busca)) return false;
     }
     const st = getStatusPgto(ev);
+    if (_pgtoFiltro === '30dias') {
+      const hoje = new Date(); hoje.setHours(0,0,0,0);
+      const d7Antes = new Date(hoje); d7Antes.setDate(hoje.getDate() - 7);
+      const d30Depois = new Date(hoje); d30Depois.setDate(hoje.getDate() + 30);
+      const dataEv = ev.ev_data || ev.data_evento || ev.dataEvt || '';
+      if (!dataEv) return false;
+      const partes = dataEv.split('-');
+      const dt = new Date(parseInt(partes[0]), parseInt(partes[1])-1, parseInt(partes[2]));
+      return dt >= d7Antes && dt <= d30Depois;
+    }
     if (_pgtoFiltro === 'todos') return true;
     if (_pgtoFiltro === 'quitados') return st === 'quitado';
     if (_pgtoFiltro === 'parcial') return st === 'parcial';
