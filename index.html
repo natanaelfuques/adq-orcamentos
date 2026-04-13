@@ -847,6 +847,7 @@
   .salvos-filter-btn.filtro-cancelado.active { border-color: var(--gold); color: var(--gold); background: rgba(200,169,74,0.1); }
 
 
+
   .salvo-card-tipo {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 0.72rem;
@@ -1894,6 +1895,7 @@ Revestimento</textarea>
         <button class="salvos-filter-btn" id="filtro-ev-eventos" onclick="setFiltroEv('eventos')">Eventos</button>
         <button class="salvos-filter-btn" id="filtro-ev-andamento" onclick="setFiltroEv('andamento')">Em Andamento</button>
         <button class="salvos-filter-btn" id="filtro-ev-concluido" onclick="setFiltroEv('concluido')">Concluído</button>
+        <button class="salvos-filter-btn" id="filtro-ev-30dias" onclick="setFiltroEv('30dias')">30 Dias</button>
       </div>
     </div>
     <!-- Área de busca contratos -->
@@ -7083,7 +7085,22 @@ function renderNotas() {
   // Cards de contratos no painel (vêm de eventos_campo sem nota_id) — design idêntico ao painel
   var termoEv = (document.getElementById('busca-ev-input') ? document.getElementById('busca-ev-input').value.toLowerCase().trim() : '');
   var eventosFiltrados = (_todosEventosCampo || []).filter(function(ev) {
-    var matchFiltro = _filtroEv === 'todos' || (ev.etapa || 'eventos') === _filtroEv;
+    var matchFiltro;
+    if (_filtroEv === 'todos') {
+      matchFiltro = true;
+    } else if (_filtroEv === '30dias') {
+      // Mostra eventos num janela de -7 dias até +30 dias a partir de hoje
+      if (!ev.ev_data) { matchFiltro = false; }
+      else {
+        var _p = ev.ev_data.split('-');
+        var _evD = new Date(parseInt(_p[0]), parseInt(_p[1])-1, parseInt(_p[2]));
+        var _hj = new Date(); _hj.setHours(0,0,0,0);
+        var _diff = Math.round((_evD - _hj) / 86400000);
+        matchFiltro = _diff >= -7 && _diff <= 30;
+      }
+    } else {
+      matchFiltro = (ev.etapa || 'eventos') === _filtroEv;
+    }
     if (!matchFiltro) return false;
     if (!termoEv) return true;
     var nome = (ev.ev_nome || ev.cli_nome || '').toLowerCase();
