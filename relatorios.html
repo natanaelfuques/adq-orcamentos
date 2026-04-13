@@ -546,8 +546,9 @@ header {
   margin-left: 4px;
   vertical-align: middle;
 }
-.badge-origem.contrato { background: rgba(74,144,200,0.15); color: #4A90C8; border: 1px solid rgba(74,144,200,0.3); }
-.badge-origem.nota     { background: rgba(39,174,96,0.15);  color: #27AE60; border: 1px solid rgba(39,174,96,0.3); }
+.badge-origem.contrato      { background: rgba(74,144,200,0.15); color: #4A90C8; border: 1px solid rgba(74,144,200,0.3); }
+.badge-origem.nota,
+.badge-origem.evento-rapido { background: rgba(39,174,96,0.15);  color: #27AE60; border: 1px solid rgba(39,174,96,0.3); }
 
 /* ── MOBILE FIXES ── */
 @media (max-width: 600px) {
@@ -994,7 +995,7 @@ header {
 <button class="btn-logout" onclick="fazerLogout()">Sair</button>
 </div>
 </header>
-<div class="periodo-bar">
+<div class="periodo-bar" style="display:none">
 <span class="periodo-label">Período:</span>
 <div class="periodo-btns">
 <button class="pbtn" onclick="setPeriodo('mes')">Este mês</button>
@@ -1697,15 +1698,14 @@ function trocarTab(tab, smooth) {
   _tabAtiva = tab;
   const idx = _TAB_NAMES.indexOf(tab);
 
-  // Mostrar/ocultar barra de período global e recalcular sticky
+  // Barra de período global: visível APENAS na aba Contabilidade
   const globalBar = document.querySelector('.periodo-bar:not(.cont-periodo-bar)');
-  const globalExportBtn = document.getElementById('global-export-btn');
   if (globalBar) {
-    globalBar.style.display = (tab === 'contabilidade') ? 'none' : '';
+    globalBar.style.display = (tab === 'contabilidade') ? '' : 'none';
     const hdr = document.querySelector('header');
     const tw  = document.getElementById('tabs-wrap');
     if (tw && hdr) {
-      const pbH = (tab !== 'contabilidade') ? globalBar.offsetHeight : 0;
+      const pbH = (tab === 'contabilidade') ? globalBar.offsetHeight : 0;
       tw.style.top = (hdr.offsetHeight + pbH) + 'px';
     }
   }
@@ -1771,14 +1771,14 @@ function trocarTab(tab, smooth) {
           });
           var activeBtn = document.querySelector('.tab-btn.active');
           if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-          // Mostrar/ocultar barra global ao arrastar
+          // Barra global: visível APENAS na aba Contabilidade
           var globalBar2 = document.querySelector('.periodo-bar:not(.cont-periodo-bar)');
           if (globalBar2) {
-            globalBar2.style.display = (tab === 'contabilidade') ? 'none' : '';
+            globalBar2.style.display = (tab === 'contabilidade') ? '' : 'none';
             var hdr2 = document.querySelector('header');
             var tw2  = document.getElementById('tabs-wrap');
             if (tw2 && hdr2) {
-              var pbH2 = (tab !== 'contabilidade') ? globalBar2.offsetHeight : 0;
+              var pbH2 = (tab === 'contabilidade') ? globalBar2.offsetHeight : 0;
               tw2.style.top = (hdr2.offsetHeight + pbH2) + 'px';
             }
           }
@@ -2538,13 +2538,16 @@ function renderEventos() {
     const id = e.id;
     // Badge de status: notas com painel_id → "painel" (roxo)
     const statusBadge = (e._origem === 'nota' && e.painel_id) ? '<span class="badge painel">painel</span>' : `<span class="badge ${st}">${st}</span>`;
+    const origemLabel = e._origem === 'nota'
+      ? '<span class="badge-origem evento-rapido">Evento rápido</span>'
+      : '<span class="badge-origem contrato">Contrato</span>';
     return `<tr>
       <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${colName}" style="max-width:220px">${desc}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${colName}">${dataEv(e)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="${colName}">${localEv(e)}</td>
       <td class="r" style="${valorStyle}">${valorTxt}</td>
       <td>${statusBadge}</td>
-      <td><span class="badge-origem ${origem}">${origem}</span></td>
+      <td>${origemLabel}</td>
       <td>${formatDateBR(e.criadoEm)}</td>
       <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="${colName}" title="Excluir">×</button></td>
     </tr>`;
@@ -2860,8 +2863,8 @@ function renderContabilidade() {
       const desc = (cli !== '—' && tipo !== '—') ? cli + ' — ' + tipo : (cli !== '—' ? cli : tipo);
       const isNota = e._origem === 'nota';
       const tipoBadge = isNota
-        ? '<span class="badge-origem nota" style="font-size:0.68rem;padding:2px 7px;border-radius:3px">Evento rápido</span>'
-        : '<span style="font-size:0.75rem;color:var(--muted)">Contrato</span>';
+        ? '<span class="badge-origem evento-rapido">Evento rápido</span>'
+        : '<span class="badge-origem contrato">Contrato</span>';
       const pgto = isNota ? 'À vista' : getPgtoLabel(e);
       return `<tr>
         <td>${comp}</td>
