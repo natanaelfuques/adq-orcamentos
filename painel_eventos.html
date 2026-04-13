@@ -2480,8 +2480,8 @@ function abrirPainelAdmin() {
         <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1">\
         <button id="adm-tab-editor" onclick="_admAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #7B22B8;color:#7B22B8;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Editor</button>\
         <button id="adm-tab-users" onclick="_admAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Usuários</button>\
-        <button id="adm-tab-hist" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\
-        <button id="adm-tab-veic" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0">Veículos</button>\
+        <button id="adm-tab-veic" onclick="_admAba(2)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Veículos</button>\
+        <button id="adm-tab-hist" onclick="_admAba(3)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0">Histórico</button>\
         </div>\
         <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:#2a2a2a;z-index:0"></div>\
       </div>\
@@ -2567,9 +2567,6 @@ function abrirPainelAdmin() {
             </details>\
           </div>\
         </div>\
-        <div id="adm-panel-hist" style="padding:0;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain">\
-          <div id="adm-acessos-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
-        </div>\
         <div id="adm-panel-veic" style="padding:20px 22px 22px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain">\
           <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
             <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Veículos cadastrados</div>\
@@ -2598,6 +2595,9 @@ function abrirPainelAdmin() {
             <div id="adm-veic-status" style="margin-top:8px;font-size:0.68rem;min-height:16px"></div>\
           </div>\
         </div>\
+        <div id="adm-panel-hist" style="padding:0;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain">\
+          <div id="adm-acessos-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
+        </div>\
       </div>\
     </div>';
 
@@ -2607,7 +2607,7 @@ function abrirPainelAdmin() {
 
   // Inicializar: ocultar todos os painéis exceto o primeiro
   setTimeout(function() {
-    ['editor','users','hist','veic'].forEach(function(k, i) {
+    ['editor','users','veic','hist'].forEach(function(k, i) {
       var panel = document.getElementById('adm-panel-' + k);
       if (panel) panel.style.display = i === 0 ? '' : 'none';
     });
@@ -2615,15 +2615,15 @@ function abrirPainelAdmin() {
 }
 
 function _admAba(idx) {
-  var keys = ['editor','users','hist','veic'];
+  var keys = ['editor','users','veic','hist'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('adm-tab-' + k);
     var panel = document.getElementById('adm-panel-' + k);
     if (tab) { tab.style.borderBottomColor = i === idx ? '#7B22B8' : 'transparent'; tab.style.color = i === idx ? '#7B22B8' : '#555'; }
     if (panel) panel.style.display = i === idx ? '' : 'none';
   });
-  // Carregar histórico ao entrar na aba
-  if (idx === 2) {
+  // Carregar histórico ao entrar na aba (agora idx 3)
+  if (idx === 3) {
     var u = auth.currentUser;
     if (u && _permissoesHistorico.indexOf(u.email) < 0) {
       var lista = document.getElementById('adm-acessos-lista');
@@ -2634,8 +2634,8 @@ function _admAba(idx) {
   }
   // Carregar usuários + permissões ao entrar na aba Usuários
   if (idx === 1) { _admUsersCarregar(); _admPermCarregar(); }
-  // Carregar veículos ao entrar na aba
-  if (idx === 3) { _admVeicCarregar(); }
+  // Carregar veículos ao entrar na aba (agora idx 2)
+  if (idx === 2) { _admVeicCarregar(); }
 }
 
 // ── Admin: Veículos ──
