@@ -1367,13 +1367,17 @@ function _verificarPronto() {
   if (loading && loading.style.display !== 'none') {
     loading.style.display = 'none';
     app.style.display = 'block';
-    setPeriodo('ano');
+    // Aguarda o browser pintar o app antes de renderizar e posicionar o slider
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        var slider = document.getElementById('tab-slider');
+        if (slider) slider.scrollLeft = 0;
+        setPeriodo('ano');
+      });
+    });
   } else {
     renderTudo();
   }
-  // Garantir que o slider inicia na primeira aba sem animação
-  var slider = document.getElementById('tab-slider');
-  if (slider) slider.scrollLeft = 0;
 }
 
 // ══════════════════════════════════════════
