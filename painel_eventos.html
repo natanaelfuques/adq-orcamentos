@@ -2375,6 +2375,17 @@ function abrirPainelAdmin() {
                 </div>\
               </div>\
             </details>\
+            <details>\
+              <summary style="font-size:0.73rem;color:#aaa;cursor:pointer;padding:6px 0;list-style:none">▸ Seleção de Responsáveis</summary>\
+              <div style="padding-top:8px">\
+                <div style="font-size:0.67rem;color:#555;margin-bottom:8px">Quem pode selecionar o usuário responsável por cada evento.</div>\
+                <div id="adm-perm-resp-lista" style="margin-bottom:8px"><div style="font-size:0.73rem;color:#555">Carregando...</div></div>\
+                <div style="display:flex;gap:6px">\
+                  <input id="adm-perm-resp-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.73rem;padding:6px 8px;outline:none;box-sizing:border-box" />\
+                  <button onclick="_admPermRespAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;cursor:pointer">+</button>\
+                </div>\
+              </div>\
+            </details>\
           </div>\
         </div>\
         <div id="adm-panel-hist" style="min-width:100%;padding:0;box-sizing:border-box;scroll-snap-align:start;overflow-y:auto;max-height:60vh;overscroll-behavior:contain">\
@@ -2429,6 +2440,7 @@ function _admPermCarregar() {
   _admPermCarregarSecao('permissoes_orcamento', EMAILS_ORCAMENTO_PADRAO, 'adm-perm-lista', function(list) { _admPermEmailsAtuais = list; });
   _admPermCarregarSecao('permissoes_editor',    EMAILS_EDITOR_PADRAO,    'adm-perm-editor-lista', function(list) { _admPermEditorEmailsAtuais = list; });
   _admPermCarregarSecao('permissoes_historico', EMAILS_HISTORICO_PADRAO, 'adm-perm-hist-lista',   function(list) { _admPermHistEmailsAtuais = list; });
+  _admPermCarregarSecao('permissoes_responsaveis', [], 'adm-perm-resp-lista', function(list) { _admPermRespEmailsAtuais = list; });
 }
 
 function _admPermCarregarSecao(docId, padrao, listaId, onLoad) {
@@ -2467,12 +2479,14 @@ function _admPermGetArray(docId) {
   if (docId === 'permissoes_orcamento') return _admPermEmailsAtuais;
   if (docId === 'permissoes_editor')    return _admPermEditorEmailsAtuais;
   if (docId === 'permissoes_historico') return _admPermHistEmailsAtuais;
+  if (docId === 'permissoes_responsaveis') return _admPermRespEmailsAtuais;
   return [];
 }
 function _admPermSetArray(docId, arr) {
   if (docId === 'permissoes_orcamento') _admPermEmailsAtuais = arr;
   if (docId === 'permissoes_editor')    _admPermEditorEmailsAtuais = arr;
   if (docId === 'permissoes_historico') _admPermHistEmailsAtuais = arr;
+  if (docId === 'permissoes_responsaveis') _admPermRespEmailsAtuais = arr;
 }
 
 function _admPermRemoverSecao(listaId, docId, idx) {
@@ -2519,6 +2533,7 @@ function _admPermAdicionarSecao(inputId, docId, listaId) {
 function _admPermAdicionar()       { _admPermAdicionarSecao('adm-perm-novo-email',       'permissoes_orcamento', 'adm-perm-lista'); }
 function _admPermEditorAdicionar() { _admPermAdicionarSecao('adm-perm-editor-novo-email','permissoes_editor',    'adm-perm-editor-lista'); }
 function _admPermHistAdicionar()   { _admPermAdicionarSecao('adm-perm-hist-novo-email',  'permissoes_historico', 'adm-perm-hist-lista'); }
+function _admPermRespAdicionar()   { _admPermAdicionarSecao('adm-perm-resp-novo-email',  'permissoes_responsaveis', 'adm-perm-resp-lista'); }
 
 // Manter compatibilidade com _admPermRemover legado (orçamento)
 function _admPermRemover(idx) { _admPermRemoverSecao('adm-perm-lista', 'permissoes_orcamento', idx); }
@@ -2544,6 +2559,9 @@ function _buildRespBarHTML(responsaveis) {
 
 // ── Permissões: Histórico ──
 var _admPermHistEmailsAtuais = [];
+
+// ── Permissões: Responsáveis ──
+var _admPermRespEmailsAtuais = [];
 
 // ── Usuários cadastrados (cache global) ──
 var _usuariosCadastrados = [];
@@ -2667,6 +2685,14 @@ function _admUsersSalvar() {
 
 
 function _abrirModalResponsaveis(evid) {
+  // Verificar permissão: se lista vazia, todos podem; senão, apenas os e-mails listados
+  var u = auth && auth.currentUser;
+  if (_admPermRespEmailsAtuais && _admPermRespEmailsAtuais.length > 0 && u) {
+    if (_admPermRespEmailsAtuais.indexOf(u.email) < 0) {
+      _editorToast('Sem permissão para definir responsáveis.', true);
+      return;
+    }
+  }
   var existing = document.getElementById('modal-responsaveis');
   if (existing) existing.remove();
 
