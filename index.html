@@ -6277,7 +6277,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var dataFmt = data
       ? (data.indexOf('-') !== -1 && data.length === 10 ? data.split('-').reverse().join('/') : data)
       : '';
-    var valor   = doc.val_total ? 'R$ ' + doc.val_total : '';
+    var valor   = doc.val_total ? 'R$ ' + formatBRL(parseBRL(doc.val_total)) : '';
     var aprovado = doc.aprovado ? true : false;
     var id = doc.id;
     var ref = id.substring(0, 8).toUpperCase();
@@ -7548,7 +7548,7 @@ function renderNotas() {
     card += '<div style="min-width:0">'
       +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(ev.ev_nome||'Evento')+'</div>';
     if (ev.cli_nome) card += '<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">'+escHtml(ev.cli_nome)+'</div>';
-    if (ev.val_total) card += '<div style="font-size:0.68rem;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;color:#C8A94A;margin-top:2px">R$ '+escHtml(ev.val_total)+'</div>';
+    if (ev.val_total) card += '<div style="font-size:0.68rem;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;color:#C8A94A;margin-top:2px">R$ '+escHtml(formatBRL(parseBRL(ev.val_total)))+'</div>';
     card += '</div></div>';
     // Seta
     card += '<svg class="ev-expand-icon" data-ev-icon="'+id+'" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);flex-shrink:0;transition:transform 0.2s"><polyline points="2,4 6,8 10,4"/></svg>';
