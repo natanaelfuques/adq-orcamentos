@@ -34,6 +34,7 @@
   --purple: #8B5CF6;
   --red: #e05c5c;
   --orange: #27AE60;
+  --yellow: #F5A623;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -395,7 +396,8 @@ header {
   border: 1px solid;
 }
 /* badges — mesmas cores dos cards de contratos no index */
-.badge.pendente   { color: #777;     border-color: #555;     background: rgba(120,120,120,0.08); }
+.badge.pendente   { color: #F5A623;  border-color: #F5A623;  background: rgba(245,166,35,0.10); }
+.badge.atrasado   { color: var(--red); border-color: var(--red); background: rgba(224,92,92,0.12); }
 .badge.nota       { color: #27AE60;  border-color: #27AE60;  background: rgba(39,174,96,0.10); }
 .badge.enviado    { color: #2E9E4F;  border-color: #2E9E4F;  background: rgba(46,158,79,0.10); }
 .badge.assinado   { color: #4A90C8;  border-color: #4A90C8;  background: rgba(74,144,200,0.10); }
@@ -910,7 +912,8 @@ header {
 }
 .pgto-status-badge.quitado { color: var(--green); border-color: var(--green); background: rgba(37,211,102,0.08); }
 .pgto-status-badge.parcial { color: var(--orange); border-color: var(--orange); background: rgba(39,174,96,0.08); }
-.pgto-status-badge.pendente { color: var(--red); border-color: var(--red); background: rgba(224,92,92,0.08); }
+.pgto-status-badge.pendente { color: #F5A623; border-color: #F5A623; background: rgba(245,166,35,0.10); }
+.pgto-status-badge.atrasado { color: var(--red); border-color: var(--red); background: rgba(224,92,92,0.12); }
 .pgto-status-badge.naovence { color: var(--muted); border-color: var(--border2); background: rgba(120,120,120,0.08); }
 .pgto-input-pago {
   background: var(--darker);
@@ -1897,12 +1900,15 @@ function temParcelaAtrasada(ev) {
   if (pago >= total - 0.01) return false; // quitado, não está atrasado
   const registros = getPgtoRegistros(ev);
   // calcular quanto já foi marcado por parcela
+  // fallback: data do evento como vencimento se parcela não tiver vencimento explícito
+  const evDataFallback = ev.ev_data || ev.data_evento || ev.dataEvt || '';
   let acumuladoPago = 0;
   for (const p of parcelas) {
     const recebida = registros.some(function(r) { return r.parcela_idx === p.idx; });
     if (!recebida) {
-      if (p.vencimento) {
-        const vparts = p.vencimento.split('-');
+      const vencStr = p.vencimento || evDataFallback;
+      if (vencStr) {
+        const vparts = vencStr.split('-');
         if (vparts.length === 3) {
           const vDate = new Date(parseInt(vparts[0]), parseInt(vparts[1]) - 1, parseInt(vparts[2]));
           if (vDate < hoje) return true;
@@ -2096,9 +2102,10 @@ function renderPagamentos() {
     const restante = Math.max(0, total - pago);
     const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
     const statusPgto = getStatusPgto(ev);
-    const badgeClass = statusPgto === 'quitado' ? 'quitado' : statusPgto === 'parcial' ? 'parcial' : 'pendente';
-    const badgeTxt = statusPgto === 'quitado' ? 'Quitado' : statusPgto === 'parcial' ? 'Parcial' : 'Pendente';
-    const fillColor = statusPgto === 'quitado' ? '#25D366' : statusPgto === 'parcial' ? '#27AE60' : '#e05c5c';
+    const isAtrasado = statusPgto !== 'quitado' && temParcelaAtrasada(ev);
+    const badgeClass = statusPgto === 'quitado' ? 'quitado' : statusPgto === 'parcial' ? 'parcial' : isAtrasado ? 'atrasado' : 'pendente';
+    const badgeTxt = statusPgto === 'quitado' ? 'Quitado' : statusPgto === 'parcial' ? 'Parcial' : isAtrasado ? 'Atrasado' : 'Pendente';
+    const fillColor = statusPgto === 'quitado' ? '#25D366' : statusPgto === 'parcial' ? '#27AE60' : isAtrasado ? '#e05c5c' : '#F5A623';
     const restanteCor = restante <= 0 ? 'pago' : pago > 0 ? 'parcial' : 'pendente';
     const isOpen = !!_pgtoAbertos[docId];
     const origem = ev._origem === 'nota' ? 'nota' : 'contrato';
