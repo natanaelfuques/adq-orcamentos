@@ -1515,6 +1515,7 @@ function filtrarTag(tag) {
 }
 
 
+function renderEquipamentos() {
   var busca = (document.getElementById('search-input').value || '').toLowerCase().trim();
   var sort = document.getElementById('sort-select').value;
 
@@ -2107,27 +2108,83 @@ function _carregarHistorico(equipId) {
         'retorno':          { label: 'Retorno',      dotClass: 'in' },
         'manutencao':       { label: 'Manutenção',   dotClass: 'manut' }
       };
-      var html = '';
+      var items = [];
       snap.forEach(function(doc) {
         var d = doc.data();
         var ts = d.data && d.data.toDate ? d.data.toDate() : null;
         var dataFmt = ts ? ts.toLocaleDateString('pt-BR') + ' ' + ts.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : '—';
         var info = tipoInfo[d.tipo] || { label: d.tipo, dotClass: '' };
-        html += '<div class="history-item">' +
-          '<div class="history-dot ' + info.dotClass + '"></div>' +
-          '<div class="history-text">' +
-            '<strong>' + info.label + '</strong> · ' + (d.qtd || 0) + ' un' +
-            (d.motivo ? ' <span style="color:#666">— ' + esc(d.motivo) + '</span>' : '') +
-            '<br><span style="color:#444;font-size:0.65rem">' + esc(d.usuario || '') + '</span>' +
-          '</div>' +
-          '<div class="history-date">' + dataFmt + '</div>' +
-        '</div>';
+        items.push(
+          '<div class="history-item">' +
+            '<div class="history-dot ' + info.dotClass + '"></div>' +
+            '<div class="history-text">' +
+              '<strong>' + info.label + '</strong> · ' + (d.qtd || 0) + ' un' +
+              (d.motivo ? ' <span style="color:#666">— ' + esc(d.motivo) + '</span>' : '') +
+              '<br><span style="color:#444;font-size:0.65rem">' + esc(d.usuario || '') + '</span>' +
+            '</div>' +
+            '<div class="history-date">' + dataFmt + '</div>' +
+          '</div>'
+        );
       });
+
+      var VISIBLE_INIT = 2;
+      var visible = Math.min(VISIBLE_INIT, items.length);
+      var hasMore = items.length > visible;
+      var html = items.slice(0, visible).join('');
+
+      if (hasMore) {
+        var hidden = items.slice(visible);
+        html +=
+          '<div id="hist-extra" style="overflow:hidden;max-height:0;transition:max-height 0.35s ease">' +
+            hidden.join('') +
+          '</div>' +
+          '<button id="hist-toggle-btn" onclick="_histToggle(this)" ' +
+            'style="width:100%;background:none;border:none;border-top:1px solid #2a2a2a;margin-top:2px;padding:8px 0 4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;color:#555;font-family:var(--font,sans-serif);font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;transition:color 0.15s" ' +
+            'onmouseenter="_histHover(this,true)" onmouseleave="_histHover(this,false)" ' +
+            'data-open="0">' +
+            '<span id="hist-toggle-label">Ver mais ' + (items.length - visible) + ' registros</span>' +
+            '<svg id="hist-toggle-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.3s"><polyline points="6 9 12 15 18 9"/></svg>' +
+          '</button>';
+      }
+
       container.innerHTML = html;
     })
     .catch(function() {
       container.innerHTML = '<div style="text-align:center;padding:16px;color:#555;font-size:0.78rem">Erro ao carregar histórico.</div>';
     });
+}
+
+// ── Toggle histórico colapsado ──
+function _histHover(btn, on) {
+  if (btn.dataset.open === '1') return; // mantém azul quando aberto
+  btn.style.color = on ? '#4A90D9' : '#555';
+}
+
+function _histToggle(btn) {
+  var extra = document.getElementById('hist-extra');
+  var label = document.getElementById('hist-toggle-label');
+  var arrow = document.getElementById('hist-toggle-arrow');
+  if (!extra) return;
+
+  var isOpen = btn.dataset.open === '1';
+  if (isOpen) {
+    // fechar
+    extra.style.maxHeight = '0';
+    arrow.style.transform = 'rotate(0deg)';
+    btn.dataset.open = '0';
+    btn.style.color = '#555';
+    // recalcular label com contagem
+    var count = extra.querySelectorAll('.history-item').length;
+    label.textContent = 'Ver mais ' + count + ' registros';
+  } else {
+    // abrir — calcula altura real dos itens
+    var scrollH = extra.scrollHeight;
+    extra.style.maxHeight = scrollH + 'px';
+    arrow.style.transform = 'rotate(180deg)';
+    btn.dataset.open = '1';
+    btn.style.color = '#4A90D9';
+    label.textContent = 'Recolher';
+  }
 }
 
 // ── Confirmar Delete ──
