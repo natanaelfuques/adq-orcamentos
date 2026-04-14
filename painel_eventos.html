@@ -423,6 +423,15 @@ header {
   flex: 1;
 }
 
+.card-evento--destaque {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.03em;
+  margin-top: 0;
+}
+
 .card-data-badge {
   font-size: 0.65rem;
   font-weight: 700;
@@ -1525,14 +1534,29 @@ function renderBoard() {
       : colunas[col].filter(function(ev) { return !isPast(ev) && matchesPeriodo(ev, _periodo); });
     var passados = isRealizados ? [] : colunas[col].filter(function(ev) { return isPast(ev); });
 
-    // Sort by date ascending
+    // Sort by date ascending (futuros) or by proximity to today (andamento/concluido)
     function sortByDate(arr) {
       return arr.slice().sort(function(a, b) {
         return (a.ev_data || '') > (b.ev_data || '') ? 1 : -1;
       });
     }
-    futuros = sortByDate(futuros);
-    passados = sortByDate(passados);
+    function sortByProximity(arr) {
+      var today = new Date(); today.setHours(0,0,0,0);
+      return arr.slice().sort(function(a, b) {
+        var da = a.ev_data ? Math.abs(new Date(a.ev_data + 'T00:00:00') - today) : Infinity;
+        var db2 = b.ev_data ? Math.abs(new Date(b.ev_data + 'T00:00:00') - today) : Infinity;
+        return da - db2;
+      });
+    }
+    if (col === 'andamento' || col === 'concluido') {
+      // Merge futuros + passados, sort all by proximity to today
+      var todos = futuros.concat(passados);
+      futuros = sortByProximity(todos);
+      passados = [];
+    } else {
+      futuros = sortByDate(futuros);
+      passados = sortByDate(passados);
+    }
 
     count.textContent = futuros.length + passados.length;
 
@@ -1543,22 +1567,32 @@ function renderBoard() {
 
     var html = '';
 
-    // Group futuros by week/month label
-    var grupos = {};
-    var grupoOrder = [];
-    futuros.forEach(function(ev) {
-      var label = getWeekLabel(ev);
-      if (!grupos[label]) { grupos[label] = []; grupoOrder.push(label); }
-      grupos[label].push(ev);
-    });
+    if (col === 'andamento' || col === 'concluido') {
+      // For these columns, render all sorted by proximity to today, no group separators
+      var today2 = new Date(); today2.setHours(0,0,0,0);
+      futuros.forEach(function(ev) {
+        var evDate = ev.ev_data ? new Date(ev.ev_data + 'T00:00:00') : null;
+        var isPastCard = evDate && evDate < today2;
+        html += buildCard(ev, isPastCard, col);
+      });
+    } else {
+      // Group futuros by week/month label
+      var grupos = {};
+      var grupoOrder = [];
+      futuros.forEach(function(ev) {
+        var label = getWeekLabel(ev);
+        if (!grupos[label]) { grupos[label] = []; grupoOrder.push(label); }
+        grupos[label].push(ev);
+      });
 
-    grupoOrder.forEach(function(label) {
-      html += '<div class="group-separator">' + label + '</div>';
-      grupos[label].forEach(function(ev) { html += buildCard(ev, false, col); });
-    });
+      grupoOrder.forEach(function(label) {
+        html += '<div class="group-separator">' + label + '</div>';
+        grupos[label].forEach(function(ev) { html += buildCard(ev, false, col); });
+      });
 
-    // Passados — exibidos diretamente sem separação
-    passados.forEach(function(ev) { html += buildCard(ev, true, col); });
+      // Passados — exibidos diretamente sem separação
+      passados.forEach(function(ev) { html += buildCard(ev, true, col); });
+    }
 
     body.innerHTML = html;
 
@@ -1864,8 +1898,16 @@ function buildCard(ev, past, col) {
       '<div class="card-summary-left">' +
         (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
         '<div>' +
-          (ev.cli_nome ? '<div class="card-cliente card-field-editable" data-field="cli_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.cli_nome) + '</div>' : '') +
-          '<div class="card-evento card-field-editable" data-field="ev_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+          (ev.nota_id
+            ? (
+                '<div class="card-evento card-evento--destaque card-field-editable" data-field="ev_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+                (ev.cli_nome ? '<div class="card-cliente card-field-editable" data-field="cli_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.cli_nome) + '</div>' : '')
+              )
+            : (
+                (ev.cli_nome ? '<div class="card-cliente card-field-editable" data-field="cli_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.cli_nome) + '</div>' : '') +
+                '<div class="card-evento card-field-editable" data-field="ev_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>'
+              )
+          ) +
         '</div>' +
       '</div>' +
       '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
