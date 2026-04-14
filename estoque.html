@@ -1094,6 +1094,7 @@
       <span class="hd-user" id="user-name"></span>
       <button id="btn-instalar" onclick="instalarApp()" class="btn-hd" title="Instalar app" style="display:none;align-items:center;gap:5px;border-color:var(--gold);color:var(--gold)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Instalar</button>
       <button class="btn-hd" onclick="abrirModalAdd()" title="Novo equipamento" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Equipamento</button>
+      <button class="btn-hd" onclick="abrirModalCategorias()" title="Gerenciar categorias" style="display:flex;align-items:center;gap:5px;border-color:rgba(74,144,217,0.5);color:var(--gold)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Categorias</button>
       <button class="btn-hd danger" onclick="sair()" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
     </div>
   </header>
@@ -1979,6 +1980,276 @@ function toast(msg, isError) {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') fecharTodosModais();
 });
+
+// ── MODAL DE GERENCIAMENTO DE CATEGORIAS ──
+
+// Categorias são armazenadas no Firestore: coleção 'categorias'
+// Cada doc: { nome, icone (svg key), cor, ordem }
+
+var _categoriasCustom = {}; // id -> obj
+var _catEditandoId = null;
+
+// Escuta em tempo real as categorias customizadas
+function iniciarCategorias() {
+  db.collection('categorias').orderBy('ordem').onSnapshot(function(snap) {
+    _categoriasCustom = {};
+    snap.forEach(function(doc) {
+      _categoriasCustom[doc.id] = Object.assign({ id: doc.id }, doc.data());
+    });
+    // Atualizar selects de categoria nos modais abertos (se houver)
+    _atualizarSelectsCat();
+  }, function(err) { console.warn('[Categorias]', err); });
+}
+
+// Retorna array com categorias padrão + custom (únicas por nome)
+function _todasCategorias() {
+  var padrao = ['Som','Iluminação','Microfone','Cabeamento','Estrutura','Vídeo','Potência','Periférico','Veículo','Outros'];
+  var custom = Object.values(_categoriasCustom).map(function(c) { return c.nome; }).filter(Boolean);
+  var todas = padrao.concat(custom.filter(function(n) { return padrao.indexOf(n) === -1; }));
+  return todas;
+}
+
+function _atualizarSelectsCat() {
+  var selects = document.querySelectorAll('.select-categoria');
+  selects.forEach(function(sel) {
+    var val = sel.value;
+    var cats = _todasCategorias();
+    sel.innerHTML = '<option value="">Selecione</option>' + cats.map(function(c) {
+      return '<option value="' + esc(c) + '"' + (c === val ? ' selected' : '') + '>' + esc(c) + '</option>';
+    }).join('');
+  });
+}
+
+function abrirModalCategorias() {
+  fecharTodosModais();
+
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'modal-categorias';
+
+  overlay.innerHTML =
+    '<div class="modal-box" style="max-width:540px">' +
+      '<div class="modal-header">' +
+        '<div class="modal-title">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>' +
+          'Gerenciar Categorias' +
+        '</div>' +
+        '<button class="btn-modal-close" onclick="fecharTodosModais()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+      '</div>' +
+      '<div class="modal-body">' +
+
+        '<!-- Seção: categorias padrão -->' +
+        '<div class="section-title">Categorias Padrão</div>' +
+        '<div id="cat-padrao-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px">' +
+          _renderCatPadraoChips() +
+        '</div>' +
+
+        '<!-- Seção: categorias customizadas -->' +
+        '<div class="section-title" style="display:flex;align-items:center;justify-content:space-between">' +
+          '<span>Categorias Personalizadas</span>' +
+          '<button onclick="_abrirFormNovaCat()" style="background:var(--gold);color:#fff;border:none;border-radius:4px;padding:3px 10px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:4px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova</button>' +
+        '</div>' +
+        '<div id="cat-custom-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">' +
+          _renderCatCustomList() +
+        '</div>' +
+
+        '<!-- Formulário inline de criar/editar categoria -->' +
+        '<div id="cat-form-inline" style="display:none;background:var(--surface2);border:1px solid rgba(74,144,217,0.3);border-radius:7px;padding:16px;margin-top:4px">' +
+          '<div class="section-title" id="cat-form-title">Nova Categoria</div>' +
+          '<div class="form-grid" style="margin-bottom:12px">' +
+            '<div class="form-group" style="margin-bottom:0">' +
+              '<label class="form-label">Nome *</label>' +
+              '<input class="form-input" id="cat-f-nome" placeholder="Ex: DJ Equipment" />' +
+            '</div>' +
+            '<div class="form-group" style="margin-bottom:0">' +
+              '<label class="form-label">Ícone</label>' +
+              '<select class="form-select" id="cat-f-icone">' +
+                EMOJIS_SVG.map(function(e) { return '<option value="' + e.key + '">' + e.key + '</option>'; }).join('') +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px">' +
+            '<button onclick="_salvarCategoria()" style="flex:1;background:var(--gold);color:#fff;border:none;border-radius:4px;padding:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Salvar</button>' +
+            '<button onclick="_cancelarFormCat()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;padding:9px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;cursor:pointer">Cancelar</button>' +
+          '</div>' +
+        '</div>' +
+
+      '</div>' +
+      '<div class="modal-footer" style="justify-content:center">' +
+        '<button class="btn-modal-cancel" onclick="fecharTodosModais()">Fechar</button>' +
+      '</div>' +
+    '</div>';
+
+  overlay.addEventListener('click', function(ev) { if (ev.target === overlay) fecharTodosModais(); });
+  document.body.appendChild(overlay);
+}
+
+function _renderCatPadraoChips() {
+  var padrao = ['Som','Iluminação','Microfone','Cabeamento','Estrutura','Vídeo','Potência','Periférico','Veículo','Outros'];
+  return padrao.map(function(cat) {
+    var svgIcon = CATEGORIAS_SVG[cat] || '';
+    var count = Object.values(_equipamentos).filter(function(e) { return e.categoria === cat; }).length;
+    return '<div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:0.7rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.06em">' +
+      (svgIcon ? '<span style="display:inline-flex;color:#555">' + svgIcon.replace('width="16" height="16"', 'width="12" height="12"') + '</span>' : '') +
+      esc(cat) +
+      (count > 0 ? '<span style="background:rgba(255,255,255,0.07);border-radius:8px;padding:0 5px;font-size:0.6rem;color:#555">' + count + '</span>' : '') +
+      '<span style="font-size:0.55rem;color:#444;margin-left:2px">PADRÃO</span>' +
+    '</div>';
+  }).join('');
+}
+
+function _renderCatCustomList() {
+  var customs = Object.values(_categoriasCustom);
+  if (!customs.length) {
+    return '<div style="text-align:center;padding:20px;color:#444;font-size:0.78rem;font-style:italic">Nenhuma categoria personalizada. Clique em "+ Nova" para criar.</div>';
+  }
+  return customs.map(function(cat) {
+    var count = Object.values(_equipamentos).filter(function(e) { return e.categoria === cat.nome; }).length;
+    var svgFound = EMOJIS_SVG.filter(function(e) { return e.key === cat.icone; })[0];
+    var svgHtml = svgFound ? svgFound.svg.replace('width="20" height="20"', 'width="14" height="14"') : '';
+    return '<div style="display:flex;align-items:center;gap:10px;background:var(--darker);border:1px solid var(--border2);border-radius:6px;padding:10px 14px" id="cat-row-' + cat.id + '">' +
+      '<div style="width:30px;height:30px;background:var(--gold-dim);border:1px solid rgba(74,144,217,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0">' + svgHtml + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text)">' + esc(cat.nome) + '</div>' +
+        '<div style="font-size:0.62rem;color:#555;text-transform:uppercase;letter-spacing:0.06em">' + count + ' equipamento' + (count !== 1 ? 's' : '') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:4px">' +
+        '<button onclick="_editarCategoria(\'' + cat.id + '\')" class="eq-action-btn" title="Renomear/Editar" style="width:28px;height:28px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
+        (count === 0 ?
+          '<button onclick="_confirmarDeleteCat(\'' + cat.id + '\', \'' + esc(cat.nome) + '\')" class="eq-action-btn del" title="Excluir" style="width:28px;height:28px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>' :
+          '<button disabled class="eq-action-btn" title="Não é possível excluir: possui equipamentos" style="width:28px;height:28px;opacity:0.3;cursor:not-allowed"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>'
+        ) +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function _refreshModalCategorias() {
+  var padrao = document.getElementById('cat-padrao-list');
+  var custom = document.getElementById('cat-custom-list');
+  if (padrao) padrao.innerHTML = _renderCatPadraoChips();
+  if (custom) custom.innerHTML = _renderCatCustomList();
+}
+
+function _abrirFormNovaCat() {
+  _catEditandoId = null;
+  document.getElementById('cat-form-title').textContent = 'Nova Categoria';
+  document.getElementById('cat-f-nome').value = '';
+  document.getElementById('cat-f-icone').value = 'box';
+  document.getElementById('cat-form-inline').style.display = 'block';
+  document.getElementById('cat-f-nome').focus();
+}
+
+function _editarCategoria(id) {
+  var cat = _categoriasCustom[id];
+  if (!cat) return;
+  _catEditandoId = id;
+  document.getElementById('cat-form-title').textContent = 'Editar Categoria';
+  document.getElementById('cat-f-nome').value = cat.nome || '';
+  document.getElementById('cat-f-icone').value = cat.icone || 'box';
+  document.getElementById('cat-form-inline').style.display = 'block';
+  document.getElementById('cat-f-nome').focus();
+}
+
+function _cancelarFormCat() {
+  _catEditandoId = null;
+  document.getElementById('cat-form-inline').style.display = 'none';
+}
+
+function _salvarCategoria() {
+  var nome = (document.getElementById('cat-f-nome').value || '').trim();
+  if (!nome) { toast('Informe o nome da categoria.', true); return; }
+
+  // Verificar duplicata
+  var padrao = ['Som','Iluminação','Microfone','Cabeamento','Estrutura','Vídeo','Potência','Periférico','Veículo','Outros'];
+  if (padrao.indexOf(nome) !== -1 && !_catEditandoId) {
+    toast('Esta categoria já existe como padrão.', true); return;
+  }
+  var jaExiste = Object.values(_categoriasCustom).some(function(c) {
+    return c.nome.toLowerCase() === nome.toLowerCase() && c.id !== _catEditandoId;
+  });
+  if (jaExiste) { toast('Já existe uma categoria com esse nome.', true); return; }
+
+  var dados = {
+    nome: nome,
+    icone: document.getElementById('cat-f-icone').value || 'box',
+    ordem: Date.now()
+  };
+
+  var promise;
+  if (_catEditandoId) {
+    // Se nome mudou, atualizar todos os equipamentos dessa categoria
+    var catAnterior = _categoriasCustom[_catEditandoId];
+    var nomeAntigo = catAnterior ? catAnterior.nome : null;
+    promise = db.collection('categorias').doc(_catEditandoId).update(dados).then(function() {
+      if (nomeAntigo && nomeAntigo !== nome) {
+        // Atualizar em batch os equipamentos com o nome antigo
+        var batch = db.batch();
+        Object.values(_equipamentos).forEach(function(eq) {
+          if (eq.categoria === nomeAntigo) {
+            batch.update(db.collection('estoque').doc(eq.id), { categoria: nome });
+          }
+        });
+        return batch.commit();
+      }
+    });
+  } else {
+    promise = db.collection('categorias').add(dados);
+  }
+
+  promise.then(function() {
+    _cancelarFormCat();
+    toast(_catEditandoId ? 'Categoria atualizada!' : 'Categoria criada!');
+    setTimeout(_refreshModalCategorias, 500);
+  }).catch(function(err) {
+    toast('Erro: ' + err.message, true);
+  });
+}
+
+function _confirmarDeleteCat(id, nome) {
+  var count = Object.values(_equipamentos).filter(function(e) { return e.categoria === nome; }).length;
+  if (count > 0) {
+    toast('Não é possível excluir: ' + count + ' equipamento(s) usa(m) essa categoria.', true);
+    return;
+  }
+
+  // Mini confirm inline
+  var row = document.getElementById('cat-row-' + id);
+  if (!row) return;
+  var original = row.innerHTML;
+  row.innerHTML =
+    '<div style="flex:1;font-size:0.8rem;color:var(--red);font-weight:700">Excluir <strong>' + esc(nome) + '</strong>?</div>' +
+    '<div style="display:flex;gap:6px">' +
+      '<button onclick="db.collection(\'categorias\').doc(\'' + id + '\').delete().then(function(){toast(\'Categoria excluída.\');setTimeout(_refreshModalCategorias,400)}).catch(function(e){toast(e.message,true)})" style="background:rgba(224,92,92,0.15);color:var(--red);border:1px solid rgba(224,92,92,0.4);border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;cursor:pointer">Excluir</button>' +
+      '<button onclick="_refreshModalCategorias()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;cursor:pointer">Cancelar</button>' +
+    '</div>';
+  row.style.borderColor = 'rgba(224,92,92,0.35)';
+}
+
+// Hook para incluir categorias customizadas nos selects do modal de equipamento
+// Substitui a função abrirModalForm original para usar select dinâmico
+var _abrirModalFormOrig = abrirModalForm;
+abrirModalForm = function(e) {
+  _abrirModalFormOrig(e);
+  // Após renderizar, trocar o select de categoria pelo dinâmico
+  setTimeout(function() {
+    var sel = document.getElementById('f-cat');
+    if (!sel) return;
+    sel.className = sel.className + ' select-categoria';
+    var cats = _todasCategorias();
+    var currentVal = e.categoria || '';
+    sel.innerHTML = '<option value="">Selecione</option>' + cats.map(function(c) {
+      return '<option value="' + esc(c) + '"' + (c === currentVal ? ' selected' : '') + '>' + esc(c) + '</option>';
+    }).join('');
+  }, 50);
+};
+
+// Iniciar listener de categorias após auth
+var _iniciarEstoqueOrig = iniciarEstoque;
+iniciarEstoque = function() {
+  _iniciarEstoqueOrig();
+  iniciarCategorias();
+};
 </script>
 
 <script>
