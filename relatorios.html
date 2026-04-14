@@ -2220,7 +2220,7 @@ function renderPagamentos() {
         '<div class="pgto-resumo-row"><span style="color:var(--muted)">Data do evento</span><span>' + datExib + '</span></div>' +
         (contatoEvHTML !== '—' ? '<div class="pgto-resumo-row"><span style="color:var(--muted)">Contato</span><span>' + contatoEvHTML + '</span></div>' : '') +
         faltaRow +
-        (ev.pgto_custom ? '<div class="pgto-resumo-row"><span style="color:var(--muted)">Obs.</span><span style="font-size:0.75rem;color:var(--muted);max-width:200px;text-align:right">' + ev.pgto_custom + '</span></div>' : '') +
+        (ev.pgto_custom ? '<div class="pgto-resumo-row" style="align-items:flex-start"><span style="color:var(--muted);white-space:nowrap;padding-right:8px">Obs.</span><span style="font-size:0.75rem;color:var(--muted);text-align:right;flex:1;word-break:break-word">' + ev.pgto_custom + '</span></div>' : '') +
       '</div>';
 
     // Calc HTML
