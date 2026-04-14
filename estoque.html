@@ -509,6 +509,46 @@
     font-style: italic;
   }
 
+  /* ── TAGS CLICÁVEIS ── */
+  .eq-tag-clickable {
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
+  }
+  .eq-tag-clickable:hover {
+    border-color: rgba(74,144,217,0.5);
+    color: var(--gold);
+    background: var(--gold-dim);
+    transform: translateY(-1px);
+  }
+  .eq-tag-clickable.tag-ativa {
+    border-color: var(--gold) !important;
+    background: rgba(74,144,217,0.18) !important;
+    color: var(--gold) !important;
+  }
+  .tag-filtro-badge {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: rgba(74,144,217,0.1);
+    border: 1px solid rgba(74,144,217,0.35);
+    border-radius: 20px;
+    padding: 4px 10px 4px 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .tag-filtro-badge:hover { background: rgba(74,144,217,0.18); }
+  .tag-filtro-badge .tbf-x {
+    font-size: 0.85rem;
+    line-height: 1;
+    color: rgba(74,144,217,0.7);
+  }
+
   /* ── EMPTY STATE ── */
   .empty-state {
     grid-column: 1 / -1;
@@ -1198,6 +1238,12 @@
       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </div>
 
+    <div id="tag-filtro-badge" class="tag-filtro-badge" onclick="filtrarTag(null)" title="Remover filtro de tag">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <span id="tag-filtro-label">Tag</span>
+      <span class="tbf-x">×</span>
+    </div>
+
     <div class="view-toggle">
       <button class="view-btn active" id="btn-view-grid" onclick="setView('grid')" title="Grade">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -1256,6 +1302,7 @@ var _viewAtual = 'grid';
 var _editandoId = null;
 var _emojiSelecionado = 'mixer';
 var _filtroStat = null; // 'disponivel' | 'em-uso' | 'manutencao' | null
+var _filtroTag = null;  // tag personalizada selecionada
 
 var CATEGORIAS_ICONE = {
   'Som': '🔊', 'Iluminação': '💡', 'Microfone': '🎤',
@@ -1444,7 +1491,30 @@ function filtrarStat(tipo) {
   renderEquipamentos();
 }
 
-function renderEquipamentos() {
+function filtrarTag(tag) {
+  // toggle: clicar na mesma tag desativa
+  _filtroTag = (_filtroTag === tag) ? null : tag;
+
+  // atualizar badge na toolbar
+  var badge = document.getElementById('tag-filtro-badge');
+  var label = document.getElementById('tag-filtro-label');
+  if (_filtroTag && badge && label) {
+    var nomeTag = _filtroTag
+      .replace('__sem-estoque__', 'Sem estoque')
+      .replace('__manutencao__', 'Em manutenção')
+      .replace(/^__valor-(.+)__$/, 'R$ $1/un')
+      .replace(/^__modelo-(.+)__$/, '$1')
+      .replace(/^__tag-(.+)__$/, '$1');
+    label.textContent = nomeTag;
+    badge.style.display = 'flex';
+  } else if (badge) {
+    badge.style.display = 'none';
+  }
+
+  renderEquipamentos();
+}
+
+
   var busca = (document.getElementById('search-input').value || '').toLowerCase().trim();
   var sort = document.getElementById('sort-select').value;
 
@@ -1458,7 +1528,24 @@ function renderEquipamentos() {
     if (_filtroStat === 'disponivel') matchStat = (e.qtd_disponivel || 0) > 0;
     if (_filtroStat === 'em-uso')     matchStat = (e.qtd_em_uso || 0) > 0;
     if (_filtroStat === 'manutencao') matchStat = (e.qtd_manutencao || 0) > 0;
-    return matchCat && matchBusca && matchStat;
+
+    var matchTag = true;
+    if (_filtroTag) {
+      if (_filtroTag === '__sem-estoque__') matchTag = (e.qtd_disponivel || 0) === 0 && (e.qtd_total || 0) > 0;
+      else if (_filtroTag === '__manutencao__') matchTag = (e.qtd_manutencao || 0) > 0;
+      else if (_filtroTag.startsWith('__valor-')) {
+        var fVal = _filtroTag.replace(/^__valor-(.+)__$/, '$1');
+        matchTag = String(e.valor_unitario || '') === fVal;
+      } else if (_filtroTag.startsWith('__modelo-')) {
+        var fMod = _filtroTag.replace(/^__modelo-(.+)__$/, '$1');
+        matchTag = (e.modelo || '') === fMod;
+      } else if (_filtroTag.startsWith('__tag-')) {
+        var fTag = _filtroTag.replace(/^__tag-(.+)__$/, '$1');
+        matchTag = (e.tags || '').toLowerCase().split(',').map(function(t){ return t.trim(); }).indexOf(fTag) !== -1;
+      }
+    }
+
+    return matchCat && matchBusca && matchStat && matchTag;
   });
 
   // Sort
@@ -1542,10 +1629,23 @@ function buildCard(e) {
   var cardClass = disp === 0 ? ' status-alerta' : (disp === total ? ' status-ok' : '');
 
   var tags = '';
-  if (disp === 0 && total > 0) tags += '<span class="eq-tag alerta">Sem estoque</span>';
-  if (manut > 0) tags += '<span class="eq-tag manut">' + manut + ' em manutenção</span>';
-  if (e.valor_unitario) tags += '<span class="eq-tag info">R$ ' + Number(e.valor_unitario).toLocaleString('pt-BR') + '/un</span>';
-  if (e.modelo) tags += '<span class="eq-tag">' + esc(e.modelo) + '</span>';
+  if (disp === 0 && total > 0) tags += '<span class="eq-tag alerta eq-tag-clickable' + (_filtroTag === '__sem-estoque__' ? ' tag-ativa' : '') + '" onclick="event.stopPropagation();filtrarTag(\'__sem-estoque__\')" title="Filtrar: Sem estoque">Sem estoque</span>';
+  if (manut > 0) tags += '<span class="eq-tag manut eq-tag-clickable' + (_filtroTag === '__manutencao__' ? ' tag-ativa' : '') + '" onclick="event.stopPropagation();filtrarTag(\'__manutencao__\')" title="Filtrar: Em manutenção">' + manut + ' em manutenção</span>';
+  if (e.valor_unitario) {
+    var vStr = Number(e.valor_unitario).toLocaleString('pt-BR');
+    tags += '<span class="eq-tag info eq-tag-clickable' + (_filtroTag === '__valor-' + e.valor_unitario + '__' ? ' tag-ativa' : '') + '" onclick="event.stopPropagation();filtrarTag(\'__valor-' + e.valor_unitario + '__\')" title="Filtrar por valor">R$ ' + vStr + '/un</span>';
+  }
+  if (e.modelo) tags += '<span class="eq-tag eq-tag-clickable' + (_filtroTag === '__modelo-' + esc(e.modelo) + '__' ? ' tag-ativa' : '') + '" onclick="event.stopPropagation();filtrarTag(\'__modelo-' + esc(e.modelo) + '__\')" title="Filtrar: ' + esc(e.modelo) + '">' + esc(e.modelo) + '</span>';
+
+  // Tags personalizadas do campo e.tags (separadas por vírgula)
+  if (e.tags) {
+    e.tags.split(',').forEach(function(t) {
+      var tv = t.trim();
+      if (!tv) return;
+      var tvKey = '__tag-' + tv.toLowerCase() + '__';
+      tags += '<span class="eq-tag eq-tag-clickable' + (_filtroTag === tvKey ? ' tag-ativa' : '') + '" onclick="event.stopPropagation();filtrarTag(\'' + tvKey + '\')" title="Filtrar: ' + esc(tv) + '">' + esc(tv) + '</span>';
+    });
+  }
 
   return '<div class="eq-card' + cardClass + '" onclick="abrirDetalhe(\'' + e.id + '\')" style="cursor:pointer">' +
     '<div class="eq-status-bar ' + statusBarClass + '"></div>' +
