@@ -1149,7 +1149,10 @@ function renderOrcamento(doc) {
   document.getElementById('cb-nome').textContent = d.nome_cliente || d.nome || '—';
   document.getElementById('cb-evento').textContent = [d.tipo_evento || d.evento || '', d.qtd_pessoas || ''].filter(Boolean).join(' · ');
   document.getElementById('cb-local').textContent = d.local_evento || d.local || '—';
-  document.getElementById('cb-data').textContent = fmtData(d.data_evento || d.dataEvt || '');
+  var _dataInicio = fmtData(d.data_evento || d.dataEvt || '');
+  var _dataFimRaw = d.dataFim || d.data_fim || '';
+  var _dataFimFmt = (d.multidia && _dataFimRaw) ? fmtData(_dataFimRaw) : '';
+  document.getElementById('cb-data').textContent = _dataFimFmt ? _dataInicio + ' a ' + _dataFimFmt : _dataInicio;
 
   // Hero data — usa data de emissão (criadoEm), não a data do evento
   const emissaoDate = d.criadoEm ? (d.criadoEm.toDate ? d.criadoEm.toDate() : new Date(d.criadoEm)) : null;

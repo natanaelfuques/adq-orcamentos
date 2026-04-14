@@ -5852,6 +5852,8 @@ function coletarDadosOrcamento() {
     local: base.local_evento,
     local_evento_maps: base.local_evento_maps || '',
     dataEvt: base.data_evento,
+    multidia: document.getElementById('chk_multidia') ? !!document.getElementById('chk_multidia').checked : false,
+    dataFim:  (document.getElementById('chk_multidia') && document.getElementById('chk_multidia').checked && document.getElementById('data_fim')) ? document.getElementById('data_fim').value : '',
     valorTotal: valorTotal,
     opcoes: opcoes,
     aprovado: false
