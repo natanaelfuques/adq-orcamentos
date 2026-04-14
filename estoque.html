@@ -215,7 +215,7 @@
   .toolbar-search {
     position: relative;
     flex: 1;
-    min-width: 200px;
+    min-width: 120px;
   }
   .toolbar-search input {
     width: 100%;
@@ -1103,8 +1103,12 @@
     .equip-grid { grid-template-columns: 1fr; padding: 0 12px 24px; }
     .kits-grid { grid-template-columns: 1fr; }
     .toolbar { padding: 12px; gap: 8px; flex-wrap: wrap; }
+    .toolbar-search { min-width: 0; width: 100%; flex: 1 1 100%; }
     .cat-tabs { padding: 0 12px 12px; }
-    .stats-bar { padding: 10px 12px; gap: 12px; }
+    .stats-bar { padding: 10px 12px; gap: 8px; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+    .stats-bar::-webkit-scrollbar { display: none; }
+    .stat-sep { flex-shrink: 0; }
+    .stat-item { flex-shrink: 0; }
     header { padding: 4px 10px; gap: 6px; }
     .hd-left .hd-title { font-size: 1rem; }
     .hd-sub { display: none; }
@@ -1117,6 +1121,11 @@
     .kit-folder-eq-row { max-height: none; }
     .kit-folder-body { padding: 12px 14px 14px; }
     .kit-folder-preview { grid-template-columns: repeat(4, 1fr); height: 44px; }
+    .equip-list { padding: 0 12px 24px; }
+    .kits-grid { gap: 10px; }
+    .kit-folder-name { font-size: 0.95rem; white-space: normal; }
+    .kit-folder-meta { gap: 4px; }
+    .filter-btn { padding: 8px 10px; font-size: 0.68rem; }
   }
 
   /* ── VIEW TOGGLE ── */
@@ -1288,7 +1297,7 @@
 
   .kits-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
     gap: 14px;
   }
 
