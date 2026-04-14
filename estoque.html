@@ -1141,6 +1141,297 @@
     transition: background 0.15s;
   }
   .btn-confirm-del:hover { background: rgba(224,92,92,0.3); }
+
+  /* ── KITS SECTION ── */
+  .kits-section {
+    padding: 0 24px 20px;
+  }
+  .kits-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border2);
+  }
+  .kits-section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .btn-novo-kit {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    border-radius: 4px;
+    padding: 0 10px;
+    height: 26px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-novo-kit:hover { border-color: var(--gold); color: var(--gold); }
+
+  .kits-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* Kit folder card */
+  .kit-folder {
+    width: 148px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+    user-select: none;
+    position: relative;
+  }
+  .kit-folder:hover { border-color: #444; transform: translateY(-2px); }
+  .kit-folder.drag-over-kit {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+    transform: translateY(-2px);
+  }
+  .kit-folder-top-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), rgba(74,144,217,0.3));
+  }
+  .kit-folder-body {
+    padding: 10px 12px 12px;
+  }
+  .kit-folder-preview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    height: 56px;
+    margin-bottom: 10px;
+    background: var(--surface2);
+    border-radius: 5px;
+    padding: 6px;
+  }
+  .kit-preview-item {
+    background: var(--darker);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+  }
+  .kit-preview-empty {
+    background: var(--darker);
+    border-radius: 4px;
+    border: 1px dashed var(--border2);
+    opacity: 0.4;
+  }
+  .kit-folder-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+  .kit-folder-count {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .kit-folder-status {
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+  .kit-folder-status.warn { background: var(--amber); }
+  .kit-folder-status.red  { background: var(--red); }
+
+  /* novo kit btn */
+  .kit-novo-card {
+    width: 148px;
+    height: 116px;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #444;
+    transition: border-color 0.15s, color 0.15s;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .kit-novo-card:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* KIT MODAL */
+  .kit-modal-box {
+    background: var(--dark);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.2s ease;
+  }
+  .kit-modal-drop {
+    min-height: 80px;
+    background: var(--surface2);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-content: flex-start;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .kit-modal-drop.drag-over {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+  }
+  .kit-modal-drop-empty {
+    width: 100%;
+    text-align: center;
+    font-size: 0.68rem;
+    color: #444;
+    padding: 20px 0;
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .kit-item-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 6px 9px 6px 8px;
+    cursor: grab;
+    transition: border-color 0.15s;
+  }
+  .kit-item-chip:hover { border-color: #555; }
+  .kit-item-chip.dragging { opacity: 0.3; }
+  .kit-item-chip-icon {
+    width: 22px;
+    height: 22px;
+    background: var(--gold-dim);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .kit-item-chip-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.03em;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .kit-item-chip-remove {
+    background: transparent;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .kit-item-chip-remove:hover { color: var(--red); }
+
+  /* equipamentos section label */
+  .equip-section-title {
+    padding: 0 24px;
+    margin-bottom: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid var(--border2);
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .equip-section-title span {
+    font-size: 0.6rem;
+    color: #444;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+
+  /* kit badge no card de equipamento */
+  .eq-kit-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .eq-kit-badge {
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(74,144,217,0.25);
+    color: var(--gold);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .eq-kit-badge:hover { background: rgba(74,144,217,0.18); }
+
+  /* draggable eq icon */
+  .eq-card[draggable="true"] { cursor: grab; }
+  .eq-card[draggable="true"]:active { cursor: grabbing; }
+  .eq-card.dragging-eq { opacity: 0.35; }
+
+  @media (max-width: 600px) {
+    .kits-section { padding: 0 12px 16px; }
+    .kit-folder { width: 130px; }
+    .kit-novo-card { width: 130px; height: 106px; }
+  }
 </style>
 </head>
 <body>
@@ -1196,6 +1487,23 @@
       <button class="btn-hd danger" onclick="sair()" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
     </div>
   </header>
+
+  <!-- KITS SECTION -->
+  <div class="kits-section" id="kits-section">
+    <div class="kits-section-header">
+      <div class="kits-section-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Kits
+      </div>
+      <button class="btn-novo-kit" onclick="abrirModalNovoKit()">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo kit
+      </button>
+    </div>
+    <div class="kits-grid" id="kits-grid">
+      <!-- renderizado por JS -->
+    </div>
+  </div>
 
   <!-- STATS BAR -->
   <div class="stats-bar">
@@ -1267,6 +1575,15 @@
     <button class="cat-tab active" data-cat="todos" onclick="filtrarCategoria('todos', this)">
       Todos <span class="cat-count" id="cnt-todos">0</span>
     </button>
+  </div>
+
+  <!-- SECTION LABEL EQUIPAMENTOS -->
+  <div class="equip-section-title" id="equip-section-title">
+    <div style="display:flex;align-items:center;gap:7px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Equipamentos
+    </div>
+    <span>Arraste um card para um kit acima</span>
   </div>
 
   <!-- GRID VIEW -->
@@ -2631,5 +2948,377 @@ function instalarApp() {
   }
 })();
 </script>
+<!-- ───── MODAL: KIT ───── -->
+<div id="kit-modal-overlay" class="modal-overlay" style="display:none" onclick="fecharModalKit(event)">
+  <div class="kit-modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="kit-modal-title">Novo Kit</div>
+      <button class="btn-modal-close" onclick="fecharModalKit(null)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nome do kit</label>
+        <input type="text" class="form-input" id="kit-nome" placeholder="Ex: Kit de Som #1" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição (opcional)</label>
+        <input type="text" class="form-input" id="kit-desc" placeholder="PA completo, shows médios..." />
+      </div>
+
+      <div class="form-label" style="margin-bottom:8px">Equipamentos no kit</div>
+      <div class="kit-modal-drop" id="kit-drop-zone"
+        ondragover="kitDropZoneOver(event)"
+        ondragleave="kitDropZoneLeave(event)"
+        ondrop="kitDropZoneDrop(event)">
+        <div class="kit-modal-drop-empty" id="kit-drop-empty">Arraste equipamentos para cá</div>
+      </div>
+
+      <div class="form-label" style="margin-top:14px;margin-bottom:8px">Adicionar equipamento</div>
+      <div style="position:relative">
+        <input type="text" class="form-input" id="kit-search-eq" placeholder="Buscar equipamento..." oninput="renderKitSearchResults()" />
+      </div>
+      <div id="kit-search-results" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="fecharModalKit(null)">Cancelar</button>
+      <button class="btn-modal-save" onclick="salvarKit()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvar kit
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── KITS: Estado ──
+var _kits = {};
+var _kitEditandoId = null;
+var _kitItensAtual = []; // [{equipId, qtd}]
+var _draggingEqId = null;
+
+// ── KITS: Firestore listener ──
+function iniciarKits() {
+  db.collection('kits').onSnapshot(function(snap) {
+    _kits = {};
+    snap.forEach(function(doc) {
+      _kits[doc.id] = Object.assign({ id: doc.id }, doc.data());
+    });
+    renderKits();
+    // re-render equipamentos para atualizar badges de kit
+    if (Object.keys(_equipamentos).length > 0) renderEquipamentos();
+  }, function(err) {
+    console.error('[Kits]', err);
+  });
+}
+
+// ── KITS: Render grid ──
+function renderKits() {
+  var grid = document.getElementById('kits-grid');
+  if (!grid) return;
+
+  var kitsArr = Object.values(_kits);
+  var html = '';
+
+  kitsArr.forEach(function(kit) {
+    var itens = Array.isArray(kit.itens) ? kit.itens : [];
+    var count = itens.length;
+    var statusClass = '';
+    var temZero = itens.some(function(it) {
+      var eq = _equipamentos[it.equipId];
+      return eq && (eq.qtd_disponivel || 0) === 0;
+    });
+    var temWarn = itens.some(function(it) {
+      var eq = _equipamentos[it.equipId];
+      return eq && (eq.qtd_manutencao || 0) > 0;
+    });
+    if (temZero) statusClass = 'red';
+    else if (temWarn) statusClass = 'warn';
+
+    // Preview: até 4 ícones SVG
+    var previewHtml = '';
+    var shown = itens.slice(0, 4);
+    shown.forEach(function(it) {
+      var eq = _equipamentos[it.equipId];
+      if (!eq) return;
+      var svgStr = _getEqSvg(eq.emoji, 13);
+      previewHtml += '<div class="kit-preview-item">' + svgStr + '</div>';
+    });
+    // preencher grid vazio
+    for (var i = shown.length; i < 4; i++) {
+      previewHtml += '<div class="kit-preview-empty"></div>';
+    }
+
+    html += '<div class="kit-folder" id="kit-card-' + esc(kit.id) + '"' +
+      ' ondragover="kitFolderOver(event,\'' + esc(kit.id) + '\')"' +
+      ' ondragleave="kitFolderLeave(event,\'' + esc(kit.id) + '\')"' +
+      ' ondrop="kitFolderDrop(event,\'' + esc(kit.id) + '\')"' +
+      ' onclick="abrirModalEditarKit(\'' + esc(kit.id) + '\')">' +
+      '<div class="kit-folder-top-bar"></div>' +
+      '<div class="kit-folder-body">' +
+        '<div class="kit-folder-preview">' + previewHtml + '</div>' +
+        '<div class="kit-folder-name" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</div>' +
+        '<div class="kit-folder-count">' + count + ' ' + (count === 1 ? 'item' : 'itens') + '</div>' +
+      '</div>' +
+      '<div class="kit-folder-status' + (statusClass ? ' ' + statusClass : '') + '"></div>' +
+    '</div>';
+  });
+
+  // Botão novo kit
+  html += '<div class="kit-novo-card" onclick="abrirModalNovoKit()">' +
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+    'Novo kit' +
+  '</div>';
+
+  grid.innerHTML = html;
+}
+
+// ── Drag: eq card → kit folder ──
+function setupEqCardDrag(cardEl, eqId) {
+  cardEl.setAttribute('draggable', 'true');
+  cardEl.addEventListener('dragstart', function(ev) {
+    _draggingEqId = eqId;
+    ev.dataTransfer.effectAllowed = 'copy';
+    setTimeout(function() { cardEl.classList.add('dragging-eq'); }, 0);
+  });
+  cardEl.addEventListener('dragend', function() {
+    _draggingEqId = null;
+    cardEl.classList.remove('dragging-eq');
+    document.querySelectorAll('.kit-folder.drag-over-kit').forEach(function(el) {
+      el.classList.remove('drag-over-kit');
+    });
+  });
+}
+
+function kitFolderOver(ev, kitId) {
+  if (!_draggingEqId) return;
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect = 'copy';
+  var el = document.getElementById('kit-card-' + kitId);
+  if (el) el.classList.add('drag-over-kit');
+}
+function kitFolderLeave(ev, kitId) {
+  var el = document.getElementById('kit-card-' + kitId);
+  if (el) el.classList.remove('drag-over-kit');
+}
+function kitFolderDrop(ev, kitId) {
+  ev.preventDefault();
+  ev.stopPropagation();
+  var el = document.getElementById('kit-card-' + kitId);
+  if (el) el.classList.remove('drag-over-kit');
+  if (!_draggingEqId) return;
+
+  var kit = _kits[kitId];
+  if (!kit) return;
+  var itens = Array.isArray(kit.itens) ? kit.itens.slice() : [];
+  var jaExiste = itens.some(function(it) { return it.equipId === _draggingEqId; });
+  if (jaExiste) {
+    toast('Equipamento já está neste kit.');
+    return;
+  }
+  itens.push({ equipId: _draggingEqId, qtd: 1 });
+  db.collection('kits').doc(kitId).update({ itens: itens })
+    .then(function() { toast('Adicionado ao ' + (kit.nome || 'kit') + '!'); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+  _draggingEqId = null;
+}
+
+// ── Patch buildCard para suportar drag + badges de kit ──
+var _buildCardOrig = buildCard;
+buildCard = function(e) {
+  var html = _buildCardOrig(e);
+  // Inject draggable wrapper logic after render — handled via post-render patch
+  return html;
+};
+
+// Patch renderGrid para adicionar drag e badges após render
+var _renderGridOrig = renderGrid;
+renderGrid = function(equips) {
+  _renderGridOrig(equips);
+  // Adicionar drag a cada card
+  var grid = document.getElementById('equip-grid');
+  if (!grid) return;
+  var cards = grid.querySelectorAll('.eq-card');
+  cards.forEach(function(card) {
+    var onclick = card.getAttribute('onclick') || '';
+    var match = onclick.match(/abrirDetalhe\('([^']+)'\)/);
+    if (!match) return;
+    var eqId = match[1];
+    setupEqCardDrag(card, eqId);
+    // Inject kit badges
+    var kitBadges = _getKitBadgesForEq(eqId);
+    if (kitBadges) {
+      var body = card.querySelector('.eq-card-body');
+      if (body) {
+        var badgeDiv = document.createElement('div');
+        badgeDiv.className = 'eq-kit-badges';
+        badgeDiv.innerHTML = kitBadges;
+        var tagsEl = body.querySelector('.eq-tags');
+        var obsEl = body.querySelector('.eq-obs');
+        if (tagsEl) { body.insertBefore(badgeDiv, tagsEl); }
+        else if (obsEl) { body.insertBefore(badgeDiv, obsEl); }
+        else { body.appendChild(badgeDiv); }
+      }
+    }
+  });
+};
+
+function _getKitBadgesForEq(eqId) {
+  var html = '';
+  Object.values(_kits).forEach(function(kit) {
+    if (!Array.isArray(kit.itens)) return;
+    var found = kit.itens.some(function(it) { return it.equipId === eqId; });
+    if (found) {
+      html += '<span class="eq-kit-badge" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</span>';
+    }
+  });
+  return html;
+}
+
+// ── Modal Kit ──
+function abrirModalNovoKit() {
+  _kitEditandoId = null;
+  _kitItensAtual = [];
+  document.getElementById('kit-modal-title').textContent = 'Novo Kit';
+  document.getElementById('kit-nome').value = '';
+  document.getElementById('kit-desc').value = '';
+  document.getElementById('kit-search-eq').value = '';
+  renderKitDropZone();
+  renderKitSearchResults();
+  document.getElementById('kit-modal-overlay').style.display = 'flex';
+}
+
+function abrirModalEditarKit(kitId) {
+  var kit = _kits[kitId];
+  if (!kit) return;
+  _kitEditandoId = kitId;
+  _kitItensAtual = Array.isArray(kit.itens) ? kit.itens.slice() : [];
+  document.getElementById('kit-modal-title').textContent = esc(kit.nome || 'Kit');
+  document.getElementById('kit-nome').value = kit.nome || '';
+  document.getElementById('kit-desc').value = kit.descricao || '';
+  document.getElementById('kit-search-eq').value = '';
+  renderKitDropZone();
+  renderKitSearchResults();
+  document.getElementById('kit-modal-overlay').style.display = 'flex';
+}
+
+function fecharModalKit(ev) {
+  if (ev && ev.target !== document.getElementById('kit-modal-overlay')) return;
+  document.getElementById('kit-modal-overlay').style.display = 'none';
+}
+
+function renderKitDropZone() {
+  var zone = document.getElementById('kit-drop-zone');
+  var emptyMsg = document.getElementById('kit-drop-empty');
+  if (!zone) return;
+  // remove chips existentes
+  zone.querySelectorAll('.kit-item-chip').forEach(function(el) { el.remove(); });
+  if (_kitItensAtual.length === 0) {
+    if (emptyMsg) emptyMsg.style.display = 'block';
+  } else {
+    if (emptyMsg) emptyMsg.style.display = 'none';
+    _kitItensAtual.forEach(function(it) {
+      var eq = _equipamentos[it.equipId];
+      if (!eq) return;
+      var chip = document.createElement('div');
+      chip.className = 'kit-item-chip';
+      chip.setAttribute('data-id', it.equipId);
+      chip.innerHTML =
+        '<div class="kit-item-chip-icon">' + _getEqSvg(eq.emoji, 13) + '</div>' +
+        '<span class="kit-item-chip-name" title="' + esc(eq.nome || '') + '">' + esc(eq.nome || 'Equip.') + '</span>' +
+        '<button class="kit-item-chip-remove" onclick="removerItemKit(\'' + esc(it.equipId) + '\')" title="Remover do kit">' +
+          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>';
+      zone.appendChild(chip);
+    });
+  }
+}
+
+function removerItemKit(eqId) {
+  _kitItensAtual = _kitItensAtual.filter(function(it) { return it.equipId !== eqId; });
+  renderKitDropZone();
+}
+
+function renderKitSearchResults() {
+  var busca = (document.getElementById('kit-search-eq').value || '').toLowerCase().trim();
+  var container = document.getElementById('kit-search-results');
+  if (!container) return;
+  var equips = Object.values(_equipamentos).filter(function(e) {
+    if (!busca) return true;
+    return (e.nome || '').toLowerCase().includes(busca) ||
+           (e.categoria || '').toLowerCase().includes(busca);
+  });
+  if (equips.length === 0 && busca) {
+    container.innerHTML = '<div style="font-size:0.72rem;color:#444;padding:8px 0;text-align:center;font-family:\'Barlow Condensed\',sans-serif;text-transform:uppercase;letter-spacing:0.06em">Nenhum equipamento encontrado</div>';
+    return;
+  }
+  container.innerHTML = equips.slice(0, 12).map(function(e) {
+    var jaNoKit = _kitItensAtual.some(function(it) { return it.equipId === e.id; });
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:5px;cursor:' + (jaNoKit ? 'default' : 'pointer') + ';opacity:' + (jaNoKit ? '0.4' : '1') + '"' +
+      (jaNoKit ? '' : ' onclick="adicionarItemKit(\'' + esc(e.id) + '\')"') + '>' +
+      '<div style="width:28px;height:28px;background:var(--gold-dim);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0">' + _getEqSvg(e.emoji, 14) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(e.nome || 'Equip.') + '</div>' +
+        '<div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">' + esc(e.categoria || '') + '</div>' +
+      '</div>' +
+      (jaNoKit
+        ? '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;color:#444;text-transform:uppercase;letter-spacing:0.06em">No kit</div>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+      ) +
+    '</div>';
+  }).join('');
+}
+
+function adicionarItemKit(eqId) {
+  var jaNoKit = _kitItensAtual.some(function(it) { return it.equipId === eqId; });
+  if (jaNoKit) return;
+  _kitItensAtual.push({ equipId: eqId, qtd: 1 });
+  renderKitDropZone();
+  renderKitSearchResults();
+}
+
+// Drop zone: allow dragover inside modal
+document.addEventListener('DOMContentLoaded', function() {
+  var zone = document.getElementById('kit-drop-zone');
+  if (zone) {
+    zone.addEventListener('dragover', function(ev) { ev.preventDefault(); });
+    zone.addEventListener('drop', function(ev) {
+      ev.preventDefault();
+      if (_draggingEqId) adicionarItemKit(_draggingEqId);
+    });
+  }
+});
+
+function salvarKit() {
+  var nome = (document.getElementById('kit-nome').value || '').trim();
+  if (!nome) { toast('Informe um nome para o kit.', true); return; }
+  var dados = {
+    nome: nome,
+    descricao: (document.getElementById('kit-desc').value || '').trim(),
+    itens: _kitItensAtual,
+    _atualizado: Date.now()
+  };
+  var promise;
+  if (_kitEditandoId) {
+    promise = db.collection('kits').doc(_kitEditandoId).update(dados);
+  } else {
+    dados._criado = Date.now();
+    promise = db.collection('kits').add(dados);
+  }
+  promise.then(function() {
+    document.getElementById('kit-modal-overlay').style.display = 'none';
+    toast(_kitEditandoId ? 'Kit atualizado!' : 'Kit criado!');
+  }).catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+// ── Iniciar kits junto com estoque ──
+var _iniciarEstoqueOrigKit = iniciarEstoque;
+iniciarEstoque = function() {
+  _iniciarEstoqueOrigKit();
+  iniciarKits();
+};
+</script>
+
 </body>
 </html>
