@@ -1508,11 +1508,32 @@ header {
           <label>Data do Evento</label>
           <input type="date" id="data_evento"
             style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
-            onchange="sincronizarDataDate(this)" />
+            onchange="sincronizarDataDate(this);_atualizarDuracaoEvento()" />
         </div>
         <div>
           <label>WhatsApp do Cliente</label>
           <input type="tel" id="whatsapp_cliente" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20" />
+        </div>
+      </div>
+      <!-- Toggle multi-dia -->
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+        <label class="include-toggle" onclick="event.stopPropagation();_toggleMultiDia(this.querySelector('input'))">
+          <input type="checkbox" id="chk_multidia" onchange="_toggleMultiDia(this)" />
+          <span>Evento com mais de um dia</span>
+        </label>
+      </div>
+      <!-- Painel data_fim (oculto por padrão) -->
+      <div id="painel_data_fim" style="display:none;margin-top:10px">
+        <div class="grid-2">
+          <div>
+            <label>Data de Término</label>
+            <input type="date" id="data_fim"
+              style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
+              onchange="_atualizarDuracaoEvento()" />
+          </div>
+          <div style="display:flex;align-items:flex-end;padding-bottom:2px">
+            <span id="label_duracao" style="font-size:0.8rem;color:var(--gold);font-weight:600;letter-spacing:0.04em"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -3020,11 +3041,15 @@ function salvarOrcamentoCompleto() {
     });
   }
 
+  const _multidiaChk = document.getElementById('chk_multidia');
+  const _dataFimEl   = document.getElementById('data_fim');
   const dados = Object.assign(base, {
     nome: nome,
     evento: document.getElementById('tipo_evento').value.trim(),
     local:  document.getElementById('local_evento').value.trim(),
     dataEvt: document.getElementById('data_evento').value,
+    multidia: !!(_multidiaChk && _multidiaChk.checked),
+    dataFim:  (_multidiaChk && _multidiaChk.checked && _dataFimEl) ? _dataFimEl.value : '',
     opcoes
   });
 
@@ -3923,6 +3948,8 @@ function _salvarRascunhoOrcamento() {
       tipo_evento:  (document.getElementById('tipo_evento')  || {}).value || '',
       local_evento: (document.getElementById('local_evento') || {}).value || '',
       data_evento:  (document.getElementById('data_evento')  || {}).value || '',
+      multidia:    !!(document.getElementById('chk_multidia') || {}).checked,
+      data_fim:    (document.getElementById('data_fim') || {}).value || '',
       // Checkboxes de inclusão
       inc_cliente:   !!(document.getElementById('inc_cliente')   || {}).checked,
       inc_op1:       !!(document.getElementById('inc_op1')       || {}).checked,
@@ -4013,6 +4040,14 @@ function _aplicarRascunhoOrcamento() {
     set('local_evento', d.local_evento);
     set('local_evento_maps', d.local_evento_maps || ''); _atualizarBtnMapsOrc();
     set('data_evento',  d.data_evento);
+
+    // Restaurar multi-dia
+    if (d.multidia) {
+      setChk('chk_multidia', true);
+      _toggleMultiDia(document.getElementById('chk_multidia'));
+      set('data_fim', d.data_fim || '');
+      _atualizarDuracaoEvento();
+    }
 
     setChk('inc_cliente',   d.inc_cliente);
     setChk('inc_op1',       d.inc_op1);
@@ -4519,6 +4554,43 @@ function validarDataEventoTexto(textoInput) {
 }
 function sincronizarDataDate(dateInput) {
   // input[type=date] nativo — nenhum campo texto para sincronizar
+}
+function _toggleMultiDia(chk) {
+  var painel = document.getElementById('painel_data_fim');
+  if (!painel) return;
+  if (chk.checked) {
+    painel.style.display = 'block';
+    _atualizarDuracaoEvento();
+  } else {
+    painel.style.display = 'none';
+    var fim = document.getElementById('data_fim');
+    if (fim) fim.value = '';
+    var lbl = document.getElementById('label_duracao');
+    if (lbl) lbl.textContent = '';
+  }
+}
+function _atualizarDuracaoEvento() {
+  var chk = document.getElementById('chk_multidia');
+  if (!chk || !chk.checked) return;
+  var ini = document.getElementById('data_evento');
+  var fim = document.getElementById('data_fim');
+  var lbl = document.getElementById('label_duracao');
+  if (!ini || !fim || !lbl) return;
+  if (!ini.value || !fim.value) { lbl.textContent = ''; return; }
+  var d1 = new Date(ini.value + 'T00:00:00');
+  var d2 = new Date(fim.value + 'T00:00:00');
+  var diff = Math.round((d2 - d1) / 86400000);
+  if (diff <= 0) {
+    lbl.textContent = 'Término deve ser após o início';
+    lbl.style.color = '#e05555';
+    fim.style.borderColor = '#e05555';
+  } else {
+    var noites = diff;
+    var dias = diff + 1;
+    lbl.textContent = dias + (dias === 1 ? ' dia' : ' dias') + ' · ' + noites + (noites === 1 ? ' noite' : ' noites');
+    lbl.style.color = 'var(--gold)';
+    fim.style.borderColor = '';
+  }
 }
 function abrirCalendarioData() {
   var hidden = document.getElementById('data_evento');
