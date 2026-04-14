@@ -410,11 +410,12 @@ header {
 }
 
 .card-evento {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.03em;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  margin-top: 2px;
   white-space: normal;
   overflow: visible;
   word-break: break-word;
@@ -976,10 +977,14 @@ header {
 
 
   .card-cliente {
-    font-size: 0.72rem;
-    color: var(--muted);
-    margin-top: 2px;
-    letter-spacing: 0.02em;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.03em;
+    white-space: normal;
+    overflow: visible;
+    word-break: break-word;
   }
 
   
@@ -1859,8 +1864,8 @@ function buildCard(ev, past, col) {
       '<div class="card-summary-left">' +
         (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
         '<div>' +
-          '<div class="card-evento card-field-editable" data-field="ev_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
           (ev.cli_nome ? '<div class="card-cliente card-field-editable" data-field="cli_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.cli_nome) + '</div>' : '') +
+          '<div class="card-evento card-field-editable" data-field="ev_nome" data-evid="' + esc(ev.id) + '">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
         '</div>' +
       '</div>' +
       '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
