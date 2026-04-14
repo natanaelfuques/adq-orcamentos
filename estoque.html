@@ -1427,10 +1427,171 @@
   .eq-card[draggable="true"]:active { cursor: grabbing; }
   .eq-card.dragging-eq { opacity: 0.35; }
 
+  /* ── SEÇÕES COLAPSÁVEIS ── */
+  .secao-collapsed .equip-grid,
+  .secao-collapsed .equip-list {
+    display: none !important;
+  }
+  .kits-collapsed #kits-grid {
+    max-height: 0 !important;
+    opacity: 0 !important;
+  }
+
+  /* ── KIT ITEM COM QUANTIDADE E AÇÕES ── */
+  .kit-item-chip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    cursor: default;
+  }
+  .kit-item-chip-top {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 9px;
+  }
+  .kit-item-chip-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 9px 7px;
+    border-top: 1px solid var(--border2);
+    padding-top: 6px;
+    margin-top: 0;
+    flex-wrap: wrap;
+  }
+  .kit-item-qty-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-right: auto;
+  }
+  .kit-item-qty-btn {
+    background: var(--darker);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 3px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    line-height: 1;
+    transition: border-color 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+  .kit-item-qty-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .kit-item-qty-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--text);
+    min-width: 18px;
+    text-align: center;
+  }
+  .kit-item-qty-label {
+    font-size: 0.58rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .kit-item-action-btn {
+    background: transparent;
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 2px 7px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #555;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    height: 20px;
+    white-space: nowrap;
+  }
+  .kit-item-action-btn:hover { border-color: #555; color: #bbb; }
+  .kit-item-action-btn.del:hover { border-color: var(--red); color: var(--red); }
+  .kit-item-acessorio-input {
+    width: 100%;
+    background: var(--darker);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    border-radius: 3px;
+    outline: none;
+    margin-top: 5px;
+    display: none;
+    transition: border-color 0.15s;
+  }
+  .kit-item-acessorio-input:focus { border-color: var(--gold); }
+  .kit-item-acessorio-text {
+    font-size: 0.62rem;
+    color: var(--blue);
+    font-style: italic;
+    margin-top: 2px;
+    padding: 0 9px 5px;
+    display: none;
+  }
+
+  /* ── KIT MOVIMENTAÇÃO SECTION ── */
+  .kit-mov-section {
+    margin-top: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .kit-mov-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .kit-mov-header:hover { background: rgba(255,255,255,0.03); }
+  .kit-mov-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .kit-mov-body {
+    padding: 0 14px 14px;
+    display: none;
+  }
+  .kit-mov-body.open { display: block; }
+  .kit-mov-info {
+    font-size: 0.72rem;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .kit-mov-transitions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
   @media (max-width: 600px) {
     .kits-section { padding: 0 12px 16px; }
     .kit-folder { width: 130px; }
     .kit-novo-card { width: 130px; height: 106px; }
+    .kit-mov-transitions { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -1487,23 +1648,6 @@
       <button class="btn-hd danger" onclick="sair()" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
     </div>
   </header>
-
-  <!-- KITS SECTION -->
-  <div class="kits-section" id="kits-section">
-    <div class="kits-section-header">
-      <div class="kits-section-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        Kits
-      </div>
-      <button class="btn-novo-kit" onclick="abrirModalNovoKit()">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Novo kit
-      </button>
-    </div>
-    <div class="kits-grid" id="kits-grid">
-      <!-- renderizado por JS -->
-    </div>
-  </div>
 
   <!-- STATS BAR -->
   <div class="stats-bar">
@@ -1577,13 +1721,16 @@
     </button>
   </div>
 
-  <!-- SECTION LABEL EQUIPAMENTOS -->
-  <div class="equip-section-title" id="equip-section-title">
+  <!-- SECTION LABEL EQUIPAMENTOS (colapsável) -->
+  <div class="equip-section-title" id="equip-section-title" onclick="toggleSecaoEquipamentos()" style="cursor:pointer;user-select:none">
     <div style="display:flex;align-items:center;gap:7px">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
       Equipamentos
     </div>
-    <span>Arraste um card para um kit acima</span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="equip-section-hint" style="font-size:0.6rem;color:#444;font-weight:600;letter-spacing:0.04em;text-transform:none">Arraste um card para um kit abaixo</span>
+      <svg id="equip-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
   </div>
 
   <!-- GRID VIEW -->
@@ -1593,6 +1740,24 @@
 
   <!-- LIST VIEW -->
   <div class="equip-list" id="equip-list"></div>
+
+  <!-- KITS SECTION (após equipamentos, colapsável) -->
+  <div class="kits-section" id="kits-section" style="padding-top:8px">
+    <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
+      <div class="kits-section-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Kits
+        <svg id="kits-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;margin-left:4px"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <button class="btn-novo-kit" onclick="event.stopPropagation();abrirModalNovoKit()">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo kit
+      </button>
+    </div>
+    <div class="kits-grid" id="kits-grid" style="transition:max-height 0.3s ease,opacity 0.3s ease;overflow:hidden">
+      <!-- renderizado por JS -->
+    </div>
+  </div>
 
 </div>
 
@@ -2980,6 +3145,9 @@ function instalarApp() {
         <input type="text" class="form-input" id="kit-search-eq" placeholder="Buscar equipamento..." oninput="renderKitSearchResults()" />
       </div>
       <div id="kit-search-results" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto"></div>
+
+      <!-- Seção de movimentação do kit (só aparece ao editar) -->
+      <div id="kit-mov-section-container"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-modal-cancel" onclick="fecharModalKit(null)">Cancelar</button>
@@ -2995,8 +3163,49 @@ function instalarApp() {
 // ── KITS: Estado ──
 var _kits = {};
 var _kitEditandoId = null;
-var _kitItensAtual = []; // [{equipId, qtd}]
+var _kitItensAtual = []; // [{equipId, qtd, acessorios}]
 var _draggingEqId = null;
+var _kitMovAberto = false;
+
+// ── Colapso de seções ──
+var _equipSecaoAberta = true;
+var _kitsSecaoAberta = true;
+
+function toggleSecaoEquipamentos() {
+  _equipSecaoAberta = !_equipSecaoAberta;
+  var grid = document.getElementById('equip-grid');
+  var list = document.getElementById('equip-list');
+  var icon = document.getElementById('equip-toggle-icon');
+  var hint = document.getElementById('equip-section-hint');
+  if (grid) grid.style.display = _equipSecaoAberta ? '' : 'none';
+  if (list) {
+    var isListView = list.style.display === 'flex';
+    if (!_equipSecaoAberta) list.style.display = 'none';
+    else if (_viewAtual === 'list') list.style.display = 'flex';
+  }
+  if (icon) icon.style.transform = _equipSecaoAberta ? '' : 'rotate(-90deg)';
+  if (hint) hint.style.display = _equipSecaoAberta ? '' : 'none';
+}
+
+function toggleSecaoKits() {
+  _kitsSecaoAberta = !_kitsSecaoAberta;
+  var grid = document.getElementById('kits-grid');
+  var icon = document.getElementById('kits-toggle-icon');
+  if (grid) {
+    if (_kitsSecaoAberta) {
+      grid.style.maxHeight = grid.scrollHeight + 'px';
+      grid.style.opacity = '1';
+      setTimeout(function() { grid.style.maxHeight = '2000px'; }, 300);
+    } else {
+      grid.style.maxHeight = grid.scrollHeight + 'px';
+      setTimeout(function() {
+        grid.style.maxHeight = '0';
+        grid.style.opacity = '0';
+      }, 10);
+    }
+  }
+  if (icon) icon.style.transform = _kitsSecaoAberta ? '' : 'rotate(-90deg)';
+}
 
 // ── KITS: Firestore listener ──
 function iniciarKits() {
@@ -3006,7 +3215,6 @@ function iniciarKits() {
       _kits[doc.id] = Object.assign({ id: doc.id }, doc.data());
     });
     renderKits();
-    // re-render equipamentos para atualizar badges de kit
     if (Object.keys(_equipamentos).length > 0) renderEquipamentos();
   }, function(err) {
     console.error('[Kits]', err);
@@ -3023,11 +3231,12 @@ function renderKits() {
 
   kitsArr.forEach(function(kit) {
     var itens = Array.isArray(kit.itens) ? kit.itens : [];
-    var count = itens.length;
+    var count = itens.reduce(function(sum, it) { return sum + (it.qtd || 1); }, 0);
+    var qtdItens = itens.length;
     var statusClass = '';
     var temZero = itens.some(function(it) {
       var eq = _equipamentos[it.equipId];
-      return eq && (eq.qtd_disponivel || 0) === 0;
+      return eq && (eq.qtd_disponivel || 0) < (it.qtd || 1);
     });
     var temWarn = itens.some(function(it) {
       var eq = _equipamentos[it.equipId];
@@ -3036,7 +3245,6 @@ function renderKits() {
     if (temZero) statusClass = 'red';
     else if (temWarn) statusClass = 'warn';
 
-    // Preview: até 4 ícones SVG
     var previewHtml = '';
     var shown = itens.slice(0, 4);
     shown.forEach(function(it) {
@@ -3045,7 +3253,6 @@ function renderKits() {
       var svgStr = _getEqSvg(eq.emoji, 13);
       previewHtml += '<div class="kit-preview-item">' + svgStr + '</div>';
     });
-    // preencher grid vazio
     for (var i = shown.length; i < 4; i++) {
       previewHtml += '<div class="kit-preview-empty"></div>';
     }
@@ -3059,19 +3266,24 @@ function renderKits() {
       '<div class="kit-folder-body">' +
         '<div class="kit-folder-preview">' + previewHtml + '</div>' +
         '<div class="kit-folder-name" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</div>' +
-        '<div class="kit-folder-count">' + count + ' ' + (count === 1 ? 'item' : 'itens') + '</div>' +
+        '<div class="kit-folder-count">' + qtdItens + ' ' + (qtdItens === 1 ? 'tipo' : 'tipos') + ' · ' + count + ' un.</div>' +
       '</div>' +
       '<div class="kit-folder-status' + (statusClass ? ' ' + statusClass : '') + '"></div>' +
     '</div>';
   });
 
-  // Botão novo kit
   html += '<div class="kit-novo-card" onclick="abrirModalNovoKit()">' +
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
     'Novo kit' +
   '</div>';
 
   grid.innerHTML = html;
+
+  // Restaura estado de colapso
+  if (!_kitsSecaoAberta) {
+    grid.style.maxHeight = '0';
+    grid.style.opacity = '0';
+  }
 }
 
 // ── Drag: eq card → kit folder ──
@@ -3112,31 +3324,31 @@ function kitFolderDrop(ev, kitId) {
   var kit = _kits[kitId];
   if (!kit) return;
   var itens = Array.isArray(kit.itens) ? kit.itens.slice() : [];
-  var jaExiste = itens.some(function(it) { return it.equipId === _draggingEqId; });
-  if (jaExiste) {
-    toast('Equipamento já está neste kit.');
-    return;
+  var existing = itens.find(function(it) { return it.equipId === _draggingEqId; });
+  if (existing) {
+    // Aumentar quantidade se já existe
+    existing.qtd = (existing.qtd || 1) + 1;
+    db.collection('kits').doc(kitId).update({ itens: itens })
+      .then(function() { toast('Quantidade aumentada em ' + (kit.nome || 'kit') + '!'); })
+      .catch(function(e) { toast('Erro: ' + e.message, true); });
+  } else {
+    itens.push({ equipId: _draggingEqId, qtd: 1, acessorios: '' });
+    db.collection('kits').doc(kitId).update({ itens: itens })
+      .then(function() { toast('Adicionado ao ' + (kit.nome || 'kit') + '!'); })
+      .catch(function(e) { toast('Erro: ' + e.message, true); });
   }
-  itens.push({ equipId: _draggingEqId, qtd: 1 });
-  db.collection('kits').doc(kitId).update({ itens: itens })
-    .then(function() { toast('Adicionado ao ' + (kit.nome || 'kit') + '!'); })
-    .catch(function(e) { toast('Erro: ' + e.message, true); });
   _draggingEqId = null;
 }
 
-// ── Patch buildCard para suportar drag + badges de kit ──
+// ── Patch renderGrid para adicionar drag e badges após render ──
 var _buildCardOrig = buildCard;
 buildCard = function(e) {
-  var html = _buildCardOrig(e);
-  // Inject draggable wrapper logic after render — handled via post-render patch
-  return html;
+  return _buildCardOrig(e);
 };
 
-// Patch renderGrid para adicionar drag e badges após render
 var _renderGridOrig = renderGrid;
 renderGrid = function(equips) {
   _renderGridOrig(equips);
-  // Adicionar drag a cada card
   var grid = document.getElementById('equip-grid');
   if (!grid) return;
   var cards = grid.querySelectorAll('.eq-card');
@@ -3146,7 +3358,6 @@ renderGrid = function(equips) {
     if (!match) return;
     var eqId = match[1];
     setupEqCardDrag(card, eqId);
-    // Inject kit badges
     var kitBadges = _getKitBadgesForEq(eqId);
     if (kitBadges) {
       var body = card.querySelector('.eq-card-body');
@@ -3180,10 +3391,12 @@ function _getKitBadgesForEq(eqId) {
 function abrirModalNovoKit() {
   _kitEditandoId = null;
   _kitItensAtual = [];
+  _kitMovAberto = false;
   document.getElementById('kit-modal-title').textContent = 'Novo Kit';
   document.getElementById('kit-nome').value = '';
   document.getElementById('kit-desc').value = '';
   document.getElementById('kit-search-eq').value = '';
+  _renderKitMovSection();
   renderKitDropZone();
   renderKitSearchResults();
   document.getElementById('kit-modal-overlay').style.display = 'flex';
@@ -3193,11 +3406,15 @@ function abrirModalEditarKit(kitId) {
   var kit = _kits[kitId];
   if (!kit) return;
   _kitEditandoId = kitId;
-  _kitItensAtual = Array.isArray(kit.itens) ? kit.itens.slice() : [];
+  _kitItensAtual = Array.isArray(kit.itens) ? kit.itens.map(function(it) {
+    return { equipId: it.equipId, qtd: it.qtd || 1, acessorios: it.acessorios || '' };
+  }) : [];
+  _kitMovAberto = false;
   document.getElementById('kit-modal-title').textContent = esc(kit.nome || 'Kit');
   document.getElementById('kit-nome').value = kit.nome || '';
   document.getElementById('kit-desc').value = kit.descricao || '';
   document.getElementById('kit-search-eq').value = '';
+  _renderKitMovSection();
   renderKitDropZone();
   renderKitSearchResults();
   document.getElementById('kit-modal-overlay').style.display = 'flex';
@@ -3208,30 +3425,239 @@ function fecharModalKit(ev) {
   document.getElementById('kit-modal-overlay').style.display = 'none';
 }
 
+// ── Movimentação do Kit ──
+function _renderKitMovSection() {
+  var container = document.getElementById('kit-mov-section-container');
+  if (!container) return;
+  // Só mostra movimentação se estiver editando um kit existente
+  if (!_kitEditandoId) {
+    container.innerHTML = '';
+    return;
+  }
+  var kit = _kits[_kitEditandoId];
+  if (!kit || !Array.isArray(kit.itens) || kit.itens.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML =
+    '<div class="kit-mov-section">' +
+      '<div class="kit-mov-header" onclick="toggleKitMov()">' +
+        '<div class="kit-mov-title">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>' +
+          'Movimentar Kit' +
+        '</div>' +
+        '<svg id="kit-mov-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg>' +
+      '</div>' +
+      '<div id="kit-mov-body" class="kit-mov-body' + (_kitMovAberto ? ' open' : '') + '">' +
+        '<p class="kit-mov-info">Ao movimentar o kit, todos os equipamentos dentro serão deslocados juntos, respeitando as quantidades definidas.</p>' +
+        '<div class="kit-mov-transitions">' +
+          '<button class="mov-tr-btn disponivel-uso" onclick="movimentarKit(\'disponivel-uso\')">' +
+            '<div class="mov-tr-label">' +
+              '<span class="state-pill disp">Disp.</span>' +
+              '<span class="tr-arrow">→</span>' +
+              '<span class="state-pill uso">Em Uso</span>' +
+            '</div>' +
+            '<div class="mov-tr-desc">Dar saída — colocar kit em uso</div>' +
+          '</button>' +
+          '<button class="mov-tr-btn uso-disponivel" onclick="movimentarKit(\'uso-disponivel\')">' +
+            '<div class="mov-tr-label">' +
+              '<span class="state-pill uso">Em Uso</span>' +
+              '<span class="tr-arrow">→</span>' +
+              '<span class="state-pill disp">Disp.</span>' +
+            '</div>' +
+            '<div class="mov-tr-desc">Retorno — devolver kit ao estoque</div>' +
+          '</button>' +
+          '<button class="mov-tr-btn disponivel-manut" onclick="movimentarKit(\'disponivel-manut\')">' +
+            '<div class="mov-tr-label">' +
+              '<span class="state-pill disp">Disp.</span>' +
+              '<span class="tr-arrow">→</span>' +
+              '<span class="state-pill manut">Manut.</span>' +
+            '</div>' +
+            '<div class="mov-tr-desc">Enviar kit para manutenção</div>' +
+          '</button>' +
+          '<button class="mov-tr-btn manut-disponivel" onclick="movimentarKit(\'manut-disponivel\')">' +
+            '<div class="mov-tr-label">' +
+              '<span class="state-pill manut">Manut.</span>' +
+              '<span class="tr-arrow">→</span>' +
+              '<span class="state-pill disp">Disp.</span>' +
+            '</div>' +
+            '<div class="mov-tr-desc">Retorno da manutenção</div>' +
+          '</button>' +
+        '</div>' +
+        '<div class="form-group" style="margin-bottom:0">' +
+          '<label class="form-label">Observação (opcional)</label>' +
+          '<input type="text" id="kit-mov-obs" class="form-input" placeholder="Ex: Evento tal, responsável..." />' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  if (_kitMovAberto) {
+    var icon = document.getElementById('kit-mov-toggle-icon');
+    if (icon) icon.style.transform = 'rotate(180deg)';
+  }
+}
+
+function toggleKitMov() {
+  _kitMovAberto = !_kitMovAberto;
+  var body = document.getElementById('kit-mov-body');
+  var icon = document.getElementById('kit-mov-toggle-icon');
+  if (body) body.classList.toggle('open', _kitMovAberto);
+  if (icon) icon.style.transform = _kitMovAberto ? 'rotate(180deg)' : '';
+}
+
+function movimentarKit(tipo) {
+  var kit = _kits[_kitEditandoId];
+  if (!kit || !Array.isArray(kit.itens) || kit.itens.length === 0) {
+    toast('Kit sem equipamentos.', true);
+    return;
+  }
+  var obs = (document.getElementById('kit-mov-obs') ? document.getElementById('kit-mov-obs').value : '') || '';
+  var batch = db.batch();
+  var erros = [];
+  var processados = 0;
+
+  kit.itens.forEach(function(kitItem) {
+    var eqId = kitItem.equipId;
+    var qtdKit = kitItem.qtd || 1;
+    var eq = _equipamentos[eqId];
+    if (!eq) return;
+
+    var updates = {};
+    var hist = Array.isArray(eq.historico) ? eq.historico.slice() : [];
+    var agora = new Date().toLocaleDateString('pt-BR');
+    var kitNome = kit.nome || 'Kit';
+
+    if (tipo === 'disponivel-uso') {
+      if ((eq.qtd_disponivel || 0) < qtdKit) {
+        erros.push(esc(eq.nome || eqId) + ' (insuf.)');
+        return;
+      }
+      updates.qtd_disponivel = (eq.qtd_disponivel || 0) - qtdKit;
+      updates.qtd_em_uso = (eq.qtd_em_uso || 0) + qtdKit;
+      hist.unshift({ tipo: 'saida', qtd: qtdKit, obs: 'Kit: ' + kitNome + (obs ? ' — ' + obs : ''), data: agora });
+    } else if (tipo === 'uso-disponivel') {
+      if ((eq.qtd_em_uso || 0) < qtdKit) {
+        erros.push(esc(eq.nome || eqId) + ' (insuf. em uso)');
+        return;
+      }
+      updates.qtd_em_uso = (eq.qtd_em_uso || 0) - qtdKit;
+      updates.qtd_disponivel = (eq.qtd_disponivel || 0) + qtdKit;
+      hist.unshift({ tipo: 'retorno', qtd: qtdKit, obs: 'Kit: ' + kitNome + (obs ? ' — ' + obs : ''), data: agora });
+    } else if (tipo === 'disponivel-manut') {
+      if ((eq.qtd_disponivel || 0) < qtdKit) {
+        erros.push(esc(eq.nome || eqId) + ' (insuf.)');
+        return;
+      }
+      updates.qtd_disponivel = (eq.qtd_disponivel || 0) - qtdKit;
+      updates.qtd_manutencao = (eq.qtd_manutencao || 0) + qtdKit;
+      hist.unshift({ tipo: 'manutencao', qtd: qtdKit, obs: 'Kit: ' + kitNome + (obs ? ' — ' + obs : ''), data: agora });
+    } else if (tipo === 'manut-disponivel') {
+      if ((eq.qtd_manutencao || 0) < qtdKit) {
+        erros.push(esc(eq.nome || eqId) + ' (insuf. em manut.)');
+        return;
+      }
+      updates.qtd_manutencao = (eq.qtd_manutencao || 0) - qtdKit;
+      updates.qtd_disponivel = (eq.qtd_disponivel || 0) + qtdKit;
+      hist.unshift({ tipo: 'retorno', qtd: qtdKit, obs: 'Retorno manut. kit: ' + kitNome + (obs ? ' — ' + obs : ''), data: agora });
+    }
+
+    if (Object.keys(updates).length > 0) {
+      updates.historico = hist.slice(0, 50);
+      batch.update(db.collection('equipamentos').doc(eqId), updates);
+      processados++;
+    }
+  });
+
+  if (erros.length > 0) {
+    toast('Estoque insuficiente: ' + erros.join(', '), true);
+    return;
+  }
+  if (processados === 0) {
+    toast('Nada a movimentar.', true);
+    return;
+  }
+
+  batch.commit()
+    .then(function() {
+      var labels = { 'disponivel-uso': 'Saída', 'uso-disponivel': 'Retorno', 'disponivel-manut': 'Para manutenção', 'manut-disponivel': 'Da manutenção' };
+      toast(labels[tipo] + ' do kit realizada (' + processados + ' equip.)!');
+      if (document.getElementById('kit-mov-obs')) document.getElementById('kit-mov-obs').value = '';
+    })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+// ── Drop Zone de Itens do Kit ──
 function renderKitDropZone() {
   var zone = document.getElementById('kit-drop-zone');
   var emptyMsg = document.getElementById('kit-drop-empty');
   if (!zone) return;
-  // remove chips existentes
   zone.querySelectorAll('.kit-item-chip').forEach(function(el) { el.remove(); });
   if (_kitItensAtual.length === 0) {
     if (emptyMsg) emptyMsg.style.display = 'block';
   } else {
     if (emptyMsg) emptyMsg.style.display = 'none';
-    _kitItensAtual.forEach(function(it) {
+    _kitItensAtual.forEach(function(it, idx) {
       var eq = _equipamentos[it.equipId];
       if (!eq) return;
       var chip = document.createElement('div');
       chip.className = 'kit-item-chip';
       chip.setAttribute('data-id', it.equipId);
+      chip.setAttribute('style', 'width:100%;flex-direction:column;gap:0;padding:0;cursor:default');
+      var qtd = it.qtd || 1;
+      var acessorios = it.acessorios || '';
       chip.innerHTML =
-        '<div class="kit-item-chip-icon">' + _getEqSvg(eq.emoji, 13) + '</div>' +
-        '<span class="kit-item-chip-name" title="' + esc(eq.nome || '') + '">' + esc(eq.nome || 'Equip.') + '</span>' +
-        '<button class="kit-item-chip-remove" onclick="removerItemKit(\'' + esc(it.equipId) + '\')" title="Remover do kit">' +
-          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-        '</button>';
+        '<div class="kit-item-chip-top">' +
+          '<div class="kit-item-chip-icon">' + _getEqSvg(eq.emoji, 13) + '</div>' +
+          '<span class="kit-item-chip-name" title="' + esc(eq.nome || '') + '">' + esc(eq.nome || 'Equip.') + '</span>' +
+          '<div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0">' +
+            '<span style="font-size:0.62rem;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Qtd</span>' +
+            '<button class="kit-item-qty-btn" onclick="alterarQtdItemKit(\'' + esc(it.equipId) + '\',-1)" title="Diminuir">−</button>' +
+            '<span class="kit-item-qty-num" id="kit-qty-' + esc(it.equipId) + '">' + qtd + '</span>' +
+            '<button class="kit-item-qty-btn" onclick="alterarQtdItemKit(\'' + esc(it.equipId) + '\',1)" title="Aumentar">+</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="kit-item-chip-actions">' +
+          '<div class="kit-item-qty-row"></div>' +
+          '<button class="kit-item-action-btn" onclick="toggleAcessorioInput(\'' + esc(it.equipId) + '\')" title="Adicionar acessório">' +
+            '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:3px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Acessório' +
+          '</button>' +
+          '<button class="kit-item-action-btn del" onclick="removerItemKit(\'' + esc(it.equipId) + '\')" title="Remover do kit">' +
+            '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:3px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Remover' +
+          '</button>' +
+        '</div>' +
+        '<input type="text" class="kit-item-acessorio-input" id="acs-' + esc(it.equipId) + '"' +
+          ' placeholder="Acessório (ex: cabo, suporte...)" value="' + esc(acessorios) + '"' +
+          ' oninput="atualizarAcessorioItem(\'' + esc(it.equipId) + '\',this.value)"' +
+          (acessorios ? ' style="display:block"' : '') + ' />' +
+        (acessorios ? '<div class="kit-item-acessorio-text" id="acs-text-' + esc(it.equipId) + '" style="display:block">' + esc(acessorios) + '</div>' : '<div class="kit-item-acessorio-text" id="acs-text-' + esc(it.equipId) + '"></div>');
       zone.appendChild(chip);
     });
+  }
+  // Re-render movimentação se necessário
+  _renderKitMovSection();
+}
+
+function alterarQtdItemKit(eqId, delta) {
+  var item = _kitItensAtual.find(function(it) { return it.equipId === eqId; });
+  if (!item) return;
+  item.qtd = Math.max(1, (item.qtd || 1) + delta);
+  var el = document.getElementById('kit-qty-' + eqId);
+  if (el) el.textContent = item.qtd;
+}
+
+function toggleAcessorioInput(eqId) {
+  var input = document.getElementById('acs-' + eqId);
+  if (!input) return;
+  input.style.display = input.style.display === 'block' ? 'none' : 'block';
+  if (input.style.display === 'block') input.focus();
+}
+
+function atualizarAcessorioItem(eqId, valor) {
+  var item = _kitItensAtual.find(function(it) { return it.equipId === eqId; });
+  if (item) item.acessorios = valor;
+  var textEl = document.getElementById('acs-text-' + eqId);
+  if (textEl) {
+    textEl.textContent = valor;
+    textEl.style.display = valor ? 'block' : 'none';
   }
 }
 
@@ -3254,8 +3680,9 @@ function renderKitSearchResults() {
     return;
   }
   container.innerHTML = equips.slice(0, 12).map(function(e) {
-    var jaNoKit = _kitItensAtual.some(function(it) { return it.equipId === e.id; });
-    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:5px;cursor:' + (jaNoKit ? 'default' : 'pointer') + ';opacity:' + (jaNoKit ? '0.4' : '1') + '"' +
+    var itemNoKit = _kitItensAtual.find(function(it) { return it.equipId === e.id; });
+    var jaNoKit = !!itemNoKit;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:5px;cursor:' + (jaNoKit ? 'default' : 'pointer') + ';opacity:' + (jaNoKit ? '0.5' : '1') + '"' +
       (jaNoKit ? '' : ' onclick="adicionarItemKit(\'' + esc(e.id) + '\')"') + '>' +
       '<div style="width:28px;height:28px;background:var(--gold-dim);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0">' + _getEqSvg(e.emoji, 14) + '</div>' +
       '<div style="flex:1;min-width:0">' +
@@ -3263,7 +3690,7 @@ function renderKitSearchResults() {
         '<div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">' + esc(e.categoria || '') + '</div>' +
       '</div>' +
       (jaNoKit
-        ? '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;color:#444;text-transform:uppercase;letter-spacing:0.06em">No kit</div>'
+        ? '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;color:#444;text-transform:uppercase;letter-spacing:0.06em">× ' + (itemNoKit.qtd || 1) + '</div>'
         : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
       ) +
     '</div>';
@@ -3273,7 +3700,7 @@ function renderKitSearchResults() {
 function adicionarItemKit(eqId) {
   var jaNoKit = _kitItensAtual.some(function(it) { return it.equipId === eqId; });
   if (jaNoKit) return;
-  _kitItensAtual.push({ equipId: eqId, qtd: 1 });
+  _kitItensAtual.push({ equipId: eqId, qtd: 1, acessorios: '' });
   renderKitDropZone();
   renderKitSearchResults();
 }
@@ -3293,10 +3720,13 @@ document.addEventListener('DOMContentLoaded', function() {
 function salvarKit() {
   var nome = (document.getElementById('kit-nome').value || '').trim();
   if (!nome) { toast('Informe um nome para o kit.', true); return; }
+  var itensParaSalvar = _kitItensAtual.map(function(it) {
+    return { equipId: it.equipId, qtd: it.qtd || 1, acessorios: it.acessorios || '' };
+  });
   var dados = {
     nome: nome,
     descricao: (document.getElementById('kit-desc').value || '').trim(),
-    itens: _kitItensAtual,
+    itens: itensParaSalvar,
     _atualizado: Date.now()
   };
   var promise;
@@ -3310,6 +3740,22 @@ function salvarKit() {
     document.getElementById('kit-modal-overlay').style.display = 'none';
     toast(_kitEditandoId ? 'Kit atualizado!' : 'Kit criado!');
   }).catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+function kitDropZoneOver(ev) {
+  ev.preventDefault();
+  var zone = document.getElementById('kit-drop-zone');
+  if (zone) zone.classList.add('drag-over');
+}
+function kitDropZoneLeave(ev) {
+  var zone = document.getElementById('kit-drop-zone');
+  if (zone) zone.classList.remove('drag-over');
+}
+function kitDropZoneDrop(ev) {
+  ev.preventDefault();
+  var zone = document.getElementById('kit-drop-zone');
+  if (zone) zone.classList.remove('drag-over');
+  if (_draggingEqId) adicionarItemKit(_draggingEqId);
 }
 
 // ── Iniciar kits junto com estoque ──
