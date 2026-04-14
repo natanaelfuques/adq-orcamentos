@@ -47,12 +47,14 @@
   header {
     background: var(--dark);
     border-bottom: 2px solid var(--gold);
-    padding: 0 24px;
+    padding: 0 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    height: 60px;
+    gap: 8px;
+    min-height: 60px;
+    height: auto;
+    flex-wrap: wrap;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -94,7 +96,7 @@
     margin-top: 1px;
   }
 
-  .hd-right { display: flex; align-items: center; gap: 8px; }
+  .hd-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
   .hd-user {
     font-size: 0.72rem;
@@ -102,6 +104,10 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .btn-hd {
@@ -438,8 +444,8 @@
   }
   .qty-num.total { color: var(--text); }
   .qty-num.disponivel { color: var(--green); }
-  .qty-num.em-uso { color: var(--gold); }
-  .qty-num.manutencao { color: var(--amber); }
+  .qty-num.em-uso { color: #F5A623; }
+  .qty-num.manutencao { color: #e05c5c; }
   .qty-label {
     font-size: 0.58rem;
     font-weight: 700;
@@ -1010,12 +1016,18 @@
   .btn-add-eq svg { color: #fff; }
   @media (max-width: 600px) {
     .equip-grid { grid-template-columns: 1fr; padding: 0 12px 24px; }
-    .toolbar { padding: 12px; gap: 8px; }
+    .toolbar { padding: 12px; gap: 8px; flex-wrap: wrap; }
     .cat-tabs { padding: 0 12px 12px; }
-    .stats-bar { padding: 10px 12px; gap: 16px; }
-    header { padding: 0 12px; }
+    .stats-bar { padding: 10px 12px; gap: 12px; }
+    header { padding: 4px 10px; gap: 6px; }
+    .hd-left .hd-title { font-size: 1rem; }
+    .hd-sub { display: none; }
+    .hd-user { display: none; }
     .form-grid { grid-template-columns: 1fr; }
     .form-grid-3 { grid-template-columns: 1fr 1fr; }
+    .btn-hd { padding: 0 7px; font-size: 0.65rem; height: 24px; }
+    .equip-section-title { padding: 0 12px; margin: 0 0 8px; }
+    .kits-section { padding: 0 12px 16px; }
   }
 
   /* ── VIEW TOGGLE ── */
@@ -1211,7 +1223,7 @@
   }
   .kit-folder-top-bar {
     height: 3px;
-    background: linear-gradient(90deg, var(--gold), rgba(74,144,217,0.3));
+    background: linear-gradient(90deg, #9b59b6, rgba(155,89,182,0.3));
   }
   .kit-folder-body {
     padding: 10px 12px 12px;
@@ -1593,6 +1605,62 @@
     .kit-novo-card { width: 130px; height: 106px; }
     .kit-mov-transitions { grid-template-columns: 1fr; }
   }
+
+  /* ── Seções colapsáveis dentro do modal kit ── */
+  .kit-collapsible-section {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .kit-collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .kit-collapsible-header:hover { background: rgba(255,255,255,0.03); }
+  .kit-collapsible-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .kit-collapsible-body {
+    padding: 0 14px 14px;
+    display: none;
+  }
+  .kit-collapsible-body.open { display: block; }
+  .kit-collapsible-arrow {
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    color: #555;
+  }
+  .kit-collapsible-body.open ~ .kit-collapsible-arrow,
+  .kit-collapsible-header[data-open="1"] .kit-collapsible-arrow {
+    transform: rotate(180deg);
+  }
+
+  /* draggable search result items */
+  .kit-search-draggable {
+    cursor: grab;
+    transition: border-color 0.15s, opacity 0.15s;
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+  }
+  .kit-search-draggable:active { cursor: grabbing; }
+  .kit-search-draggable.dragging { opacity: 0.35; }
+  .kit-search-draggable:hover { border-color: rgba(74,144,217,0.4); }
+  .kit-item-chip { cursor: default; }
 </style>
 </head>
 <body>
@@ -1662,18 +1730,23 @@
     </div>
     <div class="stat-sep"></div>
     <div class="stat-item" onclick="filtrarStat('em-uso')" id="stat-btn-em-uso" title="Filtrar em uso" style="cursor:pointer">
-      <div class="stat-value" style="color:var(--gold)" id="stat-em-uso">0</div>
+      <div class="stat-value" style="color:#F5A623" id="stat-em-uso">0</div>
       <div class="stat-label">Em Uso</div>
     </div>
     <div class="stat-sep"></div>
     <div class="stat-item" onclick="filtrarStat('manutencao')" id="stat-btn-manutencao" title="Filtrar em manutenção" style="cursor:pointer">
-      <div class="stat-value" style="color:var(--amber)" id="stat-manutencao">0</div>
+      <div class="stat-value" style="color:#e05c5c" id="stat-manutencao">0</div>
       <div class="stat-label">Manutenção</div>
     </div>
     <div class="stat-sep"></div>
     <div class="stat-item" id="stat-btn-categorias" title="Total de categorias" style="cursor:default">
-      <div class="stat-value blue" id="stat-categorias">0</div>
+      <div class="stat-value" style="color:#888" id="stat-categorias">0</div>
       <div class="stat-label">Categorias</div>
+    </div>
+    <div class="stat-sep"></div>
+    <div class="stat-item" id="stat-btn-kits" title="Total de kits" style="cursor:default">
+      <div class="stat-value" style="color:#9b59b6" id="stat-kits">0</div>
+      <div class="stat-label">Kits</div>
     </div>
   </div>
 
@@ -1721,27 +1794,7 @@
     </button>
   </div>
 
-  <!-- SECTION LABEL EQUIPAMENTOS (colapsável) -->
-  <div class="equip-section-title" id="equip-section-title" onclick="toggleSecaoEquipamentos()" style="cursor:pointer;user-select:none">
-    <div style="display:flex;align-items:center;gap:7px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-      Equipamentos
-    </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <span id="equip-section-hint" style="font-size:0.6rem;color:#444;font-weight:600;letter-spacing:0.04em;text-transform:none">Arraste um card para um kit abaixo</span>
-      <svg id="equip-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
-    </div>
-  </div>
-
-  <!-- GRID VIEW -->
-  <div class="equip-grid" id="equip-grid">
-    <div class="loading-state">Carregando estoque...</div>
-  </div>
-
-  <!-- LIST VIEW -->
-  <div class="equip-list" id="equip-list"></div>
-
-  <!-- KITS SECTION (após equipamentos, colapsável) -->
+  <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
     <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
       <div class="kits-section-title">
@@ -1758,6 +1811,27 @@
       <!-- renderizado por JS -->
     </div>
   </div>
+
+  <!-- SECTION LABEL EQUIPAMENTOS (colapsável) -->
+  <div class="equip-section-title" id="equip-section-title" onclick="toggleSecaoEquipamentos()" style="cursor:pointer;user-select:none">
+    <div style="display:flex;align-items:center;gap:7px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Equipamentos
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg id="equip-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </div>
+
+  <!-- GRID VIEW -->
+  <div class="equip-grid" id="equip-grid">
+    <div class="loading-state">Carregando estoque...</div>
+  </div>
+
+  <!-- LIST VIEW -->
+  <div class="equip-list" id="equip-list"></div>
+
+
 
 </div>
 
@@ -1915,6 +1989,9 @@ function renderStats() {
   document.getElementById('stat-em-uso').textContent = totalEmUso;
   document.getElementById('stat-manutencao').textContent = totalManut;
   document.getElementById('stat-categorias').textContent = cats.size;
+  var kitsCount = Object.keys(_kits).length;
+  var statKits = document.getElementById('stat-kits');
+  if (statKits) statKits.textContent = kitsCount;
 }
 
 function renderCatTabs() {
@@ -3123,28 +3200,54 @@ function instalarApp() {
       </button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Nome do kit</label>
-        <input type="text" class="form-input" id="kit-nome" placeholder="Ex: Kit de Som #1" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Descrição (opcional)</label>
-        <input type="text" class="form-input" id="kit-desc" placeholder="PA completo, shows médios..." />
+
+      <!-- Seção colapsável: Nome e Descrição -->
+      <div class="kit-collapsible-section">
+        <div class="kit-collapsible-header" onclick="toggleKitSection('nome-desc', this)" data-open="1">
+          <div class="kit-collapsible-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Nome do kit e descrição
+          </div>
+          <svg class="kit-collapsible-arrow" style="transform:rotate(180deg)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="kit-collapsible-body open" id="kit-section-nome-desc">
+          <div class="form-group" style="margin-bottom:10px">
+            <label class="form-label">Nome do kit *</label>
+            <input type="text" class="form-input" id="kit-nome" placeholder="Ex: Kit de Som #1" />
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Descrição (opcional)</label>
+            <input type="text" class="form-input" id="kit-desc" placeholder="PA completo, shows médios..." />
+          </div>
+        </div>
       </div>
 
-      <div class="form-label" style="margin-bottom:8px">Equipamentos no kit</div>
-      <div class="kit-modal-drop" id="kit-drop-zone"
-        ondragover="kitDropZoneOver(event)"
-        ondragleave="kitDropZoneLeave(event)"
-        ondrop="kitDropZoneDrop(event)">
-        <div class="kit-modal-drop-empty" id="kit-drop-empty">Arraste equipamentos para cá</div>
+      <!-- Seção colapsável: Equipamentos no Kit -->
+      <div class="kit-collapsible-section">
+        <div class="kit-collapsible-header" onclick="toggleKitSection('equip-no-kit', this)" data-open="1">
+          <div class="kit-collapsible-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Equipamentos no kit
+          </div>
+          <svg class="kit-collapsible-arrow" style="transform:rotate(180deg)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="kit-collapsible-body open" id="kit-section-equip-no-kit">
+          <div class="kit-modal-drop" id="kit-drop-zone"
+            ondragover="kitDropZoneOver(event)"
+            ondragleave="kitDropZoneLeave(event)"
+            ondrop="kitDropZoneDrop(event)">
+            <div class="kit-modal-drop-empty" id="kit-drop-empty">Arraste equipamentos para cá ou clique em + abaixo</div>
+          </div>
+          <div style="margin-top:12px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#555;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Adicionar equipamento (clique ou arraste)
+            </div>
+            <input type="text" class="form-input" id="kit-search-eq" placeholder="Buscar equipamento..." oninput="renderKitSearchResults()" style="margin-bottom:6px" />
+            <div id="kit-search-results" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto"></div>
+          </div>
+        </div>
       </div>
-
-      <div class="form-label" style="margin-top:14px;margin-bottom:8px">Adicionar equipamento</div>
-      <div style="position:relative">
-        <input type="text" class="form-input" id="kit-search-eq" placeholder="Buscar equipamento..." oninput="renderKitSearchResults()" />
-      </div>
-      <div id="kit-search-results" style="margin-top:6px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto"></div>
 
       <!-- Seção de movimentação do kit (só aparece ao editar) -->
       <div id="kit-mov-section-container"></div>
@@ -3284,6 +3387,10 @@ function renderKits() {
     grid.style.maxHeight = '0';
     grid.style.opacity = '0';
   }
+
+  // Atualizar stat de kits
+  var statKits = document.getElementById('stat-kits');
+  if (statKits) statKits.textContent = Object.keys(_kits).length;
 }
 
 // ── Drag: eq card → kit folder ──
@@ -3755,7 +3862,9 @@ function kitDropZoneDrop(ev) {
   ev.preventDefault();
   var zone = document.getElementById('kit-drop-zone');
   if (zone) zone.classList.remove('drag-over');
-  if (_draggingEqId) adicionarItemKit(_draggingEqId);
+  // Pega o id do drag (pode vir de eq-cards externos ou de search results)
+  var eqId = _draggingEqId || ev.dataTransfer.getData('text/plain');
+  if (eqId) adicionarItemKit(eqId);
 }
 
 // ── Iniciar kits junto com estoque ──
@@ -3764,6 +3873,77 @@ iniciarEstoque = function() {
   _iniciarEstoqueOrigKit();
   iniciarKits();
 };
+
+// ── Seções colapsáveis do modal de kit ──
+function toggleKitSection(sectionId, headerEl) {
+  var body = document.getElementById('kit-section-' + sectionId);
+  if (!body) return;
+  var arrow = headerEl.querySelector('.kit-collapsible-arrow');
+  var isOpen = body.classList.contains('open');
+  if (isOpen) {
+    body.classList.remove('open');
+    if (arrow) arrow.style.transform = '';
+    headerEl.dataset.open = '0';
+  } else {
+    body.classList.add('open');
+    if (arrow) arrow.style.transform = 'rotate(180deg)';
+    headerEl.dataset.open = '1';
+  }
+}
+
+// ── renderKitSearchResults: itens arrastáveis ──
+var _renderKitSearchResultsOrig = renderKitSearchResults;
+renderKitSearchResults = function() {
+  var busca = (document.getElementById('kit-search-eq') ? document.getElementById('kit-search-eq').value : '').toLowerCase().trim();
+  var container = document.getElementById('kit-search-results');
+  if (!container) return;
+  var equips = Object.values(_equipamentos).filter(function(e) {
+    if (!busca) return true;
+    return (e.nome || '').toLowerCase().includes(busca) ||
+           (e.categoria || '').toLowerCase().includes(busca);
+  });
+  if (equips.length === 0 && busca) {
+    container.innerHTML = '<div style="font-size:0.72rem;color:#444;padding:8px 0;text-align:center;font-family:\'Barlow Condensed\',sans-serif;text-transform:uppercase;letter-spacing:0.06em">Nenhum equipamento encontrado</div>';
+    return;
+  }
+  container.innerHTML = equips.slice(0, 12).map(function(e) {
+    var itemNoKit = _kitItensAtual.find(function(it) { return it.equipId === e.id; });
+    var jaNoKit = !!itemNoKit;
+    return '<div class="kit-search-draggable" data-eq-id="' + esc(e.id) + '" style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);opacity:' + (jaNoKit ? '0.5' : '1') + '" draggable="true">' +
+      '<div style="width:28px;height:28px;background:var(--gold-dim);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0">' + _getEqSvg(e.emoji, 14) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(e.nome || 'Equip.') + '</div>' +
+        '<div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">' + esc(e.categoria || '') + '</div>' +
+      '</div>' +
+      (jaNoKit
+        ? '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;color:#444;text-transform:uppercase;letter-spacing:0.06em">× ' + (itemNoKit.qtd || 1) + '</div>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+      ) +
+    '</div>';
+  }).join('');
+
+  // Adicionar eventos de click e drag nos itens
+  container.querySelectorAll('.kit-search-draggable').forEach(function(el) {
+    var eqId = el.dataset.eqId;
+    if (!eqId) return;
+    // Click para adicionar
+    el.addEventListener('click', function() {
+      var jaNoKit = _kitItensAtual.some(function(it) { return it.equipId === eqId; });
+      if (!jaNoKit) adicionarItemKit(eqId);
+    });
+    // Drag para o drop-zone
+    el.addEventListener('dragstart', function(ev) {
+      ev.dataTransfer.setData('text/plain', eqId);
+      ev.dataTransfer.effectAllowed = 'copy';
+      setTimeout(function() { el.classList.add('dragging'); }, 0);
+    });
+    el.addEventListener('dragend', function() {
+      el.classList.remove('dragging');
+    });
+  });
+};
+
+// Sobrescrever a implementação antiga (a nova usa eventos em vez de onclick inline)
 </script>
 
 </body>
