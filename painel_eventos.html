@@ -46,48 +46,56 @@ body {
 
 /* ── LOGIN ── */
 #login-screen {
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  background: var(--darker);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--darker);
-  padding: 24px;
+  z-index: 9999;
+  padding: 20px;
 }
-
 .login-box {
-  background: var(--surface);
+  background: var(--dark);
   border: 1px solid var(--border);
-  border-top: 3px solid var(--gold);
-  border-radius: 8px;
-  padding: 40px 36px;
+  border-radius: 10px;
+  padding: 32px 28px;
   width: 100%;
-  max-width: 380px;
+  max-width: 340px;
+  overflow: hidden;
+  position: relative;
 }
-
+.login-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gold);
+  border-radius: 10px 10px 0 0;
+}
 .login-logo {
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-.login-title {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: var(--gold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
-
 .login-sub {
-  font-size: 0.72rem;
+  text-align: center;
+  font-size: 0.7rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-top: 4px;
+  margin-bottom: 24px;
 }
-
-.login-field { margin-bottom: 16px; }
-
+.login-field { margin-bottom: 14px; }
 .login-field label {
   display: block;
   font-size: 0.7rem;
@@ -97,7 +105,6 @@ body {
   letter-spacing: 0.1em;
   margin-bottom: 6px;
 }
-
 .login-field input {
   width: 100%;
   background: var(--darker);
@@ -105,41 +112,31 @@ body {
   color: var(--text);
   font-family: 'Barlow', sans-serif;
   font-size: 0.95rem;
-  padding: 11px 14px;
+  padding: 10px 13px;
   border-radius: 4px;
   outline: none;
   transition: border-color 0.2s;
 }
-
 .login-field input:focus { border-color: var(--gold); }
-
 .btn-login {
   width: 100%;
-  padding: 13px;
   background: var(--gold);
-  color: var(--dark);
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
+  padding: 13px;
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
-  margin-top: 8px;
-  transition: opacity 0.2s;
+  margin-top: 4px;
+  transition: opacity 0.15s;
 }
-
-.btn-login:hover { opacity: 0.9; }
-.btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.login-error {
-  color: #e55;
-  font-size: 0.8rem;
-  margin-top: 10px;
-  text-align: center;
-  display: none;
-}
+.btn-login:hover { opacity: 0.88; }
+.btn-login:disabled { opacity: 0.4; cursor: not-allowed; }
+.login-error { color: #e05c5c; font-size: 0.78rem; text-align: center; margin-top: 10px; display: none; }
 
 /* ── APP ── */
 #app-screen { display: none; }
@@ -1178,9 +1175,10 @@ header {
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">
-      <div class="login-title">Áudio de Qualidade</div>
-      <div class="login-sub">Painel de Eventos</div>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold)"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Painel de Eventos
     </div>
+    <div class="login-sub">Áudio de Qualidade</div>
     <div class="login-field">
       <label>E-mail</label>
       <input type="email" id="login-email" placeholder="seu@email.com" />
@@ -1193,7 +1191,6 @@ header {
     <div class="login-error" id="login-error"></div>
   </div>
 </div>
-
 <!-- APP -->
 <div id="app-screen">
   <header style="display:flex;align-items:center;justify-content:space-between;gap:12px">

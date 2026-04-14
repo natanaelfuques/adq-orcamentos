@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Relatórios – NF Soluções para Eventos</title>
+<title>Relatórios – ÁUDIO DE QUALIDADE</title>
 <meta content="#1a1a1a" name="theme-color"/>
 <meta content="yes" name="mobile-web-app-capable"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
@@ -433,56 +433,98 @@ header {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.login-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 3px solid var(--green);
-  border-radius: 10px;
-  padding: 36px 40px;
-  width: 340px;
-  text-align: center;
+#login-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--darker);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
 }
-.login-card h2 {
+.login-box {
+  background: var(--dark);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 340px;
+  overflow: hidden;
+  position: relative;
+}
+.login-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--green);
+  border-radius: 10px 10px 0 0;
+}
+.login-logo {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: var(--green);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.login-sub {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: 4px;
+  margin-bottom: 24px;
 }
-.login-card p { font-size: 0.8rem; color: var(--muted); margin-bottom: 24px; }
-.login-card input {
+.login-field { margin-bottom: 14px; }
+.login-field label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.login-field input {
   width: 100%;
   background: var(--darker);
-  border: 1px solid var(--border2);
+  border: 1px solid var(--border);
   color: var(--text);
   font-family: 'Barlow', sans-serif;
-  font-size: 0.9rem;
-  padding: 10px 14px;
-  border-radius: 5px;
+  font-size: 0.95rem;
+  padding: 10px 13px;
+  border-radius: 4px;
   outline: none;
-  margin-bottom: 10px;
+  transition: border-color 0.2s;
 }
-.login-card input:focus { border-color: var(--green); }
-.login-card button {
+.login-field input:focus { border-color: var(--green); }
+.btn-login {
   width: 100%;
   background: var(--green);
+  color: #fff;
   border: none;
-  color: #111;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 11px;
   border-radius: 5px;
+  padding: 13px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   cursor: pointer;
-  margin-top: 6px;
+  margin-top: 4px;
   transition: opacity 0.15s;
 }
-.login-card button:hover { opacity: 0.88; }
-.login-err { font-size: 0.78rem; color: var(--red); margin-top: 8px; }
+.btn-login:hover { opacity: 0.88; }
+.btn-login:disabled { opacity: 0.4; cursor: not-allowed; }
+.login-error { color: #e05c5c; font-size: 0.78rem; text-align: center; margin-top: 10px; display: none; }
 
 /* ── CONTABILIDADE ── */
 .cont-grid {
@@ -959,14 +1001,25 @@ header {
 </head>
 <body>
 <!-- ── LOGIN SCREEN ── -->
-<div class="screen" id="screen-login">
-<div class="login-card">
-<h2>Relatórios</h2>
-<p>NF Soluções para Eventos</p>
-<input autocomplete="username" id="inp-email" placeholder="E-mail" type="email"/>
-<input autocomplete="current-password" id="inp-senha" placeholder="Senha" type="password"/>
-<button onclick="fazerLogin()">Entrar</button>
-<div class="login-err" id="login-err"></div>
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg width="22" height="22" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:var(--green)"><rect width="36" height="36" x="1" y="1" rx="7" stroke="currentColor" stroke-width="1.5" fill="transparent"/><rect width="5" height="10" x="8" y="20" rx="1.5" fill="currentColor" opacity="0.5"/><rect width="5" height="17" x="16" y="13" rx="1.5" fill="currentColor" opacity="0.75"/><rect width="5" height="22" x="24" y="8" rx="1.5" fill="currentColor"/><polyline points="10.5,19 18.5,12 26.5,7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/><circle cx="26.5" cy="7" r="2" fill="currentColor"/></svg>
+      Relatórios
+    </div>
+    <div class="login-sub">ÁUDIO DE QUALIDADE</div>
+    <div class="login-field">
+      <label>E-mail</label>
+      <input type="email" id="inp-email" placeholder="seu@email.com" />
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="inp-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')fazerLogin()" />
+    </div>
+    <button class="btn-login" id="btn-login" onclick="fazerLogin()">Entrar</button>
+    <div class="login-error" id="login-err"></div>
+  </div>
+</div>
 </div>
 </div>
 <!-- ── LOADING ── -->
@@ -988,7 +1041,7 @@ header {
 </svg>
 <div>
 <div class="hdr-title">Relatórios</div>
-<div class="hdr-sub">NF Soluções para Eventos</div>
+<div class="hdr-sub">ÁUDIO DE QUALIDADE</div>
 </div>
 </div>
 <div class="hdr-right">
@@ -1183,7 +1236,7 @@ header {
 <div class="cont-grid">
 <div class="info-box">
 <strong>Empresa</strong>
-<span class="config-field-editable" data-config="empresa" data-field="nome" id="cont-nome">NF Soluções para Eventos Ltda (SLU)</span><br/>
+<span class="config-field-editable" data-config="empresa" data-field="nome" id="cont-nome">ÁUDIO DE QUALIDADE Ltda (SLU)</span><br/>
 CNPJ: <span class="config-field-editable" data-config="empresa" data-field="cnpj" id="cont-cnpj">—</span><br/>
 Regime: <span class="config-field-editable" data-config="empresa" data-field="regime" id="cont-regime">Simples Nacional</span>
 </div>
@@ -1265,14 +1318,14 @@ window.addEventListener('load', function() {
   db = firebase.firestore();
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
-      document.getElementById('screen-login').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'none';
       document.getElementById('screen-loading').style.display = 'flex';
       document.getElementById('user-info').textContent = user.email;
       const btnAdm = document.getElementById('btn-admin');
       if (btnAdm) btnAdm.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'flex' : 'none';
       carregarDados();
     } else {
-      document.getElementById('screen-login').style.display = 'flex';
+      document.getElementById('login-screen').style.display = 'flex';
       document.getElementById('screen-loading').style.display = 'none';
       document.getElementById('screen-app').style.display = 'none';
     }
@@ -2863,7 +2916,7 @@ function renderContabilidade() {
   if (db) {
     db.collection('config').doc('empresa').get().then(function(snap) {
       const d = snap.exists ? snap.data() : {};
-      document.getElementById('cont-nome').textContent   = d.nome   || 'NF Soluções para Eventos Ltda (SLU)';
+      document.getElementById('cont-nome').textContent   = d.nome   || 'ÁUDIO DE QUALIDADE Ltda (SLU)';
       document.getElementById('cont-cnpj').textContent   = d.cnpj   || '(a preencher)';
       document.getElementById('cont-regime').textContent = d.regime || 'Simples Nacional';
     }).catch(function() {
@@ -3248,7 +3301,7 @@ document.addEventListener('click', function(e) {
     var cnpjEl   = document.getElementById('cont-cnpj');
     var regimeEl = document.getElementById('cont-regime');
     var dadosAtuais = {
-      nome:   nomeEl   ? nomeEl.textContent   : 'NF Soluções para Eventos Ltda (SLU)',
+      nome:   nomeEl   ? nomeEl.textContent   : 'ÁUDIO DE QUALIDADE Ltda (SLU)',
       cnpj:   cnpjEl   ? cnpjEl.textContent   : '(a preencher)',
       regime: regimeEl ? regimeEl.textContent : 'Simples Nacional'
     };
