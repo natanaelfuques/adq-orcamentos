@@ -1933,7 +1933,7 @@ function deletarEquipamento(id) {
 
 // ── Helpers ──
 function fecharTodosModais() {
-  ['modal-form','modal-detalhe','modal-confirm'].forEach(function(id) {
+  ['modal-form','modal-detalhe','modal-confirm','modal-categorias'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.remove();
   });
@@ -2010,7 +2010,8 @@ function iniciarCategorias() {
       _categoriasCustom[doc.id] = Object.assign({ id: doc.id }, doc.data());
     });
     // Seed: criar categorias padrão se ainda não existirem
-    if (snap.empty) _seedCategorias();
+    var temPadrao = snap.docs.some(function(d) { return d.data().padrao; });
+    if (!temPadrao) _seedCategorias();
     _atualizarSelectsCat();
   }, function(err) { console.warn('[Categorias]', err); });
 }
