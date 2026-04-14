@@ -889,6 +889,8 @@
   .mov-tr-btn.active.uso-manut        { border-color: #5BA8E8;     background: rgba(91,168,232,0.08); }
   .mov-tr-btn.active.manut-uso        { border-color: var(--gold);  background: var(--gold-dim); }
   .mov-tr-btn.active.avaria           { border-color: var(--red);   background: rgba(224,92,92,0.08); }
+  .mov-tr-btn.active.retorno-estoque  { border-color: var(--green); background: rgba(37,211,102,0.08); }
+  .mov-tr-btn.active.aquisicao        { border-color: var(--gold);  background: var(--gold-dim); }
 
   .mov-tr-label {
     font-family: 'Barlow Condensed', sans-serif;
@@ -1792,8 +1794,10 @@ function abrirDetalhe(id) {
             '<div style="font-size:0.62rem;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:0.08em">' + esc(e.categoria || '') + (e.modelo ? ' · ' + esc(e.modelo) : '') + '</div>' +
           '</div>' +
         '</div>' +
-        '<button class="btn-modal-close" onclick="fecharTodosModais()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
-      '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          '<button onclick="_movTransicao(\'aquisicao\');document.getElementById(\'modal-detalhe\').querySelector(\'.mov-form\').scrollIntoView({behavior:\'smooth\',block:\'center\'})" style="display:flex;align-items:center;gap:6px;background:rgba(74,144,217,0.12);border:1px solid rgba(74,144,217,0.4);color:var(--gold);border-radius:5px;padding:0 12px;height:28px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:background 0.15s,border-color 0.15s,box-shadow 0.15s;white-space:nowrap" onmouseover="this.style.background=\'rgba(74,144,217,0.22)\';this.style.borderColor=\'rgba(74,144,217,0.75)\';this.style.boxShadow=\'0 0 10px rgba(74,144,217,0.25)\'" onmouseout="this.style.background=\'rgba(74,144,217,0.12)\';this.style.borderColor=\'rgba(74,144,217,0.4)\';this.style.boxShadow=\'none\'"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Aquisição</button>' +
+          '<button class="btn-modal-close" onclick="fecharTodosModais()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+        '</div>' +
 
       '<div class="modal-body">' +
         '<div class="eq-qty-row" style="margin-bottom:10px">' +
@@ -1842,16 +1846,21 @@ function abrirDetalhe(id) {
               '<div class="mov-tr-desc">Saiu direto da oficina</div>' +
             '</button>' +
 
-            '<button class="mov-tr-btn avaria" id="mtr-avaria" onclick="_movTransicao(\'avaria\')" style="grid-column:1/-1">' +
+            '<button class="mov-tr-btn avaria" id="mtr-avaria" onclick="_movTransicao(\'avaria\')">' +
               '<div class="mov-tr-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="state-pill avaria">Avaria / Baixa</span></div>' +
-              '<div class="mov-tr-desc">Remove unidades do estoque permanentemente</div>' +
+              '<div class="mov-tr-desc">Remove do estoque permanentemente</div>' +
+            '</button>' +
+
+            '<button class="mov-tr-btn retorno-estoque" id="mtr-retorno-estoque" onclick="_movTransicao(\'retorno-estoque\')">' +
+              '<div class="mov-tr-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg><span class="state-pill disp">Retornar ao Estoque</span></div>' +
+              '<div class="mov-tr-desc">Readiciona unidades ao total</div>' +
             '</button>' +
 
           '</div>' +
           '<div class="form-grid" style="margin-bottom:10px">' +
             '<div class="form-group" style="margin-bottom:0">' +
               '<label class="form-label">Quantidade</label>' +
-              '<input class="form-input" id="mov-qtd" type="number" min="1" max="' + total + '" value="1" placeholder="1" />' +
+              '<input class="form-input" id="mov-qtd" type="number" min="1" value="1" placeholder="1" />' +
             '</div>' +
             '<div class="form-group" style="margin-bottom:0">' +
               '<label class="form-label">Evento / Motivo</label>' +
@@ -1877,7 +1886,7 @@ var _movTransicaoAtual = 'disponivel-uso';
 
 function _movTransicao(transicao) {
   _movTransicaoAtual = transicao;
-  var todas = ['disponivel-uso','uso-disponivel','disponivel-manut','manut-disponivel','uso-manut','manut-uso','avaria'];
+  var todas = ['disponivel-uso','uso-disponivel','disponivel-manut','manut-disponivel','uso-manut','manut-uso','avaria','retorno-estoque','aquisicao'];
   todas.forEach(function(t) {
     var btn = document.getElementById('mtr-' + t);
     if (btn) btn.classList.remove('active');
@@ -1929,6 +1938,12 @@ function _registrarMovimentacao(equipId) {
     var reduzManut = Math.min(restante, novoManut); novoManut -= reduzManut; restante -= reduzManut;
     var reduzUso   = Math.min(restante, novoUso);   novoUso   -= reduzUso;   restante -= reduzUso;
     novoTotal -= qtd;
+  } else if (transicao === 'retorno-estoque') {
+    // Readiciona unidades ao total como disponíveis
+    novoTotal += qtd;
+  } else if (transicao === 'aquisicao') {
+    // Compra / entrada — aumenta total e disponível
+    novoTotal += qtd;
   }
 
   var novoDisp = Math.max(0, novoTotal - novoUso - novoManut);
@@ -1984,6 +1999,8 @@ function _carregarHistorico(equipId) {
         'uso-manut':        { label: 'Quebrou (Em Uso → Manut.)',     dotClass: 'manut' },
         'manut-uso':        { label: 'Saída direta (Manut. → Em Uso)', dotClass: 'out' },
         'avaria':           { label: 'Avaria / Baixa',                dotClass: 'out' },
+        'retorno-estoque':  { label: 'Retorno ao Estoque',             dotClass: 'in' },
+        'aquisicao':        { label: 'Aquisição / Entrada',             dotClass: 'in' },
         // legado (compatibilidade com registros antigos)
         'saida':            { label: 'Saída',       dotClass: 'out' },
         'retorno':          { label: 'Retorno',      dotClass: 'in' },
