@@ -19,6 +19,7 @@
   :root {
     --gold: #4A90D9;
     --gold-dim: rgba(74,144,217,0.08);
+    --amber: #F5A623;
     --dark: #1a1a1a;
     --darker: #111111;
     --surface: #242424;
@@ -438,7 +439,7 @@
   .qty-num.total { color: var(--text); }
   .qty-num.disponivel { color: var(--green); }
   .qty-num.em-uso { color: var(--gold); }
-  .qty-num.manutencao { color: var(--gold); }
+  .qty-num.manutencao { color: var(--amber); }
   .qty-label {
     font-size: 0.58rem;
     font-weight: 700;
@@ -1214,7 +1215,7 @@
     </div>
     <div class="stat-sep"></div>
     <div class="stat-item" onclick="filtrarStat('manutencao')" id="stat-btn-manutencao" title="Filtrar em manutenção" style="cursor:pointer">
-      <div class="stat-value" style="color:var(--gold)" id="stat-manutencao">0</div>
+      <div class="stat-value" style="color:var(--amber)" id="stat-manutencao">0</div>
       <div class="stat-label">Manutenção</div>
     </div>
     <div class="stat-sep"></div>
