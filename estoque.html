@@ -1116,7 +1116,7 @@
     .form-grid { grid-template-columns: 1fr; }
     .form-grid-3 { grid-template-columns: 1fr 1fr; }
     .btn-hd { padding: 0 7px; font-size: 0.65rem; height: 24px; }
-    .equip-section-title { padding: 0 12px; margin: 0 0 8px; }
+    .equip-section-title { padding: 0 12px 8px; margin: 0 0 8px; }
     .kits-section { padding: 0 12px 16px; }
     .kit-folder-eq-row { max-height: none; }
     .kit-folder-body { padding: 12px 14px 14px; }
@@ -1573,19 +1573,23 @@
 
   /* equipamentos section label */
   .equip-section-title {
-    padding: 0 24px;
+    padding: 0 24px 8px;
     margin-bottom: 10px;
+    border-bottom: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .equip-section-title-left {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--gold);
-    border-bottom: 1px solid var(--border2);
-    padding-bottom: 8px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 7px;
   }
   .equip-section-title span {
     font-size: 0.6rem;
@@ -2134,18 +2138,16 @@
   </div>
 
   <!-- SECTION LABEL EQUIPAMENTOS (colapsável) -->
-  <div class="equip-section-title" id="equip-section-title" onclick="toggleSecaoEquipamentos()" style="cursor:pointer;user-select:none">
-    <div style="display:flex;align-items:center;gap:7px">
+  <div class="equip-section-title" id="equip-section-title" onclick="toggleSecaoEquipamentos()" style="cursor:pointer;user-select:none;padding-top:8px">
+    <div class="equip-section-title-left">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
       Equipamentos
+      <svg id="equip-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;margin-left:4px;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="btn-novo-kit" onclick="event.stopPropagation();abrirModalAdd()">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Novo equipamento
-      </button>
-      <svg id="equip-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
-    </div>
+    <button class="btn-novo-kit" onclick="event.stopPropagation();abrirModalAdd()">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo equipamento
+    </button>
   </div>
 
   <!-- GRID VIEW -->
