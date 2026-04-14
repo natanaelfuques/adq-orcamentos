@@ -401,18 +401,18 @@ header {
   border-radius: 3px;
   border: 1px solid;
 }
-/* badges — letra cinza, somente borda colorida */
-.badge.pendente   { color: var(--muted); border-color: #F5A623;  background: transparent; }
-.badge.atrasado   { color: var(--muted); border-color: var(--red); background: transparent; }
-.badge.nota       { color: var(--muted); border-color: #27AE60;  background: transparent; }
-.badge.enviado    { color: var(--muted); border-color: #2E9E4F;  background: transparent; }
-.badge.assinado   { color: var(--muted); border-color: #4A90C8;  background: transparent; }
-.badge.aprovado   { color: var(--muted); border-color: #4A90C8;  background: transparent; }
-.badge.confirmado { color: var(--muted); border-color: #25D366;  background: transparent; }
-.badge.andamento  { color: var(--muted); border-color: #2E9E4F;  background: transparent; }
-.badge.concluido  { color: var(--muted); border-color: #25D366;  background: transparent; }
-.badge.cancelado  { color: var(--muted); border-color: #e05c5c;  background: transparent; }
-.badge.painel     { color: var(--muted); border-color: #8B5CF6;  background: transparent; }
+/* badges — letra cinza claro, somente borda colorida */
+.badge.pendente   { color: #aaa; border-color: #F5A623;  background: transparent; }
+.badge.atrasado   { color: #aaa; border-color: var(--red); background: transparent; }
+.badge.nota       { color: #aaa; border-color: #27AE60;  background: transparent; }
+.badge.enviado    { color: #aaa; border-color: #2E9E4F;  background: transparent; }
+.badge.assinado   { color: #aaa; border-color: #4A90C8;  background: transparent; }
+.badge.aprovado   { color: #aaa; border-color: #4A90C8;  background: transparent; }
+.badge.confirmado { color: #aaa; border-color: #25D366;  background: transparent; }
+.badge.andamento  { color: #aaa; border-color: #2E9E4F;  background: transparent; }
+.badge.concluido  { color: #aaa; border-color: #25D366;  background: transparent; }
+.badge.cancelado  { color: #aaa; border-color: #e05c5c;  background: transparent; }
+.badge.painel     { color: #aaa; border-color: #8B5CF6;  background: transparent; }
 
 /* ── LOADING / AUTH ── */
 .screen {
@@ -930,6 +930,7 @@ header {
   border-radius: 6px;
   padding: 12px 14px;
   margin-top: 12px;
+  max-width: 480px;
 }
 .pgto-calc-title {
   font-family: 'Barlow Condensed', sans-serif;
@@ -959,11 +960,11 @@ header {
   border: 1px solid;
   margin-left: 6px;
 }
-.pgto-status-badge.quitado { color: var(--muted); border-color: var(--green); background: transparent; }
-.pgto-status-badge.parcial { color: var(--muted); border-color: var(--orange); background: transparent; }
-.pgto-status-badge.pendente { color: var(--muted); border-color: #F5A623; background: transparent; }
-.pgto-status-badge.atrasado { color: var(--muted); border-color: var(--red); background: transparent; }
-.pgto-status-badge.naovence { color: var(--muted); border-color: var(--border2); background: transparent; }
+.pgto-status-badge.quitado { color: #aaa; border-color: var(--green); background: transparent; }
+.pgto-status-badge.parcial { color: #aaa; border-color: var(--orange); background: transparent; }
+.pgto-status-badge.pendente { color: #aaa; border-color: #F5A623; background: transparent; }
+.pgto-status-badge.atrasado { color: #aaa; border-color: var(--red); background: transparent; }
+.pgto-status-badge.naovence { color: #aaa; border-color: var(--border2); background: transparent; }
 .pgto-input-pago {
   background: var(--darker);
   border: 1px solid var(--border2);
@@ -2240,7 +2241,7 @@ function renderPagamentos() {
     return '<div class="pgto-card">' +
       '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
         '<div class="pgto-card-info">' +
-          '<div class="pgto-card-nome">' + descExib + (temParcelaAtrasada(ev) ? '<span class="pgto-status-badge" style="color:var(--muted);border-color:#e05c5c;background:transparent;margin-left:4px">⚠ Atrasado</span>' : '') + '</div>' +
+          '<div class="pgto-card-nome">' + descExib + (temParcelaAtrasada(ev) ? '<span class="pgto-status-badge" style="color:#aaa;border-color:#e05c5c;background:transparent;margin-left:4px">⚠ Atrasado</span>' : '') + '</div>' +
           '<div class="pgto-card-meta"><span class="pgto-card-data">' + datExib + '</span>' + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
         '</div>' +
         '<div class="pgto-card-valores">' +
@@ -2270,7 +2271,20 @@ function _pgtoEventoById(id) {
 }
 
 function togglePgtoCard(docId) {
-  _pgtoAbertos[docId] = !_pgtoAbertos[docId];
+  const isNowOpen = !_pgtoAbertos[docId];
+  // Se vai abrir, fechar todos os outros primeiro
+  if (isNowOpen) {
+    Object.keys(_pgtoAbertos).forEach(function(id) {
+      if (id !== docId && _pgtoAbertos[id]) {
+        _pgtoAbertos[id] = false;
+        const ob = document.getElementById('pgto-body-' + id);
+        const oa = document.getElementById('pgto-arrow-' + id);
+        if (ob) ob.classList.remove('open');
+        if (oa) oa.style.transform = 'rotate(0deg)';
+      }
+    });
+  }
+  _pgtoAbertos[docId] = isNowOpen;
   const body = document.getElementById('pgto-body-' + docId);
   const arrow = document.getElementById('pgto-arrow-' + docId);
   if (body) body.classList.toggle('open', !!_pgtoAbertos[docId]);
