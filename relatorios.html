@@ -401,18 +401,18 @@ header {
   border-radius: 3px;
   border: 1px solid;
 }
-/* badges — mesmas cores dos cards de contratos no index */
-.badge.pendente   { color: #F5A623;  border-color: #F5A623;  background: rgba(245,166,35,0.10); }
-.badge.atrasado   { color: var(--red); border-color: var(--red); background: rgba(224,92,92,0.12); }
-.badge.nota       { color: #27AE60;  border-color: #27AE60;  background: rgba(39,174,96,0.10); }
-.badge.enviado    { color: #2E9E4F;  border-color: #2E9E4F;  background: rgba(46,158,79,0.10); }
-.badge.assinado   { color: #4A90C8;  border-color: #4A90C8;  background: rgba(74,144,200,0.10); }
-.badge.aprovado   { color: #4A90C8;  border-color: #4A90C8;  background: rgba(74,144,200,0.10); }
-.badge.confirmado { color: #25D366;  border-color: #25D366;  background: rgba(37,211,102,0.10); }
-.badge.andamento  { color: #2E9E4F;  border-color: #2E9E4F;  background: rgba(46,158,79,0.10); }
-.badge.concluido  { color: #25D366;  border-color: #25D366;  background: rgba(37,211,102,0.10); }
-.badge.cancelado  { color: #e05c5c;  border-color: #e05c5c;  background: rgba(224,92,92,0.10); }
-.badge.painel     { color: #8B5CF6;  border-color: #8B5CF6;  background: rgba(139,92,246,0.15); }
+/* badges — letra cinza, somente borda colorida */
+.badge.pendente   { color: var(--muted); border-color: #F5A623;  background: transparent; }
+.badge.atrasado   { color: var(--muted); border-color: var(--red); background: transparent; }
+.badge.nota       { color: var(--muted); border-color: #27AE60;  background: transparent; }
+.badge.enviado    { color: var(--muted); border-color: #2E9E4F;  background: transparent; }
+.badge.assinado   { color: var(--muted); border-color: #4A90C8;  background: transparent; }
+.badge.aprovado   { color: var(--muted); border-color: #4A90C8;  background: transparent; }
+.badge.confirmado { color: var(--muted); border-color: #25D366;  background: transparent; }
+.badge.andamento  { color: var(--muted); border-color: #2E9E4F;  background: transparent; }
+.badge.concluido  { color: var(--muted); border-color: #25D366;  background: transparent; }
+.badge.cancelado  { color: var(--muted); border-color: #e05c5c;  background: transparent; }
+.badge.painel     { color: var(--muted); border-color: #8B5CF6;  background: transparent; }
 
 /* ── LOADING / AUTH ── */
 .screen {
@@ -783,7 +783,7 @@ header {
   gap: 10px;
   flex-wrap: wrap;
 }
-.pgto-card-header:hover { background: rgba(46,158,79,0.03); }
+.pgto-card-header:hover { background: rgba(180,180,180,0.05); }
 .pgto-card-info { flex: 1; min-width: 0; }
 .pgto-card-nome {
   font-weight: 700;
@@ -904,6 +904,7 @@ header {
   padding: 12px 14px;
   margin-bottom: 14px;
   font-size: 0.82rem;
+  max-width: 480px;
 }
 .pgto-resumo-pgto-title {
   font-family: 'Barlow Condensed', sans-serif;
@@ -958,11 +959,11 @@ header {
   border: 1px solid;
   margin-left: 6px;
 }
-.pgto-status-badge.quitado { color: var(--green); border-color: var(--green); background: rgba(37,211,102,0.08); }
-.pgto-status-badge.parcial { color: var(--orange); border-color: var(--orange); background: rgba(39,174,96,0.08); }
-.pgto-status-badge.pendente { color: #F5A623; border-color: #F5A623; background: rgba(245,166,35,0.10); }
-.pgto-status-badge.atrasado { color: var(--red); border-color: var(--red); background: rgba(224,92,92,0.12); }
-.pgto-status-badge.naovence { color: var(--muted); border-color: var(--border2); background: rgba(120,120,120,0.08); }
+.pgto-status-badge.quitado { color: var(--muted); border-color: var(--green); background: transparent; }
+.pgto-status-badge.parcial { color: var(--muted); border-color: var(--orange); background: transparent; }
+.pgto-status-badge.pendente { color: var(--muted); border-color: #F5A623; background: transparent; }
+.pgto-status-badge.atrasado { color: var(--muted); border-color: var(--red); background: transparent; }
+.pgto-status-badge.naovence { color: var(--muted); border-color: var(--border2); background: transparent; }
 .pgto-input-pago {
   background: var(--darker);
   border: 1px solid var(--border2);
@@ -2239,7 +2240,7 @@ function renderPagamentos() {
     return '<div class="pgto-card">' +
       '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
         '<div class="pgto-card-info">' +
-          '<div class="pgto-card-nome">' + descExib + (temParcelaAtrasada(ev) ? '<span class="pgto-status-badge" style="color:#e05c5c;border-color:#e05c5c;background:rgba(224,92,92,0.08);margin-left:4px">⚠ Atrasado</span>' : '') + '</div>' +
+          '<div class="pgto-card-nome">' + descExib + (temParcelaAtrasada(ev) ? '<span class="pgto-status-badge" style="color:var(--muted);border-color:#e05c5c;background:transparent;margin-left:4px">⚠ Atrasado</span>' : '') + '</div>' +
           '<div class="pgto-card-meta"><span class="pgto-card-data">' + datExib + '</span>' + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
         '</div>' +
         '<div class="pgto-card-valores">' +
