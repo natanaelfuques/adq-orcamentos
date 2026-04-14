@@ -320,8 +320,8 @@
   /* ── GRID ── */
   .equip-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px;
     padding: 0 24px 32px;
   }
 
@@ -344,7 +344,7 @@
   .eq-card.status-ok { border-color: rgba(37,211,102,0.2); }
 
   .eq-status-bar {
-    height: 3px;
+    height: 2px;
     width: 100%;
   }
   .status-bar-ok { background: linear-gradient(90deg, var(--green), rgba(37,211,102,0.4)); }
@@ -352,19 +352,19 @@
   .status-bar-manutencao { background: linear-gradient(90deg, #5BA8E8, rgba(91,168,232,0.4)); }
   .status-bar-indisponivel { background: linear-gradient(90deg, #555, rgba(85,85,85,0.4)); }
 
-  .eq-card-body { padding: 14px 16px; }
+  .eq-card-body { padding: 10px 12px; }
 
   .eq-top {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 8px;
+    margin-bottom: 8px;
   }
 
   .eq-icon {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     background: var(--gold-dim);
     border: 1px solid rgba(74,144,217,0.2);
     border-radius: 6px;
@@ -380,14 +380,14 @@
 
   .eq-name {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: var(--text);
     letter-spacing: 0.03em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
   }
 
   .eq-cat {
@@ -407,7 +407,7 @@
     background: none;
     border: 1px solid var(--border2);
     border-radius: 4px;
-    width: 26px; height: 26px;
+    width: 22px; height: 22px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -422,11 +422,11 @@
   .eq-qty-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-    padding: 8px 10px;
+    gap: 6px;
+    margin-bottom: 7px;
+    padding: 6px 8px;
     background: var(--surface2);
-    border-radius: 5px;
+    border-radius: 4px;
   }
 
   .qty-block {
@@ -438,7 +438,7 @@
   }
   .qty-num {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 800;
     line-height: 1;
   }
@@ -447,22 +447,22 @@
   .qty-num.em-uso { color: #F5A623; }
   .qty-num.manutencao { color: #e05c5c; }
   .qty-label {
-    font-size: 0.58rem;
+    font-size: 0.54rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     color: #555;
     white-space: nowrap;
   }
-  .qty-sep { width: 1px; height: 28px; background: var(--border2); flex-shrink: 0; }
+  .qty-sep { width: 1px; height: 22px; background: var(--border2); flex-shrink: 0; }
 
   /* Barra de disponibilidade */
   .avail-bar {
-    height: 4px;
+    height: 3px;
     background: var(--border2);
     border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 10px;
+    margin-bottom: 7px;
   }
   .avail-fill {
     height: 100%;
@@ -474,17 +474,17 @@
   .eq-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 10px;
+    gap: 3px;
+    margin-bottom: 6px;
   }
   .eq-tag {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 2px 8px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.05);
+    letter-spacing: 0.05em;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
     border: 1px solid var(--border2);
     color: #666;
   }
@@ -510,11 +510,92 @@
   }
 
   .eq-obs {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     color: #555;
-    line-height: 1.5;
+    line-height: 1.4;
     font-style: italic;
   }
+
+  /* ── SUB-ITENS / ACESSÓRIOS ── */
+  .eq-subitens-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 5px 0 0;
+    border-top: 1px solid var(--border2);
+    margin-top: 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #555;
+    transition: color 0.15s;
+    user-select: none;
+  }
+  .eq-subitens-toggle:hover { color: var(--gold); }
+  .eq-subitens-toggle svg { flex-shrink: 0; transition: transform 0.2s; }
+  .eq-subitens-toggle.open svg { transform: rotate(180deg); }
+  .eq-subitens-area {
+    display: none;
+    padding: 8px 0 0;
+    gap: 5px;
+    flex-direction: column;
+  }
+  .eq-subitens-area.open { display: flex; }
+  .subitem-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 8px;
+    background: var(--darker);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    font-size: 0.72rem;
+  }
+  .subitem-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .subitem-name {
+    flex: 1;
+    color: #aaa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .subitem-qty {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .subitem-qty-disp { color: var(--green); }
+  .subitem-qty-uso { color: var(--amber); }
+  .subitem-qty-zero { color: var(--red); }
+  .btn-add-subitem {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px dashed var(--border2);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #444;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-add-subitem:hover { border-color: var(--gold); color: var(--gold); }
 
   /* ── TAGS CLICÁVEIS ── */
   .eq-tag-clickable {
@@ -1198,44 +1279,44 @@
   .btn-novo-kit:hover { border-color: var(--gold); color: var(--gold); }
 
   .kits-grid {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 14px;
   }
 
   /* Kit folder card */
   .kit-folder {
-    width: 148px;
+    width: 100%;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
     cursor: pointer;
-    transition: border-color 0.15s, transform 0.15s;
+    transition: border-color 0.18s, transform 0.15s, box-shadow 0.18s;
     user-select: none;
     position: relative;
   }
-  .kit-folder:hover { border-color: #444; transform: translateY(-2px); }
+  .kit-folder:hover { border-color: #555; transform: translateY(-2px); box-shadow: 0 6px 28px rgba(0,0,0,0.4); }
   .kit-folder.drag-over-kit {
     border-color: var(--gold);
     background: var(--gold-dim);
     transform: translateY(-2px);
   }
   .kit-folder-top-bar {
-    height: 3px;
-    background: linear-gradient(90deg, #9b59b6, rgba(155,89,182,0.3));
+    height: 4px;
+    background: linear-gradient(90deg, #9b59b6, #4A90D9, rgba(155,89,182,0.2));
   }
   .kit-folder-body {
-    padding: 10px 12px 12px;
+    padding: 14px 16px 16px;
   }
   .kit-folder-preview {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    height: 56px;
-    margin-bottom: 10px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    height: 48px;
+    margin-bottom: 12px;
     background: var(--surface2);
-    border-radius: 5px;
+    border-radius: 6px;
     padding: 6px;
   }
   .kit-preview-item {
@@ -1254,21 +1335,106 @@
   }
   .kit-folder-name {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 700;
+    font-size: 1rem;
+    font-weight: 800;
     color: var(--text);
     letter-spacing: 0.03em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
   }
   .kit-folder-count {
-    font-size: 0.6rem;
+    font-size: 0.62rem;
     font-weight: 700;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .kit-folder-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .kit-folder-tag {
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border2);
+    color: #555;
+    white-space: nowrap;
+  }
+  .kit-folder-tag.ok {
+    background: rgba(37,211,102,0.08);
+    border-color: rgba(37,211,102,0.2);
+    color: var(--green);
+  }
+  .kit-folder-tag.warn {
+    background: rgba(245,166,35,0.08);
+    border-color: rgba(245,166,35,0.2);
+    color: var(--amber);
+  }
+  .kit-folder-tag.alerta {
+    background: rgba(224,92,92,0.08);
+    border-color: rgba(224,92,92,0.2);
+    color: var(--red);
+  }
+  .kit-folder-tag.blue {
+    background: rgba(74,144,217,0.08);
+    border-color: rgba(74,144,217,0.2);
+    color: var(--gold);
+  }
+  .kit-folder-eq-row {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 1px solid var(--border2);
+    padding-top: 10px;
+    max-height: 100px;
+    overflow: hidden;
+  }
+  .kit-folder-eq-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.7rem;
+    color: #888;
+  }
+  .kit-folder-eq-item-icon {
+    width: 18px;
+    height: 18px;
+    background: var(--surface2);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .kit-folder-eq-item-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .kit-folder-eq-item-qty {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #555;
+    flex-shrink: 0;
+  }
+  .kit-folder-eq-more {
+    font-size: 0.6rem;
+    color: #444;
+    font-style: italic;
+    text-align: right;
   }
   .kit-folder-status {
     position: absolute;
@@ -1284,8 +1450,8 @@
 
   /* novo kit btn */
   .kit-novo-card {
-    width: 148px;
-    height: 116px;
+    width: 100%;
+    min-height: 110px;
     background: transparent;
     border: 1px dashed var(--border);
     border-radius: 8px;
@@ -1311,7 +1477,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     width: 100%;
-    max-width: 520px;
+    max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
     animation: slideUp 0.2s ease;
@@ -2251,8 +2417,51 @@ function buildCard(e) {
 
       (tags ? '<div class="eq-tags">' + tags + '</div>' : '') +
       (e.obs ? '<div class="eq-obs">' + esc(e.obs) + '</div>' : '') +
+      _buildSubitensToggle(e) +
     '</div>' +
   '</div>';
+}
+
+// ── Sub-itens: build toggle/display in card ──
+function _buildSubitensToggle(e) {
+  var subitens = Array.isArray(e.subitens) ? e.subitens : [];
+  if (subitens.length === 0) {
+    // Só mostra o botão de adicionar (vai abrir no detalhe)
+    return '<div class="eq-subitens-toggle" onclick="event.stopPropagation();abrirDetalhe(\'' + e.id + '\')" title="Gerenciar acessórios">' +
+      '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+      'Adicionar acessórios' +
+    '</div>';
+  }
+  var uid = 'sub-' + e.id;
+  var itemsHtml = subitens.map(function(s) {
+    var dispS = s.qtd_disponivel || 0;
+    var totalS = s.qtd_total || 0;
+    var dotColor = dispS === 0 ? 'var(--red)' : dispS < totalS ? 'var(--amber)' : 'var(--green)';
+    var qtyClass = dispS === 0 ? 'subitem-qty-zero' : (dispS < totalS ? 'subitem-qty-uso' : 'subitem-qty-disp');
+    return '<div class="subitem-row">' +
+      '<div class="subitem-dot" style="background:' + dotColor + '"></div>' +
+      '<span class="subitem-name">' + esc(s.nome || '') + '</span>' +
+      '<span class="subitem-qty ' + qtyClass + '">' + dispS + '/' + totalS + '</span>' +
+    '</div>';
+  }).join('');
+  return '<div class="eq-subitens-toggle" onclick="event.stopPropagation();_toggleSubitens(this,\'' + uid + '\')" id="btn-' + uid + '">' +
+    '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
+    'Acessórios (' + subitens.length + ')' +
+  '</div>' +
+  '<div class="eq-subitens-area" id="' + uid + '">' +
+    itemsHtml +
+    '<button class="btn-add-subitem" onclick="event.stopPropagation();abrirDetalhe(\'' + e.id + '\')" title="Gerenciar acessórios">' +
+      '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+      'Gerenciar' +
+    '</button>' +
+  '</div>';
+}
+
+function _toggleSubitens(btn, uid) {
+  var area = document.getElementById(uid);
+  if (!area) return;
+  area.classList.toggle('open');
+  btn.classList.toggle('open');
 }
 
 // ── Modal Add/Edit ──
@@ -2532,6 +2741,8 @@ function abrirDetalhe(id) {
           '<button onclick="_registrarMovimentacao(\'' + id + '\')" style="width:100%;background:var(--gold);color:#fff;border:none;border-radius:4px;padding:10px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s" onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'">Registrar</button>' +
         '</div>' +
 
+        '<div class="section-title" style="margin-top:20px">Acessórios / Sub-itens</div>' +
+        '<div id="subitens-container"></div>' +
         '<div class="section-title" style="margin-top:20px">Histórico</div>' +
         '<div id="historico-container"><div style="text-align:center;padding:20px;color:#555;font-size:0.78rem">Carregando...</div></div>' +
       '</div>' +
@@ -2542,9 +2753,238 @@ function abrirDetalhe(id) {
 
   _movTransicaoAtual = 'disponivel-uso';
   _carregarHistorico(id);
+  _renderSubitensSection(id);
 }
 
 var _movTransicaoAtual = 'disponivel-uso';
+
+function _renderSubitensSection(equipId) {
+  var container = document.getElementById('subitens-container');
+  if (!container) return;
+  var e = _equipamentos[equipId];
+  if (!e) return;
+  var subitens = Array.isArray(e.subitens) ? e.subitens : [];
+
+  var html = '';
+  if (subitens.length === 0) {
+    html = '<div style="text-align:center;padding:14px;color:#444;font-size:0.78rem;font-style:italic">Nenhum acessório cadastrado.</div>';
+  } else {
+    html = '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">' +
+      subitens.map(function(s, idx) {
+        var dispS = s.qtd_disponivel || 0;
+        var totalS = s.qtd_total || 0;
+        var emUsoS = s.qtd_em_uso || 0;
+        var manutS = s.qtd_manutencao || 0;
+        var pctS = totalS > 0 ? Math.round((dispS / totalS) * 100) : 0;
+        var barColorS = pctS === 0 ? '#e05c5c' : pctS < 50 ? '#5BA8E8' : '#25D366';
+        return '<div style="background:var(--darker);border:1px solid var(--border2);border-radius:6px;padding:10px 12px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
+            '<div style="display:flex;align-items:center;gap:7px">' +
+              '<div style="width:6px;height:6px;border-radius:50%;background:' + barColorS + ';flex-shrink:0"></div>' +
+              '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.88rem;font-weight:700;color:var(--text)">' + esc(s.nome || '') + '</span>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:5px">' +
+              '<button onclick="_abrirMovSubitem(\'' + equipId + '\',' + idx + ')" style="background:none;border:1px solid #333;color:#555;border-radius:3px;padding:2px 8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor=\'var(--gold)\';this.style.color=\'var(--gold)\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#555\'">Movimentar</button>' +
+              '<button onclick="_editarSubitem(\'' + equipId + '\',' + idx + ')" style="background:none;border:1px solid #333;color:#555;border-radius:3px;padding:2px 8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor=\'#555\';this.style.color=\'#bbb\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#555\'">Editar</button>' +
+              '<button onclick="_excluirSubitem(\'' + equipId + '\',' + idx + ')" style="background:none;border:1px solid #333;color:#555;border-radius:3px;padding:2px 8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor=\'var(--red)\';this.style.color=\'var(--red)\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#555\'">×</button>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;margin-bottom:6px">' +
+            '<div style="text-align:center"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1rem;font-weight:800;color:var(--text)">' + totalS + '</div><div style="font-size:0.56rem;color:#555;text-transform:uppercase;font-weight:700">Total</div></div>' +
+            '<div style="width:1px;height:28px;background:#2a2a2a;align-self:center"></div>' +
+            '<div style="text-align:center"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1rem;font-weight:800;color:var(--green)">' + dispS + '</div><div style="font-size:0.56rem;color:#555;text-transform:uppercase;font-weight:700">Disp.</div></div>' +
+            '<div style="width:1px;height:28px;background:#2a2a2a;align-self:center"></div>' +
+            '<div style="text-align:center"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1rem;font-weight:800;color:#F5A623">' + emUsoS + '</div><div style="font-size:0.56rem;color:#555;text-transform:uppercase;font-weight:700">Em uso</div></div>' +
+            (manutS > 0 ? '<div style="width:1px;height:28px;background:#2a2a2a;align-self:center"></div><div style="text-align:center"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1rem;font-weight:800;color:var(--red)">' + manutS + '</div><div style="font-size:0.56rem;color:#555;text-transform:uppercase;font-weight:700">Manut.</div></div>' : '') +
+          '</div>' +
+          '<div style="height:3px;background:var(--border2);border-radius:2px;overflow:hidden"><div style="height:100%;border-radius:2px;background:' + barColorS + ';width:' + pctS + '%"></div></div>' +
+          (s.obs ? '<div style="margin-top:4px;font-size:0.65rem;color:#444;font-style:italic">' + esc(s.obs) + '</div>' : '') +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
+  html += '<button onclick="_abrirFormNovoSubitem(\'' + equipId + '\')" style="width:100%;background:none;border:1px dashed #333;border-radius:5px;padding:9px;color:#555;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor=\'var(--gold)\';this.style.color=\'var(--gold)\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#555\'">' +
+    '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+    '+ Novo Acessório / Sub-item' +
+  '</button>' +
+  '<div id="subitem-form-inline" style="display:none;margin-top:10px;background:var(--surface2);border:1px solid rgba(74,144,217,0.3);border-radius:6px;padding:14px"></div>';
+
+  container.innerHTML = html;
+}
+
+function _abrirFormNovoSubitem(equipId) {
+  var form = document.getElementById('subitem-form-inline');
+  if (!form) return;
+  form.style.display = 'block';
+  form.innerHTML =
+    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:12px">Novo Acessório</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+      '<div><label class="form-label">Nome *</label><input class="form-input" id="si-nome" placeholder="Ex: Cabo P10, Suporte..." /></div>' +
+      '<div><label class="form-label">Total em estoque</label><input class="form-input" id="si-total" type="number" min="0" value="1" /></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+      '<div><label class="form-label">Em uso</label><input class="form-input" id="si-uso" type="number" min="0" value="0" /></div>' +
+      '<div><label class="form-label">Manutenção</label><input class="form-input" id="si-manut" type="number" min="0" value="0" /></div>' +
+    '</div>' +
+    '<div style="margin-bottom:10px"><label class="form-label">Obs.</label><input class="form-input" id="si-obs" placeholder="Notas..." /></div>' +
+    '<div style="display:flex;gap:8px">' +
+      '<button onclick="_salvarSubitem(\'' + equipId + '\', -1)" style="flex:1;background:var(--gold);color:#fff;border:none;border-radius:4px;padding:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Adicionar</button>' +
+      '<button onclick="document.getElementById(\'subitem-form-inline\').style.display=\'none\'" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;padding:9px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;cursor:pointer">Cancelar</button>' +
+    '</div>';
+  form.querySelector('#si-nome').focus();
+}
+
+function _editarSubitem(equipId, idx) {
+  var e = _equipamentos[equipId];
+  if (!e) return;
+  var subitens = Array.isArray(e.subitens) ? e.subitens.slice() : [];
+  var s = subitens[idx];
+  if (!s) return;
+  var form = document.getElementById('subitem-form-inline');
+  if (!form) return;
+  form.style.display = 'block';
+  form.innerHTML =
+    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:12px">Editar: ' + esc(s.nome || '') + '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+      '<div><label class="form-label">Nome *</label><input class="form-input" id="si-nome" value="' + esc(s.nome || '') + '" /></div>' +
+      '<div><label class="form-label">Total</label><input class="form-input" id="si-total" type="number" min="0" value="' + (s.qtd_total || 0) + '" /></div>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+      '<div><label class="form-label">Em uso</label><input class="form-input" id="si-uso" type="number" min="0" value="' + (s.qtd_em_uso || 0) + '" /></div>' +
+      '<div><label class="form-label">Manutenção</label><input class="form-input" id="si-manut" type="number" min="0" value="' + (s.qtd_manutencao || 0) + '" /></div>' +
+    '</div>' +
+    '<div style="margin-bottom:10px"><label class="form-label">Obs.</label><input class="form-input" id="si-obs" value="' + esc(s.obs || '') + '" /></div>' +
+    '<div style="display:flex;gap:8px">' +
+      '<button onclick="_salvarSubitem(\'' + equipId + '\', ' + idx + ')" style="flex:1;background:var(--gold);color:#fff;border:none;border-radius:4px;padding:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Salvar</button>' +
+      '<button onclick="document.getElementById(\'subitem-form-inline\').style.display=\'none\'" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;padding:9px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;cursor:pointer">Cancelar</button>' +
+    '</div>';
+}
+
+function _salvarSubitem(equipId, idx) {
+  var nome = (document.getElementById('si-nome').value || '').trim();
+  if (!nome) { toast('Informe o nome do acessório.', true); return; }
+  var total = parseInt(document.getElementById('si-total').value) || 0;
+  var uso = parseInt(document.getElementById('si-uso').value) || 0;
+  var manut = parseInt(document.getElementById('si-manut').value) || 0;
+  var disp = Math.max(0, total - uso - manut);
+  var obs = (document.getElementById('si-obs').value || '').trim();
+
+  var e = _equipamentos[equipId];
+  if (!e) return;
+  var subitens = Array.isArray(e.subitens) ? e.subitens.slice() : [];
+
+  var novoItem = { nome: nome, qtd_total: total, qtd_disponivel: disp, qtd_em_uso: uso, qtd_manutencao: manut, obs: obs };
+  if (idx === -1) {
+    subitens.push(novoItem);
+  } else {
+    subitens[idx] = novoItem;
+  }
+
+  db.collection('estoque').doc(equipId).update({ subitens: subitens, _atualizado: Date.now() })
+    .then(function() {
+      toast(idx === -1 ? 'Acessório adicionado!' : 'Acessório atualizado!');
+      var form = document.getElementById('subitem-form-inline');
+      if (form) form.style.display = 'none';
+      setTimeout(function() { _renderSubitensSection(equipId); }, 300);
+    })
+    .catch(function(err) { toast('Erro: ' + err.message, true); });
+}
+
+function _excluirSubitem(equipId, idx) {
+  var e = _equipamentos[equipId];
+  if (!e) return;
+  var subitens = Array.isArray(e.subitens) ? e.subitens.slice() : [];
+  subitens.splice(idx, 1);
+  db.collection('estoque').doc(equipId).update({ subitens: subitens, _atualizado: Date.now() })
+    .then(function() {
+      toast('Acessório removido.');
+      setTimeout(function() { _renderSubitensSection(equipId); }, 300);
+    })
+    .catch(function(err) { toast('Erro: ' + err.message, true); });
+}
+
+function _abrirMovSubitem(equipId, idx) {
+  var e = _equipamentos[equipId];
+  if (!e) return;
+  var subitens = Array.isArray(e.subitens) ? e.subitens : [];
+  var s = subitens[idx];
+  if (!s) return;
+
+  var form = document.getElementById('subitem-form-inline');
+  if (!form) return;
+  form.style.display = 'block';
+  form.innerHTML =
+    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Movimentar: ' + esc(s.nome || '') + '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">' +
+      ['disponivel-uso','uso-disponivel','disponivel-manut','manut-disponivel'].map(function(tr) {
+        var labels = { 'disponivel-uso':'Disp→Em Uso', 'uso-disponivel':'Em Uso→Disp', 'disponivel-manut':'Disp→Manut', 'manut-disponivel':'Manut→Disp' };
+        return '<button onclick="_mov_sub_type=\'' + tr + '\'" class="mov-tr-btn" id="smtr-' + tr + '" style="padding:7px 6px" onclick="_smovType=\'' + tr + '\'">' +
+          '<div class="mov-tr-label" style="font-size:0.62rem">' + labels[tr] + '</div>' +
+        '</button>';
+      }).join('') +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
+      '<div><label class="form-label">Quantidade</label><input class="form-input" id="si-mov-qtd" type="number" min="1" value="1" /></div>' +
+      '<div><label class="form-label">Motivo</label><input class="form-input" id="si-mov-mot" placeholder="Ex: Evento..." /></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px">' +
+      '<button onclick="_registrarMovSubitem(\'' + equipId + '\',' + idx + ')" style="flex:1;background:var(--gold);color:#fff;border:none;border-radius:4px;padding:9px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Registrar</button>' +
+      '<button onclick="document.getElementById(\'subitem-form-inline\').style.display=\'none\'" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;padding:9px 14px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;cursor:pointer">Cancelar</button>' +
+    '</div>';
+  // init first button active
+  var first = form.querySelector('#smtr-disponivel-uso');
+  if (first) first.classList.add('active', 'disponivel-uso');
+  form.querySelectorAll('.mov-tr-btn').forEach(function(b) {
+    b.addEventListener('click', function() {
+      form.querySelectorAll('.mov-tr-btn').forEach(function(x) { x.classList.remove('active','disponivel-uso','uso-disponivel','disponivel-manut','manut-disponivel'); });
+      var tr = b.id.replace('smtr-','');
+      b.classList.add('active', tr);
+      window._smovTypeSub = tr;
+    });
+  });
+  window._smovTypeSub = 'disponivel-uso';
+}
+
+function _registrarMovSubitem(equipId, idx) {
+  var tipo = window._smovTypeSub || 'disponivel-uso';
+  var qtd = parseInt(document.getElementById('si-mov-qtd').value) || 1;
+  var e = _equipamentos[equipId];
+  if (!e) return;
+  var subitens = Array.isArray(e.subitens) ? e.subitens.slice() : [];
+  var s = Object.assign({}, subitens[idx]);
+  if (!s) return;
+
+  var total = s.qtd_total || 0;
+  var uso = s.qtd_em_uso || 0;
+  var manut = s.qtd_manutencao || 0;
+  var disp = Math.max(0, total - uso - manut);
+
+  if (tipo === 'disponivel-uso') {
+    if (qtd > disp) { toast('Disponível: apenas ' + disp, true); return; }
+    s.qtd_em_uso = uso + qtd;
+  } else if (tipo === 'uso-disponivel') {
+    if (qtd > uso) { toast('Em uso: apenas ' + uso, true); return; }
+    s.qtd_em_uso = uso - qtd;
+  } else if (tipo === 'disponivel-manut') {
+    if (qtd > disp) { toast('Disponível: apenas ' + disp, true); return; }
+    s.qtd_manutencao = manut + qtd;
+  } else if (tipo === 'manut-disponivel') {
+    if (qtd > manut) { toast('Manut.: apenas ' + manut, true); return; }
+    s.qtd_manutencao = manut - qtd;
+  }
+  s.qtd_disponivel = Math.max(0, (s.qtd_total || 0) - (s.qtd_em_uso || 0) - (s.qtd_manutencao || 0));
+  subitens[idx] = s;
+
+  db.collection('estoque').doc(equipId).update({ subitens: subitens, _atualizado: Date.now() })
+    .then(function() {
+      toast('Movimentação do acessório registrada!');
+      var form = document.getElementById('subitem-form-inline');
+      if (form) form.style.display = 'none';
+      setTimeout(function() { _renderSubitensSection(equipId); }, 300);
+    })
+    .catch(function(err) { toast('Erro: ' + err.message, true); });
+}
 
 function _movTransicao(transicao) {
   _movTransicaoAtual = transicao;
@@ -3353,12 +3793,45 @@ function renderKits() {
     shown.forEach(function(it) {
       var eq = _equipamentos[it.equipId];
       if (!eq) return;
-      var svgStr = _getEqSvg(eq.emoji, 13);
+      var svgStr = _getEqSvg(eq.emoji, 12);
       previewHtml += '<div class="kit-preview-item">' + svgStr + '</div>';
     });
     for (var i = shown.length; i < 4; i++) {
       previewHtml += '<div class="kit-preview-empty"></div>';
     }
+
+    // Custo total estimado do kit
+    var custoTotal = 0;
+    itens.forEach(function(it) {
+      var eq = _equipamentos[it.equipId];
+      if (eq && eq.valor_unitario) custoTotal += (eq.valor_unitario * (it.qtd || 1));
+    });
+
+    // Lista de equipamentos para exibir no card
+    var eqListHtml = '';
+    itens.slice(0, 4).forEach(function(it) {
+      var eq = _equipamentos[it.equipId];
+      if (!eq) return;
+      var eqDisp = eq.qtd_disponivel || 0;
+      var eqQtdNeed = it.qtd || 1;
+      var eqStatusColor = eqDisp >= eqQtdNeed ? 'var(--green)' : (eqDisp > 0 ? 'var(--amber)' : 'var(--red)');
+      eqListHtml += '<div class="kit-folder-eq-item">' +
+        '<div class="kit-folder-eq-item-icon">' + _getEqSvg(eq.emoji, 10) + '</div>' +
+        '<span class="kit-folder-eq-item-name">' + esc(eq.nome || '') + '</span>' +
+        '<span class="kit-folder-eq-item-qty" style="color:' + eqStatusColor + '">' + eqQtdNeed + 'un</span>' +
+      '</div>';
+    });
+    if (itens.length > 4) {
+      eqListHtml += '<div class="kit-folder-eq-more">+ ' + (itens.length - 4) + ' mais</div>';
+    }
+
+    // Tags de status do kit
+    var tagsHtml = '';
+    if (temZero) tagsHtml += '<span class="kit-folder-tag alerta">Estoque insuficiente</span>';
+    else if (temWarn) tagsHtml += '<span class="kit-folder-tag warn">Parcial manut.</span>';
+    else if (itens.length > 0) tagsHtml += '<span class="kit-folder-tag ok">Disponível</span>';
+    if (kit.descricao) tagsHtml += '<span class="kit-folder-tag blue">' + esc(kit.descricao.substring(0,20)) + '</span>';
+    if (custoTotal > 0) tagsHtml += '<span class="kit-folder-tag">R$ ' + custoTotal.toLocaleString('pt-BR') + '</span>';
 
     html += '<div class="kit-folder" id="kit-card-' + esc(kit.id) + '"' +
       ' ondragover="kitFolderOver(event,\'' + esc(kit.id) + '\')"' +
@@ -3369,7 +3842,9 @@ function renderKits() {
       '<div class="kit-folder-body">' +
         '<div class="kit-folder-preview">' + previewHtml + '</div>' +
         '<div class="kit-folder-name" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</div>' +
-        '<div class="kit-folder-count">' + qtdItens + ' ' + (qtdItens === 1 ? 'tipo' : 'tipos') + ' · ' + count + ' un.</div>' +
+        '<div class="kit-folder-count">' + qtdItens + ' ' + (qtdItens === 1 ? 'tipo' : 'tipos') + ' · ' + count + ' un. total</div>' +
+        '<div class="kit-folder-meta">' + tagsHtml + '</div>' +
+        (eqListHtml ? '<div class="kit-folder-eq-row">' + eqListHtml + '</div>' : '') +
       '</div>' +
       '<div class="kit-folder-status' + (statusClass ? ' ' + statusClass : '') + '"></div>' +
     '</div>';
