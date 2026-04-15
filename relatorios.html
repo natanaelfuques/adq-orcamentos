@@ -2374,7 +2374,7 @@ function buildCustomParcelasEditorHTML(ev) {
       '<input class="pgto-custom-inp-label" type="text" placeholder="Descrição" value="' + (p.label || '').replace(/"/g, '&quot;') + '" id="pgto-clabel-' + docId + '-' + i + '">' +
       '<input class="pgto-custom-inp-val" type="text" placeholder="R$ 0,00" value="' + (parseFloat(p.valor) || 0).toFixed(2).replace('.', ',') + '" id="pgto-cval-' + docId + '-' + i + '">' +
       '<input class="pgto-custom-inp-venc" type="date" value="' + (p.vencimento || '') + '" id="pgto-cvenc-' + docId + '-' + i + '">' +
-      '<button class="pgto-custom-btn-del" onclick="removerParcelaCustom('' + docId + '',' + i + ')" title="Remover">' +
+      '<button class="pgto-custom-btn-del" onclick="removerParcelaCustom(\'' + docId + '\',' + i + ')" title="Remover">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
       '</button>' +
     '</div>';
@@ -2390,17 +2390,17 @@ function buildCustomParcelasEditorHTML(ev) {
     '</div>' +
     '<div id="pgto-custom-rows-' + docId + '">' + inputRows + '</div>' +
     '<div class="pgto-custom-actions">' +
-      '<button class="pgto-custom-btn-add" onclick="adicionarParcelaCustom('' + docId + '','' + total.toFixed(2) + '')">' +
+      '<button class="pgto-custom-btn-add" onclick="adicionarParcelaCustom(\'' + docId + '\',\'' + total.toFixed(2) + '\')">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
         'Adicionar entrada' +
       '</button>' +
       (restanteParcelar > 0.01
-        ? '<button class="pgto-custom-btn-auto" onclick="distribuirAutomatico('' + docId + '','' + total.toFixed(2) + '')" style="margin-left:6px">' +
+        ? '<button class="pgto-custom-btn-auto" onclick="distribuirAutomatico(\'' + docId + '\',\'' + total.toFixed(2) + '\')" style="margin-left:6px">' +
             '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' +
             'Distribuir restante (' + frs(restanteParcelar) + ')' +
           '</button>'
         : '') +
-      '<button class="pgto-custom-btn-save" onclick="salvarParcelasCustom('' + docId + '')">' +
+      '<button class="pgto-custom-btn-save" onclick="salvarParcelasCustom(\'' + docId + '\')">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>' +
         'Salvar entradas' +
       '</button>' +
