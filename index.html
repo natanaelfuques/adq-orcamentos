@@ -107,7 +107,7 @@
   .include-toggle input:checked + span { color: var(--gold); }
 
   @media (max-width: 600px) {
-    .include-toggle span { display: none; }
+    .collapse-header .include-toggle span { display: none; }
   }
   .tab-disabled .collapse-body { opacity: 0.4; pointer-events: none; }
 
@@ -2093,18 +2093,20 @@ Revestimento</textarea>
           <input type="text" id="cli_doc" placeholder="000.000.000-00" oninput="validarDoc(this)">
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 160px 140px;gap:16px;margin-top:0;margin-bottom:16px">
-        <div>
+      <div style="margin-top:0;margin-bottom:16px">
+        <div style="margin-bottom:16px">
           <label>Endereço</label>
           <input type="text" id="cli_end" placeholder="Rua, nº, Bairro">
         </div>
-        <div>
-          <label>Cidade</label>
-          <input type="text" id="cli_cidade" placeholder="Ex: Brusque/SC">
-        </div>
-        <div>
-          <label>CEP</label>
-          <input type="text" id="cli_cep" placeholder="Ex: 88350-000" oninput="validarCep(this)">
+        <div class="grid-2">
+          <div>
+            <label>Cidade</label>
+            <input type="text" id="cli_cidade" placeholder="Ex: Brusque/SC">
+          </div>
+          <div>
+            <label>CEP</label>
+            <input type="text" id="cli_cep" placeholder="Ex: 88350-000" oninput="validarCep(this)">
+          </div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 180px;gap:16px;margin-top:0">
@@ -3496,6 +3498,10 @@ function gerarOrcamento() {
   const dataEvt    = document.getElementById('data_evento').value;
   const dataFmt    = new Date().toLocaleDateString('pt-BR');   // data de hoje (orçamento)
   const dataEvento = dataEvt ? formatarData(dataEvt) : dataFmt; // data do evento
+  const _multidiaChkOrc = document.getElementById('chk_multidia');
+  const _dataFimElOrc   = document.getElementById('data_fim');
+  const multidiaOrc     = !!(_multidiaChkOrc && _multidiaChkOrc.checked);
+  const dataFimOrc      = (multidiaOrc && _dataFimElOrc && _dataFimElOrc.value) ? formatarData(_dataFimElOrc.value) : '';
 
   const incCliente   = document.getElementById('inc_cliente').checked;
   const incOpcoes    = document.getElementById('inc_opcoes').checked;
@@ -3531,7 +3537,7 @@ function gerarOrcamento() {
     }
   }
 
-  const html = buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento,
+  const html = buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, multidiaOrc, dataFimOrc,
     incCliente, incOpcoes, incPagamento,
     incOp1, incOp2, incOp3,
     incDetalhado, detItens, detValor,
@@ -3570,7 +3576,7 @@ function imprimirPDF() {
   }
 }
 
-function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, incCliente, incOpcoes, incPagamento, incOp1, incOp2, incOp3, incDetalhado, detItens, detValor, desc1, desc2, desc3, v1, v2, v3, pg }) {
+function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, multidiaOrc, dataFimOrc, incCliente, incOpcoes, incPagamento, incOp1, incOp2, incOp3, incDetalhado, detItens, detValor, desc1, desc2, desc3, v1, v2, v3, pg }) {
   const linhas = (txt) => txt.split('\n')
     .filter(l => l.trim())
     .map(l => `<li>${l.replace(/^[•\-]\s*/, '')}</li>`)
@@ -3683,7 +3689,7 @@ function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, incCl
     <div class="client-right">
       <div class="label">&nbsp;</div>
       <p><strong>Local:</strong> ${local}</p>
-      <p><strong>Data:</strong> ${dataEvento}</p>
+      <p><strong>Data${multidiaOrc ? ' Início' : ''}:</strong> ${dataEvento}${multidiaOrc && dataFimOrc ? ` &nbsp;|&nbsp; <strong>Término:</strong> ${dataFimOrc}` : ''}</p>
     </div>
   </div>` : ''}
 
