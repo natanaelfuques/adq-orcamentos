@@ -3297,20 +3297,31 @@ function buildPgtoModalHTML(ev) {
         const vp = p.vencimento.split('-');
         if (vp.length === 3) vencStr = new Date(parseInt(vp[0]), parseInt(vp[1]) - 1, parseInt(vp[2])).toLocaleDateString('pt-BR');
       }
-      const itemClass = temAlerta ? 'pgto-parcela-item alerta' : isAuto ? 'pgto-parcela-item auto' : 'pgto-parcela-item futuro';
-      const icon = temAlerta ? '⚠' : isAuto ? '✓' : '○';
+      const notaEmMonitorAuto = ev._origem === 'nota' && status === 'alerta' && !temAlerta && !notaPaga;
+      const itemClass = notaPaga ? 'pgto-parcela-item auto' : temAlerta || notaEmMonitorAuto ? 'pgto-parcela-item alerta' : isAuto ? 'pgto-parcela-item auto' : 'pgto-parcela-item futuro';
+      const icon = notaPaga ? '✓' : temAlerta || notaEmMonitorAuto ? '⚠' : isAuto ? '✓' : '○';
       let statusTxt = '';
-      if (temAlerta) {
+      if (notaPaga) {
+        statusTxt = 'Pagamento confirmado';
+      } else if (temAlerta) {
         const info = alertas.find(function(a) { return a.parcela_idx === p.idx; });
         statusTxt = (info ? info.motivo : 'Pendência manual') + (info && info.data ? ' · ' + info.data : '');
+      } else if (notaEmMonitorAuto) {
+        statusTxt = 'Não recebido · ' + (vencStr || 'data passada');
       } else if (isAuto) {
         statusTxt = 'Recebido automaticamente' + (vencStr ? ' · venceu ' + vencStr : '');
       } else {
         statusTxt = vencStr ? 'Vence em: ' + vencStr : 'Sem data definida';
       }
-      const actionBtn = temAlerta
-        ? '<button class="pgto-resolver-btn" onclick="resolverAlerta(\'' + docId + '\',' + p.idx + ');fecharPgtoModal()">✓ Resolver</button>'
-        : '<button class="pgto-alerta-btn" onclick="promptSinalizarProblema(\'' + docId + '\',' + p.idx + ')">⚠ Problema</button>';
+      // Notas em monitoramento automático (data passou, sem pgto_alertas): botão resolve confirmando pagamento
+      const notaEmMonitorAuto = ev._origem === 'nota' && status === 'alerta' && !temAlerta && !notaPaga;
+      const actionBtn = notaPaga
+        ? '' // já pago: sem botão
+        : temAlerta
+          ? '<button class="pgto-resolver-btn" onclick="resolverAlerta(\'' + docId + '\',' + p.idx + ');fecharPgtoModal()">✓ Resolver</button>'
+          : notaEmMonitorAuto
+            ? '<button class="pgto-resolver-btn" onclick="togglePagamentoVista(event,\'' + docId + '\');fecharPgtoModal()">✓ Resolver</button>'
+            : '<button class="pgto-alerta-btn" onclick="promptSinalizarProblema(\'' + docId + '\',' + p.idx + ')">⚠ Problema</button>';
       return '<div class="' + itemClass + '">' +
         '<div class="pgto-parcela-icon">' + icon + '</div>' +
         '<div class="pgto-parcela-info">' +
