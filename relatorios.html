@@ -2608,9 +2608,10 @@ function togglePagamentoVista(e, docId) {
       })
       .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
   } else {
-    db.collection('notas').doc(docId).update({ pgto_valor_avulso: total })
+    // Confirma pagamento: salva valor + limpa alertas pendentes
+    db.collection('notas').doc(docId).update({ pgto_valor_avulso: total, pgto_alertas: [] })
       .then(function() {
-        _pgtoUpdateLocal(docId, { pgto_valor_avulso: total });
+        _pgtoUpdateLocal(docId, { pgto_valor_avulso: total, pgto_alertas: [] });
         _pgtoDirty[docId] = true;
         _pgtoRefreshCardDOM(docId);
         _editorToast('Pagamento confirmado ✓');
@@ -3285,9 +3286,12 @@ function buildPgtoModalHTML(ev) {
   if (customEditorHTML) {
     parcelasHTML = customEditorHTML;
   } else {
+    // Para notas pagas via avulso, ignora alertas residuais
+    const notaPaga = ev._origem === 'nota' && pago >= total - 0.05 && total > 0;
+
     const rows = parcelas.map(function(p) {
-      const temAlerta = temAlertaParcela(ev, p.idx);
-      const isAuto = !temAlerta && isParcelaPagaAuto(p, ev, hoje);
+      const temAlerta = notaPaga ? false : temAlertaParcela(ev, p.idx);
+      const isAuto = notaPaga ? true : (!temAlerta && isParcelaPagaAuto(p, ev, hoje));
       let vencStr = '';
       if (p.vencimento) {
         const vp = p.vencimento.split('-');
