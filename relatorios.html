@@ -2493,13 +2493,37 @@ function salvarParcelasCustom(docId) {
 }
 
 function renderPagamentos() {
-  // Usa TODOS os eventos (sem filtro de período) — controle financeiro precisa de visão completa
-  const todosContratos = _contratos.map(function(c) { return Object.assign({}, c, { _origem: 'contrato' }); });
+  // Respeita o filtro de período global (_dataIni/_dataFim) — igual às outras abas
+  // Filtra pela data DO EVENTO (ev_data), com fallback para criadoEm
+  function _dentroPeríodoPgto(doc) {
+    if (!_dataIni && !_dataFim) return true;
+    const evStr = doc.ev_data || doc.data_evento || doc.dataEvt || '';
+    let d = null;
+    if (evStr) {
+      const p = evStr.split('-');
+      if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+    }
+    if (!d) d = tsToDate(doc.criadoEm);
+    if (!d) return true;
+    if (_dataIni && d < _dataIni) return false;
+    if (_dataFim && d > _dataFim) return false;
+    return true;
+  }
+  const todosContratos = _contratos.filter(_dentroPeríodoPgto).map(function(c) { return Object.assign({}, c, { _origem: 'contrato' }); });
   const notaIdsComContrato = new Set(todosContratos.map(function(c) { return c.nota_id; }).filter(Boolean));
-  const todosNotas = _notas.filter(function(n) { return !notaIdsComContrato.has(n.id); });
+  const todosNotas = _notas.filter(_dentroPeríodoPgto).filter(function(n) { return !notaIdsComContrato.has(n.id); });
+  const _temCardAberto = Object.values(_pgtoAbertos).some(function(v) { return v; });
   const todosBase = [...todosContratos, ...todosNotas]
     .filter(function(e) { return valorEv(e) > 0 && !e.removido_manualmente; })
     .sort(function(a, b) {
+      // Se há algum card aberto, mantém a ordem atual para evitar troca de posição
+      // durante o preenchimento. A reordenação ocorre só quando não há card aberto.
+      if (_temCardAberto) {
+        // Mantém a ordem estável baseada no ID para não embaralhar
+        if (a.id < b.id) return -1;
+        if (a.id > b.id) return 1;
+        return 0;
+      }
       // Ordenar: atrasados primeiro, depois pendentes, parciais, quitados
       const ord = { pendente: 0, parcial: 1, quitado: 2 };
       const sa = getStatusPgto(a), sb = getStatusPgto(b);
@@ -2702,6 +2726,10 @@ function togglePgtoCard(docId) {
   const arrow = document.getElementById('pgto-arrow-' + docId);
   if (body) body.classList.toggle('open', !!_pgtoAbertos[docId]);
   if (arrow) arrow.style.transform = 'rotate(' + (_pgtoAbertos[docId] ? '180' : '0') + 'deg)';
+  // Ao FECHAR um card, re-renderiza para aplicar a ordenação por status atualizada
+  if (!isNowOpen) {
+    setTimeout(function() { renderPagamentos(); }, 320);
+  }
 }
 
 // ══════════════════════════════════════════
