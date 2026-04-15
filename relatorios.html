@@ -1033,6 +1033,28 @@ header {
   color: var(--muted);
   margin-bottom: 12px;
 }
+.pgto-separador-passados {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 20px;
+}
+.pgto-separador-linha {
+  flex: 1;
+  height: 1px;
+  background: var(--border2);
+  opacity: 0.5;
+}
+.pgto-separador-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  white-space: nowrap;
+  opacity: 0.7;
+}
 .pgto-filtros {
   display: flex;
   gap: 8px;
@@ -2788,22 +2810,63 @@ function renderPagamentos() {
   comAlerta.sort(function(a, b) { return _dataEvNum(a) - _dataEvNum(b); });
   semAlerta.sort(function(a, b) { return _dataEvNum(a) - _dataEvNum(b); });
 
+  // Separar próximos e passados (data do evento < hoje = passado)
+  const hojeMs = (function() { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
+  function _isPast(ev) { const t = _dataEvNum(ev); return t !== Infinity && t < hojeMs; }
+
+  const alertasFuturos  = comAlerta.filter(function(ev) { return !_isPast(ev); });
+  const alertasPassados = comAlerta.filter(function(ev) { return  _isPast(ev); });
+  const normaisFuturos  = semAlerta.filter(function(ev) { return !_isPast(ev); });
+  const normaisPassados = semAlerta.filter(function(ev) { return  _isPast(ev); });
+
+  // Helper: renderiza uma grade de cards
+  function _grade(arr) {
+    return '<div class="pgto-grid">' + arr.map(function(ev) { return buildPgtoCard(ev); }).join('') + '</div>';
+  }
+
+  // Separador visual "Eventos já realizados"
+  const separador =
+    '<div class="pgto-separador-passados">' +
+      '<div class="pgto-separador-linha"></div>' +
+      '<span class="pgto-separador-label">Eventos já realizados</span>' +
+      '<div class="pgto-separador-linha"></div>' +
+    '</div>';
+
   let html = '';
 
-  // Seção Monitoramento (só se houver eventos com alerta)
-  if (comAlerta.length > 0) {
+  // Monitoramento — futuros
+  if (alertasFuturos.length > 0) {
     html += '<div class="pgto-monitoramento-sec">' +
-      '<div class="pgto-monitoramento-header">⚠&nbsp; Monitoramento — ' + comAlerta.length + ' evento(s) com pendência manual</div>' +
-      '<div class="pgto-grid">' + comAlerta.map(function(ev) { return buildPgtoCard(ev); }).join('') + '</div>' +
+      '<div class="pgto-monitoramento-header">⚠&nbsp; Monitoramento — ' + alertasFuturos.length + ' evento(s) com pendência manual</div>' +
+      _grade(alertasFuturos) +
       '</div>';
   }
 
-  // Seção normal
-  if (semAlerta.length > 0) {
-    const labelNormal = comAlerta.length > 0
-      ? '<div class="pgto-normal-header">Pagamentos em dia — ' + semAlerta.length + ' evento(s)</div>'
-      : '';
-    html += labelNormal + '<div class="pgto-grid">' + semAlerta.map(function(ev) { return buildPgtoCard(ev); }).join('') + '</div>';
+  // Normais — futuros
+  if (normaisFuturos.length > 0) {
+    const label = (alertasFuturos.length > 0)
+      ? '<div class="pgto-normal-header">Pagamentos em dia — ' + normaisFuturos.length + ' evento(s)</div>' : '';
+    html += label + _grade(normaisFuturos);
+  }
+
+  // Separador (só se tiver passados para mostrar)
+  const temPassados = alertasPassados.length > 0 || normaisPassados.length > 0;
+  const temFuturos  = alertasFuturos.length  > 0 || normaisFuturos.length  > 0;
+  if (temPassados && temFuturos) html += separador;
+
+  // Monitoramento — passados
+  if (alertasPassados.length > 0) {
+    html += '<div class="pgto-monitoramento-sec" style="margin-top:0">' +
+      '<div class="pgto-monitoramento-header">⚠&nbsp; Monitoramento — ' + alertasPassados.length + ' evento(s) já realizados com pendência</div>' +
+      _grade(alertasPassados) +
+      '</div>';
+  }
+
+  // Normais — passados
+  if (normaisPassados.length > 0) {
+    const label = (alertasPassados.length > 0 || temFuturos)
+      ? '<div class="pgto-normal-header" style="margin-top:' + (alertasPassados.length > 0 ? '20px' : '0') + '">' + normaisPassados.length + ' evento(s) já realizados</div>' : '';
+    html += label + _grade(normaisPassados);
   }
 
   container.innerHTML = html;
