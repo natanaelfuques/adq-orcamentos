@@ -1503,23 +1503,17 @@ header {
           <input type="text" id="qtd_pessoas" placeholder="Ex: 120 convidados" />
         </div>
       </div>
-      <div class="grid-2">
-        <div>
-          <label>Data do Evento</label>
-          <input type="date" id="data_evento"
-            style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
-            onchange="sincronizarDataDate(this);_atualizarDuracaoEvento()" />
-        </div>
-        <div>
-          <label>WhatsApp do Cliente</label>
-          <input type="tel" id="whatsapp_cliente" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20" />
-        </div>
+      <div style="margin-bottom:0">
+        <label>Data do Evento</label>
+        <input type="date" id="data_evento"
+          style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
+          onchange="sincronizarDataDate(this);_atualizarDuracaoEvento()" />
       </div>
       <!-- Toggle multi-dia -->
-      <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+      <div style="margin-top:7px;display:flex;align-items:center;gap:8px;opacity:0.65">
         <label class="include-toggle" onclick="event.stopPropagation();_toggleMultiDia(this.querySelector('input'))">
           <input type="checkbox" id="chk_multidia" onchange="_toggleMultiDia(this)" />
-          <span>Evento com mais de um dia</span>
+          <span style="font-size:0.7rem;letter-spacing:0.06em">Evento com mais de um dia</span>
         </label>
       </div>
       <!-- Painel data_fim (oculto por padrão) -->
@@ -1535,6 +1529,10 @@ header {
             <span id="label_duracao" style="font-size:0.8rem;color:var(--gold);font-weight:600;letter-spacing:0.04em"></span>
           </div>
         </div>
+      </div>
+      <div style="margin-top:16px">
+        <label>WhatsApp do Cliente</label>
+        <input type="tel" id="whatsapp_cliente" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20" />
       </div>
     </div>
   </div>
