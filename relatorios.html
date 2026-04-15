@@ -2010,9 +2010,11 @@ function _verificarPronto() {
       });
     });
   } else {
-    // Se há cards de pagamento abertos, não reposiciona — só atualiza dados locais
+    // Se há cards abertos COM dirty (interação em andamento), não reposiciona
+    // Cards abertos sem dirty (ex: após salvar recebimento) recebem re-render normal
     const temAberto = Object.keys(_pgtoAbertos).some(function(id) { return _pgtoAbertos[id]; });
-    if (temAberto) {
+    const temDirtyAberto = Object.keys(_pgtoDirty).some(function(id) { return _pgtoAbertos[id]; });
+    if (temAberto && temDirtyAberto) {
       // Renderiza todas as outras abas normalmente
       renderFinanceiro();
       renderContratos();
@@ -3326,16 +3328,15 @@ function salvarRecebimentoModal(docId) {
   if (!inp) return;
   const novoValor = parseBRL(inp.value);
   if (isNaN(novoValor) || novoValor < 0) { _editorToast('Valor inválido', true); return; }
-  const total = valorEv(ev);
   const upd = { pgto_valor_avulso: novoValor };
-  if (novoValor >= total - 0.05 && total > 0) upd.status_pgto = 'quitado';
-  else if (novoValor > 0) upd.status_pgto = 'parcial';
-  else upd.status_pgto = 'pendente';
   db.collection(col).doc(docId).update(upd)
     .then(function() {
       _pgtoUpdateLocal(docId, upd);
       _editorToast('Recebimento salvo!');
       fecharPgtoModal();
+      // Limpa estado de aberto/dirty para garantir re-render limpo
+      delete _pgtoAbertos[docId];
+      delete _pgtoDirty[docId];
       renderPagamentos();
     })
     .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
@@ -3350,8 +3351,10 @@ function limparRecebimentoModal(docId) {
   db.collection(col).doc(docId).update(upd)
     .then(function() {
       _pgtoUpdateLocal(docId, upd);
-      _editorToast('Recebimento manual removido. Voltando ao automático.');
+      _editorToast('Recebimento removido. Voltando ao automático.');
       fecharPgtoModal();
+      delete _pgtoAbertos[docId];
+      delete _pgtoDirty[docId];
       renderPagamentos();
     })
     .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
