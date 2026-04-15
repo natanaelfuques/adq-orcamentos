@@ -832,6 +832,8 @@ header {
 .pgto-chip.auto { border-color: rgba(37,211,102,0.35); color: #25D366; background: rgba(37,211,102,0.06); }
 .pgto-chip.futuro { border-color: var(--border2); color: var(--muted); background: transparent; }
 .pgto-chip.alerta { border-color: rgba(224,92,92,0.45); color: #e05c5c; background: rgba(224,92,92,0.07); }
+.pgto-chip-toggle { cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.pgto-chip-toggle:hover { opacity: 0.75; transform: scale(0.96); }
 .pgto-card-vals {
   display: flex;
   align-items: center;
@@ -852,8 +854,12 @@ header {
 .pgto-chips-body { margin-bottom: 12px; }
 .pgto-card-body-actions {
   display: flex;
-  justify-content: flex-end;
-  padding-top: 4px;
+  justify-content: center;
+  padding: 4px 16px 4px;
+}
+.pgto-card-body-actions .pgto-info-btn {
+  width: 100%;
+  text-align: center;
 }
 .pgto-info-btn {
   background: transparent;
@@ -2520,6 +2526,80 @@ function promptSinalizarProblema(docId, parcelaIdx) {
   sinalizarProblema(docId, parcelaIdx, motivo || 'Não recebido');
 }
 
+/* Toggle direto no chip: verde/futuro → alerta; alerta → resolve */
+function toggleAlertaChip(e, docId, parcelaIdx) {
+  e.stopPropagation();
+  const ev = _pgtoEventoById(docId);
+  if (!ev) return;
+  if (temAlertaParcela(ev, parcelaIdx)) {
+    // já tem alerta → resolve
+    resolverAlerta(docId, parcelaIdx);
+  } else {
+    // não tem alerta → sinaliza problema sem prompt
+    sinalizarProblema(docId, parcelaIdx, 'Não recebido');
+  }
+}
+
+/* ── EDITOR MODE: funções do modal de pagamento ── */
+
+/* Recalcula o total em tempo real enquanto o usuário edita os inputs */
+function pgtoEditorCalcTotal(docId) {
+  let novoTotal = 0;
+  document.querySelectorAll('.pgto-editor-parcela-input[data-docid="' + docId + '"]').forEach(function(inp) {
+    novoTotal += parseBRL(inp.value) || 0;
+  });
+  const el = document.getElementById('pgto-ed-total-' + docId);
+  if (el) el.textContent = frs(novoTotal);
+}
+
+/* Salva os novos valores das parcelas no Firestore */
+function pgtoEditorSalvarParcelas(docId) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  const parcelas = getParcelas(ev);
+  const novasParcelas = parcelas.map(function(p) {
+    const inp = document.getElementById('pgto-ed-p-' + docId + '-' + p.idx);
+    const novoValor = inp ? (parseBRL(inp.value) || p.valor) : p.valor;
+    return Object.assign({}, p, { valor: novoValor });
+  });
+  // Calcula novo total
+  const novoTotal = novasParcelas.reduce(function(s, p) { return s + p.valor; }, 0);
+
+  // Determina o campo correto de parcelas customizadas
+  let update = {};
+  if (ev.pgto_tipo === 'custom' || ev.pgto_sel === 'custom') {
+    const novoPgtoCustom = novasParcelas.map(function(p) {
+      return { label: p.label, valor: p.valor, vencimento: p.vencimento || '' };
+    });
+    update.pgto_parcelas_custom = novoPgtoCustom;
+  }
+  // Atualiza o valor total principal (val_total ou valorTotal)
+  const campoValor = ev.val_total !== undefined ? 'val_total' : 'valorTotal';
+  update[campoValor] = novoTotal.toFixed(2);
+
+  db.collection(col).doc(docId).update(update)
+    .then(function() {
+      _pgtoUpdateLocal(docId, update);
+      _editorToast('Valores salvos');
+      fecharPgtoModal();
+      renderPagamentos();
+    })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
+/* Reseta os inputs para os valores originais */
+function pgtoEditorResetar(docId) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev) return;
+  const parcelas = getParcelas(ev);
+  parcelas.forEach(function(p) {
+    const inp = document.getElementById('pgto-ed-p-' + docId + '-' + p.idx);
+    if (inp) inp.value = p.valor.toFixed(2).replace('.', ',');
+  });
+  pgtoEditorCalcTotal(docId);
+}
+
 function filtroPgto(filtro, btn) {
   _pgtoFiltro = filtro;
   document.querySelectorAll('.pgto-filtro-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -2955,9 +3035,16 @@ function buildPgtoCardBody(ev, docId) {
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
 
   const chips = parcelas.map(function(p) {
-    if (temAlertaParcela(ev, p.idx)) return '<span class="pgto-chip alerta">⚠ ' + p.label + '</span>';
-    if (isParcelaPagaAuto(p, ev, hoje)) return '<span class="pgto-chip auto">✓ ' + p.label + '</span>';
-    return '<span class="pgto-chip futuro">' + p.label + '</span>';
+    if (temAlertaParcela(ev, p.idx)) {
+      // Chip vermelho → clique resolve o alerta
+      return '<span class="pgto-chip alerta pgto-chip-toggle" title="Clique para marcar como resolvido" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">⚠ ' + p.label + '</span>';
+    }
+    if (isParcelaPagaAuto(p, ev, hoje)) {
+      // Chip verde → clique sinaliza problema
+      return '<span class="pgto-chip auto pgto-chip-toggle" title="Clique para sinalizar problema" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">✓ ' + p.label + '</span>';
+    }
+    // Chip futuro → clique sinaliza problema
+    return '<span class="pgto-chip futuro pgto-chip-toggle" title="Clique para sinalizar problema" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">' + p.label + '</span>';
   }).join('');
 
   return '<div class="pgto-chips pgto-chips-body">' + chips + '</div>' +
@@ -3166,9 +3253,45 @@ function buildPgtoModalHTML(ev) {
       '</div>'
     : '';
 
+  // Banner + seção de edição de parcelas (só no modo editor)
+  const editorBannerHTML = _editorModeAtivo
+    ? '<div style="display:flex;align-items:center;gap:8px;background:rgba(46,158,79,0.1);border:1px solid rgba(46,158,79,0.25);border-radius:8px;padding:8px 12px;margin-bottom:14px">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="#2E9E4F"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>' +
+        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:700;color:#2E9E4F;text-transform:uppercase;letter-spacing:0.06em">Modo Editor ativo — edite os valores das parcelas abaixo</span>' +
+      '</div>'
+    : '';
+
+  const editorParcelasHTML = _editorModeAtivo
+    ? '<div style="margin-top:14px;border:1px solid rgba(46,158,79,0.2);border-radius:8px;padding:14px 16px;background:rgba(46,158,79,0.04)">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#2E9E4F;margin-bottom:10px">Editar valores das parcelas</div>' +
+        parcelas.map(function(p) {
+          return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+            '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;color:var(--muted);min-width:110px;flex-shrink:0">' + p.label + '</span>' +
+            '<div style="display:flex;align-items:center;gap:4px;flex:1">' +
+              '<span style="font-size:0.75rem;color:var(--muted)">R$</span>' +
+              '<input class="pgto-editor-parcela-input" type="text"' +
+                ' id="pgto-ed-p-' + docId + '-' + p.idx + '"' +
+                ' data-docid="' + docId + '" data-idx="' + p.idx + '"' +
+                ' value="' + p.valor.toFixed(2).replace('.', ',') + '"' +
+                ' oninput="pgtoEditorCalcTotal(\'' + docId + '\')"' +
+                ' style="flex:1;background:var(--surface);border:1px solid rgba(46,158,79,0.3);border-radius:6px;color:var(--text);padding:5px 10px;font-size:0.8rem;font-family:\'Barlow Condensed\',sans-serif;outline:none">' +
+            '</div>' +
+          '</div>';
+        }).join('') +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">' +
+          '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;color:var(--muted)">Novo total:</span>' +
+          '<span id="pgto-ed-total-' + docId + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.9rem;font-weight:700;color:var(--green)">' + frs(total) + '</span>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;margin-top:10px">' +
+          '<button class="pgto-btn-salvar" style="flex:1" onclick="pgtoEditorSalvarParcelas(\'' + docId + '\')">Salvar alterações</button>' +
+          '<button class="pgto-alerta-btn" style="font-size:0.68rem;padding:5px 14px" onclick="pgtoEditorResetar(\'' + docId + '\')">Resetar</button>' +
+        '</div>' +
+      '</div>'
+    : '';
+
   return '<div class="pgto-modal-box" onclick="event.stopPropagation()">' +
     headerHTML +
-    '<div class="pgto-modal-body">' + progressHTML + resumoHTML + parcelasHTML + calcHTML + recebimentoHTML + '</div>' +
+    '<div class="pgto-modal-body">' + editorBannerHTML + progressHTML + resumoHTML + parcelasHTML + calcHTML + recebimentoHTML + editorParcelasHTML + '</div>' +
   '</div>';
 }
 
