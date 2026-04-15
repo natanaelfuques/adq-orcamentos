@@ -1790,7 +1790,14 @@ function tsToDate(ts) {
 
 function dentroDoPeríodo(doc) {
   if (!_dataIni && !_dataFim) return true;
-  const d = tsToDate(doc.criadoEm);
+  // Usa a data REAL do evento como referência principal; fallback para criadoEm
+  const evStr = doc.ev_data || doc.data_evento || doc.dataEvt || '';
+  let d = null;
+  if (evStr) {
+    const p = evStr.split('-');
+    if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+  }
+  if (!d) d = tsToDate(doc.criadoEm);
   if (!d) return true;
   if (_dataIni && d < _dataIni) return false;
   if (_dataFim && d > _dataFim) return false;
@@ -2753,12 +2760,15 @@ function renderFinanceiro() {
 
   // Mês atual — contratos + notas, sem duplicatas (notas que viraram contrato não entram duas vezes)
   const hoje = new Date();
-  const _notaIdsComContMes = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  const _notaIdsComContMes = new Set(contratosFiltrados().map(c => c.nota_id).filter(Boolean));
   const todosMes = [
-    ..._contratos.map(c => ({ ...c, _origem: 'contrato' })),
-    ..._notas.filter(n => !_notaIdsComContMes.has(n.id))
+    ...contratosFiltrados().map(c => ({ ...c, _origem: 'contrato' })),
+    ...notasFiltradas().filter(n => !_notaIdsComContMes.has(n.id))
   ].filter(e => {
-    const d = tsToDate(e.criadoEm);
+    const evStr = e.ev_data || e.data_evento || e.dataEvt || '';
+    let d = null;
+    if (evStr) { const p = evStr.split('-'); if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2])); }
+    if (!d) d = tsToDate(e.criadoEm);
     return d && d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
   });
   const recMes = todosMes.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)))
@@ -2790,10 +2800,10 @@ function renderFinanceiro() {
 
   // Gráfico: faturamento mensal — contratos + notas, sem duplicatas
   // Usa ev_data (data real do evento) para posicionar no mês correto; fallback para criadoEm
-  const _notaIdsDedup = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  const _notaIdsDedup = new Set(contratosFiltrados().map(c => c.nota_id).filter(Boolean));
   const todosParaGraf = [
-    ..._contratos.map(c => ({ ...c, _origem: 'contrato' })),
-    ..._notas.filter(n => !_notaIdsDedup.has(n.id))
+    ...contratosFiltrados().map(c => ({ ...c, _origem: 'contrato' })),
+    ...notasFiltradas().filter(n => !_notaIdsDedup.has(n.id))
   ];
   function _dataRefEvento(e) {
     // Prefere data real do evento; fallback para criadoEm
@@ -3353,9 +3363,9 @@ function renderClientes() {
   });
 
   // Gráfico qtd pessoas — contratos + notas, sem duplicatas
-  const _notaIdsComContCli = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  const _notaIdsComContCli = new Set(contratosFiltrados().map(c => c.nota_id).filter(Boolean));
   const pessoasMap = { '1-50': 0, '51-100': 0, '101-200': 0, '201-500': 0, '500+': 0 };
-  [..._contratos, ..._notas.filter(n => !_notaIdsComContCli.has(n.id))].forEach(c => {
+  [...contratosFiltrados(), ...notasFiltradas().filter(n => !_notaIdsComContCli.has(n.id))].forEach(c => {
     const p = parseInt(c.qtd_pessoas) || 0;
     if (p <= 0) return;
     if (p <= 50) pessoasMap['1-50']++;
@@ -3409,11 +3419,11 @@ function renderSazonalidade() {
   // Histograma por mês (todos os anos)
   const volMes = Array(12).fill(0);
   const recMes = Array(12).fill(0);
-  // Contratos + notas para sazonalidade — sem duplicatas
-  const _notaIdsComContSaz = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  // Contratos + notas para sazonalidade — filtrados pelo período, sem duplicatas
+  const _notaIdsComContSaz = new Set(contratosFiltrados().map(c => c.nota_id).filter(Boolean));
   const todosParaSaz = [
-    ..._contratos.map(c => ({...c, _origem:'contrato'})),
-    ..._notas.filter(n => !_notaIdsComContSaz.has(n.id))
+    ...contratosFiltrados().map(c => ({...c, _origem:'contrato'})),
+    ...notasFiltradas().filter(n => !_notaIdsComContSaz.has(n.id))
   ];
   todosParaSaz.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e))).forEach(e => {
     // Usa a data REAL do evento (ev_data) para sazonalidade; fallback para criadoEm
