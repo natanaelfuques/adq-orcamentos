@@ -7821,8 +7821,8 @@ function renderNotas() {
     card += '</div>';
     // Nome + cliente
     card += '<div style="min-width:0">'
-      +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(ev.ev_nome||'Evento')+'</div>';
-    if (ev.cli_nome) card += '<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">'+escHtml(ev.cli_nome)+'</div>';
+      +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(ev.cli_nome||ev.ev_nome||'Cliente')+'</div>';
+    if (ev.ev_nome) card += '<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">'+escHtml(ev.ev_nome)+'</div>';
     if (ev.val_total) card += '<div style="font-size:0.68rem;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;color:#C8A94A;margin-top:2px">R$ '+escHtml(formatBRL(parseBRL(ev.val_total)))+'</div>';
     card += '</div></div>';
     // Seta
