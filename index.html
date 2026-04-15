@@ -521,6 +521,34 @@
   .pay-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
   @media (max-width: 600px) { .pay-edit-grid { grid-template-columns: 1fr; } }
 
+  /* ── WRAPPER DATA / WHATSAPP (responsivo) ── */
+  .data-whats-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "data  whats"
+      "multidia multidia"
+      "datafim  datafim";
+    gap: 16px 16px;
+    align-items: start;
+  }
+  .dw-data     { grid-area: data; }
+  .dw-whats    { grid-area: whats; }
+  .dw-multidia { grid-area: multidia; padding-top: 2px; }
+  .dw-datafim  { grid-area: datafim; }
+
+  @media (max-width: 640px) {
+    .data-whats-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .dw-data     { order: 1; }
+    .dw-multidia { order: 2; margin-top: 7px; }
+    .dw-datafim  { order: 3; margin-top: 10px; }
+    .dw-whats    { order: 4; margin-top: 16px; }
+  }
+
   @media (max-width: 640px) {
     /* Header — gerenciado pelo CSS do header abaixo */
     #header-date { display: none; }
@@ -1503,36 +1531,39 @@ header {
           <input type="text" id="qtd_pessoas" placeholder="Ex: 120 convidados" />
         </div>
       </div>
-      <div style="margin-bottom:0">
-        <label>Data do Evento</label>
-        <input type="date" id="data_evento"
-          style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
-          onchange="sincronizarDataDate(this);_atualizarDuracaoEvento()" />
-      </div>
-      <!-- Toggle multi-dia -->
-      <div style="margin-top:7px;display:flex;align-items:center;gap:8px;opacity:0.65">
-        <label class="include-toggle" onclick="event.stopPropagation();_toggleMultiDia(this.querySelector('input'))">
-          <input type="checkbox" id="chk_multidia" onchange="_toggleMultiDia(this)" />
-          <span style="font-size:0.7rem;letter-spacing:0.06em">Evento com mais de um dia</span>
-        </label>
-      </div>
-      <!-- Painel data_fim (oculto por padrão) -->
-      <div id="painel_data_fim" style="display:none;margin-top:10px">
-        <div class="grid-2">
-          <div>
-            <label>Data de Término</label>
-            <input type="date" id="data_fim"
-              style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
-              onchange="_atualizarDuracaoEvento()" />
-          </div>
-          <div style="display:flex;align-items:flex-end;padding-bottom:2px">
-            <span id="label_duracao" style="font-size:0.8rem;color:var(--gold);font-weight:600;letter-spacing:0.04em"></span>
+      <!-- wrapper responsivo: desktop = grid 2 colunas, mobile = coluna com reordenação -->
+      <div class="data-whats-wrapper">
+        <div class="dw-data">
+          <label>Data do Evento</label>
+          <input type="date" id="data_evento"
+            style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
+            onchange="sincronizarDataDate(this);_atualizarDuracaoEvento()" />
+        </div>
+        <div class="dw-whats">
+          <label>WhatsApp do Cliente</label>
+          <input type="tel" id="whatsapp_cliente" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20" />
+        </div>
+        <!-- Toggle multi-dia -->
+        <div class="dw-multidia">
+          <label class="include-toggle" onclick="event.stopPropagation();_toggleMultiDia(this.querySelector('input'))" style="opacity:0.65;cursor:pointer">
+            <input type="checkbox" id="chk_multidia" onchange="_toggleMultiDia(this)" />
+            <span style="font-size:0.7rem;letter-spacing:0.06em">Evento com mais de um dia</span>
+          </label>
+        </div>
+        <!-- Painel data_fim (oculto por padrão) -->
+        <div id="painel_data_fim" class="dw-datafim" style="display:none">
+          <div class="grid-2">
+            <div>
+              <label>Data de Término</label>
+              <input type="date" id="data_fim"
+                style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
+                onchange="_atualizarDuracaoEvento()" />
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:2px">
+              <span id="label_duracao" style="font-size:0.8rem;color:var(--gold);font-weight:600;letter-spacing:0.04em"></span>
+            </div>
           </div>
         </div>
-      </div>
-      <div style="margin-top:16px">
-        <label>WhatsApp do Cliente</label>
-        <input type="tel" id="whatsapp_cliente" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20" />
       </div>
     </div>
   </div>
