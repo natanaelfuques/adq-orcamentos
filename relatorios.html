@@ -2786,9 +2786,9 @@ function renderPagamentos() {
   const emMonitoramento = todosBase.filter(function(e) { return getStatusPgto(e) === 'alerta'; }).length;
 
   document.getElementById('kpi-pgto').innerHTML =
-    '<div class="kpi-card blue"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
+    '<div class="kpi-card"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
     '<div class="kpi-card green"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
-    '<div class="kpi-card gold"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
+    '<div class="kpi-card blue"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
     '<div class="kpi-card red"><div class="kpi-label">Monitoramento</div><div class="kpi-value">' + emMonitoramento + '</div><div class="kpi-sub">Pendência sinalizada</div></div>';
 
   const container = document.getElementById('pgto-lista');
