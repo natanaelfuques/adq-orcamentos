@@ -2134,11 +2134,13 @@ function nomeCli(c) {
     const sep = c.titulo.match(/^(.+?)\s*[\u2014\-\u2013:]\s*.+/);
     return sep ? sep[1].trim() : c.titulo.trim();
   }
-  return c.nome_cliente || c.cliente || c.nome || c.contato || '—';
+  // cli_nome → contratos | nome_cliente / cliente / nome → variações legadas
+  return c.cli_nome || c.nome_cliente || c.cliente || c.nome || '—';
 }
 
 function contatoCli(c) {
-  return c.cli_telefone || c.telefone || c.contato || c.whatsapp || c.fone || '—';
+  // cli_fone → contratos | contato → notas | whatsapp_cliente → orçamentos
+  return c.cli_fone || c.whatsapp_cliente || c.cli_telefone || c.telefone || c.contato || c.whatsapp || c.fone || '—';
 }
 
 function contatoWA(c) {
