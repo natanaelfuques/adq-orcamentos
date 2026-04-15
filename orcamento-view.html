@@ -934,6 +934,13 @@
             <input class="dados-input" id="dr_fim" type="text" placeholder="Ex: 23:00">
           </div>
         </div>
+        <!-- Data de Término — visível só para eventos multi-dia -->
+        <div id="dr_data_fim_wrap" style="display:none;margin-top:12px">
+          <div class="dados-field">
+            <label class="dados-label">Data de Término</label>
+            <input class="dados-input" id="dr_data_fim" type="date">
+          </div>
+        </div>
       </div>
       <div class="dados-form-footer">
         <button class="resposta-cancel" onclick="toggleDadosReserva()">Cancelar</button>
@@ -1656,6 +1663,10 @@ function toggleDadosReserva() {
     set('dr_evento', _orcData.evento);
     set('dr_local',  _orcData.local);
     set('dr_data',   _orcData.data);
+    // Exibir e preencher Data de Término se evento multi-dia
+    var wrapFim = document.getElementById('dr_data_fim_wrap');
+    if (wrapFim) wrapFim.style.display = _orcData.multidia ? 'block' : 'none';
+    if (_orcData.multidia) set('dr_data_fim', _orcData.dataFim);
   } else {
     form.style.display = 'none';
     btn.innerHTML = '▶ Solicitar Contrato';
@@ -1675,6 +1686,7 @@ function enviarDadosReserva(e) {
   var resp = document.getElementById('dr_resp').value.trim();
   var local = document.getElementById('dr_local').value.trim();
   var dataRaw = document.getElementById('dr_data').value;
+  var dataFimRaw = (_orcData.multidia && document.getElementById('dr_data_fim')) ? document.getElementById('dr_data_fim').value : '';
   var inicio = document.getElementById('dr_inicio').value.trim();
   var fim = document.getElementById('dr_fim').value.trim();
 
@@ -1826,9 +1838,10 @@ function enviarDadosReserva(e) {
         if (parts.length === 3) dataFmt = parts[2] + '/' + parts[1] + '/' + parts[0];
       }
       var dataFimFmt = '';
-      if (_orcData.multidia && _orcData.dataFim) {
-        var fimParts = _orcData.dataFim.split('-');
-        dataFimFmt = fimParts.length === 3 ? fimParts[2] + '/' + fimParts[1] + '/' + fimParts[0] : _orcData.dataFim;
+      var _dataFimSrc = dataFimRaw || (_orcData.multidia ? (_orcData.dataFim || '') : '');
+      if (_orcData.multidia && _dataFimSrc) {
+        var fimParts = _dataFimSrc.split('-');
+        dataFimFmt = fimParts.length === 3 ? fimParts[2] + '/' + fimParts[1] + '/' + fimParts[0] : _dataFimSrc;
       }
       var linhas = [
         'Dados para elaboracao do contrato.',
