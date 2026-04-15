@@ -999,6 +999,99 @@ header {
   gap: 12px;
   margin-bottom: 20px;
 }
+
+/* ── ORÇAMENTOS / CONTRATOS SUB-ABAS ── */
+.oc-subtabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.oc-tab {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 7px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.oc-tab:hover { border-color: var(--green); color: var(--green); }
+.oc-tab.active {
+  background: rgba(46,158,79,0.12);
+  border-color: var(--green);
+  color: var(--green);
+}
+.oc-filtros {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  align-items: center;
+}
+.oc-filtro-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.oc-filtro-btn:hover { border-color: var(--green); color: var(--green); }
+.oc-filtro-btn.active { background: var(--green); border-color: var(--green); color: #111; }
+.oc-busca {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  outline: none;
+  width: 180px;
+  margin-left: auto;
+}
+.oc-busca:focus { border-color: var(--green); }
+.badge-tipo-orc {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(139,92,246,0.12);
+  color: #a78bfa;
+  border: 1px solid rgba(139,92,246,0.3);
+}
+.badge-tipo-cont {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(74,144,200,0.12);
+  color: #4A90C8;
+  border: 1px solid rgba(74,144,200,0.3);
+}
+@media (max-width:600px) {
+  .oc-subtabs { gap:5px; }
+  .oc-tab { font-size:0.7rem; padding:6px 12px; }
+  .oc-busca { width:100%; margin-left:0; }
+}
 </style>
 </head>
 <body>
@@ -1064,7 +1157,7 @@ header {
 <div class="tabs" id="tabs-nav">
 <button class="tab-btn active" onclick="trocarTab('pagamentos')">Pagamentos</button>
 <button class="tab-btn" onclick="trocarTab('eventos')">Eventos</button>
-<button class="tab-btn" onclick="trocarTab('contratos')">Contratos</button>
+<button class="tab-btn" onclick="trocarTab('contratos')">Orçamentos / Contratos</button>
 <button class="tab-btn" onclick="trocarTab('financeiro')">Financeiro</button>
 <button class="tab-btn" onclick="trocarTab('sazonalidade')">Sazonalidade</button>
 <button class="tab-btn" onclick="trocarTab('clientes')">Clientes</button>
@@ -1112,31 +1205,66 @@ header {
 </table>
 </div>
 </div></div>
-<!-- ════ TAB: CONTRATOS ════ -->
+<!-- ════ TAB: ORÇAMENTOS / CONTRATOS ════ -->
 <div class="tab-panel" id="tab-contratos"><div class="tab-panel-inner">
+
+<!-- Sub-abas internas -->
+<div class="oc-subtabs" id="oc-subtabs">
+  <button class="oc-tab active" id="oc-tab-tudo"       onclick="setOcTab('tudo',this)">&#x1F500; Visão Integrada</button>
+  <button class="oc-tab"       id="oc-tab-orcamentos"  onclick="setOcTab('orcamentos',this)">&#x1F4CB; Só Orçamentos</button>
+  <button class="oc-tab"       id="oc-tab-contratos"   onclick="setOcTab('contratos',this)">&#x1F4C4; Só Contratos</button>
+</div>
+
+<!-- KPIs dinâmicos -->
 <div class="kpi-grid" id="kpi-con"></div>
-<div class="chart-grid">
-<div class="chart-card">
-<div class="chart-title">Contratos por status</div>
-<div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+
+<!-- Gráficos -->
+<div class="chart-grid" id="oc-charts-grid">
+  <div class="chart-card">
+    <div class="chart-title" id="oc-chart-status-title">Status</div>
+    <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Funil: Orçamentos → Contratos → Confirmados</div>
+    <div class="chart-wrap"><canvas id="chart-conversao"></canvas></div>
+  </div>
 </div>
-<div class="chart-card">
-<div class="chart-title">Taxa de conversão — orçamentos → contratos</div>
-<div class="chart-wrap"><canvas id="chart-conversao"></canvas></div>
+
+<!-- Gráfico tempo orçamentos -->
+<div class="chart-grid single" id="oc-orc-chart-wrap" style="margin-bottom:18px">
+  <div class="chart-card">
+    <div class="chart-title">Orçamentos e contratos criados por mês</div>
+    <div class="chart-wrap"><canvas id="chart-orc-tempo"></canvas></div>
+  </div>
 </div>
+
+<!-- Filtros rápidos de status -->
+<div class="oc-filtros" id="oc-filtros">
+  <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Status:</span>
+  <button class="oc-filtro-btn active" data-status="todos"     onclick="setOcFiltro('todos',this)">Todos</button>
+  <button class="oc-filtro-btn"        data-status="pendente"  onclick="setOcFiltro('pendente',this)">Pendente</button>
+  <button class="oc-filtro-btn"        data-status="enviado"   onclick="setOcFiltro('enviado',this)">Enviado</button>
+  <button class="oc-filtro-btn"        data-status="assinado"  onclick="setOcFiltro('assinado',this)">Assinado</button>
+  <button class="oc-filtro-btn"        data-status="confirmado" onclick="setOcFiltro('confirmado',this)">Confirmado</button>
+  <button class="oc-filtro-btn"        data-status="concluido" onclick="setOcFiltro('concluido',this)">Concluído</button>
+  <button class="oc-filtro-btn"        data-status="cancelado" onclick="setOcFiltro('cancelado',this)">Cancelado</button>
+  <input class="oc-busca" id="oc-busca" type="text" placeholder="Buscar cliente..." oninput="renderContratos()"/>
 </div>
-<p class="sec-title">Listagem de contratos no período</p>
+
+<!-- Tabela integrada -->
+<p class="sec-title" id="oc-table-title">Listagem integrada — Orçamentos e Contratos</p>
 <div class="table-card table-scroll">
 <table>
 <thead>
 <tr>
-<th>Evento</th>
-<th>Data Evento</th>
-<th>Local</th>
-<th class="r">Valor</th>
-<th>Status</th>
-<th>Criado em</th>
-<th class="col-del"></th>
+  <th>Tipo</th>
+  <th>Cliente / Evento</th>
+  <th>Data Evento</th>
+  <th>Local</th>
+  <th class="r">Valor</th>
+  <th>Status</th>
+  <th>Criado em</th>
+  <th class="col-del"></th>
 </tr>
 </thead>
 <tbody id="tbody-contratos"></tbody>
@@ -2519,87 +2647,257 @@ function renderFinanceiro() {
 // ══════════════════════════════════════════
 // TAB 2 – CONTRATOS
 // ══════════════════════════════════════════
+// ── Estado da sub-aba Orçamentos/Contratos ──
+let _ocTab = 'tudo';         // 'tudo' | 'orcamentos' | 'contratos'
+let _ocFiltroStatus = 'todos'; // status filter
+
+function setOcTab(tab, btn) {
+  _ocTab = tab;
+  document.querySelectorAll('.oc-tab').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderContratos();
+}
+
+function setOcFiltro(status, btn) {
+  _ocFiltroStatus = status;
+  document.querySelectorAll('.oc-filtro-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderContratos();
+}
+
+function getOrcStatus(orc) {
+  // Tenta mapear campos do Firebase de orçamentos para um status legível
+  const s = orc.status || orc.situacao || orc.status_orcamento || orc.etapa || '';
+  if (!s) return 'pendente';
+  const sl = s.toLowerCase().trim();
+  if (sl === 'aprovado' || sl === 'confirmado') return 'confirmado';
+  if (sl === 'cancelado' || sl === 'recusado' || sl === 'perdido') return 'cancelado';
+  if (sl === 'enviado' || sl === 'enviada') return 'enviado';
+  if (sl === 'assinado') return 'assinado';
+  if (sl === 'concluido' || sl === 'concluído') return 'concluido';
+  if (sl === 'andamento' || sl === 'em andamento') return 'andamento';
+  return sl || 'pendente';
+}
+
+function getValorOrc(orc) {
+  return parseBRL(orc.valor_total) || parseBRL(orc.val_total) || parseBRL(orc.valor) || parseBRL(orc.valorTotal) || 0;
+}
+
 function renderContratos() {
   const cons = contratosFiltrados();
   const orcs = orcamentosFiltrados();
-  const confirmados = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
-  const assinados   = cons.filter(c => getStatusContrato(c) === 'assinado');
-  const pendentes   = cons.filter(c => ['pendente','enviado'].includes(getStatusContrato(c)));
-  const andamento   = cons.filter(c => getStatusContrato(c) === 'andamento');
-  const cancelados  = cons.filter(c => getStatusContrato(c) === 'cancelado');
+  const busca = (document.getElementById('oc-busca') ? document.getElementById('oc-busca').value : '').toLowerCase().trim();
 
-  const taxa = orcs.length ? ((cons.length / orcs.length) * 100).toFixed(1) : 0;
+  // ── KPIs adaptativos conforme sub-aba ──
+  const confirmadosCon = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
+  const assinadosCon   = cons.filter(c => getStatusContrato(c) === 'assinado');
+  const pendentesCon   = cons.filter(c => ['pendente','enviado'].includes(getStatusContrato(c)));
+  const andamentoCon   = cons.filter(c => getStatusContrato(c) === 'andamento');
+  const canceladosCon  = cons.filter(c => getStatusContrato(c) === 'cancelado');
+  const taxaConv       = orcs.length ? ((cons.length / orcs.length) * 100).toFixed(1) : '—';
+  const receitaConf    = confirmadosCon.reduce(function(s,c){ return s + getValorContrato(c); }, 0);
+  const receitaOrc     = orcs.reduce(function(s,o){ return s + getValorOrc(o); }, 0);
+  const orcPendentes   = orcs.filter(function(o){ return getOrcStatus(o) === 'pendente'; }).length;
+  const orcAprovados   = orcs.filter(function(o){ return ['confirmado','assinado','concluido'].includes(getOrcStatus(o)); }).length;
 
-  document.getElementById('kpi-con').innerHTML = `
-    <div class="kpi-card gold"><div class="kpi-label">Total contratos</div><div class="kpi-value">${cons.length}</div></div>
-    <div class="kpi-card green"><div class="kpi-label">Confirmados</div><div class="kpi-value">${confirmados.length}</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">Assinados</div><div class="kpi-value">${assinados.length}</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">Em andamento</div><div class="kpi-value">${andamento.length}</div></div>
-    <div class="kpi-card orange"><div class="kpi-label">Pendentes</div><div class="kpi-value">${pendentes.length}</div></div>
-    <div class="kpi-card red"><div class="kpi-label">Cancelados</div><div class="kpi-value">${cancelados.length}</div></div>
-    <div class="kpi-card purple"><div class="kpi-label">Taxa de conversão</div><div class="kpi-value">${taxa}%</div><div class="kpi-sub">Orçamentos → Contratos</div></div>
-  `;
+  var kpiHtml = '';
+  if (_ocTab === 'tudo') {
+    kpiHtml = `
+      <div class="kpi-card gold"><div class="kpi-label">Orçamentos emitidos</div><div class="kpi-value">${orcs.length}</div><div class="kpi-sub">${frsShort(receitaOrc)} em valor</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Contratos gerados</div><div class="kpi-value">${cons.length}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Confirmados / Concluídos</div><div class="kpi-value">${confirmadosCon.length}</div><div class="kpi-sub">${frsShort(receitaConf)}</div></div>
+      <div class="kpi-card purple"><div class="kpi-label">Taxa de conversão</div><div class="kpi-value">${taxaConv}%</div><div class="kpi-sub">Orç → Contrato</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">Pendentes / Em neg.</div><div class="kpi-value">${pendentesCon.length + orcPendentes}</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Cancelados</div><div class="kpi-value">${canceladosCon.length}</div></div>
+    `;
+  } else if (_ocTab === 'orcamentos') {
+    const orcCancelados = orcs.filter(function(o){ return ['cancelado'].includes(getOrcStatus(o)); }).length;
+    kpiHtml = `
+      <div class="kpi-card gold"><div class="kpi-label">Total orçamentos</div><div class="kpi-value">${orcs.length}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Aprovados</div><div class="kpi-value">${orcAprovados}</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">Pendentes</div><div class="kpi-value">${orcPendentes}</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Cancelados / Perdidos</div><div class="kpi-value">${orcCancelados}</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Valor total emitido</div><div class="kpi-value">${frsShort(receitaOrc)}</div></div>
+      <div class="kpi-card purple"><div class="kpi-label">Taxa de conversão</div><div class="kpi-value">${taxaConv}%</div><div class="kpi-sub">Orç → Contrato</div></div>
+    `;
+  } else {
+    kpiHtml = `
+      <div class="kpi-card gold"><div class="kpi-label">Total contratos</div><div class="kpi-value">${cons.length}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Confirmados</div><div class="kpi-value">${confirmadosCon.length}</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Assinados</div><div class="kpi-value">${assinadosCon.length}</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Em andamento</div><div class="kpi-value">${andamentoCon.length}</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">Pendentes</div><div class="kpi-value">${pendentesCon.length}</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Cancelados</div><div class="kpi-value">${canceladosCon.length}</div></div>
+    `;
+  }
+  document.getElementById('kpi-con').innerHTML = kpiHtml;
 
-  // Gráfico pizza status
+  // ── Gráfico pizza de status ──
+  var statusLabels, statusData, statusColors, statusTitle;
+  if (_ocTab === 'orcamentos') {
+    statusTitle = 'Orçamentos por status';
+    const buckets = { 'Pendente':0,'Enviado':0,'Aprovado':0,'Cancelado':0,'Outros':0 };
+    orcs.forEach(function(o){
+      const s = getOrcStatus(o);
+      if (s === 'pendente') buckets['Pendente']++;
+      else if (s === 'enviado') buckets['Enviado']++;
+      else if (['confirmado','assinado','concluido'].includes(s)) buckets['Aprovado']++;
+      else if (s === 'cancelado') buckets['Cancelado']++;
+      else buckets['Outros']++;
+    });
+    statusLabels = Object.keys(buckets);
+    statusData   = Object.values(buckets);
+    statusColors = ['#666','#4A90C8','#25D366','#e05c5c','#8B5CF6'];
+  } else {
+    statusTitle = _ocTab === 'contratos' ? 'Contratos por status' : 'Contratos por status';
+    statusLabels = ['Confirmados','Assinados','Andamento','Pendentes','Cancelados'];
+    statusData   = [confirmadosCon.length, assinadosCon.length, andamentoCon.length, pendentesCon.length, canceladosCon.length];
+    statusColors = ['#25D366','#4A90C8','#2E9E4F','#666','#e05c5c'];
+  }
+  var titleEl = document.getElementById('oc-chart-status-title');
+  if (titleEl) titleEl.textContent = statusTitle;
   criarChart('chart-status', {
     type: 'doughnut',
-    data: {
-      labels: ['Confirmados','Assinados','Andamento','Pendentes','Cancelados'],
-      datasets: [{
-        data: [confirmados.length, assinados.length, andamento.length, pendentes.length, cancelados.length],
-        backgroundColor: ['#25D366','#4A90C8','#2E9E4F','#666','#e05c5c'],
-        borderColor: '#1a1a1a', borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 14 } } }
-    }
+    data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors, borderColor: '#1a1a1a', borderWidth: 2 }] },
+    options: { responsive:true, maintainAspectRatio:true, plugins:{ legend:{ position:'right', labels:{ boxWidth:12, padding:14 } } } }
   });
 
-  // Gráfico conversão
+  // ── Gráfico funil ──
   criarChart('chart-conversao', {
     type: 'bar',
     data: {
       labels: ['Orçamentos','Contratos','Confirmados'],
       datasets: [{
-        data: [orcs.length, cons.length, confirmados.length],
-        backgroundColor: ['rgba(46,158,79,0.6)','rgba(74,144,200,0.6)','rgba(37,211,102,0.6)'],
-        borderColor: ['#2E9E4F','#4A90C8','#25D366'],
+        data: [orcs.length, cons.length, confirmadosCon.length],
+        backgroundColor: ['rgba(139,92,246,0.6)','rgba(74,144,200,0.6)','rgba(37,211,102,0.6)'],
+        borderColor: ['#8B5CF6','#4A90C8','#25D366'],
         borderWidth: 1, borderRadius: 6
       }]
     },
     options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
-        x: { grid: { display: false } }
-      }
+      responsive:true, maintainAspectRatio:true,
+      plugins:{ legend:{ display:false } },
+      scales:{ y:{ ticks:{ precision:0 }, grid:{ color:'#2a2a2a' } }, x:{ grid:{ display:false } } }
     }
   });
 
-  // Tabela
-  const tbody = document.getElementById('tbody-contratos');
-  if (!cons.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum contrato no período.</td></tr>'; return; }
+  // ── Gráfico orçamentos + contratos por mês ──
+  var mesMap = {};
+  function addMes(doc, tipo) {
+    const d = tsToDate(doc.criadoEm);
+    if (!d) return;
+    const k = MESES[d.getMonth()] + '/' + String(d.getFullYear()).slice(2);
+    const ord = d.getFullYear() * 100 + d.getMonth();
+    if (!mesMap[k]) mesMap[k] = { ord:ord, orc:0, con:0 };
+    if (tipo === 'orc') mesMap[k].orc++;
+    else mesMap[k].con++;
+  }
+  orcs.forEach(function(o){ addMes(o, 'orc'); });
+  cons.forEach(function(c){ addMes(c, 'con'); });
+  var mesEntries = Object.entries(mesMap).sort(function(a,b){ return a[1].ord - b[1].ord; });
+  criarChart('chart-orc-tempo', {
+    type: 'bar',
+    data: {
+      labels: mesEntries.map(function(x){ return x[0]; }),
+      datasets: [
+        { label:'Orçamentos', data: mesEntries.map(function(x){ return x[1].orc; }), backgroundColor:'rgba(139,92,246,0.6)', borderColor:'#8B5CF6', borderWidth:1, borderRadius:3 },
+        { label:'Contratos',  data: mesEntries.map(function(x){ return x[1].con; }), backgroundColor:'rgba(74,144,200,0.6)',  borderColor:'#4A90C8',  borderWidth:1, borderRadius:3 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:true,
+      plugins:{ legend:{ position:'top', labels:{ boxWidth:12 } } },
+      scales:{ y:{ ticks:{ precision:0 }, grid:{ color:'#2a2a2a' } }, x:{ grid:{ display:false } } }
+    }
+  });
 
-  tbody.innerHTML = cons.map(c => {
-    const st = getStatusContrato(c);
-    const id = c.id;
-    const cli = nomeCli(c);
-    // Badge de status: contratos com etapa no painel → "painel" (roxo)
-    const statusBadge = (c.etapa && !c.removido_manualmente && c.status_contrato !== 'cancelado')
-      ? '<span class="badge painel">painel</span>'
-      : `<span class="badge ${st}">${st}</span>`;
-    return `<tr>
-      <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:220px">${cli}</td>
-      <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
-      <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="contratos">${c.ev_local || c.local_evento || '—'}</td>
-      <td class="r" style="color:var(--green);font-weight:700">${frs(getValorEvento(c))}</td>
-      <td>${statusBadge}</td>
-      <td>${formatDateBR(c.criadoEm)}</td>
-      <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="contratos" title="Excluir">×</button></td>
-    </tr>`;
+  // ── Mostrar/ocultar gráfico de linha conforme aba ──
+  var orcWrap = document.getElementById('oc-orc-chart-wrap');
+  if (orcWrap) orcWrap.style.display = (_ocTab === 'contratos') ? 'none' : '';
+
+  // ── Título da tabela ──
+  var titleTbl = document.getElementById('oc-table-title');
+  if (titleTbl) {
+    titleTbl.textContent = _ocTab === 'orcamentos' ? 'Listagem de orçamentos no período'
+      : _ocTab === 'contratos' ? 'Listagem de contratos no período'
+      : 'Listagem integrada — Orçamentos e Contratos';
+  }
+
+  // ── Montar lista de itens conforme sub-aba ──
+  var itens = [];
+  if (_ocTab === 'tudo' || _ocTab === 'contratos') {
+    cons.forEach(function(c){ itens.push({ ...c, _tipo: 'contrato' }); });
+  }
+  if (_ocTab === 'tudo' || _ocTab === 'orcamentos') {
+    orcs.forEach(function(o){ itens.push({ ...o, _tipo: 'orcamento' }); });
+  }
+
+  // Filtrar por status
+  if (_ocFiltroStatus !== 'todos') {
+    itens = itens.filter(function(item) {
+      const s = item._tipo === 'orcamento' ? getOrcStatus(item) : getStatusContrato(item);
+      return s === _ocFiltroStatus;
+    });
+  }
+
+  // Filtrar por busca
+  if (busca) {
+    itens = itens.filter(function(item) {
+      const cli = (nomeCli(item) + ' ' + tipoEv(item)).toLowerCase();
+      return cli.includes(busca);
+    });
+  }
+
+  // Ordenar: mais recentes primeiro
+  itens.sort(function(a, b) {
+    const da = tsToDate(a.criadoEm), db_ = tsToDate(b.criadoEm);
+    if (!da && !db_) return 0;
+    if (!da) return 1;
+    if (!db_) return -1;
+    return db_ - da;
+  });
+
+  const tbody = document.getElementById('tbody-contratos');
+  if (!itens.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum item encontrado.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = itens.map(function(item) {
+    const id = item.id;
+    const isOrc = item._tipo === 'orcamento';
+    const col = isOrc ? 'orcamentos' : 'contratos';
+    const fieldNome = isOrc ? (item.cli_nome ? 'cli_nome' : 'nome_cliente') : 'cli_nome';
+    const cli = nomeCli(item);
+    const tipo_ev = tipoEv(item);
+    const st = isOrc ? getOrcStatus(item) : getStatusContrato(item);
+    const valor = isOrc ? getValorOrc(item) : getValorContrato(item);
+    const valorStr = valor > 0 ? frs(valor) : '—';
+    const valorStyle = valor > 0 ? 'color:var(--green);font-weight:700' : 'color:var(--muted)';
+
+    const tipoBadge = isOrc
+      ? '<span class="badge-tipo-orc">Orçamento</span>'
+      : '<span class="badge-tipo-cont">Contrato</span>';
+
+    var statusBadge;
+    if (!isOrc && item.etapa && !item.removido_manualmente && item.status_contrato !== 'cancelado') {
+      statusBadge = '<span class="badge painel">painel</span>';
+    } else {
+      statusBadge = '<span class="badge ' + st + '">' + st + '</span>';
+    }
+
+    const nomeDisplay = cli + (tipo_ev && tipo_ev !== '—' && tipo_ev !== cli ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + tipo_ev + '</span>' : '');
+
+    return '<tr>' +
+      '<td>' + tipoBadge + '</td>' +
+      '<td class="row-field-editable" data-field="' + fieldNome + '" data-docid="' + id + '" data-col="' + col + '" style="max-width:220px">' + nomeDisplay + '</td>' +
+      '<td class="row-field-editable" data-field="ev_data" data-docid="' + id + '" data-col="' + col + '">' + dataEv(item) + '</td>' +
+      '<td class="row-field-editable" data-field="ev_local" data-docid="' + id + '" data-col="' + col + '">' + localEv(item) + '</td>' +
+      '<td class="r" style="' + valorStyle + '">' + valorStr + '</td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td>' + formatDateBR(item.criadoEm) + '</td>' +
+      '<td class="col-del"><button class="btn-del-row" data-docid="' + id + '" data-col="' + col + '" title="Excluir">×</button></td>' +
+    '</tr>';
   }).join('');
 }
 
