@@ -2762,10 +2762,10 @@ function renderPagamentos() {
   const emMonitoramento = todosBase.filter(function(e) { return getStatusPgto(e) === 'alerta'; }).length;
 
   document.getElementById('kpi-pgto').innerHTML =
-    '<div class="kpi-card gold"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
+    '<div class="kpi-card blue"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
     '<div class="kpi-card green"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
-    '<div class="kpi-card red"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
-    '<div class="kpi-card orange"><div class="kpi-label">Monitoramento</div><div class="kpi-value">' + emMonitoramento + '</div><div class="kpi-sub">Pendência sinalizada</div></div>';
+    '<div class="kpi-card gold"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
+    '<div class="kpi-card red"><div class="kpi-label">Monitoramento</div><div class="kpi-value">' + emMonitoramento + '</div><div class="kpi-sub">Pendência sinalizada</div></div>';
 
   const container = document.getElementById('pgto-lista');
   if (!lista.length) {
@@ -2777,12 +2777,16 @@ function renderPagamentos() {
   const comAlerta = lista.filter(function(ev) { return getStatusPgto(ev) === 'alerta'; });
   const semAlerta = lista.filter(function(ev) { return getStatusPgto(ev) !== 'alerta'; });
 
-  // Ordenar normais: pendentes e parciais primeiro, quitados por último
-  const ordNormal = { pendente: 0, parcial: 1, naovence: 2, quitado: 3 };
-  semAlerta.sort(function(a, b) {
-    const sa = getStatusPgto(a), sb = getStatusPgto(b);
-    return (ordNormal[sa] || 0) - (ordNormal[sb] || 0);
-  });
+  // Ordenar por data do evento (mais próxima primeiro); sem data vai para o final
+  function _dataEvNum(ev) {
+    const s = ev.ev_data || ev.data_evento || ev.dataEvt || '';
+    if (!s) return Infinity;
+    const p = s.split('-');
+    if (p.length === 3) return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])).getTime();
+    return Infinity;
+  }
+  comAlerta.sort(function(a, b) { return _dataEvNum(a) - _dataEvNum(b); });
+  semAlerta.sort(function(a, b) { return _dataEvNum(a) - _dataEvNum(b); });
 
   let html = '';
 
@@ -2889,6 +2893,61 @@ function fecharPgtoModal() {
   setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
 }
 
+/* Preview em tempo real enquanto digita o valor recebido */
+function pgtoModalPreview(docId, total) {
+  const inp = document.getElementById('pgto-modal-recebido-' + docId);
+  const prev = document.getElementById('pgto-modal-preview-' + docId);
+  if (!inp || !prev) return;
+  const valor = parseBRL(inp.value);
+  if (!valor || valor <= 0) { prev.innerHTML = ''; return; }
+  const restante = Math.max(0, total - valor);
+  const pct = Math.min(100, (valor / total) * 100);
+  const cor = restante <= 0 ? 'var(--green)' : valor > total ? '#e05c5c' : 'var(--muted)';
+  prev.innerHTML = '<span style="color:var(--green);font-weight:700">' + frs(valor) + ' recebido</span>' +
+    ' · ' + pct.toFixed(0) + '%' +
+    (restante > 0 ? ' · <span style="color:' + cor + '">Falta ' + frs(restante) + '</span>' : ' · <span style="color:var(--green)">✓ Quitado</span>');
+}
+
+/* Salva o valor manualmente informado no modal */
+function salvarRecebimentoModal(docId) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  const inp = document.getElementById('pgto-modal-recebido-' + docId);
+  if (!inp) return;
+  const novoValor = parseBRL(inp.value);
+  if (isNaN(novoValor) || novoValor < 0) { _editorToast('Valor inválido', true); return; }
+  const total = valorEv(ev);
+  const upd = { pgto_valor_avulso: novoValor };
+  if (novoValor >= total - 0.05 && total > 0) upd.status_pgto = 'quitado';
+  else if (novoValor > 0) upd.status_pgto = 'parcial';
+  else upd.status_pgto = 'pendente';
+  db.collection(col).doc(docId).update(upd)
+    .then(function() {
+      _pgtoUpdateLocal(docId, upd);
+      _editorToast('Recebimento salvo!');
+      fecharPgtoModal();
+      renderPagamentos();
+    })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
+/* Remove o valor manual e volta ao cálculo automático */
+function limparRecebimentoModal(docId) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  const upd = { pgto_valor_avulso: 0 };
+  db.collection(col).doc(docId).update(upd)
+    .then(function() {
+      _pgtoUpdateLocal(docId, upd);
+      _editorToast('Recebimento manual removido. Voltando ao automático.');
+      fecharPgtoModal();
+      renderPagamentos();
+    })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
 /* Constrói o HTML completo do modal de informações */
 function buildPgtoModalHTML(ev) {
   const docId = ev.id;
@@ -2991,9 +3050,30 @@ function buildPgtoModalHTML(ev) {
 
   const calcHTML = buildPgtoCalcHTML(total, pago, restante, pct, status === 'quitado' ? 'quitado' : pago > 0 ? 'parcial' : 'pendente');
 
+  // Seção de recebimento manual (para qualquer tipo exceto custom, que tem próprio editor)
+  const isCustom = (ev.pgto_tipo === 'custom' || ev.pgto_sel === 'custom');
+  const avulsoAtual = parseFloat(ev.pgto_valor_avulso) || 0;
+  const recebimentoHTML = !isCustom
+    ? '<div style="margin-top:14px;border:1px solid var(--border);border-radius:8px;padding:14px 16px;background:var(--surface2)">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Registrar valor recebido</div>' +
+        '<div style="font-size:0.73rem;color:var(--muted);margin-bottom:12px">Digite o total já recebido do cliente. Sobrescreve o cálculo automático por parcela.</div>' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+          '<span style="font-size:0.82rem;color:var(--muted);flex-shrink:0">R$</span>' +
+          '<input id="pgto-modal-recebido-' + docId + '" class="pgto-input-pago" type="text" placeholder="0,00" style="flex:1;min-width:100px;max-width:180px"' +
+            ' value="' + (avulsoAtual > 0 ? avulsoAtual.toFixed(2).replace('.', ',') : '') + '"' +
+            ' oninput="pgtoModalPreview(\'' + docId + '\',' + total.toFixed(2) + ')">' +
+          '<button class="pgto-btn-salvar" onclick="salvarRecebimentoModal(\'' + docId + '\')">Salvar</button>' +
+          (avulsoAtual > 0
+            ? '<button class="pgto-alerta-btn" style="font-size:0.68rem;padding:5px 10px" onclick="limparRecebimentoModal(\'' + docId + '\')">Limpar</button>'
+            : '') +
+        '</div>' +
+        '<div id="pgto-modal-preview-' + docId + '" style="margin-top:10px;font-size:0.78rem;color:var(--muted);min-height:18px"></div>' +
+      '</div>'
+    : '';
+
   return '<div class="pgto-modal-box" onclick="event.stopPropagation()">' +
     headerHTML +
-    '<div class="pgto-modal-body">' + progressHTML + resumoHTML + parcelasHTML + calcHTML + '</div>' +
+    '<div class="pgto-modal-body">' + progressHTML + resumoHTML + parcelasHTML + calcHTML + recebimentoHTML + '</div>' +
   '</div>';
 }
 
