@@ -1081,6 +1081,15 @@ header {
 .pgto-filtro-btn.monitor-btn { border-color: rgba(224,92,92,0.35); color: #e05c5c; }
 .pgto-filtro-btn.monitor-btn:hover { border-color: var(--red); }
 .pgto-filtro-btn.monitor-btn.active { background: #e05c5c; border-color: #e05c5c; color: #111; }
+.pgto-legenda-tipo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  opacity: 0.55;
+  white-space: nowrap;
+  margin-left: 4px;
+}
 .pgto-busca {
   background: var(--surface);
   border: 1px solid var(--border2);
@@ -1542,6 +1551,7 @@ header {
 <button class="pgto-filtro-btn" onclick="filtroPgto('parcial',this)">Parcial</button>
 <button class="pgto-filtro-btn" onclick="filtroPgto('quitados',this)">Quitados</button>
 <button class="pgto-filtro-btn monitor-btn" onclick="filtroPgto('monitoramento',this)">⚠ Monitoramento</button>
+<span class="pgto-legenda-tipo">Contratos: Automático&nbsp;&nbsp;·&nbsp;&nbsp;Eventos rápidos: Manual</span>
 <input class="pgto-busca" id="pgto-busca" oninput="renderPagamentos()" placeholder="Buscar cliente..." type="text"/>
 </div>
 <!-- Lista de eventos / contratos -->
