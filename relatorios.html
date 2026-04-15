@@ -2402,6 +2402,18 @@ function getStatusPgto(ev) {
   const pago = getTotalPagoAuto(ev);
   if (pago >= total - 0.05) return 'quitado';
   if (alertas.length > 0) return 'alerta';
+  // Notas: se evento já passou e nada foi registrado → monitoramento automático
+  if (ev._origem === 'nota' && pago <= 0) {
+    const evStr = ev.ev_data || ev.data_evento || ev.dataEvt || '';
+    if (evStr) {
+      const vp = evStr.split('-');
+      if (vp.length === 3) {
+        const evDate = new Date(parseInt(vp[0]), parseInt(vp[1]) - 1, parseInt(vp[2]));
+        const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+        if (evDate < hoje) return 'alerta';
+      }
+    }
+  }
   if (pago > 0) return 'parcial';
   return 'pendente';
 }
@@ -2424,12 +2436,17 @@ function temAlertaParcela(ev, parcelaIdx) {
 }
 
 /* Verifica se uma parcela é automaticamente considerada paga.
-   Regra: vencimento <= hoje E sem alerta manual. Também respeita registros manuais legados. */
+   - NOTAS: nunca automático — pagamento é sempre manual (via pgto_valor_avulso)
+   - CONTRATOS: automático se vencimento <= hoje e sem alerta manual */
 function isParcelaPagaAuto(parcela, ev, hoje) {
   if (!hoje) { hoje = new Date(); hoje.setHours(0, 0, 0, 0); }
   if (temAlertaParcela(ev, parcela.idx)) return false;
+  // Notas são sempre pagamento manual — nunca auto-paga por data
+  if (ev._origem === 'nota') return false;
+  // Registros manuais legados
   const registros = getPgtoRegistros(ev);
   if (registros.some(function(r) { return r.parcela_idx === parcela.idx; })) return true;
+  // Contratos: auto-pago se vencimento <= hoje
   if (parcela.vencimento) {
     const vp = parcela.vencimento.split('-');
     if (vp.length === 3) {
@@ -2440,11 +2457,14 @@ function isParcelaPagaAuto(parcela, ev, hoje) {
   return false;
 }
 
-/* Calcula total automaticamente pago (vencimento <= hoje, sem alerta).
-   Respeita pgto_valor_avulso se definido. */
+/* Calcula total pago.
+   - pgto_valor_avulso tem prioridade (registro manual do modal)
+   - NOTAS sem avulso: sempre R$ 0 (exige confirmação manual)
+   - CONTRATOS: soma parcelas vencidas automaticamente */
 function getTotalPagoAuto(ev) {
   const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
   if (avulso > 0) return avulso;
+  if (ev._origem === 'nota') return 0;
   const parcelas = getParcelas(ev);
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
   return parcelas.reduce(function(s, p) {
