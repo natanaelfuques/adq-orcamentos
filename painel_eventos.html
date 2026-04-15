@@ -1897,8 +1897,10 @@ function buildCard(ev, past, col) {
     respBar +
     '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
       '<div class="card-summary-left">' +
-        (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
-        (dataFimFmt ? '<div class="card-data-badge card-data-fim-badge" data-field="ev_data_fim" data-evid="' + esc(ev.id) + '" style="font-size:0.68rem;opacity:0.75;margin-top:3px">' + dataFimFmt + '</div>' : '') +
+        '<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start">' +
+          (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
+          (dataFimFmt ? '<div class="card-data-badge card-data-fim-badge card-field-editable" data-field="ev_data_fim" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFimFmt + '</div>' : '') +
+        '</div>' +
         '<div>' +
           (ev.nota_id
             ? (
