@@ -2335,6 +2335,7 @@ function trocarTab(tab, smooth) {
 
 let _pgtoFiltro = '30dias';
 let _pgtoAbertos = {}; // { docId: true/false }
+let _pgtoDirty = {}; // { docId: true } — cards com dados alterados aguardando reposicionamento
 
 /* Retorna a coleção de pagamentos registrados de um evento (salvo no Firestore como campo pgto_registros) */
 function getPgtoRegistros(ev) {
@@ -2528,21 +2529,40 @@ function promptSinalizarProblema(docId, parcelaIdx) {
   sinalizarProblema(docId, parcelaIdx, motivo || 'Não recebido');
 }
 
-/* Toggle direto no chip: verde/futuro → alerta; alerta → resolve */
+/* Toggle direto no chip: verde/futuro → alerta; alerta → resolve.
+   Atualiza o card in-place. Reposicionamento só ao fechar. */
 function toggleAlertaChip(e, docId, parcelaIdx) {
   e.stopPropagation();
   const ev = _pgtoEventoById(docId);
-  if (!ev) return;
+  if (!ev || !db) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+
   if (temAlertaParcela(ev, parcelaIdx)) {
-    resolverAlerta(docId, parcelaIdx);
+    // Resolve alerta — atualiza local e DOM
+    const alertas = getAlertasPgto(ev).filter(function(a) { return a.parcela_idx !== parcelaIdx; });
+    db.collection(col).doc(docId).update({ pgto_alertas: alertas })
+      .then(function() {
+        _pgtoUpdateLocal(docId, { pgto_alertas: alertas });
+        _pgtoDirty[docId] = true;
+        _pgtoRefreshCardDOM(docId);
+      })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
   } else {
-    sinalizarProblema(docId, parcelaIdx, 'Não recebido');
+    // Sinaliza problema — atualiza local e DOM
+    const alertas = getAlertasPgto(ev).slice();
+    alertas.push({ parcela_idx: parcelaIdx, motivo: 'Não recebido', data: new Date().toLocaleDateString('pt-BR') });
+    db.collection(col).doc(docId).update({ pgto_alertas: alertas })
+      .then(function() {
+        _pgtoUpdateLocal(docId, { pgto_alertas: alertas });
+        _pgtoDirty[docId] = true;
+        _pgtoRefreshCardDOM(docId);
+      })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
   }
 }
 
-/* Toggle pagamento à vista para eventos rápidos (notas):
-   pendente → confirma pagamento (salva pgto_valor_avulso = total)
-   pago     → desfaz (limpa pgto_valor_avulso) */
+/* Toggle pagamento à vista para eventos rápidos (notas).
+   Atualiza o card in-place. Reposicionamento só ao fechar. */
 function togglePagamentoVista(e, docId) {
   e.stopPropagation();
   const ev = _pgtoEventoById(docId);
@@ -2552,20 +2572,20 @@ function togglePagamentoVista(e, docId) {
   const isPago = avulso >= total - 0.05 && total > 0;
 
   if (isPago) {
-    // Desfaz: limpa o valor avulso
     db.collection('notas').doc(docId).update({ pgto_valor_avulso: firebase.firestore.FieldValue.delete() })
       .then(function() {
         _pgtoUpdateLocal(docId, { pgto_valor_avulso: null });
-        renderPagamentos();
+        _pgtoDirty[docId] = true;
+        _pgtoRefreshCardDOM(docId);
         _editorToast('Pagamento desfeito');
       })
       .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
   } else {
-    // Confirma: salva o total como valor recebido
     db.collection('notas').doc(docId).update({ pgto_valor_avulso: total })
       .then(function() {
         _pgtoUpdateLocal(docId, { pgto_valor_avulso: total });
-        renderPagamentos();
+        _pgtoDirty[docId] = true;
+        _pgtoRefreshCardDOM(docId);
         _editorToast('Pagamento confirmado ✓');
       })
       .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
@@ -3350,6 +3370,53 @@ function _pgtoEventoById(id) {
   return null;
 }
 
+/* Atualiza o DOM do card in-place sem reposicioná-lo na grade.
+   Chamado após alterações de status enquanto o card está aberto. */
+function _pgtoRefreshCardDOM(docId) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev) return;
+  const card = document.getElementById('pgto-card-' + docId);
+  if (!card) return;
+
+  const total = valorEv(ev);
+  const pago = getTotalPagoAuto(ev);
+  const restante = Math.max(0, total - pago);
+  const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
+  const status = getStatusPgto(ev);
+
+  const badgeClass = status === 'quitado' ? 'quitado' : status === 'alerta' ? 'alerta' : status === 'parcial' ? 'parcial' : 'pendente';
+  const badgeTxt = status === 'quitado' ? '✓ Quitado' : status === 'alerta' ? '⚠ Monitorar' : status === 'parcial' ? 'Parcial' : 'Pendente';
+  const fillColor = status === 'quitado' ? '#25D366' : status === 'alerta' ? '#e05c5c' : status === 'parcial' ? '#F5A623' : '#555';
+  const valPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
+  const valResta = restante <= 0 ? '✓ Quitado' : 'Falta ' + frs(restante);
+  const valRestaCor = restante <= 0 ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
+
+  // Atualiza borda do card
+  card.className = 'pgto-card' + (status === 'alerta' ? ' pgto-card-alerta' : status === 'quitado' ? ' pgto-card-quitado' : '');
+
+  // Atualiza badge de status no header
+  const badge = card.querySelector('.pgto-status-badge');
+  if (badge) { badge.className = 'pgto-status-badge ' + badgeClass; badge.textContent = badgeTxt; }
+
+  // Atualiza barra de progresso
+  const fill = card.querySelector('.pgto-progress-fill');
+  if (fill) { fill.style.width = pct.toFixed(1) + '%'; fill.style.background = fillColor; }
+
+  // Atualiza valores (val-pago e falta)
+  const vals = card.querySelector('.pgto-card-vals');
+  if (vals) {
+    const spans = vals.querySelectorAll('span');
+    if (spans[0]) spans[0].textContent = valPago;
+    if (spans[1]) { spans[1].textContent = valResta; spans[1].style.color = valRestaCor; }
+  }
+
+  // Atualiza chips no body
+  const body = document.getElementById('pgto-body-' + docId);
+  if (body && body.classList.contains('open')) {
+    body.innerHTML = buildPgtoCardBody(ev, docId);
+  }
+}
+
 function togglePgtoCard(docId) {
   const isNowOpen = !_pgtoAbertos[docId];
   // Fechar todos os outros
@@ -3361,6 +3428,8 @@ function togglePgtoCard(docId) {
         const oa = document.getElementById('pgto-arrow-' + id);
         if (ob) ob.classList.remove('open');
         if (oa) oa.style.transform = 'rotate(0deg)';
+        // Se estava dirty, reposiciona agora
+        if (_pgtoDirty[id]) { delete _pgtoDirty[id]; renderPagamentos(); }
       }
     });
   }
@@ -3369,7 +3438,6 @@ function togglePgtoCard(docId) {
   const arrow = document.getElementById('pgto-arrow-' + docId);
   if (body) {
     body.classList.toggle('open', isNowOpen);
-    // Ao abrir, popula o body com estado atualizado
     if (isNowOpen) {
       const ev = _pgtoEventoById(docId);
       if (ev) body.innerHTML = buildPgtoCardBody(ev, docId);
@@ -3377,7 +3445,13 @@ function togglePgtoCard(docId) {
   }
   if (arrow) arrow.style.transform = 'rotate(' + (isNowOpen ? '180' : '0') + 'deg)';
   if (!isNowOpen) {
-    setTimeout(function() { renderPagamentos(); }, 300);
+    // Ao fechar: reposiciona se dirty, senão renderiza normalmente
+    if (_pgtoDirty[docId]) {
+      delete _pgtoDirty[docId];
+      setTimeout(function() { renderPagamentos(); }, 250);
+    } else {
+      setTimeout(function() { renderPagamentos(); }, 300);
+    }
   }
 }
 
