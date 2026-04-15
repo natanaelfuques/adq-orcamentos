@@ -2462,7 +2462,7 @@ function sincronizarPainel() {
             itens_ok:       {},
             etapa:          'eventos',
             contrato_id:    cid,
-            criadoEm:       new Date()
+            criadoEm:       firebase.firestore.FieldValue.serverTimestamp()
           });
           mudou = true;
         }

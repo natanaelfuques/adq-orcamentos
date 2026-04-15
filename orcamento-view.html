@@ -1008,16 +1008,8 @@ const LOGO_JPG_B64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAA
 // firebaseConfig definido em firebase-config.js
 
 // ── HELPERS ──
-function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function fmtData(str) {
-  if (!str) return '—';
-  try {
-    const [y,m,d] = str.split('-');
-    return d + '/' + m + '/' + y;
-  } catch(e) { return str; }
-}
+// esc e fmtData vêm de utils.js
+var escHtml = esc; // alias para compatibilidade
 function fmtTs(ts) {
   if (!ts) return '—';
   try {
@@ -1027,15 +1019,9 @@ function fmtTs(ts) {
 }
 
 // ── HELPERS BRL ──
-function _parseBRL(str) {
-  if (!str) return 0;
-  var clean = String(str).trim().replace(/[^\d,.]/g,'').replace(/\./g,'').replace(',','.');
-  var val = parseFloat(clean);
-  return isNaN(val) ? 0 : val;
-}
-function _formatBRL(n) {
-  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+// parseBRL e formatBRL vêm de utils.js
+var _parseBRL  = parseBRL;
+var _formatBRL = formatBRL;
 
 // ── PRÉVIA PAGAMENTO ──
 function _getValTotalAtual() {

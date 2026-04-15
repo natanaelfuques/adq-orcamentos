@@ -2940,16 +2940,7 @@ function switchServ(name) {
   });
 }
 
-function parseBRL(str) {
-  if (!str) return 0;
-  // Remove tudo exceto dígitos, ponto e vírgula; trata vírgula como decimal
-  const clean = str.trim().replace(/[^\d,.]/g, '').replace(/\./g, '').replace(',', '.');
-  const val = parseFloat(clean);
-  return isNaN(val) ? 0 : val;
-}
-function formatBRL(n) {
-  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+// parseBRL e formatBRL definidas em utils.js
 function recalcDetTotal() {
   let total = 0;
   for (let i = 1; i <= detCount; i++) {
@@ -7059,7 +7050,7 @@ function buildEventoFromContrato(d, contratoId) {
     servicos:       d.servicos       || [],
     criador:        d.criador        || '',
     contrato_id:    contratoId,
-    criadoEm:       new Date()
+    criadoEm:       firebase.firestore.FieldValue.serverTimestamp()
   };
 }
 

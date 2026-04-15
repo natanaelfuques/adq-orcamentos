@@ -16,7 +16,7 @@ function esc(str) {
 
 // ── Formatação de data ───────────────────────────────
 // Converte YYYY-MM-DD → DD/MM/YYYY. Retorna '—' se vazio.
-function fmtDataSimples(str) {
+function fmtData(str) {
   if (!str) return '—';
   try {
     var parts = str.split('-');
@@ -25,12 +25,18 @@ function fmtDataSimples(str) {
   return str;
 }
 
-// ── Formatação de moeda (R$) ─────────────────────────
-function frs(v) {
-  return 'R$ ' + Number(v).toLocaleString('pt-BR', {
+// ── Formatação de moeda ──────────────────────────────
+// Formata número como "1.500,00" (sem prefixo R$).
+function formatBRL(n) {
+  return Number(n).toLocaleString('pt-BR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
+}
+
+// Com prefixo R$: frs(1500) → "R$ 1.500,00"
+function frs(v) {
+  return 'R$ ' + formatBRL(v);
 }
 
 // Versão curta: 1.500 → R$ 1,5K | 2.000.000 → R$ 2M
@@ -44,6 +50,6 @@ function frsShort(v) {
 // Aceita: "R$ 1.500,00" | "1500.00" | "1500,00" → 1500
 function parseBRL(v) {
   if (!v) return 0;
-  v = String(v).trim().replace(/R\$\s*/g, '').replace(/\./g, '').replace(',', '.');
-  return parseFloat(v) || 0;
+  var clean = String(v).trim().replace(/[^\d,.]/g, '').replace(/\./g, '').replace(',', '.');
+  return parseFloat(clean) || 0;
 }
