@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Orçamento – Áudio de Qualidade</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 <style>
+  /* Cor principal: dourado. Overrides específicos deste app */
   :root {
     --gold: #C8A94A;
     --gold-light: #e0c470;
@@ -16,10 +16,7 @@
     --surface2: #222222;
     --border: #2a2a2a;
     --text: #f0f0f0;
-    --muted: #888;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     font-family: 'Barlow', sans-serif;
@@ -1000,19 +997,15 @@
 <!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<!-- Compartilhados -->
+<script src="firebase-config.js"></script>
+<script src="utils.js"></script>
 
 <script>
 // ── LOGO ──
 const LOGO_JPG_B64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBX7qH0fY990F73VWlL7aTbSyG-OKsqkoY",
-  authDomain: "adq-orcamentos.firebaseapp.com",
-  projectId: "adq-orcamentos",
-  storageBucket: "adq-orcamentos.firebasestorage.app",
-  messagingSenderId: "3618259495",
-  appId: "1:3618259495:web:4b749f1c9124f9c243c402"
-};
+// firebaseConfig definido em firebase-config.js
 
 // ── HELPERS ──
 function escHtml(s) {

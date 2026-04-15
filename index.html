@@ -4,20 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Orçamento e Contrato – Áudio de Qualidade</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
-
-  :root {
-    --gold: #C8A94A;
-    --dark: #1a1a1a;
-    --darker: #111111;
-    --surface: #242424;
-    --border: #333;
-    --text: #e8e8e8;
-    --muted: #888;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Cor principal: amarelo/dourado */
+  :root { --gold: #C8A94A; --gold-dim: rgba(200,169,74,0.13); }
 
   body {
     font-family: 'Barlow', sans-serif;
@@ -1390,6 +1380,9 @@ header {
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <!-- Compartilhados -->
+  <script src="firebase-config.js"></script>
+  <script src="utils.js"></script>
 </head>
 <body>
 
@@ -5375,14 +5368,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
 // FIREBASE + ORÇAMENTOS SALVOS
 // ═══════════════════════════════════════════════
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBX7qH0fY990F73VWlL7aTbSyG-OKsqkoY",
-  authDomain: "adq-orcamentos.firebaseapp.com",
-  projectId: "adq-orcamentos",
-  storageBucket: "adq-orcamentos.firebasestorage.app",
-  messagingSenderId: "3618259495",
-  appId: "1:3618259495:web:4b749f1c9124f9c243c402"
-};
+// firebaseConfig definido em firebase-config.js
 
 let db = null;
 let salvosListener = null;
