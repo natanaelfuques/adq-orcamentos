@@ -3284,6 +3284,16 @@ carregarOrcamentoEditavel._processar = function(d) {
       set('data_evento',  d.data_evento);
       set('whatsapp_cliente', d.whatsapp_cliente || '');
       set('qtd_pessoas', d.qtd_pessoas || '');
+      // Restaurar multi-dia e data de término
+      const _chkMultiLoad = document.getElementById('chk_multidia');
+      if (_chkMultiLoad) {
+        _chkMultiLoad.checked = !!(d.multidia);
+        _toggleMultiDia(_chkMultiLoad);
+        if (d.dataFim || d.data_fim) {
+          set('data_fim', d.dataFim || d.data_fim);
+          _atualizarDuracaoEvento();
+        }
+      }
       setChk('inc_cliente',   d.inc_cliente);
       setChk('inc_op1', d.inc_op1);
       setChk('inc_op2', d.inc_op2);
@@ -3366,7 +3376,11 @@ function baixarDadosOrcamento() {
     }
   }
 
-  const dados = { nome, evento, local, dataEvt, opcoes };
+  const _chkBaixar = document.getElementById('chk_multidia');
+  const _elFimBaixar = document.getElementById('data_fim');
+  const _multidiaBaixar = !!(_chkBaixar && _chkBaixar.checked);
+  const _dataFimBaixar  = (_multidiaBaixar && _elFimBaixar) ? (_elFimBaixar.value || '') : '';
+  const dados = { nome, evento, local, dataEvt, multidia: _multidiaBaixar, dataFim: _dataFimBaixar, opcoes };
   const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -3471,13 +3485,14 @@ function aplicarOpcaoSelecionada() {
   setVal('ev_maps',  d.local_evento_maps || d.ev_maps || d.maps_link || (document.getElementById('ev_maps')||{}).value || ''); _atualizarBtnMaps();
   setVal('ev_data',   d.dataEvt    || '');
   // Propagar multi-dia do orçamento para o contrato
+  var _dataFimOrcProp = d.dataFim || d.data_fim || '';
   var chkMC = document.getElementById('ev_chk_multidia');
   if (chkMC) {
-    chkMC.checked = !!(d.multidia);
+    chkMC.checked = !!(d.multidia) || !!_dataFimOrcProp;
     _toggleMultiDiaContr(chkMC);
-    if (d.multidia && d.dataFim) {
+    if (_dataFimOrcProp) {
       var elFimMC = document.getElementById('ev_data_fim');
-      if (elFimMC) { elFimMC.value = d.dataFim; _atualizarDuracaoEvContr(); }
+      if (elFimMC) { elFimMC.value = _dataFimOrcProp; _atualizarDuracaoEvContr(); }
     }
   }
   setVal('ev_inicio', d.ev_inicio  || '');

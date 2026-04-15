@@ -1735,7 +1735,8 @@ function renderBoard() {
 }
 
 function buildCard(ev, past, col) {
-  var dataFmt = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
+  var dataFmt    = ev.ev_data     ? ev.ev_data.split('-').reverse().join('/')     : '';
+  var dataFimFmt = ev.ev_data_fim ? ev.ev_data_fim.split('-').reverse().join('/') : '';
   // Cor do badge de data conforme coluna e proximidade
   var badgeColor = '';
   var badgeBg = '';
@@ -1897,6 +1898,7 @@ function buildCard(ev, past, col) {
     '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
       '<div class="card-summary-left">' +
         (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
+        (dataFimFmt ? '<div class="card-data-badge card-data-fim-badge" data-field="ev_data_fim" data-evid="' + esc(ev.id) + '" style="font-size:0.68rem;opacity:0.75;margin-top:3px">' + dataFimFmt + '</div>' : '') +
         '<div>' +
           (ev.nota_id
             ? (
@@ -3497,7 +3499,7 @@ document.addEventListener('click', function(e) {
   }
 
   // Campo de data — usa input date
-  var isDate = field === 'ev_data';
+  var isDate = field === 'ev_data' || field === 'ev_data_fim';
   var ev = _eventosCache ? _eventosCache[evId] : null;
   var valorAtual = ev ? (ev[field] || '') : el.textContent.trim();
 
