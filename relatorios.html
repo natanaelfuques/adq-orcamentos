@@ -3313,8 +3313,7 @@ function buildPgtoModalHTML(ev) {
       } else {
         statusTxt = vencStr ? 'Vence em: ' + vencStr : 'Sem data definida';
       }
-      // Notas em monitoramento automático (data passou, sem pgto_alertas): botão resolve confirmando pagamento
-      const notaEmMonitorAuto = ev._origem === 'nota' && status === 'alerta' && !temAlerta && !notaPaga;
+      // Botão de ação da parcela
       const actionBtn = notaPaga
         ? '' // já pago: sem botão
         : temAlerta
