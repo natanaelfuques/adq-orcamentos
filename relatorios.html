@@ -106,14 +106,18 @@ header {
 
 /* ── PERÍODO SELECTOR ── */
 .periodo-bar {
-  background: var(--dark);
+  background: var(--darker);
   border-bottom: 1px solid var(--border);
-  padding: 10px 28px;
+  padding: 9px 28px;
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 95;
 }
+/* JS dynamically sets top to header.offsetHeight */
 /* Barra de período dentro da aba Contabilidade */
 .cont-periodo-bar {
   background: var(--surface);
@@ -999,6 +1003,234 @@ header {
   gap: 12px;
   margin-bottom: 20px;
 }
+
+/* ── ORÇAMENTOS / CONTRATOS SUB-ABAS ── */
+.oc-subtabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.oc-tab {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 7px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.oc-tab:hover { border-color: var(--green); color: var(--green); }
+.oc-tab.active {
+  background: rgba(46,158,79,0.12);
+  border-color: var(--green);
+  color: var(--green);
+}
+.oc-filtros {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  align-items: center;
+}
+.oc-filtro-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.oc-filtro-btn:hover { border-color: var(--green); color: var(--green); }
+.oc-filtro-btn.active { background: var(--green); border-color: var(--green); color: #111; }
+.oc-busca {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  outline: none;
+  width: 180px;
+  margin-left: auto;
+}
+.oc-busca:focus { border-color: var(--green); }
+.badge-tipo-orc {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(139,92,246,0.12);
+  color: #a78bfa;
+  border: 1px solid rgba(139,92,246,0.3);
+}
+.badge-tipo-cont {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(74,144,200,0.12);
+  color: #4A90C8;
+  border: 1px solid rgba(74,144,200,0.3);
+}
+@media (max-width:600px) {
+  .oc-subtabs { gap:5px; }
+  .oc-tab { font-size:0.7rem; padding:6px 12px; }
+  .oc-busca { width:100%; margin-left:0; }
+}
+
+/* ── CUSTOM PARCELAS EDITOR ── */
+.pgto-custom-editor {
+  background: var(--surface2);
+  border: 1px solid rgba(46,158,79,0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.pgto-custom-header {
+  display: flex;
+  align-items: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--green);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pgto-custom-cols-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.2fr 28px;
+  gap: 6px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 6px;
+  padding: 0 2px;
+}
+.pgto-custom-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.2fr 28px;
+  gap: 6px;
+  margin-bottom: 6px;
+  align-items: center;
+}
+.pgto-custom-inp-label,
+.pgto-custom-inp-val,
+.pgto-custom-inp-venc {
+  background: var(--darker);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.8rem;
+  padding: 5px 9px;
+  border-radius: 4px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  color-scheme: dark;
+}
+.pgto-custom-inp-label:focus,
+.pgto-custom-inp-val:focus,
+.pgto-custom-inp-venc:focus { border-color: var(--green); }
+.pgto-custom-btn-del {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  border-radius: 4px;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.pgto-custom-btn-del:hover { border-color: var(--red); color: var(--red); }
+.pgto-custom-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.pgto-custom-btn-add {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex; align-items: center;
+  transition: all 0.15s;
+}
+.pgto-custom-btn-add:hover { border-color: var(--green); color: var(--green); }
+.pgto-custom-btn-auto {
+  background: transparent;
+  border: 1px solid rgba(139,92,246,0.4);
+  color: #a78bfa;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex; align-items: center;
+  transition: all 0.15s;
+}
+.pgto-custom-btn-auto:hover { border-color: #8B5CF6; background: rgba(139,92,246,0.08); }
+.pgto-custom-btn-save {
+  background: var(--green);
+  border: none;
+  color: #111;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex; align-items: center;
+  margin-left: auto;
+  transition: opacity 0.15s;
+}
+.pgto-custom-btn-save:hover { opacity: 0.85; }
+@media (max-width: 600px) {
+  .pgto-custom-cols-header { grid-template-columns: 1fr 1fr 28px; }
+  .pgto-custom-row { grid-template-columns: 1fr 1fr 28px; }
+  .pgto-custom-inp-venc { display: none; }
+  .pgto-custom-cols-header span:nth-child(3) { display: none; }
+  .periodo-bar { padding: 8px 12px; gap: 6px; }
+}
 </style>
 </head>
 <body>
@@ -1060,11 +1292,43 @@ header {
 </div>
 </header>
 
+
+<!-- ══ BARRA DE PERÍODO GLOBAL ══ -->
+<div class="periodo-bar" id="periodo-bar-global">
+  <span class="periodo-label">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Período:
+  </span>
+  <div class="periodo-btns">
+    <button class="pbtn" onclick="setPeriodo('mes',this)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:4px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Este mês
+    </button>
+    <button class="pbtn" onclick="setPeriodo('trim',this)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:4px"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3h2a2 2 0 0 1 2 2v2"/><path d="M8 3H6a2 2 0 0 0-2 2v2"/></svg>Trimestre
+    </button>
+    <button class="pbtn active" onclick="setPeriodo('ano',this)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:4px"><path d="M3 3v18h18"/><path d="M18.4 9l-5.4 5.4-2.4-2.4L6 16.8"/></svg>Este ano
+    </button>
+    <button class="pbtn" onclick="setPeriodo('tudo',this)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:4px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Tudo
+    </button>
+    <button class="pbtn" onclick="setPeriodo('custom',this)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:4px"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="9" y2="18"/></svg>Personalizado
+    </button>
+  </div>
+  <div class="periodo-custom" id="custom-wrap" style="display:none">
+    <input id="data-ini" onchange="aplicarCustom()" type="date"/>
+    <span style="color:var(--muted)">até</span>
+    <input id="data-fim" onchange="aplicarCustom()" type="date"/>
+  </div>
+  <button class="export-btn" onclick="exportarCSV()" style="margin-left:auto">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar CSV
+  </button>
+</div>
 <div class="tabs-wrap" id="tabs-wrap">
 <div class="tabs" id="tabs-nav">
 <button class="tab-btn active" onclick="trocarTab('pagamentos')">Pagamentos</button>
 <button class="tab-btn" onclick="trocarTab('eventos')">Eventos</button>
-<button class="tab-btn" onclick="trocarTab('contratos')">Contratos</button>
+<button class="tab-btn" onclick="trocarTab('contratos')">Orçamentos / Contratos</button>
 <button class="tab-btn" onclick="trocarTab('financeiro')">Financeiro</button>
 <button class="tab-btn" onclick="trocarTab('sazonalidade')">Sazonalidade</button>
 <button class="tab-btn" onclick="trocarTab('clientes')">Clientes</button>
@@ -1112,31 +1376,66 @@ header {
 </table>
 </div>
 </div></div>
-<!-- ════ TAB: CONTRATOS ════ -->
+<!-- ════ TAB: ORÇAMENTOS / CONTRATOS ════ -->
 <div class="tab-panel" id="tab-contratos"><div class="tab-panel-inner">
+
+<!-- Sub-abas internas -->
+<div class="oc-subtabs" id="oc-subtabs">
+  <button class="oc-tab active" id="oc-tab-tudo"       onclick="setOcTab('tudo',this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>Visão Integrada</button>
+  <button class="oc-tab"       id="oc-tab-orcamentos"  onclick="setOcTab('orcamentos',this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-3"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg>Só Orçamentos</button>
+  <button class="oc-tab"       id="oc-tab-contratos"   onclick="setOcTab('contratos',this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Só Contratos</button>
+</div>
+
+<!-- KPIs dinâmicos -->
 <div class="kpi-grid" id="kpi-con"></div>
-<div class="chart-grid">
-<div class="chart-card">
-<div class="chart-title">Contratos por status</div>
-<div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+
+<!-- Gráficos -->
+<div class="chart-grid" id="oc-charts-grid">
+  <div class="chart-card">
+    <div class="chart-title" id="oc-chart-status-title">Status</div>
+    <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Funil: Orçamentos → Contratos → Confirmados</div>
+    <div class="chart-wrap"><canvas id="chart-conversao"></canvas></div>
+  </div>
 </div>
-<div class="chart-card">
-<div class="chart-title">Taxa de conversão — orçamentos → contratos</div>
-<div class="chart-wrap"><canvas id="chart-conversao"></canvas></div>
+
+<!-- Gráfico tempo orçamentos -->
+<div class="chart-grid single" id="oc-orc-chart-wrap" style="margin-bottom:18px">
+  <div class="chart-card">
+    <div class="chart-title">Orçamentos e contratos criados por mês</div>
+    <div class="chart-wrap"><canvas id="chart-orc-tempo"></canvas></div>
+  </div>
 </div>
+
+<!-- Filtros rápidos de status -->
+<div class="oc-filtros" id="oc-filtros">
+  <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Status:</span>
+  <button class="oc-filtro-btn active" data-status="todos"     onclick="setOcFiltro('todos',this)">Todos</button>
+  <button class="oc-filtro-btn"        data-status="pendente"  onclick="setOcFiltro('pendente',this)">Pendente</button>
+  <button class="oc-filtro-btn"        data-status="enviado"   onclick="setOcFiltro('enviado',this)">Enviado</button>
+  <button class="oc-filtro-btn"        data-status="assinado"  onclick="setOcFiltro('assinado',this)">Assinado</button>
+  <button class="oc-filtro-btn"        data-status="confirmado" onclick="setOcFiltro('confirmado',this)">Confirmado</button>
+  <button class="oc-filtro-btn"        data-status="concluido" onclick="setOcFiltro('concluido',this)">Concluído</button>
+  <button class="oc-filtro-btn"        data-status="cancelado" onclick="setOcFiltro('cancelado',this)">Cancelado</button>
+  <input class="oc-busca" id="oc-busca" type="text" placeholder="Buscar cliente..." oninput="renderContratos()"/>
 </div>
-<p class="sec-title">Listagem de contratos no período</p>
+
+<!-- Tabela integrada -->
+<p class="sec-title" id="oc-table-title">Listagem integrada — Orçamentos e Contratos</p>
 <div class="table-card table-scroll">
 <table>
 <thead>
 <tr>
-<th>Evento</th>
-<th>Data Evento</th>
-<th>Local</th>
-<th class="r">Valor</th>
-<th>Status</th>
-<th>Criado em</th>
-<th class="col-del"></th>
+  <th>Tipo</th>
+  <th>Cliente / Evento</th>
+  <th>Data Evento</th>
+  <th>Local</th>
+  <th class="r">Valor</th>
+  <th>Status</th>
+  <th>Criado em</th>
+  <th class="col-del"></th>
 </tr>
 </thead>
 <tbody id="tbody-contratos"></tbody>
@@ -1218,22 +1517,7 @@ header {
 </div></div>
 <!-- ════ TAB: CONTABILIDADE ════ -->
 <div class="tab-panel" id="tab-contabilidade"><div class="tab-panel-inner">
-<div class="periodo-bar cont-periodo-bar">
-<span class="periodo-label">Período:</span>
-<div class="periodo-btns">
-<button class="pbtn cont-pbtn" onclick="setContPeriodo('mes')">Este mês</button>
-<button class="pbtn cont-pbtn" onclick="setContPeriodo('trim')">Trimestre</button>
-<button class="pbtn cont-pbtn active" onclick="setContPeriodo('ano')">Este ano</button>
-<button class="pbtn cont-pbtn" onclick="setContPeriodo('tudo')">Tudo</button>
-<button class="pbtn cont-pbtn" onclick="setContPeriodo('custom')">Personalizado</button>
-</div>
-<div class="periodo-custom" id="cont-custom-wrap" style="display:none">
-<input id="cont-data-ini" onchange="aplicarContCustom()" type="date"/>
-<span style="color:var(--muted)">até</span>
-<input id="cont-data-fim" onchange="aplicarContCustom()" type="date"/>
-</div>
-<button class="export-btn" onclick="exportarCSV()" style="margin-left:auto">⬇ Exportar CSV</button>
-</div>
+<!-- período agora global acima das abas -->
 <p class="sec-title">Resumo para contabilidade — período selecionado</p>
 <div class="cont-grid">
 <div class="info-box">
@@ -1492,42 +1776,9 @@ function aplicarCustom() {
   if (ini && fim) renderTudo();
 }
 
-// Período exclusivo da aba Contabilidade
-function setContPeriodo(p) {
-  _periodoAtivo = p;
-  document.querySelectorAll('.cont-pbtn').forEach(b => b.classList.remove('active'));
-  const mapa = { mes:'Este mês', trim:'Trimestre', ano:'Este ano', tudo:'Tudo', custom:'Personalizado' };
-  document.querySelectorAll('.cont-pbtn').forEach(b => {
-    if (b.textContent.trim() === mapa[p]) b.classList.add('active');
-  });
-  const hoje = new Date();
-  const ano = hoje.getFullYear();
-  const mes = hoje.getMonth();
-  document.getElementById('cont-custom-wrap').style.display = (p === 'custom') ? 'flex' : 'none';
-  if (p === 'mes') {
-    _dataIni = new Date(ano, mes, 1);
-    _dataFim = new Date(ano, mes + 1, 0, 23, 59, 59);
-  } else if (p === 'trim') {
-    const trimStart = Math.floor(mes / 3) * 3;
-    _dataIni = new Date(ano, trimStart, 1);
-    _dataFim = new Date(ano, trimStart + 3, 0, 23, 59, 59);
-  } else if (p === 'ano') {
-    _dataIni = new Date(ano, 0, 1);
-    _dataFim = new Date(ano, 11, 31, 23, 59, 59);
-  } else if (p === 'tudo') {
-    _dataIni = null;
-    _dataFim = null;
-  }
-  if (p !== 'custom') renderContabilidade();
-}
-
-function aplicarContCustom() {
-  const ini = document.getElementById('cont-data-ini').value;
-  const fim = document.getElementById('cont-data-fim').value;
-  if (ini) _dataIni = new Date(ini + 'T00:00:00');
-  if (fim) _dataFim = new Date(fim + 'T23:59:59');
-  if (ini && fim) renderContabilidade();
-}
+// setContPeriodo agora redireciona para a barra global
+function setContPeriodo(p) { setPeriodo(p); }
+function aplicarContCustom() { aplicarCustom(); }
 
 // ── FILTRO DE PERÍODO ──
 function tsToDate(ts) {
@@ -1539,7 +1790,14 @@ function tsToDate(ts) {
 
 function dentroDoPeríodo(doc) {
   if (!_dataIni && !_dataFim) return true;
-  const d = tsToDate(doc.criadoEm);
+  // Usa a data REAL do evento como referência principal; fallback para criadoEm
+  const evStr = doc.ev_data || doc.data_evento || doc.dataEvt || '';
+  let d = null;
+  if (evStr) {
+    const p = evStr.split('-');
+    if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+  }
+  if (!d) d = tsToDate(doc.criadoEm);
   if (!d) return true;
   if (_dataIni && d < _dataIni) return false;
   if (_dataFim && d > _dataFim) return false;
@@ -1829,8 +2087,13 @@ function trocarTab(tab, smooth) {
     // sticky top do tabs-wrap
     function calcTop() {
       var hdr = document.querySelector('header');
-      var tw = document.getElementById('tabs-wrap');
-      if (tw && hdr) tw.style.top = hdr.offsetHeight + 'px';
+      var pb  = document.getElementById('periodo-bar-global');
+      var tw  = document.getElementById('tabs-wrap');
+      if (hdr) {
+        var hdrH = hdr.offsetHeight;
+        if (pb) pb.style.top = hdrH + 'px';
+        if (tw) tw.style.top = hdrH + (pb ? pb.offsetHeight : 0) + 'px';
+      }
     }
     calcTop();
     window.addEventListener('resize', calcTop);
@@ -1911,30 +2174,44 @@ function getParcelas(ev) {
   }
 
   if (tipo === 'metade') {
-    const metade = total * 0.5;
+    const totalCents = Math.round(total * 100);
+    const metadeCents = Math.floor(totalCents / 2);
+    const outraCents = totalCents - metadeCents; // garante que soma = total exato
     return [
-      { label: '1ª parcela (50%)', valor: metade, vencimento: dataEntrada || '', idx: 0 },
-      { label: '2ª parcela (50%)', valor: metade, vencimento: dataEvento, idx: 1 }
+      { label: '1ª parcela (50%)', valor: metadeCents / 100, vencimento: dataEntrada || '', idx: 0 },
+      { label: '2ª parcela (50%)', valor: outraCents / 100, vencimento: dataEvento, idx: 1 }
     ];
   }
 
   if (tipo === 'parcelado') {
-    const entrada = total * 0.2;
-    const restante = total - entrada;
-    const valorParc = n > 0 ? restante / n : restante;
+    // Usar centavos inteiros para evitar drift de ponto flutuante
+    const totalCents = Math.round(total * 100);
+    const entradaCents = Math.round(totalCents * 0.2);
+    const restanteCents = totalCents - entradaCents;
+    const nParc = n > 0 ? n : 1;
+    const parcCents = Math.floor(restanteCents / nParc);
+    const extraCents = restanteCents - parcCents * nParc; // centavos extras na última parcela
+    const entrada = entradaCents / 100;
     const parcelas = [{ label: 'Entrada (20%)', valor: entrada, vencimento: dataEntrada || '', idx: 0 }];
-    // calcular vencimentos mensais a partir da entrada
     const dataBase = parseDataBR(dataEntrada) || parseDataBR(dataEvento) || new Date();
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < nParc; i++) {
       const venc = new Date(dataBase.getFullYear(), dataBase.getMonth() + i + 1, dataBase.getDate());
       const vencStr = venc.getFullYear() + '-' + String(venc.getMonth() + 1).padStart(2, '0') + '-' + String(venc.getDate()).padStart(2, '0');
-      parcelas.push({ label: 'Parcela ' + (i + 1) + '/' + n, valor: valorParc, vencimento: vencStr, idx: i + 1 });
+      // Distribuir centavos extras na última parcela para fechar o total exato
+      const valorParc = (parcCents + (i === nParc - 1 ? extraCents : 0)) / 100;
+      parcelas.push({ label: 'Parcela ' + (i + 1) + '/' + nParc, valor: valorParc, vencimento: vencStr, idx: i + 1 });
     }
     return parcelas;
   }
 
   if (tipo === 'custom') {
-    // Exibe como uma única parcela com descrição personalizada
+    // Se tiver parcelas personalizadas salvas, usa elas
+    if (ev.pgto_parcelas_custom && ev.pgto_parcelas_custom.length > 0) {
+      return ev.pgto_parcelas_custom.map(function(p, i) {
+        return { label: p.label || ('Entrada ' + (i + 1)), valor: parseFloat(p.valor) || 0, vencimento: p.vencimento || '', idx: i };
+      });
+    }
+    // Fallback: exibe como uma única parcela
     return [{ label: ev.pgto_custom ? 'Personalizado: ' + ev.pgto_custom.slice(0, 60) : 'Pagamento personalizado', valor: total, vencimento: dataEvento, idx: 0 }];
   }
 
@@ -1947,7 +2224,8 @@ function getStatusPgto(ev) {
   if (total <= 0) return 'naovence';
   const pago = getTotalPago(ev);
   if (pago <= 0) return 'pendente';
-  if (pago >= total - 0.01) return 'quitado';
+  // Tolerância de R$ 0,05 para absorver drifts de ponto flutuante
+  if (pago >= total - 0.05) return 'quitado';
   return 'parcial';
 }
 
@@ -1958,7 +2236,7 @@ function temParcelaAtrasada(ev) {
   hoje.setHours(0, 0, 0, 0);
   const pago = getTotalPago(ev);
   const total = valorEv(ev);
-  if (pago >= total - 0.01) return false; // quitado, não está atrasado
+  if (pago >= total - 0.05) return false; // quitado, não está atrasado
   const registros = getPgtoRegistros(ev);
   // calcular quanto já foi marcado por parcela
   // fallback: data do evento como vencimento se parcela não tiver vencimento explícito
@@ -2001,7 +2279,7 @@ function salvarParcela(ev, parcelaIdx, valor, checked) {
   const total = valorEv(ev);
   const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
   const totalPago = avulso > 0 ? avulso : registros.reduce(function(s, r) { return s + (parseFloat(r.valor) || 0); }, 0);
-  if (totalPago >= total - 0.01 && total > 0) {
+  if (totalPago >= total - 0.05 && total > 0) {
     upd.status_pgto = 'quitado';
   } else if (totalPago > 0) {
     upd.status_pgto = 'parcial';
@@ -2019,7 +2297,7 @@ function salvarParcela(ev, parcelaIdx, valor, checked) {
     const pagoAtual = avulso > 0 ? avulso : registros.reduce(function(s,r){return s+(parseFloat(r.valor)||0);},0);
     const restante = Math.max(0, total - pagoAtual);
     const pct = total > 0 ? Math.min(100, (pagoAtual / total) * 100) : 0;
-    const st = pagoAtual >= total - 0.01 && total > 0 ? 'quitado' : pagoAtual > 0 ? 'parcial' : 'pendente';
+    const st = pagoAtual >= total - 0.05 && total > 0 ? 'quitado' : pagoAtual > 0 ? 'parcial' : 'pendente';
     const calcEl = document.getElementById('pgto-calc-' + docId);
     if (calcEl) calcEl.innerHTML = buildPgtoCalcHTML(total, pagoAtual, restante, pct, st);
     // atualizar badge de status e valor restante no header do card
@@ -2045,7 +2323,7 @@ function salvarValorAvulso(ev) {
   const novoValor = parseBRL(inp.value);
   const total = valorEv(ev);
   const upd = { pgto_valor_avulso: novoValor };
-  if (novoValor >= total - 0.01 && total > 0) upd.status_pgto = 'quitado';
+  if (novoValor >= total - 0.05 && total > 0) upd.status_pgto = 'quitado';
   else if (novoValor > 0) upd.status_pgto = 'parcial';
   else upd.status_pgto = 'pendente';
   db.collection(col).doc(docId).update(upd)
@@ -2068,7 +2346,7 @@ function renderPgtoCalc(ev, docId) {
   const pago = avulso > 0 ? avulso : getTotalPago(ev);
   const restante = Math.max(0, total - pago);
   const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
-  const statusPgto = pago >= total - 0.01 && total > 0 ? 'quitado' : pago > 0 ? 'parcial' : 'pendente';
+  const statusPgto = pago >= total - 0.05 && total > 0 ? 'quitado' : pago > 0 ? 'parcial' : 'pendente';
   calcEl.innerHTML = buildPgtoCalcHTML(total, pago, restante, pct, statusPgto);
 }
 
@@ -2084,14 +2362,175 @@ function buildPgtoCalcHTML(total, pago, restante, pct, statusPgto) {
     '</div>';
 }
 
+
+// ══════════════════════════════════════════════════════
+// EDITOR DE PARCELAS PERSONALIZADAS
+// ══════════════════════════════════════════════════════
+
+/* Retorna o HTML do editor inteligente de parcelas para pgto_tipo === 'custom' */
+function buildCustomParcelasEditorHTML(ev) {
+  const docId = ev.id;
+  const total = valorEv(ev);
+  const parcelas = (ev.pgto_parcelas_custom && ev.pgto_parcelas_custom.length > 0)
+    ? ev.pgto_parcelas_custom
+    : [];
+  const soma = parcelas.reduce(function(s, p) { return s + (parseFloat(p.valor) || 0); }, 0);
+  const restanteParcelar = Math.max(0, total - soma);
+  const inputRows = parcelas.map(function(p, i) {
+    return '<div class="pgto-custom-row" id="pgto-custom-row-' + docId + '-' + i + '">' +
+      '<input class="pgto-custom-inp-label" type="text" placeholder="Descrição" value="' + (p.label || '').replace(/"/g, '&quot;') + '" id="pgto-clabel-' + docId + '-' + i + '">' +
+      '<input class="pgto-custom-inp-val" type="text" placeholder="R$ 0,00" value="' + (parseFloat(p.valor) || 0).toFixed(2).replace('.', ',') + '" id="pgto-cval-' + docId + '-' + i + '">' +
+      '<input class="pgto-custom-inp-venc" type="date" value="' + (p.vencimento || '') + '" id="pgto-cvenc-' + docId + '-' + i + '">' +
+      '<button class="pgto-custom-btn-del" onclick="removerParcelaCustom(\'' + docId + '\',' + i + ')" title="Remover">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+      '</button>' +
+    '</div>';
+  }).join('');
+  return '<div class="pgto-custom-editor" id="pgto-custom-editor-' + docId + '">' +
+    '<div class="pgto-custom-header">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--green);vertical-align:-2px;margin-right:5px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+      'Editor de Entradas Personalizadas' +
+      '<span style="margin-left:auto;font-size:0.72rem;color:var(--muted)">Total: ' + frs(total) + ' · Distribuído: <span id="pgto-custom-soma-' + docId + '" style="color:' + (Math.abs(soma - total) < 0.05 ? '#25D366' : '#F5A623') + '">' + frs(soma) + '</span></span>' +
+    '</div>' +
+    '<div class="pgto-custom-cols-header">' +
+      '<span>Descrição</span><span>Valor (R$)</span><span>Vencimento</span><span></span>' +
+    '</div>' +
+    '<div id="pgto-custom-rows-' + docId + '">' + inputRows + '</div>' +
+    '<div class="pgto-custom-actions">' +
+      '<button class="pgto-custom-btn-add" onclick="adicionarParcelaCustom(\'' + docId + '\',\'' + total.toFixed(2) + '\')">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        'Adicionar entrada' +
+      '</button>' +
+      (restanteParcelar > 0.01
+        ? '<button class="pgto-custom-btn-auto" onclick="distribuirAutomatico(\'' + docId + '\',\'' + total.toFixed(2) + '\')" style="margin-left:6px">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' +
+            'Distribuir restante (' + frs(restanteParcelar) + ')' +
+          '</button>'
+        : '') +
+      '<button class="pgto-custom-btn-save" onclick="salvarParcelasCustom(\'' + docId + '\')">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>' +
+        'Salvar entradas' +
+      '</button>' +
+    '</div>' +
+  '</div>';
+}
+
+/* Adiciona uma nova linha no editor custom */
+function adicionarParcelaCustom(docId, totalStr) {
+  const total = parseFloat(totalStr) || 0;
+  const ev = _pgtoEventoById(docId);
+  if (!ev) return;
+  const arr = (ev.pgto_parcelas_custom || []).slice();
+  const soma = arr.reduce(function(s, p) { return s + (parseFloat(p.valor) || 0); }, 0);
+  const restante = Math.max(0, total - soma);
+  arr.push({ label: 'Entrada ' + (arr.length + 1), valor: restante > 0 ? restante : 0, vencimento: '' });
+  // Save optimistically to local + re-render the editor
+  _atualizarParcelasCustomLocal(docId, arr);
+}
+
+/* Remove uma linha do editor */
+function removerParcelaCustom(docId, idx) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev) return;
+  const arr = (ev.pgto_parcelas_custom || []).slice();
+  arr.splice(idx, 1);
+  _atualizarParcelasCustomLocal(docId, arr);
+}
+
+/* Distribui o restante automaticamente */
+function distribuirAutomatico(docId, totalStr) {
+  const total = parseFloat(totalStr) || 0;
+  const ev = _pgtoEventoById(docId);
+  if (!ev) return;
+  const arr = (ev.pgto_parcelas_custom || []).slice();
+  const soma = arr.reduce(function(s, p) { return s + (parseFloat(p.valor) || 0); }, 0);
+  const restante = Math.max(0, total - soma);
+  if (restante < 0.01) return;
+  arr.push({ label: 'Entrada ' + (arr.length + 1), valor: restante, vencimento: '' });
+  _atualizarParcelasCustomLocal(docId, arr);
+}
+
+function _atualizarParcelasCustomLocal(docId, arr) {
+  const arrMain = _contratos.findIndex(function(x) { return x.id === docId; });
+  const arrNota = _notas.findIndex(function(x) { return x.id === docId; });
+  if (arrMain >= 0) _contratos[arrMain].pgto_parcelas_custom = arr;
+  if (arrNota >= 0) _notas[arrNota].pgto_parcelas_custom = arr;
+  // Re-render the editor block only
+  const ev2 = _pgtoEventoById(docId);
+  if (!ev2) return;
+  const edEl = document.getElementById('pgto-custom-editor-' + docId);
+  if (edEl) {
+    const newHtml = buildCustomParcelasEditorHTML(ev2);
+    const tmp = document.createElement('div');
+    tmp.innerHTML = newHtml;
+    edEl.parentNode.replaceChild(tmp.firstChild, edEl);
+  }
+}
+
+/* Salva as parcelas personalizadas do editor no Firestore */
+function salvarParcelasCustom(docId) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  // Ler valores dos inputs
+  const rows = document.querySelectorAll('[id^="pgto-custom-row-' + docId + '-"]');
+  const arr = [];
+  rows.forEach(function(row, i) {
+    const label = (document.getElementById('pgto-clabel-' + docId + '-' + i) || {}).value || ('Entrada ' + (i + 1));
+    const valRaw = (document.getElementById('pgto-cval-' + docId + '-' + i) || {}).value || '0';
+    const venc = (document.getElementById('pgto-cvenc-' + docId + '-' + i) || {}).value || '';
+    const val = parseBRL(valRaw);
+    arr.push({ label: label, valor: val, vencimento: venc });
+  });
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  db.collection(col).doc(docId).update({ pgto_parcelas_custom: arr })
+    .then(function() {
+      _editorToast('Entradas salvas!');
+      // Atualizar local
+      const total = valorEv(ev);
+      const soma = arr.reduce(function(s, p) { return s + (parseFloat(p.valor) || 0); }, 0);
+      const arrMain = _contratos.findIndex(function(x) { return x.id === docId; });
+      const arrNota = _notas.findIndex(function(x) { return x.id === docId; });
+      if (arrMain >= 0) _contratos[arrMain].pgto_parcelas_custom = arr;
+      if (arrNota >= 0) _notas[arrNota].pgto_parcelas_custom = arr;
+      // Atualizar o cálculo de pagamento
+      const ev2 = _pgtoEventoById(docId);
+      if (ev2) renderPgtoCalc(ev2, docId);
+    })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
 function renderPagamentos() {
-  // Usa TODOS os eventos (sem filtro de período) — controle financeiro precisa de visão completa
-  const todosContratos = _contratos.map(function(c) { return Object.assign({}, c, { _origem: 'contrato' }); });
+  // Respeita o filtro de período global (_dataIni/_dataFim) — igual às outras abas
+  // Filtra pela data DO EVENTO (ev_data), com fallback para criadoEm
+  function _dentroPeríodoPgto(doc) {
+    if (!_dataIni && !_dataFim) return true;
+    const evStr = doc.ev_data || doc.data_evento || doc.dataEvt || '';
+    let d = null;
+    if (evStr) {
+      const p = evStr.split('-');
+      if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+    }
+    if (!d) d = tsToDate(doc.criadoEm);
+    if (!d) return true;
+    if (_dataIni && d < _dataIni) return false;
+    if (_dataFim && d > _dataFim) return false;
+    return true;
+  }
+  const todosContratos = _contratos.filter(_dentroPeríodoPgto).map(function(c) { return Object.assign({}, c, { _origem: 'contrato' }); });
   const notaIdsComContrato = new Set(todosContratos.map(function(c) { return c.nota_id; }).filter(Boolean));
-  const todosNotas = _notas.filter(function(n) { return !notaIdsComContrato.has(n.id); });
+  const todosNotas = _notas.filter(_dentroPeríodoPgto).filter(function(n) { return !notaIdsComContrato.has(n.id); });
+  const _temCardAberto = Object.values(_pgtoAbertos).some(function(v) { return v; });
   const todosBase = [...todosContratos, ...todosNotas]
     .filter(function(e) { return valorEv(e) > 0 && !e.removido_manualmente; })
     .sort(function(a, b) {
+      // Se há algum card aberto, mantém a ordem atual para evitar troca de posição
+      // durante o preenchimento. A reordenação ocorre só quando não há card aberto.
+      if (_temCardAberto) {
+        // Mantém a ordem estável baseada no ID para não embaralhar
+        if (a.id < b.id) return -1;
+        if (a.id > b.id) return 1;
+        return 0;
+      }
       // Ordenar: atrasados primeiro, depois pendentes, parciais, quitados
       const ord = { pendente: 0, parcial: 1, quitado: 2 };
       const sa = getStatusPgto(a), sb = getStatusPgto(b);
@@ -2237,6 +2676,9 @@ function renderPagamentos() {
           '<span style="font-size:0.72rem;color:var(--muted)">Valor total já recebido</span>' +
         '</div>' +
       '</div>';
+    // Para pagamento customizado: mostrar o editor de entradas
+    const customEditorHTML = (ev.pgto_tipo === 'custom' || ev.pgto_sel === 'custom')
+      ? buildCustomParcelasEditorHTML(ev) : '';
 
     return '<div class="pgto-card">' +
       '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
@@ -2252,8 +2694,10 @@ function renderPagamentos() {
       '</div>' +
       '<div class="pgto-card-body ' + (isOpen ? 'open' : '') + '" id="pgto-body-' + docId + '">' +
         resumoHTML +
-        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">Parcelas</div>' +
-        '<div class="pgto-parcelas">' + parcelasHTML + '</div>' +
+        (customEditorHTML
+          ? customEditorHTML
+          : '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">Parcelas</div>' +
+            '<div class="pgto-parcelas">' + parcelasHTML + '</div>') +
         avulsoHTML +
         calcHTML +
       '</div>' +
@@ -2289,6 +2733,10 @@ function togglePgtoCard(docId) {
   const arrow = document.getElementById('pgto-arrow-' + docId);
   if (body) body.classList.toggle('open', !!_pgtoAbertos[docId]);
   if (arrow) arrow.style.transform = 'rotate(' + (_pgtoAbertos[docId] ? '180' : '0') + 'deg)';
+  // Ao FECHAR um card, re-renderiza para aplicar a ordenação por status atualizada
+  if (!isNowOpen) {
+    setTimeout(function() { renderPagamentos(); }, 320);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -2312,12 +2760,15 @@ function renderFinanceiro() {
 
   // Mês atual — contratos + notas, sem duplicatas (notas que viraram contrato não entram duas vezes)
   const hoje = new Date();
-  const _notaIdsComContMes = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  const _notaIdsComContMes = new Set(contratosFiltrados().map(c => c.nota_id).filter(Boolean));
   const todosMes = [
-    ..._contratos.map(c => ({ ...c, _origem: 'contrato' })),
-    ..._notas.filter(n => !_notaIdsComContMes.has(n.id))
+    ...contratosFiltrados().map(c => ({ ...c, _origem: 'contrato' })),
+    ...notasFiltradas().filter(n => !_notaIdsComContMes.has(n.id))
   ].filter(e => {
-    const d = tsToDate(e.criadoEm);
+    const evStr = e.ev_data || e.data_evento || e.dataEvt || '';
+    let d = null;
+    if (evStr) { const p = evStr.split('-'); if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2])); }
+    if (!d) d = tsToDate(e.criadoEm);
     return d && d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
   });
   const recMes = todosMes.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)))
@@ -2349,10 +2800,10 @@ function renderFinanceiro() {
 
   // Gráfico: faturamento mensal — contratos + notas, sem duplicatas
   // Usa ev_data (data real do evento) para posicionar no mês correto; fallback para criadoEm
-  const _notaIdsDedup = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  const _notaIdsDedup = new Set(contratosFiltrados().map(c => c.nota_id).filter(Boolean));
   const todosParaGraf = [
-    ..._contratos.map(c => ({ ...c, _origem: 'contrato' })),
-    ..._notas.filter(n => !_notaIdsDedup.has(n.id))
+    ...contratosFiltrados().map(c => ({ ...c, _origem: 'contrato' })),
+    ...notasFiltradas().filter(n => !_notaIdsDedup.has(n.id))
   ];
   function _dataRefEvento(e) {
     // Prefere data real do evento; fallback para criadoEm
@@ -2519,87 +2970,257 @@ function renderFinanceiro() {
 // ══════════════════════════════════════════
 // TAB 2 – CONTRATOS
 // ══════════════════════════════════════════
+// ── Estado da sub-aba Orçamentos/Contratos ──
+let _ocTab = 'tudo';         // 'tudo' | 'orcamentos' | 'contratos'
+let _ocFiltroStatus = 'todos'; // status filter
+
+function setOcTab(tab, btn) {
+  _ocTab = tab;
+  document.querySelectorAll('.oc-tab').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderContratos();
+}
+
+function setOcFiltro(status, btn) {
+  _ocFiltroStatus = status;
+  document.querySelectorAll('.oc-filtro-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderContratos();
+}
+
+function getOrcStatus(orc) {
+  // Tenta mapear campos do Firebase de orçamentos para um status legível
+  const s = orc.status || orc.situacao || orc.status_orcamento || orc.etapa || '';
+  if (!s) return 'pendente';
+  const sl = s.toLowerCase().trim();
+  if (sl === 'aprovado' || sl === 'confirmado') return 'confirmado';
+  if (sl === 'cancelado' || sl === 'recusado' || sl === 'perdido') return 'cancelado';
+  if (sl === 'enviado' || sl === 'enviada') return 'enviado';
+  if (sl === 'assinado') return 'assinado';
+  if (sl === 'concluido' || sl === 'concluído') return 'concluido';
+  if (sl === 'andamento' || sl === 'em andamento') return 'andamento';
+  return sl || 'pendente';
+}
+
+function getValorOrc(orc) {
+  return parseBRL(orc.valor_total) || parseBRL(orc.val_total) || parseBRL(orc.valor) || parseBRL(orc.valorTotal) || 0;
+}
+
 function renderContratos() {
   const cons = contratosFiltrados();
   const orcs = orcamentosFiltrados();
-  const confirmados = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
-  const assinados   = cons.filter(c => getStatusContrato(c) === 'assinado');
-  const pendentes   = cons.filter(c => ['pendente','enviado'].includes(getStatusContrato(c)));
-  const andamento   = cons.filter(c => getStatusContrato(c) === 'andamento');
-  const cancelados  = cons.filter(c => getStatusContrato(c) === 'cancelado');
+  const busca = (document.getElementById('oc-busca') ? document.getElementById('oc-busca').value : '').toLowerCase().trim();
 
-  const taxa = orcs.length ? ((cons.length / orcs.length) * 100).toFixed(1) : 0;
+  // ── KPIs adaptativos conforme sub-aba ──
+  const confirmadosCon = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
+  const assinadosCon   = cons.filter(c => getStatusContrato(c) === 'assinado');
+  const pendentesCon   = cons.filter(c => ['pendente','enviado'].includes(getStatusContrato(c)));
+  const andamentoCon   = cons.filter(c => getStatusContrato(c) === 'andamento');
+  const canceladosCon  = cons.filter(c => getStatusContrato(c) === 'cancelado');
+  const taxaConv       = orcs.length ? ((cons.length / orcs.length) * 100).toFixed(1) : '—';
+  const receitaConf    = confirmadosCon.reduce(function(s,c){ return s + getValorContrato(c); }, 0);
+  const receitaOrc     = orcs.reduce(function(s,o){ return s + getValorOrc(o); }, 0);
+  const orcPendentes   = orcs.filter(function(o){ return getOrcStatus(o) === 'pendente'; }).length;
+  const orcAprovados   = orcs.filter(function(o){ return ['confirmado','assinado','concluido'].includes(getOrcStatus(o)); }).length;
 
-  document.getElementById('kpi-con').innerHTML = `
-    <div class="kpi-card gold"><div class="kpi-label">Total contratos</div><div class="kpi-value">${cons.length}</div></div>
-    <div class="kpi-card green"><div class="kpi-label">Confirmados</div><div class="kpi-value">${confirmados.length}</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">Assinados</div><div class="kpi-value">${assinados.length}</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">Em andamento</div><div class="kpi-value">${andamento.length}</div></div>
-    <div class="kpi-card orange"><div class="kpi-label">Pendentes</div><div class="kpi-value">${pendentes.length}</div></div>
-    <div class="kpi-card red"><div class="kpi-label">Cancelados</div><div class="kpi-value">${cancelados.length}</div></div>
-    <div class="kpi-card purple"><div class="kpi-label">Taxa de conversão</div><div class="kpi-value">${taxa}%</div><div class="kpi-sub">Orçamentos → Contratos</div></div>
-  `;
+  var kpiHtml = '';
+  if (_ocTab === 'tudo') {
+    kpiHtml = `
+      <div class="kpi-card gold"><div class="kpi-label">Orçamentos emitidos</div><div class="kpi-value">${orcs.length}</div><div class="kpi-sub">${frsShort(receitaOrc)} em valor</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Contratos gerados</div><div class="kpi-value">${cons.length}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Confirmados / Concluídos</div><div class="kpi-value">${confirmadosCon.length}</div><div class="kpi-sub">${frsShort(receitaConf)}</div></div>
+      <div class="kpi-card purple"><div class="kpi-label">Taxa de conversão</div><div class="kpi-value">${taxaConv}%</div><div class="kpi-sub">Orç → Contrato</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">Pendentes / Em neg.</div><div class="kpi-value">${pendentesCon.length + orcPendentes}</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Cancelados</div><div class="kpi-value">${canceladosCon.length}</div></div>
+    `;
+  } else if (_ocTab === 'orcamentos') {
+    const orcCancelados = orcs.filter(function(o){ return ['cancelado'].includes(getOrcStatus(o)); }).length;
+    kpiHtml = `
+      <div class="kpi-card gold"><div class="kpi-label">Total orçamentos</div><div class="kpi-value">${orcs.length}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Aprovados</div><div class="kpi-value">${orcAprovados}</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">Pendentes</div><div class="kpi-value">${orcPendentes}</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Cancelados / Perdidos</div><div class="kpi-value">${orcCancelados}</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Valor total emitido</div><div class="kpi-value">${frsShort(receitaOrc)}</div></div>
+      <div class="kpi-card purple"><div class="kpi-label">Taxa de conversão</div><div class="kpi-value">${taxaConv}%</div><div class="kpi-sub">Orç → Contrato</div></div>
+    `;
+  } else {
+    kpiHtml = `
+      <div class="kpi-card gold"><div class="kpi-label">Total contratos</div><div class="kpi-value">${cons.length}</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Confirmados</div><div class="kpi-value">${confirmadosCon.length}</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Assinados</div><div class="kpi-value">${assinadosCon.length}</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Em andamento</div><div class="kpi-value">${andamentoCon.length}</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">Pendentes</div><div class="kpi-value">${pendentesCon.length}</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Cancelados</div><div class="kpi-value">${canceladosCon.length}</div></div>
+    `;
+  }
+  document.getElementById('kpi-con').innerHTML = kpiHtml;
 
-  // Gráfico pizza status
+  // ── Gráfico pizza de status ──
+  var statusLabels, statusData, statusColors, statusTitle;
+  if (_ocTab === 'orcamentos') {
+    statusTitle = 'Orçamentos por status';
+    const buckets = { 'Pendente':0,'Enviado':0,'Aprovado':0,'Cancelado':0,'Outros':0 };
+    orcs.forEach(function(o){
+      const s = getOrcStatus(o);
+      if (s === 'pendente') buckets['Pendente']++;
+      else if (s === 'enviado') buckets['Enviado']++;
+      else if (['confirmado','assinado','concluido'].includes(s)) buckets['Aprovado']++;
+      else if (s === 'cancelado') buckets['Cancelado']++;
+      else buckets['Outros']++;
+    });
+    statusLabels = Object.keys(buckets);
+    statusData   = Object.values(buckets);
+    statusColors = ['#666','#4A90C8','#25D366','#e05c5c','#8B5CF6'];
+  } else {
+    statusTitle = _ocTab === 'contratos' ? 'Contratos por status' : 'Contratos por status';
+    statusLabels = ['Confirmados','Assinados','Andamento','Pendentes','Cancelados'];
+    statusData   = [confirmadosCon.length, assinadosCon.length, andamentoCon.length, pendentesCon.length, canceladosCon.length];
+    statusColors = ['#25D366','#4A90C8','#2E9E4F','#666','#e05c5c'];
+  }
+  var titleEl = document.getElementById('oc-chart-status-title');
+  if (titleEl) titleEl.textContent = statusTitle;
   criarChart('chart-status', {
     type: 'doughnut',
-    data: {
-      labels: ['Confirmados','Assinados','Andamento','Pendentes','Cancelados'],
-      datasets: [{
-        data: [confirmados.length, assinados.length, andamento.length, pendentes.length, cancelados.length],
-        backgroundColor: ['#25D366','#4A90C8','#2E9E4F','#666','#e05c5c'],
-        borderColor: '#1a1a1a', borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 14 } } }
-    }
+    data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors, borderColor: '#1a1a1a', borderWidth: 2 }] },
+    options: { responsive:true, maintainAspectRatio:true, plugins:{ legend:{ position:'right', labels:{ boxWidth:12, padding:14 } } } }
   });
 
-  // Gráfico conversão
+  // ── Gráfico funil ──
   criarChart('chart-conversao', {
     type: 'bar',
     data: {
       labels: ['Orçamentos','Contratos','Confirmados'],
       datasets: [{
-        data: [orcs.length, cons.length, confirmados.length],
-        backgroundColor: ['rgba(46,158,79,0.6)','rgba(74,144,200,0.6)','rgba(37,211,102,0.6)'],
-        borderColor: ['#2E9E4F','#4A90C8','#25D366'],
+        data: [orcs.length, cons.length, confirmadosCon.length],
+        backgroundColor: ['rgba(139,92,246,0.6)','rgba(74,144,200,0.6)','rgba(37,211,102,0.6)'],
+        borderColor: ['#8B5CF6','#4A90C8','#25D366'],
         borderWidth: 1, borderRadius: 6
       }]
     },
     options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
-        x: { grid: { display: false } }
-      }
+      responsive:true, maintainAspectRatio:true,
+      plugins:{ legend:{ display:false } },
+      scales:{ y:{ ticks:{ precision:0 }, grid:{ color:'#2a2a2a' } }, x:{ grid:{ display:false } } }
     }
   });
 
-  // Tabela
-  const tbody = document.getElementById('tbody-contratos');
-  if (!cons.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum contrato no período.</td></tr>'; return; }
+  // ── Gráfico orçamentos + contratos por mês ──
+  var mesMap = {};
+  function addMes(doc, tipo) {
+    const d = tsToDate(doc.criadoEm);
+    if (!d) return;
+    const k = MESES[d.getMonth()] + '/' + String(d.getFullYear()).slice(2);
+    const ord = d.getFullYear() * 100 + d.getMonth();
+    if (!mesMap[k]) mesMap[k] = { ord:ord, orc:0, con:0 };
+    if (tipo === 'orc') mesMap[k].orc++;
+    else mesMap[k].con++;
+  }
+  orcs.forEach(function(o){ addMes(o, 'orc'); });
+  cons.forEach(function(c){ addMes(c, 'con'); });
+  var mesEntries = Object.entries(mesMap).sort(function(a,b){ return a[1].ord - b[1].ord; });
+  criarChart('chart-orc-tempo', {
+    type: 'bar',
+    data: {
+      labels: mesEntries.map(function(x){ return x[0]; }),
+      datasets: [
+        { label:'Orçamentos', data: mesEntries.map(function(x){ return x[1].orc; }), backgroundColor:'rgba(139,92,246,0.6)', borderColor:'#8B5CF6', borderWidth:1, borderRadius:3 },
+        { label:'Contratos',  data: mesEntries.map(function(x){ return x[1].con; }), backgroundColor:'rgba(74,144,200,0.6)',  borderColor:'#4A90C8',  borderWidth:1, borderRadius:3 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:true,
+      plugins:{ legend:{ position:'top', labels:{ boxWidth:12 } } },
+      scales:{ y:{ ticks:{ precision:0 }, grid:{ color:'#2a2a2a' } }, x:{ grid:{ display:false } } }
+    }
+  });
 
-  tbody.innerHTML = cons.map(c => {
-    const st = getStatusContrato(c);
-    const id = c.id;
-    const cli = nomeCli(c);
-    // Badge de status: contratos com etapa no painel → "painel" (roxo)
-    const statusBadge = (c.etapa && !c.removido_manualmente && c.status_contrato !== 'cancelado')
-      ? '<span class="badge painel">painel</span>'
-      : `<span class="badge ${st}">${st}</span>`;
-    return `<tr>
-      <td class="row-field-editable" data-field="cli_nome" data-docid="${id}" data-col="contratos" style="max-width:220px">${cli}</td>
-      <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="contratos">${dataEv(c)}</td>
-      <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="contratos">${c.ev_local || c.local_evento || '—'}</td>
-      <td class="r" style="color:var(--green);font-weight:700">${frs(getValorEvento(c))}</td>
-      <td>${statusBadge}</td>
-      <td>${formatDateBR(c.criadoEm)}</td>
-      <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="contratos" title="Excluir">×</button></td>
-    </tr>`;
+  // ── Mostrar/ocultar gráfico de linha conforme aba ──
+  var orcWrap = document.getElementById('oc-orc-chart-wrap');
+  if (orcWrap) orcWrap.style.display = (_ocTab === 'contratos') ? 'none' : '';
+
+  // ── Título da tabela ──
+  var titleTbl = document.getElementById('oc-table-title');
+  if (titleTbl) {
+    titleTbl.textContent = _ocTab === 'orcamentos' ? 'Listagem de orçamentos no período'
+      : _ocTab === 'contratos' ? 'Listagem de contratos no período'
+      : 'Listagem integrada — Orçamentos e Contratos';
+  }
+
+  // ── Montar lista de itens conforme sub-aba ──
+  var itens = [];
+  if (_ocTab === 'tudo' || _ocTab === 'contratos') {
+    cons.forEach(function(c){ itens.push({ ...c, _tipo: 'contrato' }); });
+  }
+  if (_ocTab === 'tudo' || _ocTab === 'orcamentos') {
+    orcs.forEach(function(o){ itens.push({ ...o, _tipo: 'orcamento' }); });
+  }
+
+  // Filtrar por status
+  if (_ocFiltroStatus !== 'todos') {
+    itens = itens.filter(function(item) {
+      const s = item._tipo === 'orcamento' ? getOrcStatus(item) : getStatusContrato(item);
+      return s === _ocFiltroStatus;
+    });
+  }
+
+  // Filtrar por busca
+  if (busca) {
+    itens = itens.filter(function(item) {
+      const cli = (nomeCli(item) + ' ' + tipoEv(item)).toLowerCase();
+      return cli.includes(busca);
+    });
+  }
+
+  // Ordenar: mais recentes primeiro
+  itens.sort(function(a, b) {
+    const da = tsToDate(a.criadoEm), db_ = tsToDate(b.criadoEm);
+    if (!da && !db_) return 0;
+    if (!da) return 1;
+    if (!db_) return -1;
+    return db_ - da;
+  });
+
+  const tbody = document.getElementById('tbody-contratos');
+  if (!itens.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum item encontrado.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = itens.map(function(item) {
+    const id = item.id;
+    const isOrc = item._tipo === 'orcamento';
+    const col = isOrc ? 'orcamentos' : 'contratos';
+    const fieldNome = isOrc ? (item.cli_nome ? 'cli_nome' : 'nome_cliente') : 'cli_nome';
+    const cli = nomeCli(item);
+    const tipo_ev = tipoEv(item);
+    const st = isOrc ? getOrcStatus(item) : getStatusContrato(item);
+    const valor = isOrc ? getValorOrc(item) : getValorContrato(item);
+    const valorStr = valor > 0 ? frs(valor) : '—';
+    const valorStyle = valor > 0 ? 'color:var(--green);font-weight:700' : 'color:var(--muted)';
+
+    const tipoBadge = isOrc
+      ? '<span class="badge-tipo-orc">Orçamento</span>'
+      : '<span class="badge-tipo-cont">Contrato</span>';
+
+    var statusBadge;
+    if (!isOrc && item.etapa && !item.removido_manualmente && item.status_contrato !== 'cancelado') {
+      statusBadge = '<span class="badge painel">painel</span>';
+    } else {
+      statusBadge = '<span class="badge ' + st + '">' + st + '</span>';
+    }
+
+    const nomeDisplay = cli + (tipo_ev && tipo_ev !== '—' && tipo_ev !== cli ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + tipo_ev + '</span>' : '');
+
+    return '<tr>' +
+      '<td>' + tipoBadge + '</td>' +
+      '<td class="row-field-editable" data-field="' + fieldNome + '" data-docid="' + id + '" data-col="' + col + '" style="max-width:220px">' + nomeDisplay + '</td>' +
+      '<td class="row-field-editable" data-field="ev_data" data-docid="' + id + '" data-col="' + col + '">' + dataEv(item) + '</td>' +
+      '<td class="row-field-editable" data-field="ev_local" data-docid="' + id + '" data-col="' + col + '">' + localEv(item) + '</td>' +
+      '<td class="r" style="' + valorStyle + '">' + valorStr + '</td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td>' + formatDateBR(item.criadoEm) + '</td>' +
+      '<td class="col-del"><button class="btn-del-row" data-docid="' + id + '" data-col="' + col + '" title="Excluir">×</button></td>' +
+    '</tr>';
   }).join('');
 }
 
@@ -2742,9 +3363,9 @@ function renderClientes() {
   });
 
   // Gráfico qtd pessoas — contratos + notas, sem duplicatas
-  const _notaIdsComContCli = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  const _notaIdsComContCli = new Set(contratosFiltrados().map(c => c.nota_id).filter(Boolean));
   const pessoasMap = { '1-50': 0, '51-100': 0, '101-200': 0, '201-500': 0, '500+': 0 };
-  [..._contratos, ..._notas.filter(n => !_notaIdsComContCli.has(n.id))].forEach(c => {
+  [...contratosFiltrados(), ...notasFiltradas().filter(n => !_notaIdsComContCli.has(n.id))].forEach(c => {
     const p = parseInt(c.qtd_pessoas) || 0;
     if (p <= 0) return;
     if (p <= 50) pessoasMap['1-50']++;
@@ -2798,11 +3419,11 @@ function renderSazonalidade() {
   // Histograma por mês (todos os anos)
   const volMes = Array(12).fill(0);
   const recMes = Array(12).fill(0);
-  // Contratos + notas para sazonalidade — sem duplicatas
-  const _notaIdsComContSaz = new Set(_contratos.map(c => c.nota_id).filter(Boolean));
+  // Contratos + notas para sazonalidade — filtrados pelo período, sem duplicatas
+  const _notaIdsComContSaz = new Set(contratosFiltrados().map(c => c.nota_id).filter(Boolean));
   const todosParaSaz = [
-    ..._contratos.map(c => ({...c, _origem:'contrato'})),
-    ..._notas.filter(n => !_notaIdsComContSaz.has(n.id))
+    ...contratosFiltrados().map(c => ({...c, _origem:'contrato'})),
+    ...notasFiltradas().filter(n => !_notaIdsComContSaz.has(n.id))
   ];
   todosParaSaz.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e))).forEach(e => {
     // Usa a data REAL do evento (ev_data) para sazonalidade; fallback para criadoEm
