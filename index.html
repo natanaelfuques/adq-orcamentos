@@ -2149,19 +2149,24 @@ Revestimento</textarea>
       </div>
       <div class="grid-3">
         <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <label style="margin-bottom:0">Data do Evento</label>
-            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin-bottom:0">
-              <input type="checkbox" id="ev_data_livre_chk" onchange="_toggleEvDataLivre(this)"
-                style="width:13px;height:13px;accent-color:var(--gold);cursor:pointer;margin:0">
-              <span style="font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Texto livre</span>
-            </label>
-          </div>
+          <label>Data do Evento</label>
           <input type="date" id="ev_data"
             style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
-            onchange="sincronizarDataDateEv(this);_validarDataEvPassada(this)" />
-          <input type="text" id="ev_data_texto_livre" placeholder="Ex: A definir, Março/2026..."
-            style="width:100%;display:none" oninput="_agendarRascunho()" />
+            onchange="sincronizarDataDateEv(this);_validarDataEvPassada(this);_atualizarDuracaoEvContr()" />
+          <!-- Toggle multi-dia contrato -->
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+            <label class="include-toggle" onclick="event.stopPropagation();_toggleMultiDiaContr(this.querySelector('input'))">
+              <input type="checkbox" id="ev_chk_multidia" onchange="_toggleMultiDiaContr(this)" />
+              <span>Evento com mais de um dia</span>
+            </label>
+          </div>
+          <div id="ev_painel_data_fim" style="display:none;margin-top:8px">
+            <label style="margin-bottom:6px">Data de Término</label>
+            <input type="date" id="ev_data_fim"
+              style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
+              onchange="_atualizarDuracaoEvContr()" />
+            <span id="ev_label_duracao" style="display:block;margin-top:6px;font-size:0.8rem;color:var(--gold);font-weight:600;letter-spacing:0.04em"></span>
+          </div>
         </div>
         <div>
           <label>Hora Início</label>
@@ -3151,13 +3156,11 @@ function resetFormularioContrato() {
    'val_total','pgto_custom','data_entrada'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  // Resetar modo texto livre da data
-  var chkLivre   = document.getElementById('ev_data_livre_chk');
-  var inputDate  = document.getElementById('ev_data');
-  var inputLivre = document.getElementById('ev_data_texto_livre');
-  if (chkLivre)  chkLivre.checked = false;
-  if (inputDate)  inputDate.style.display  = '';
-  if (inputLivre) { inputLivre.style.display = 'none'; inputLivre.value = ''; }
+  // Resetar multi-dia
+  var chkMultiRst = document.getElementById('ev_chk_multidia');
+  if (chkMultiRst) { chkMultiRst.checked = false; _toggleMultiDiaContr(chkMultiRst); }
+  var elFimRst = document.getElementById('ev_data_fim');
+  if (elFimRst) elFimRst.value = '';
   // Reset forma pagamento
   const vista = document.querySelector('input[name="pgto"][value="vista"]');
   if (vista) { vista.checked = true; vista.dispatchEvent(new Event('change')); }
@@ -3436,6 +3439,16 @@ function aplicarOpcaoSelecionada() {
   setVal('ev_local', d.local || d.local_evento || '');
   setVal('ev_maps',  d.local_evento_maps || d.ev_maps || d.maps_link || (document.getElementById('ev_maps')||{}).value || ''); _atualizarBtnMaps();
   setVal('ev_data',   d.dataEvt    || '');
+  // Propagar multi-dia do orçamento para o contrato
+  var chkMC = document.getElementById('ev_chk_multidia');
+  if (chkMC) {
+    chkMC.checked = !!(d.multidia);
+    _toggleMultiDiaContr(chkMC);
+    if (d.multidia && d.dataFim) {
+      var elFimMC = document.getElementById('ev_data_fim');
+      if (elFimMC) { elFimMC.value = d.dataFim; _atualizarDuracaoEvContr(); }
+    }
+  }
   setVal('ev_inicio', d.ev_inicio  || '');
   setVal('ev_fim',    d.ev_fim     || '');
   if (d.whatsapp_cliente) setVal('cli_fone', d.whatsapp_cliente);
@@ -3823,9 +3836,9 @@ document.addEventListener('DOMContentLoaded', function() {
 var _DRAFT_KEY = 'adq_contrato_draft';
 var _draftTimer = null;
 
-var _DRAFT_CAMPOS = [
+  var _DRAFT_CAMPOS = [
   'cli_nome','cli_doc','cli_end','cli_cidade','cli_cep','cli_email','cli_fone',
-  'ev_nome','ev_resp','ev_local','ev_maps','ev_data','ev_data_texto_livre','ev_inicio','ev_fim',
+  'ev_nome','ev_resp','ev_local','ev_maps','ev_data','ev_data_fim','ev_inicio','ev_fim',
   'val_total','pgto_custom','data_entrada'
 ];
 
@@ -3836,7 +3849,7 @@ function _salvarRascunhoContrato() {
     var pgtoRadio = document.querySelector('input[name="pgto"]:checked');
     var nParc = document.querySelector('input[name="nparcelas"]:checked');
     var dados = { _ts: Date.now(), servicos: servicos, pgto_sel: pgtoRadio ? pgtoRadio.value : 'vista', nparcelas: nParc ? nParc.value : '',
-                  ev_data_livre_chk: !!(document.getElementById('ev_data_livre_chk') || {}).checked };
+                  ev_multidia: !!(document.getElementById('ev_chk_multidia') || {}).checked };
     _DRAFT_CAMPOS.forEach(function(id) {
       var el = document.getElementById(id);
       if (el) dados[id] = el.value;
@@ -3886,11 +3899,12 @@ function _aplicarRascunhoContrato() {
     var d = JSON.parse(raw);
     var set = function(id, val) { var el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
     _DRAFT_CAMPOS.forEach(function(id) { set(id, d[id] || ''); });
-    // Restaurar modo texto livre
-    var chkLivreR = document.getElementById('ev_data_livre_chk');
-    if (chkLivreR) {
-      chkLivreR.checked = !!d.ev_data_livre_chk;
-      _toggleEvDataLivre(chkLivreR);
+    // Restaurar multi-dia
+    var chkMultiR = document.getElementById('ev_chk_multidia');
+    if (chkMultiR) {
+      chkMultiR.checked = !!d.ev_multidia;
+      _toggleMultiDiaContr(chkMultiR);
+      if (d.ev_data_fim) { var elFimR = document.getElementById('ev_data_fim'); if (elFimR) { elFimR.value = d.ev_data_fim; _atualizarDuracaoEvContr(); } }
     }
     var pgtoRadio = document.querySelector('input[name="pgto"][value="' + (d.pgto_sel || 'vista') + '"]');
     if (pgtoRadio) { pgtoRadio.checked = true; pgtoRadio.dispatchEvent(new Event('change')); }
@@ -4639,6 +4653,43 @@ function _toggleEvDataLivre(chk) {
     inputLivre.style.display = 'none';
   }
 }
+function _toggleMultiDiaContr(chk) {
+  var painel = document.getElementById('ev_painel_data_fim');
+  if (!painel) return;
+  if (chk.checked) {
+    painel.style.display = 'block';
+    _atualizarDuracaoEvContr();
+  } else {
+    painel.style.display = 'none';
+    var fim = document.getElementById('ev_data_fim');
+    if (fim) fim.value = '';
+    var lbl = document.getElementById('ev_label_duracao');
+    if (lbl) lbl.textContent = '';
+  }
+}
+function _atualizarDuracaoEvContr() {
+  var chk = document.getElementById('ev_chk_multidia');
+  if (!chk || !chk.checked) return;
+  var ini = document.getElementById('ev_data');
+  var fim = document.getElementById('ev_data_fim');
+  var lbl = document.getElementById('ev_label_duracao');
+  if (!ini || !fim || !lbl) return;
+  if (!ini.value || !fim.value) { lbl.textContent = ''; return; }
+  var d1 = new Date(ini.value + 'T00:00:00');
+  var d2 = new Date(fim.value + 'T00:00:00');
+  var diff = Math.round((d2 - d1) / 86400000);
+  if (diff <= 0) {
+    lbl.textContent = 'Término deve ser após o início';
+    lbl.style.color = '#e05555';
+    fim.style.borderColor = '#e05555';
+  } else {
+    var noites = diff;
+    var dias = diff + 1;
+    lbl.textContent = dias + (dias === 1 ? ' dia' : ' dias') + ' · ' + noites + (noites === 1 ? ' noite' : ' noites');
+    lbl.style.color = 'var(--gold)';
+    fim.style.borderColor = '';
+  }
+}
 function abrirCalendarioDataEv() {
   var hidden = document.getElementById('ev_data');
   if (!hidden) return;
@@ -4837,14 +4888,14 @@ function preencherContratoDados() {
   set('ev_resp',    d.ev_resp);
   set('ev_local',   d.ev_local);
   set('ev_maps',    d.ev_maps); _atualizarBtnMaps();
-  // Resetar modo texto livre da data antes de preencher
-  var chkLivre = document.getElementById('ev_data_livre_chk');
-  var inputDate  = document.getElementById('ev_data');
-  var inputLivre = document.getElementById('ev_data_texto_livre');
-  if (chkLivre) chkLivre.checked = false;
-  if (inputDate)  inputDate.style.display  = '';
-  if (inputLivre) { inputLivre.style.display = 'none'; inputLivre.value = ''; }
+  // Restaurar multi-dia
+  var chkMultiLoad = document.getElementById('ev_chk_multidia');
+  if (chkMultiLoad) { chkMultiLoad.checked = !!d.ev_multidia; _toggleMultiDiaContr(chkMultiLoad); }
   set('ev_data',    d.ev_data);
+  if (d.ev_multidia && d.ev_data_fim) {
+    var elFimLoad = document.getElementById('ev_data_fim');
+    if (elFimLoad) { elFimLoad.value = d.ev_data_fim; _atualizarDuracaoEvContr(); }
+  }
   set('ev_inicio',  d.ev_inicio);
   set('ev_fim',     d.ev_fim);
   set('val_total', d.val_total);
@@ -4940,11 +4991,10 @@ function gerarContrato() {
   const evNome   = document.getElementById('ev_nome').value.trim()  || '—';
   const evResp   = document.getElementById('ev_resp').value.trim()  || '—';
   const evLocal  = document.getElementById('ev_local').value.trim() || '—';
-  const _evDataLivre = document.getElementById('ev_data_livre_chk')?.checked;
-  const evData = _evDataLivre
-    ? (document.getElementById('ev_data_texto_livre')?.value.trim() || '—')
-    : document.getElementById('ev_data').value;
-  const _evDataEhISO = !_evDataLivre;
+  const evData   = document.getElementById('ev_data').value;
+  const _evMultidia  = !!(document.getElementById('ev_chk_multidia')?.checked);
+  const _evDataFimEl = document.getElementById('ev_data_fim');
+  const evDataFim    = (_evMultidia && _evDataFimEl) ? _evDataFimEl.value : '';
   const evIni    = _resolverHora(document.getElementById('ev_inicio').value);
   const evFim    = _resolverHora(document.getElementById('ev_fim').value);
   const valTotal = formatBRL(parseBRL(document.getElementById('val_total').value)) || '—';
@@ -4962,7 +5012,7 @@ function gerarContrato() {
   if (cliEmail) cliLinha += `, e-mail: ${cliEmail}`;
   if (cliFone) cliLinha += `, contato: ${cliFone}`;
   const dataEntradaVal = document.getElementById('data_entrada') ? document.getElementById('data_entrada').value : '';
-  const contratoHTML = buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataLivre: !!_evDataLivre, evIni, evFim, valTotal, servicos, pgto: pgtoTexto(), dataEntrada: dataEntradaVal });
+  const contratoHTML = buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataFim, evMultidia: _evMultidia, evIni, evFim, valTotal, servicos, pgto: pgtoTexto(), dataEntrada: dataEntradaVal });
   const iframe = document.getElementById('pdf-frame-contrato');
   iframe.srcdoc = contratoHTML;
   document.getElementById('preview-area-contrato').style.display = 'block';
@@ -4983,8 +5033,23 @@ function imprimirContrato() {
   }
 }
 
-function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataLivre, evIni, evFim, valTotal, servicos, pgto, dataEntrada }) {
-  const _fmtEvData = evDataLivre ? (evData || '—') : fmtData(evData);
+function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataFim, evMultidia, evIni, evFim, valTotal, servicos, pgto, dataEntrada }) {
+  const _fmtEvData = fmtData(evData);
+  const _fmtEvDataFim = evDataFim ? fmtData(evDataFim) : '';
+  // Calcular duração para multi-dia
+  let _duracaoStr = '';
+  if (evMultidia && evData && evDataFim) {
+    const d1 = new Date(evData + 'T00:00:00');
+    const d2 = new Date(evDataFim + 'T00:00:00');
+    const diff = Math.round((d2 - d1) / 86400000);
+    if (diff > 0) {
+      const dias = diff + 1;
+      const noites = diff;
+      _duracaoStr = dias + (dias === 1 ? ' dia' : ' dias') + ' / ' + noites + (noites === 1 ? ' noite' : ' noites');
+    }
+  }
+  // Campo data para exibição no grid do evento
+  const _dataCampoLabel = evMultidia ? 'Início' : 'Data';
   const itensLi = servicos.length
     ? servicos.map(s => `<li>${s}</li>`).join('')
     : '<li>—</li>';
@@ -5105,8 +5170,10 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
           <div class="ev-campo"><div class="ev-label">Responsável</div><div class="ev-val">${evResp}</div></div>
           <div class="ev-campo"><div class="ev-label">Local</div><div class="ev-val">${evLocal}</div></div>
           <div class="ev-campo"><div class="ev-label">Hora Início</div><div class="ev-val">${evIni || "___:___"}</div></div>
-          <div class="ev-campo"><div class="ev-label">Data</div><div class="ev-val">${_fmtEvData}</div></div>
+          <div class="ev-campo"><div class="ev-label">${_dataCampoLabel}</div><div class="ev-val">${_fmtEvData}</div></div>
           <div class="ev-campo"><div class="ev-label">Hora Término</div><div class="ev-val">${evFim || "___:___"}</div></div>
+          ${evMultidia && _fmtEvDataFim ? `<div class="ev-campo"><div class="ev-label">Término</div><div class="ev-val">${_fmtEvDataFim}</div></div>` : ''}
+          ${evMultidia && _duracaoStr ? `<div class="ev-campo"><div class="ev-label">Duração</div><div class="ev-val">${_duracaoStr}</div></div>` : ''}
         </div>
         </div>
 
@@ -5852,8 +5919,6 @@ function coletarDadosOrcamento() {
     local: base.local_evento,
     local_evento_maps: base.local_evento_maps || '',
     dataEvt: base.data_evento,
-    multidia: document.getElementById('chk_multidia') ? !!document.getElementById('chk_multidia').checked : false,
-    dataFim:  (document.getElementById('chk_multidia') && document.getElementById('chk_multidia').checked && document.getElementById('data_fim')) ? document.getElementById('data_fim').value : '',
     valorTotal: valorTotal,
     opcoes: opcoes,
     aprovado: false
@@ -6194,8 +6259,8 @@ function coletarDadosContrato() {
     ev_local:  get('ev_local'),
     ev_maps:   get('ev_maps'),
     ev_data:             get('ev_data'),
-    ev_data_livre_chk:   !!(document.getElementById('ev_data_livre_chk') || {}).checked,
-    ev_data_texto_livre: (document.getElementById('ev_data_texto_livre') || {}).value || '',
+    ev_multidia:         !!(document.getElementById('ev_chk_multidia') || {}).checked,
+    ev_data_fim:         (document.getElementById('ev_data_fim') || {}).value || '',
     ev_inicio: get('ev_inicio'),
     ev_fim:    get('ev_fim'),
     val_total: get('val_total'),
@@ -6438,10 +6503,15 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
   lista.innerHTML = docs.map(function(doc) {
     var nome    = doc.cli_nome || '';
     var evento  = doc.ev_nome  || '';
-    var data    = doc.ev_data_livre_chk ? (doc.ev_data_texto_livre || doc.ev_data || '') : (doc.ev_data || '');
-    var dataFmt = data
-      ? (data.indexOf('-') !== -1 && data.length === 10 ? data.split('-').reverse().join('/') : data)
-      : '';
+    var data    = doc.ev_data || '';
+    var dataFmt = data && data.length === 10 && data.indexOf('-') !== -1
+      ? data.split('-').reverse().join('/')
+      : data;
+    // Se multi-dia, mostrar intervalo no card
+    if (doc.ev_multidia && doc.ev_data_fim) {
+      var fimFmt = doc.ev_data_fim.split('-').reverse().join('/');
+      dataFmt = dataFmt + ' – ' + fimFmt;
+    }
     var valor   = doc.val_total ? 'R$ ' + formatBRL(parseBRL(doc.val_total)) : '';
     var aprovado = doc.aprovado ? true : false;
     var id = doc.id;
@@ -6537,15 +6607,15 @@ function abrirContrato(id) {
     set('ev_local',  d.ev_local  || '');
     set('ev_maps',   d.ev_maps   || ''); _atualizarBtnMaps();
     set('ev_data',   d.ev_data   || '');
-    // Restaurar modo texto livre
-    var chkLivreA = document.getElementById('ev_data_livre_chk');
-    if (chkLivreA) {
-      chkLivreA.checked = !!d.ev_data_livre_chk;
-      _toggleEvDataLivre(chkLivreA);
+    // Restaurar multi-dia
+    var chkMultiC = document.getElementById('ev_chk_multidia');
+    if (chkMultiC) {
+      chkMultiC.checked = !!d.ev_multidia;
+      _toggleMultiDiaContr(chkMultiC);
     }
-    if (d.ev_data_texto_livre) {
-      var elLivreA = document.getElementById('ev_data_texto_livre');
-      if (elLivreA) elLivreA.value = d.ev_data_texto_livre;
+    if (d.ev_data_fim) {
+      var elFimC = document.getElementById('ev_data_fim');
+      if (elFimC) { elFimC.value = d.ev_data_fim; _atualizarDuracaoEvContr(); }
     }
     set('ev_inicio', d.ev_inicio || '');
     set('ev_fim',    d.ev_fim    || '');
@@ -6969,16 +7039,21 @@ function gerarLinkCalendar(id) {
     var pgtoCustom= d.pgto_custom|| '';
     var servicos  = d.servicos   || [];
 
+    var dataFim    = d.ev_data_fim || '';
+    var evMultidia = !!d.ev_multidia;
+
     // ── Data para Google Calendar (YYYYMMDD) ──
     var dateStr = '';
     if (data) {
       var pts = data.split('-');
       if (pts.length === 3) dateStr = pts[0] + pts[1] + pts[2];
     }
-    // Dia inteiro: formato YYYYMMDD/YYYYMMDD+1 (fim exclusivo)
+    // Dia inteiro: formato YYYYMMDD/YYYYMMDD+1 (fim exclusivo no Google Calendar)
     var dates = '';
     if (dateStr) {
-      var _d = new Date(parseInt(dateStr.substring(0,4)), parseInt(dateStr.substring(4,6))-1, parseInt(dateStr.substring(6,8)));
+      var _endBase = (evMultidia && dataFim) ? dataFim : data;
+      var _ePts = _endBase.split('-');
+      var _d = new Date(parseInt(_ePts[0]), parseInt(_ePts[1])-1, parseInt(_ePts[2]));
       _d.setDate(_d.getDate() + 1);
       var _nextDay = String(_d.getFullYear()) + String(_d.getMonth()+1).padStart(2,'0') + String(_d.getDate()).padStart(2,'0');
       dates = dateStr + '/' + _nextDay;
@@ -8803,6 +8878,8 @@ function _abrirModalAutentiqueDoCard(contratoId, dadosContrato, btnCard) {
         evResp:      d.ev_resp     || '',
         evLocal:     d.ev_local    || '',
         evData:      d.ev_data     || '',
+        evDataFim:   d.ev_data_fim || '',
+        evMultidia:  !!d.ev_multidia,
         evIni:       d.ev_inicio   || '',
         evFim:       d.ev_fim      || '',
         valTotal:    d.val_total   || '',
