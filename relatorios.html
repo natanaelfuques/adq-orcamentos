@@ -1928,7 +1928,26 @@ function _verificarPronto() {
       });
     });
   } else {
-    renderTudo();
+    // Se há cards de pagamento abertos, não reposiciona — só atualiza dados locais
+    const temAberto = Object.keys(_pgtoAbertos).some(function(id) { return _pgtoAbertos[id]; });
+    if (temAberto) {
+      // Renderiza todas as outras abas normalmente
+      renderFinanceiro();
+      renderContratos();
+      renderEventos();
+      renderClientes();
+      renderSazonalidade();
+      renderContabilidade();
+      // Atualiza visualmente cada card aberto in-place
+      Object.keys(_pgtoAbertos).forEach(function(id) {
+        if (_pgtoAbertos[id]) {
+          _pgtoDirty[id] = true;
+          _pgtoRefreshCardDOM(id);
+        }
+      });
+    } else {
+      renderTudo();
+    }
   }
 }
 
@@ -2507,7 +2526,11 @@ function sinalizarProblema(docId, parcelaIdx, motivo) {
   const alertas = getAlertasPgto(ev).filter(function(a) { return a.parcela_idx !== parcelaIdx; });
   alertas.push({ parcela_idx: parcelaIdx, motivo: motivo || 'Não recebido', data: new Date().toISOString().slice(0, 10) });
   db.collection(col).doc(docId).update({ pgto_alertas: alertas })
-    .then(function() { _pgtoUpdateLocal(docId, { pgto_alertas: alertas }); renderPagamentos(); })
+    .then(function() {
+      _pgtoUpdateLocal(docId, { pgto_alertas: alertas });
+      if (_pgtoAbertos[docId]) { _pgtoDirty[docId] = true; _pgtoRefreshCardDOM(docId); }
+      else renderPagamentos();
+    })
     .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
 }
 
@@ -2518,7 +2541,11 @@ function resolverAlerta(docId, parcelaIdx) {
   const col = ev._origem === 'nota' ? 'notas' : 'contratos';
   const alertas = getAlertasPgto(ev).filter(function(a) { return a.parcela_idx !== parcelaIdx; });
   db.collection(col).doc(docId).update({ pgto_alertas: alertas })
-    .then(function() { _pgtoUpdateLocal(docId, { pgto_alertas: alertas }); renderPagamentos(); })
+    .then(function() {
+      _pgtoUpdateLocal(docId, { pgto_alertas: alertas });
+      if (_pgtoAbertos[docId]) { _pgtoDirty[docId] = true; _pgtoRefreshCardDOM(docId); }
+      else renderPagamentos();
+    })
     .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
 }
 
