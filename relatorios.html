@@ -653,8 +653,8 @@ header {
   .table-card { font-size: 0.78rem; }
   .table-card th, .table-card td { padding: 8px 10px; }
 
-  .pgto-parcelas { grid-template-columns: 1fr 1fr; }
-  .pgto-card-nome { max-width: 160px; }
+  .pgto-parcelas { grid-template-columns: 1fr; }
+  .pgto-grid { grid-template-columns: 1fr; }
   .pgto-busca { width: 100%; margin-left: 0; }
   .pgto-kpi-grid { grid-template-columns: 1fr 1fr; }
 }
@@ -764,68 +764,96 @@ header {
 .btn-admin:hover { border-color: var(--green); color: var(--green); }
 
 /* ── PAGAMENTOS ── */
+/* ── PAGAMENTOS: GRID DE CARDS ── */
+.pgto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
 .pgto-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 14px;
+  border-radius: 10px;
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
 }
-.pgto-card:hover { border-color: var(--border2); }
+.pgto-card:hover { border-color: var(--border2); box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+.pgto-card.pgto-card-alerta { border-color: rgba(224,92,92,0.35); }
+.pgto-card.pgto-card-alerta:hover { border-color: rgba(224,92,92,0.65); }
+.pgto-card.pgto-card-quitado { border-color: rgba(37,211,102,0.2); }
 .pgto-card-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 14px 16px 10px;
   cursor: pointer;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
-.pgto-card-header:hover { background: rgba(180,180,180,0.05); }
+.pgto-card-header:hover { background: rgba(180,180,180,0.04); }
 .pgto-card-info { flex: 1; min-width: 0; }
 .pgto-card-nome {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 300px;
 }
 .pgto-card-meta {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--muted);
-  margin-top: 4px;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.pgto-card-data {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #9a9a9a;
-  margin-right: 2px;
-}
-.pgto-card-valores {
+.pgto-card-badge { flex-shrink: 0; }
+.pgto-card-progress { padding: 0 16px 10px; }
+.pgto-chips {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 16px 12px;
 }
-.pgto-valor-total { font-size: 1rem; font-weight: 800; color: var(--green); }
-.pgto-valor-restante { font-size: 0.75rem; }
-.pgto-valor-restante.pago { color: var(--green); }
-.pgto-valor-restante.parcial { color: var(--orange); }
-.pgto-valor-restante.pendente { color: var(--red); }
+.pgto-chip {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 1.6;
+}
+.pgto-chip.auto { border-color: rgba(37,211,102,0.35); color: #25D366; background: rgba(37,211,102,0.06); }
+.pgto-chip.futuro { border-color: var(--border2); color: var(--muted); background: transparent; }
+.pgto-chip.alerta { border-color: rgba(224,92,92,0.45); color: #e05c5c; background: rgba(224,92,92,0.07); }
+.pgto-card-footer {
+  border-top: 1px solid var(--border);
+  padding: 9px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+  cursor: pointer;
+  margin-top: auto;
+  gap: 6px;
+}
+.pgto-card-footer:hover { background: rgba(180,180,180,0.04); }
 .pgto-card-body {
   border-top: 1px solid var(--border);
-  padding: 16px 18px;
+  padding: 16px;
   display: none;
 }
 .pgto-card-body.open { display: block; }
 .pgto-progress-bar {
   background: var(--border);
   border-radius: 4px;
-  height: 6px;
-  margin-bottom: 14px;
+  height: 5px;
   overflow: hidden;
 }
 .pgto-progress-fill {
@@ -835,8 +863,8 @@ header {
 }
 .pgto-parcelas {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
   margin-bottom: 14px;
 }
 .pgto-parcela-item {
@@ -845,21 +873,76 @@ header {
   border-radius: 6px;
   padding: 10px 12px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
 }
-.pgto-parcela-item.recebida { border-color: rgba(37,211,102,0.3); background: rgba(37,211,102,0.05); }
-.pgto-parcela-item.atrasada { border-color: rgba(224,92,92,0.3); background: rgba(224,92,92,0.05); }
-.pgto-parcela-check {
-  width: 20px; height: 20px;
-  accent-color: var(--green);
-  cursor: pointer;
-  flex-shrink: 0;
-}
+.pgto-parcela-item.auto { border-color: rgba(37,211,102,0.3); background: rgba(37,211,102,0.05); }
+.pgto-parcela-item.alerta { border-color: rgba(224,92,92,0.3); background: rgba(224,92,92,0.05); }
+.pgto-parcela-item.futuro { border-color: var(--border); background: transparent; }
+.pgto-parcela-icon { font-size: 0.95rem; flex-shrink: 0; margin-top: 1px; line-height: 1; }
 .pgto-parcela-info { flex: 1; min-width: 0; }
 .pgto-parcela-label { font-size: 0.75rem; font-weight: 700; }
 .pgto-parcela-valor { font-size: 0.78rem; color: var(--green); }
-.pgto-parcela-status { font-size: 0.65rem; color: var(--muted); margin-top: 1px; }
+.pgto-parcela-status { font-size: 0.65rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+.pgto-parcela-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; align-items: flex-end; }
+.pgto-alerta-btn {
+  background: transparent;
+  border: 1px solid rgba(224,92,92,0.35);
+  color: #e05c5c;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.pgto-alerta-btn:hover { background: rgba(224,92,92,0.1); border-color: var(--red); }
+.pgto-resolver-btn {
+  background: transparent;
+  border: 1px solid rgba(37,211,102,0.35);
+  color: var(--green);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.pgto-resolver-btn:hover { background: rgba(37,211,102,0.08); border-color: var(--green); }
+.pgto-monitoramento-sec { margin-bottom: 28px; }
+.pgto-monitoramento-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px 16px;
+  background: rgba(224,92,92,0.06);
+  border: 1px solid rgba(224,92,92,0.2);
+  border-radius: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #e05c5c;
+}
+.pgto-normal-header {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
 .pgto-filtros {
   display: flex;
   gap: 8px;
@@ -883,6 +966,9 @@ header {
 }
 .pgto-filtro-btn:hover { border-color: var(--green); color: var(--green); }
 .pgto-filtro-btn.active { background: var(--green); border-color: var(--green); color: #111; }
+.pgto-filtro-btn.monitor-btn { border-color: rgba(224,92,92,0.35); color: #e05c5c; }
+.pgto-filtro-btn.monitor-btn:hover { border-color: var(--red); }
+.pgto-filtro-btn.monitor-btn.active { background: #e05c5c; border-color: #e05c5c; color: #111; }
 .pgto-busca {
   background: var(--surface);
   border: 1px solid var(--border2);
@@ -957,12 +1043,12 @@ header {
   padding: 2px 8px;
   border-radius: 3px;
   border: 1px solid;
-  margin-left: 6px;
+  margin-left: 0;
 }
-.pgto-status-badge.quitado { color: #aaa; border-color: var(--green); background: transparent; }
-.pgto-status-badge.parcial { color: #aaa; border-color: var(--orange); background: transparent; }
-.pgto-status-badge.pendente { color: #aaa; border-color: #F5A623; background: transparent; }
-.pgto-status-badge.atrasado { color: #aaa; border-color: var(--red); background: transparent; }
+.pgto-status-badge.quitado { color: #25D366; border-color: rgba(37,211,102,0.4); background: rgba(37,211,102,0.07); }
+.pgto-status-badge.parcial { color: #F5A623; border-color: rgba(245,166,35,0.4); background: transparent; }
+.pgto-status-badge.pendente { color: #aaa; border-color: var(--border2); background: transparent; }
+.pgto-status-badge.alerta { color: #e05c5c; border-color: rgba(224,92,92,0.45); background: rgba(224,92,92,0.08); }
 .pgto-status-badge.naovence { color: #aaa; border-color: var(--border2); background: transparent; }
 .pgto-input-pago {
   background: var(--darker);
@@ -1343,7 +1429,7 @@ header {
 <button class="pgto-filtro-btn" onclick="filtroPgto('pendentes',this)">Pendentes</button>
 <button class="pgto-filtro-btn" onclick="filtroPgto('parcial',this)">Parcial</button>
 <button class="pgto-filtro-btn" onclick="filtroPgto('quitados',this)">Quitados</button>
-<button class="pgto-filtro-btn" onclick="filtroPgto('atrasados',this)">Atrasados</button>
+<button class="pgto-filtro-btn monitor-btn" onclick="filtroPgto('monitoramento',this)">⚠ Monitoramento</button>
 <input class="pgto-busca" id="pgto-busca" oninput="renderPagamentos()" placeholder="Buscar cliente..." type="text"/>
 </div>
 <!-- Lista de eventos / contratos -->
@@ -2194,44 +2280,100 @@ function getParcelas(ev) {
   return [{ label: 'Pagamento', valor: total, vencimento: dataEvento, idx: 0 }];
 }
 
-/* Status de pagamento do evento */
+/* Status de pagamento do evento — lógica automática */
 function getStatusPgto(ev) {
   const total = valorEv(ev);
   if (total <= 0) return 'naovence';
-  const pago = getTotalPago(ev);
-  if (pago <= 0) return 'pendente';
-  // Tolerância de R$ 0,05 para absorver drifts de ponto flutuante
+  const alertas = getAlertasPgto(ev);
+  const pago = getTotalPagoAuto(ev);
   if (pago >= total - 0.05) return 'quitado';
-  return 'parcial';
+  if (alertas.length > 0) return 'alerta';
+  if (pago > 0) return 'parcial';
+  return 'pendente';
 }
 
-/* Verifica se tem parcela atrasada */
+/* Com a nova lógica: atrasado = tem alerta manual ativo e não está quitado */
 function temParcelaAtrasada(ev) {
-  const parcelas = getParcelas(ev);
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const pago = getTotalPago(ev);
-  const total = valorEv(ev);
-  if (pago >= total - 0.05) return false; // quitado, não está atrasado
+  return getAlertasPgto(ev).length > 0 && getStatusPgto(ev) !== 'quitado';
+}
+
+// ── LÓGICA AUTOMÁTICA DE PAGAMENTOS ──
+
+/* Retorna alertas manuais de um evento (parcelas sinalizadas como problema) */
+function getAlertasPgto(ev) {
+  return ev.pgto_alertas || [];
+}
+
+/* Verifica se uma parcela específica tem alerta ativo */
+function temAlertaParcela(ev, parcelaIdx) {
+  return getAlertasPgto(ev).some(function(a) { return a.parcela_idx === parcelaIdx; });
+}
+
+/* Verifica se uma parcela é automaticamente considerada paga.
+   Regra: vencimento <= hoje E sem alerta manual. Também respeita registros manuais legados. */
+function isParcelaPagaAuto(parcela, ev, hoje) {
+  if (!hoje) { hoje = new Date(); hoje.setHours(0, 0, 0, 0); }
+  if (temAlertaParcela(ev, parcela.idx)) return false;
   const registros = getPgtoRegistros(ev);
-  // calcular quanto já foi marcado por parcela
-  // fallback: data do evento como vencimento se parcela não tiver vencimento explícito
-  const evDataFallback = ev.ev_data || ev.data_evento || ev.dataEvt || '';
-  let acumuladoPago = 0;
-  for (const p of parcelas) {
-    const recebida = registros.some(function(r) { return r.parcela_idx === p.idx; });
-    if (!recebida) {
-      const vencStr = p.vencimento || evDataFallback;
-      if (vencStr) {
-        const vparts = vencStr.split('-');
-        if (vparts.length === 3) {
-          const vDate = new Date(parseInt(vparts[0]), parseInt(vparts[1]) - 1, parseInt(vparts[2]));
-          if (vDate < hoje) return true;
-        }
-      }
+  if (registros.some(function(r) { return r.parcela_idx === parcela.idx; })) return true;
+  if (parcela.vencimento) {
+    const vp = parcela.vencimento.split('-');
+    if (vp.length === 3) {
+      const vDate = new Date(parseInt(vp[0]), parseInt(vp[1]) - 1, parseInt(vp[2]));
+      return vDate <= hoje;
     }
   }
   return false;
+}
+
+/* Calcula total automaticamente pago (vencimento <= hoje, sem alerta).
+   Respeita pgto_valor_avulso se definido. */
+function getTotalPagoAuto(ev) {
+  const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
+  if (avulso > 0) return avulso;
+  const parcelas = getParcelas(ev);
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  return parcelas.reduce(function(s, p) {
+    return s + (isParcelaPagaAuto(p, ev, hoje) ? p.valor : 0);
+  }, 0);
+}
+
+/* Atualiza dados locais em _contratos e _notas sem reload */
+function _pgtoUpdateLocal(docId, updates) {
+  const idxC = _contratos.findIndex(function(x) { return x.id === docId; });
+  const idxN = _notas.findIndex(function(x) { return x.id === docId; });
+  if (idxC >= 0) Object.assign(_contratos[idxC], updates);
+  if (idxN >= 0) Object.assign(_notas[idxN], updates);
+}
+
+/* Sinaliza manualmente uma parcela como problemática (não recebida / atraso) */
+function sinalizarProblema(docId, parcelaIdx, motivo) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  const alertas = getAlertasPgto(ev).filter(function(a) { return a.parcela_idx !== parcelaIdx; });
+  alertas.push({ parcela_idx: parcelaIdx, motivo: motivo || 'Não recebido', data: new Date().toISOString().slice(0, 10) });
+  db.collection(col).doc(docId).update({ pgto_alertas: alertas })
+    .then(function() { _pgtoUpdateLocal(docId, { pgto_alertas: alertas }); renderPagamentos(); })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
+/* Remove alerta de uma parcela (marca como resolvida) */
+function resolverAlerta(docId, parcelaIdx) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  const alertas = getAlertasPgto(ev).filter(function(a) { return a.parcela_idx !== parcelaIdx; });
+  db.collection(col).doc(docId).update({ pgto_alertas: alertas })
+    .then(function() { _pgtoUpdateLocal(docId, { pgto_alertas: alertas }); renderPagamentos(); })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
+/* Abre prompt e sinaliza problema na parcela */
+function promptSinalizarProblema(docId, parcelaIdx) {
+  const motivo = prompt('Motivo (opcional):', 'Não recebido');
+  if (motivo === null) return;
+  sinalizarProblema(docId, parcelaIdx, motivo || 'Não recebido');
 }
 
 function filtroPgto(filtro, btn) {
@@ -2476,8 +2618,6 @@ function salvarParcelasCustom(docId) {
 }
 
 function renderPagamentos() {
-  // Respeita o filtro de período global (_dataIni/_dataFim) — igual às outras abas
-  // Filtra pela data DO EVENTO (ev_data), com fallback para criadoEm
   function _dentroPeríodoPgto(doc) {
     if (!_dataIni && !_dataFim) return true;
     const evStr = doc.ev_data || doc.data_evento || doc.dataEvt || '';
@@ -2495,28 +2635,10 @@ function renderPagamentos() {
   const todosContratos = _contratos.filter(_dentroPeríodoPgto).map(function(c) { return Object.assign({}, c, { _origem: 'contrato' }); });
   const notaIdsComContrato = new Set(todosContratos.map(function(c) { return c.nota_id; }).filter(Boolean));
   const todosNotas = _notas.filter(_dentroPeríodoPgto).filter(function(n) { return !notaIdsComContrato.has(n.id); });
-  const _temCardAberto = Object.values(_pgtoAbertos).some(function(v) { return v; });
   const todosBase = [...todosContratos, ...todosNotas]
-    .filter(function(e) { return valorEv(e) > 0 && !e.removido_manualmente; })
-    .sort(function(a, b) {
-      // Se há algum card aberto, mantém a ordem atual para evitar troca de posição
-      // durante o preenchimento. A reordenação ocorre só quando não há card aberto.
-      if (_temCardAberto) {
-        // Mantém a ordem estável baseada no ID para não embaralhar
-        if (a.id < b.id) return -1;
-        if (a.id > b.id) return 1;
-        return 0;
-      }
-      // Ordenar: atrasados primeiro, depois pendentes, parciais, quitados
-      const ord = { pendente: 0, parcial: 1, quitado: 2 };
-      const sa = getStatusPgto(a), sb = getStatusPgto(b);
-      const aAtras = temParcelaAtrasada(a) ? -1 : 0;
-      const bAtras = temParcelaAtrasada(b) ? -1 : 0;
-      if (aAtras !== bAtras) return aAtras - bAtras;
-      return (ord[sa] || 0) - (ord[sb] || 0);
-    });
+    .filter(function(e) { return valorEv(e) > 0 && !e.removido_manualmente; });
 
-  // filtro de status + busca
+  // Filtro de busca + status
   const busca = (document.getElementById('pgto-busca') ? document.getElementById('pgto-busca').value : '').toLowerCase();
   const lista = todosBase.filter(function(ev) {
     if (busca) {
@@ -2528,9 +2650,9 @@ function renderPagamentos() {
       const hoje = new Date(); hoje.setHours(0,0,0,0);
       const d7Antes = new Date(hoje); d7Antes.setDate(hoje.getDate() - 7);
       const d30Depois = new Date(hoje); d30Depois.setDate(hoje.getDate() + 30);
-      const dataEv = ev.ev_data || ev.data_evento || ev.dataEvt || '';
-      if (!dataEv) return false;
-      const partes = dataEv.split('-');
+      const dataEvStr = ev.ev_data || ev.data_evento || ev.dataEvt || '';
+      if (!dataEvStr) return false;
+      const partes = dataEvStr.split('-');
       const dt = new Date(parseInt(partes[0]), parseInt(partes[1])-1, parseInt(partes[2]));
       return dt >= d7Antes && dt <= d30Depois;
     }
@@ -2538,147 +2660,191 @@ function renderPagamentos() {
     if (_pgtoFiltro === 'quitados') return st === 'quitado';
     if (_pgtoFiltro === 'parcial') return st === 'parcial';
     if (_pgtoFiltro === 'pendentes') return st === 'pendente';
-    if (_pgtoFiltro === 'atrasados') return temParcelaAtrasada(ev);
+    if (_pgtoFiltro === 'monitoramento') return st === 'alerta';
     return true;
   });
 
-  // KPIs sobre a base toda
-  const todos = todosBase;
-  const totalReceita = todos.reduce(function(s, e) { return s + valorEv(e); }, 0);
-  const totalPago = todos.reduce(function(s, e) {
-    const avulso = parseFloat(e.pgto_valor_avulso) || 0;
-    return s + (avulso > 0 ? avulso : getTotalPago(e));
-  }, 0);
+  // KPIs
+  const totalReceita = todosBase.reduce(function(s, e) { return s + valorEv(e); }, 0);
+  const totalPago = todosBase.reduce(function(s, e) { return s + getTotalPagoAuto(e); }, 0);
   const totalRestante = Math.max(0, totalReceita - totalPago);
-  const quitados = todos.filter(function(e) { return getStatusPgto(e) === 'quitado'; }).length;
-  const atrasados = todos.filter(function(e) { return temParcelaAtrasada(e); }).length;
+  const quitados = todosBase.filter(function(e) { return getStatusPgto(e) === 'quitado'; }).length;
+  const emMonitoramento = todosBase.filter(function(e) { return getStatusPgto(e) === 'alerta'; }).length;
 
   document.getElementById('kpi-pgto').innerHTML =
-    '<div class="kpi-card gold"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todos.length + ' evento(s) com valor</div></div>' +
+    '<div class="kpi-card gold"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
     '<div class="kpi-card green"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
-    '<div class="kpi-card red"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todos.length - quitados) + ' pendente(s)</div></div>' +
-    '<div class="kpi-card orange"><div class="kpi-label">Atrasados</div><div class="kpi-value">' + atrasados + '</div><div class="kpi-sub">Com vencimento passado</div></div>';
+    '<div class="kpi-card red"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
+    '<div class="kpi-card orange"><div class="kpi-label">Monitoramento</div><div class="kpi-value">' + emMonitoramento + '</div><div class="kpi-sub">Pendência sinalizada</div></div>';
 
-  // Lista de cards
   const container = document.getElementById('pgto-lista');
   if (!lista.length) {
     container.innerHTML = '<div class="empty-state" style="padding:48px">Nenhum evento encontrado.</div>';
     return;
   }
 
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
+  // Separar em: com alerta (monitoramento) e normais
+  const comAlerta = lista.filter(function(ev) { return getStatusPgto(ev) === 'alerta'; });
+  const semAlerta = lista.filter(function(ev) { return getStatusPgto(ev) !== 'alerta'; });
 
-  container.innerHTML = lista.map(function(ev) {
-    const docId = ev.id;
-    const total = valorEv(ev);
-    const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
-    const usaAvulso = avulso > 0 || getPgtoRegistros(ev).length === 0;
-    const pago = avulso > 0 ? avulso : getTotalPago(ev);
-    const restante = Math.max(0, total - pago);
-    const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
-    const statusPgto = getStatusPgto(ev);
-    const isAtrasado = statusPgto !== 'quitado' && temParcelaAtrasada(ev);
-    const badgeClass = statusPgto === 'quitado' ? 'quitado' : statusPgto === 'parcial' ? 'parcial' : isAtrasado ? 'atrasado' : 'pendente';
-    const badgeTxt = statusPgto === 'quitado' ? 'Quitado' : statusPgto === 'parcial' ? 'Parcial' : isAtrasado ? 'Atrasado' : 'Pendente';
-    const fillColor = statusPgto === 'quitado' ? '#25D366' : statusPgto === 'parcial' ? '#27AE60' : isAtrasado ? '#e05c5c' : '#F5A623';
-    const restanteCor = restante <= 0 ? 'pago' : pago > 0 ? 'parcial' : 'pendente';
-    const isOpen = !!_pgtoAbertos[docId];
-    const origem = ev._origem === 'nota' ? 'nota' : 'contrato';
-    const nomeExib = nomeCli(ev);
-    const tipoExib = tipoEv(ev);
-    // Mostra só o nome — evita repetição quando tipo e nome são iguais
-    const descExib = nomeExib !== '—' ? nomeExib : tipoExib;
-    const datExib = dataEv(ev);
-    const pgtoLabel = getPgtoLabel(ev);
-    const parcelas = getParcelas(ev);
-    const registros = getPgtoRegistros(ev);
+  // Ordenar normais: pendentes e parciais primeiro, quitados por último
+  const ordNormal = { pendente: 0, parcial: 1, naovence: 2, quitado: 3 };
+  semAlerta.sort(function(a, b) {
+    const sa = getStatusPgto(a), sb = getStatusPgto(b);
+    return (ordNormal[sa] || 0) - (ordNormal[sb] || 0);
+  });
 
-    // Parcelas HTML
-    let parcelasHTML = '';
-    parcelas.forEach(function(p) {
-      const recebida = registros.some(function(r) { return r.parcela_idx === p.idx; });
+  let html = '';
+
+  // Seção Monitoramento (só se houver eventos com alerta)
+  if (comAlerta.length > 0) {
+    html += '<div class="pgto-monitoramento-sec">' +
+      '<div class="pgto-monitoramento-header">⚠&nbsp; Monitoramento — ' + comAlerta.length + ' evento(s) com pendência manual</div>' +
+      '<div class="pgto-grid">' + comAlerta.map(function(ev) { return buildPgtoCard(ev); }).join('') + '</div>' +
+      '</div>';
+  }
+
+  // Seção normal
+  if (semAlerta.length > 0) {
+    const labelNormal = comAlerta.length > 0
+      ? '<div class="pgto-normal-header">Pagamentos em dia — ' + semAlerta.length + ' evento(s)</div>'
+      : '';
+    html += labelNormal + '<div class="pgto-grid">' + semAlerta.map(function(ev) { return buildPgtoCard(ev); }).join('') + '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+/* Constrói o HTML de um card de pagamento */
+function buildPgtoCard(ev) {
+  const docId = ev.id;
+  const total = valorEv(ev);
+  const pago = getTotalPagoAuto(ev);
+  const restante = Math.max(0, total - pago);
+  const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
+  const status = getStatusPgto(ev);
+  const isOpen = !!_pgtoAbertos[docId];
+
+  const badgeClass = status === 'quitado' ? 'quitado' : status === 'alerta' ? 'alerta' : status === 'parcial' ? 'parcial' : 'pendente';
+  const badgeTxt = status === 'quitado' ? '✓ Quitado' : status === 'alerta' ? '⚠ Monitorar' : status === 'parcial' ? 'Parcial' : 'Pendente';
+  const fillColor = status === 'quitado' ? '#25D366' : status === 'alerta' ? '#e05c5c' : status === 'parcial' ? '#F5A623' : '#666';
+  const cardClass = status === 'alerta' ? ' pgto-card-alerta' : status === 'quitado' ? ' pgto-card-quitado' : '';
+
+  const nomeExib = nomeCli(ev) !== '—' ? nomeCli(ev) : tipoEv(ev);
+  const pgtoLabel = getPgtoLabel(ev);
+
+  // Chips das parcelas
+  const parcelas = getParcelas(ev);
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const chips = parcelas.map(function(p) {
+    if (temAlertaParcela(ev, p.idx)) return '<span class="pgto-chip alerta">⚠ ' + p.label + '</span>';
+    if (isParcelaPagaAuto(p, ev, hoje)) return '<span class="pgto-chip auto">✓ ' + p.label + '</span>';
+    return '<span class="pgto-chip futuro">' + p.label + '</span>';
+  }).join('');
+
+  const footerPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
+  const footerResta = restante <= 0 ? '✓ Quitado' : 'Falta ' + frs(restante);
+  const footerRestaCor = restante <= 0 ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
+
+  return '<div class="pgto-card' + cardClass + '" id="pgto-card-' + docId + '">' +
+    '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
+      '<div class="pgto-card-info">' +
+        '<div class="pgto-card-nome">' + nomeExib + '</div>' +
+        '<div class="pgto-card-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
+      '</div>' +
+      '<div class="pgto-card-badge"><span class="pgto-status-badge ' + badgeClass + '">' + badgeTxt + '</span></div>' +
+    '</div>' +
+    '<div class="pgto-card-progress"><div class="pgto-progress-bar"><div class="pgto-progress-fill" style="width:' + pct.toFixed(1) + '%;background:' + fillColor + '"></div></div></div>' +
+    '<div class="pgto-chips">' + chips + '</div>' +
+    '<div class="pgto-card-footer" onclick="togglePgtoCard(\'' + docId + '\')">' +
+      '<span style="color:' + (pago > 0 ? 'var(--green)' : 'var(--muted)') + ';font-weight:700">' + footerPago + '</span>' +
+      '<span style="color:' + footerRestaCor + '">' + footerResta + '</span>' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="pgto-arrow-' + docId + '" style="color:var(--muted);transition:transform 0.2s;flex-shrink:0;transform:rotate(' + (isOpen ? '180' : '0') + 'deg)"><polyline points="6 9 12 15 18 9"/></svg>' +
+    '</div>' +
+    '<div class="pgto-card-body' + (isOpen ? ' open' : '') + '" id="pgto-body-' + docId + '">' +
+      buildPgtoCardBody(ev, docId, total, pago, restante, pct, status) +
+    '</div>' +
+  '</div>';
+}
+
+/* Constrói o corpo expandido do card com parcelas e resumo */
+function buildPgtoCardBody(ev, docId, total, pago, restante, pct, status) {
+  const parcelas = getParcelas(ev);
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const alertas = getAlertasPgto(ev);
+  const origem = ev._origem === 'nota' ? 'nota' : 'contrato';
+  const contatoEvHTML = contatoWA(ev);
+
+  // Resumo do evento
+  const resumoHTML =
+    '<div class="pgto-resumo-pgto">' +
+      '<div class="pgto-resumo-pgto-title">Resumo</div>' +
+      '<div class="pgto-resumo-row"><span style="color:var(--muted)">Tipo pgto</span><span>' + getPgtoLabel(ev) + '</span></div>' +
+      '<div class="pgto-resumo-row"><span style="color:var(--muted)">Origem</span><span>' + origem + '</span></div>' +
+      '<div class="pgto-resumo-row"><span style="color:var(--muted)">Data do evento</span><span>' + dataEv(ev) + '</span></div>' +
+      (contatoEvHTML !== '—' ? '<div class="pgto-resumo-row"><span style="color:var(--muted)">Contato</span><span>' + contatoEvHTML + '</span></div>' : '') +
+      (ev.pgto_custom ? '<div class="pgto-resumo-row" style="align-items:flex-start"><span style="color:var(--muted);white-space:nowrap;padding-right:8px">Obs.</span><span style="font-size:0.75rem;color:var(--muted);text-align:right;flex:1;word-break:break-word">' + ev.pgto_custom + '</span></div>' : '') +
+    '</div>';
+
+  // Para tipo custom: editor de parcelas
+  const customEditorHTML = (ev.pgto_tipo === 'custom' || ev.pgto_sel === 'custom')
+    ? buildCustomParcelasEditorHTML(ev) : '';
+
+  // Parcelas detalhadas com botões de ação
+  let parcelasHTML = '';
+  if (customEditorHTML) {
+    parcelasHTML = customEditorHTML;
+  } else {
+    const rows = parcelas.map(function(p) {
+      const temAlerta = temAlertaParcela(ev, p.idx);
+      const isAuto = !temAlerta && isParcelaPagaAuto(p, ev, hoje);
+
       let vencStr = '';
-      let atrasada = false;
       if (p.vencimento) {
         const vp = p.vencimento.split('-');
         if (vp.length === 3) {
           const vDate = new Date(parseInt(vp[0]), parseInt(vp[1]) - 1, parseInt(vp[2]));
           vencStr = vDate.toLocaleDateString('pt-BR');
-          if (!recebida && vDate < hoje) atrasada = true;
         }
       }
-      const itemClass = recebida ? 'pgto-parcela-item recebida' : atrasada ? 'pgto-parcela-item atrasada' : 'pgto-parcela-item';
-      const statusTxt = recebida ? '✓ Recebido' : atrasada ? '⚠ Atrasado' : vencStr ? 'Vence: ' + vencStr : '';
-      parcelasHTML +=
-        '<div class="' + itemClass + '">' +
-          '<input type="checkbox" class="pgto-parcela-check" ' + (recebida ? 'checked' : '') +
-            ' onchange="salvarParcela(_pgtoEventoById(\'' + docId + '\'),' + p.idx + ',' + p.valor.toFixed(2) + ',this.checked)">' +
-          '<div class="pgto-parcela-info">' +
-            '<div class="pgto-parcela-label">' + p.label + '</div>' +
-            '<div class="pgto-parcela-valor">' + frs(p.valor) + '</div>' +
-            (statusTxt ? '<div class="pgto-parcela-status">' + statusTxt + '</div>' : '') +
-          '</div>' +
-        '</div>';
-    });
 
-    // Resumo da forma de pagamento
-    const faltaRow = restante > 0
-      ? '<div class="pgto-resumo-row"><span style="color:var(--muted)">Falta pagar</span><span class="pgto-valor-restante ' + restanteCor + '">' + frs(restante) + '</span></div>'
-      : '';
-    const contatoEvHTML = contatoWA(ev);
-    const resumoHTML =
-      '<div class="pgto-resumo-pgto">' +
-        '<div class="pgto-resumo-pgto-title">Forma de Pagamento</div>' +
-        '<div class="pgto-resumo-row"><span style="color:var(--muted)">Tipo</span><span>' + pgtoLabel + '</span></div>' +
-        '<div class="pgto-resumo-row"><span style="color:var(--muted)">Origem</span><span>' + origem + '</span></div>' +
-        '<div class="pgto-resumo-row"><span style="color:var(--muted)">Data do evento</span><span>' + datExib + '</span></div>' +
-        (contatoEvHTML !== '—' ? '<div class="pgto-resumo-row"><span style="color:var(--muted)">Contato</span><span>' + contatoEvHTML + '</span></div>' : '') +
-        faltaRow +
-        (ev.pgto_custom ? '<div class="pgto-resumo-row" style="align-items:flex-start"><span style="color:var(--muted);white-space:nowrap;padding-right:8px">Obs.</span><span style="font-size:0.75rem;color:var(--muted);text-align:right;flex:1;word-break:break-word">' + ev.pgto_custom + '</span></div>' : '') +
+      const itemClass = temAlerta ? 'pgto-parcela-item alerta' : isAuto ? 'pgto-parcela-item auto' : 'pgto-parcela-item futuro';
+      const icon = temAlerta ? '⚠' : isAuto ? '✓' : '○';
+
+      let statusTxt = '';
+      if (temAlerta) {
+        const info = alertas.find(function(a) { return a.parcela_idx === p.idx; });
+        statusTxt = (info ? info.motivo : 'Pendência manual') + (info && info.data ? ' · ' + info.data : '');
+      } else if (isAuto) {
+        statusTxt = 'Recebido automaticamente' + (vencStr ? ' · venceu ' + vencStr : '');
+      } else {
+        statusTxt = vencStr ? 'Vence em: ' + vencStr : 'Sem data definida';
+      }
+
+      const actionBtn = temAlerta
+        ? '<button class="pgto-resolver-btn" onclick="resolverAlerta(\'' + docId + '\',' + p.idx + ')">✓ Resolver</button>'
+        : '<button class="pgto-alerta-btn" onclick="promptSinalizarProblema(\'' + docId + '\',' + p.idx + ')">⚠ Problema</button>';
+
+      return '<div class="' + itemClass + '">' +
+        '<div class="pgto-parcela-icon">' + icon + '</div>' +
+        '<div class="pgto-parcela-info">' +
+          '<div class="pgto-parcela-label">' + p.label + '</div>' +
+          '<div class="pgto-parcela-valor">' + frs(p.valor) + '</div>' +
+          (statusTxt ? '<div class="pgto-parcela-status">' + statusTxt + '</div>' : '') +
+        '</div>' +
+        '<div class="pgto-parcela-actions">' + actionBtn + '</div>' +
       '</div>';
+    }).join('');
 
-    // Calc HTML
-    const calcHTML = '<div id="pgto-calc-' + docId + '">' + buildPgtoCalcHTML(total, pago, restante, pct, statusPgto) + '</div>';
+    parcelasHTML =
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">Parcelas</div>' +
+      '<div class="pgto-parcelas">' + rows + '</div>';
+  }
 
-    // Campo valor avulso (alternativa às checkboxes, para quando não há parcelas claras)
-    const avulsoHTML =
-      '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">' +
-        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">Registrar valor recebido manualmente</div>' +
-        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
-          '<input id="pgto-inp-avulso-' + docId + '" class="pgto-input-pago" type="text" placeholder="Ex: 2.500,00"' +
-            ' value="' + (avulso > 0 ? avulso.toFixed(2).replace('.', ',') : '') + '">' +
-          '<button class="pgto-btn-salvar" onclick="salvarValorAvulso(_pgtoEventoById(\'' + docId + '\'))">Salvar</button>' +
-          '<span style="font-size:0.72rem;color:var(--muted)">Valor total já recebido</span>' +
-        '</div>' +
-      '</div>';
-    // Para pagamento customizado: mostrar o editor de entradas
-    const customEditorHTML = (ev.pgto_tipo === 'custom' || ev.pgto_sel === 'custom')
-      ? buildCustomParcelasEditorHTML(ev) : '';
+  // Calculadora
+  const calcHTML = buildPgtoCalcHTML(total, pago, restante, pct, status === 'quitado' ? 'quitado' : pago > 0 ? 'parcial' : 'pendente');
 
-    return '<div class="pgto-card">' +
-      '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
-        '<div class="pgto-card-info">' +
-          '<div class="pgto-card-nome">' + descExib + (temParcelaAtrasada(ev) ? '<span class="pgto-status-badge" style="color:#aaa;border-color:#e05c5c;background:transparent;margin-left:4px">⚠ Atrasado</span>' : '') + '</div>' +
-          '<div class="pgto-card-meta"><span class="pgto-card-data">' + datExib + '</span>' + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
-        '</div>' +
-        '<div class="pgto-card-valores">' +
-          '<div class="pgto-valor-total">' + frs(total) + '</div>' +
-          '<div data-pgto-restante="' + docId + '"><span class="pgto-status-badge ' + badgeClass + '">' + badgeTxt + '</span></div>' +
-        '</div>' +
-        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);flex-shrink:0;transition:transform 0.2s;transform:rotate(' + (isOpen ? '180' : '0') + 'deg)" id="pgto-arrow-' + docId + '"><polyline points="6 9 12 15 18 9"/></svg>' +
-      '</div>' +
-      '<div class="pgto-card-body ' + (isOpen ? 'open' : '') + '" id="pgto-body-' + docId + '">' +
-        resumoHTML +
-        (customEditorHTML
-          ? customEditorHTML
-          : '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px">Parcelas</div>' +
-            '<div class="pgto-parcelas">' + parcelasHTML + '</div>') +
-        avulsoHTML +
-        calcHTML +
-      '</div>' +
-    '</div>';
-  }).join('');
+  return resumoHTML + parcelasHTML + calcHTML;
 }
 
 /* Retorna o objeto de evento pelo ID (busca em contratos e notas) */
@@ -2692,7 +2858,7 @@ function _pgtoEventoById(id) {
 
 function togglePgtoCard(docId) {
   const isNowOpen = !_pgtoAbertos[docId];
-  // Se vai abrir, fechar todos os outros primeiro
+  // Fechar todos os outros
   if (isNowOpen) {
     Object.keys(_pgtoAbertos).forEach(function(id) {
       if (id !== docId && _pgtoAbertos[id]) {
@@ -2707,11 +2873,24 @@ function togglePgtoCard(docId) {
   _pgtoAbertos[docId] = isNowOpen;
   const body = document.getElementById('pgto-body-' + docId);
   const arrow = document.getElementById('pgto-arrow-' + docId);
-  if (body) body.classList.toggle('open', !!_pgtoAbertos[docId]);
-  if (arrow) arrow.style.transform = 'rotate(' + (_pgtoAbertos[docId] ? '180' : '0') + 'deg)';
-  // Ao FECHAR um card, re-renderiza para aplicar a ordenação por status atualizada
+  if (body) {
+    body.classList.toggle('open', isNowOpen);
+    // Ao abrir, popula o body com estado atualizado
+    if (isNowOpen) {
+      const ev = _pgtoEventoById(docId);
+      if (ev) {
+        const total = valorEv(ev);
+        const pago = getTotalPagoAuto(ev);
+        const restante = Math.max(0, total - pago);
+        const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
+        const st = getStatusPgto(ev);
+        body.innerHTML = buildPgtoCardBody(ev, docId, total, pago, restante, pct, st);
+      }
+    }
+  }
+  if (arrow) arrow.style.transform = 'rotate(' + (isNowOpen ? '180' : '0') + 'deg)';
   if (!isNowOpen) {
-    setTimeout(function() { renderPagamentos(); }, 320);
+    setTimeout(function() { renderPagamentos(); }, 300);
   }
 }
 
