@@ -2434,6 +2434,19 @@ function sincronizarPainel() {
         }
       });
 
+      // Propaga ev_data_fim do contrato para eventos existentes no painel que ainda não têm o campo
+      eventosSnap.forEach(function(doc) {
+        var d = doc.data();
+        var cid = d.contrato_id;
+        if (!cid || d.nota_id) return;
+        var contrato = todosContratos[cid];
+        if (!contrato) return;
+        if (!d.ev_data_fim && contrato.ev_data_fim) {
+          batch.update(doc.ref, { ev_data_fim: contrato.ev_data_fim });
+          mudou = true;
+        }
+      });
+
       // Adiciona contratos assinados que ainda não estão no painel
       // (respeita removido_manualmente: true — não recria eventos removidos pelo usuário)
       var eventosExistentes = {};
@@ -2448,21 +2461,22 @@ function sincronizarPainel() {
           var d = assinados[cid];
           var ref = db.collection('eventos_campo').doc(cid);
           batch.set(ref, {
-            ev_nome:     d.ev_nome   || '',
-            ev_local:    d.ev_local  || '',
-            ev_maps:     d.ev_maps   || '',
-            ev_data:     d.ev_data   || '',
+            ev_nome:        d.ev_nome        || '',
+            ev_local:       d.ev_local       || '',
+            ev_maps:        d.ev_maps        || '',
+            ev_data:        d.ev_data        || '',
+            ev_data_fim:    d.ev_data_fim    || '',
             ev_inicio:      d.ev_inicio      || '',
             ev_fim:         d.ev_fim         || '',
             ev_montagem:    d.montagem       || '',
             ev_desmontagem: d.desmontagem    || '',
-            ev_resp:     d.ev_resp   || '',
-            cli_nome:    d.cli_nome  || '',
-            servicos:    d.servicos  || [],
-            itens_ok:    {},
-            etapa:       'eventos',
-            contrato_id: cid,
-            criadoEm:    new Date()
+            ev_resp:        d.ev_resp        || '',
+            cli_nome:       d.cli_nome       || '',
+            servicos:       d.servicos       || [],
+            itens_ok:       {},
+            etapa:          'eventos',
+            contrato_id:    cid,
+            criadoEm:       new Date()
           });
           mudou = true;
         }
