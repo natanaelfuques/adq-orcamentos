@@ -836,6 +836,88 @@ header {
 .pgto-chip-toggle:hover { opacity: 0.75; transform: scale(0.96); }
 .pgto-chip-vista-pendente { border-color: rgba(224,92,92,0.45); color: #e05c5c; background: rgba(224,92,92,0.07); }
 .pgto-chip-vista-pago { border-color: rgba(37,211,102,0.35); color: #25D366; background: rgba(37,211,102,0.06); }
+/* Ajustes (adicionais e descontos) */
+.pgto-ajustes-sec {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: var(--surface2);
+}
+.pgto-ajustes-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.pgto-ajuste-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.pgto-ajuste-row:last-of-type { border-bottom: none; }
+.pgto-ajuste-desc {
+  font-size: 0.78rem;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pgto-ajuste-del {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 2px 6px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.pgto-ajuste-del:hover { border-color: var(--red); color: var(--red); }
+.pgto-ajuste-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.pgto-ajuste-input-desc, .pgto-ajuste-input-val {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.pgto-ajuste-input-desc { width: 100%; box-sizing: border-box; }
+.pgto-ajuste-input-val { flex: 1; min-width: 70px; }
+.pgto-ajuste-input-desc:focus, .pgto-ajuste-input-val:focus { border-color: var(--green); }
+.pgto-ajuste-select {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  cursor: pointer;
+  outline: none;
+  flex-shrink: 0;
+}
 .pgto-card-vals {
   display: flex;
   align-items: center;
@@ -2434,7 +2516,7 @@ function getParcelas(ev) {
 
 /* Status de pagamento do evento — lógica automática */
 function getStatusPgto(ev) {
-  const total = valorEv(ev);
+  const total = valorEvFinal(ev);
   if (total <= 0) return 'naovence';
   const alertas = getAlertasPgto(ev);
   const pago = getTotalPagoAuto(ev);
@@ -2467,6 +2549,14 @@ function temParcelaAtrasada(ev) {
 function getAlertasPgto(ev) {
   return ev.pgto_alertas || [];
 }
+
+/* ── AJUSTES (adicionais e descontos) ── */
+function getAjustes(ev) { return ev.pgto_ajustes || []; }
+function totalAjustes(ev) {
+  return getAjustes(ev).reduce(function(s, a) { return s + (parseFloat(a.valor) || 0); }, 0);
+}
+/* Valor final considerando ajustes (adicionais + descontos) */
+function valorEvFinal(ev) { return Math.max(0, valorEv(ev) + totalAjustes(ev)); }
 
 /* Verifica se uma parcela específica tem alerta ativo */
 function temAlertaParcela(ev, parcelaIdx) {
@@ -2630,6 +2720,49 @@ function pgtoEditorCalcTotal(docId) {
   });
   const el = document.getElementById('pgto-ed-total-' + docId);
   if (el) el.textContent = frs(novoTotal);
+}
+
+/* ── AJUSTES: adicionar e remover ── */
+
+function adicionarAjuste(docId) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const descEl = document.getElementById('pgto-aj-desc-' + docId);
+  const tipoEl = document.getElementById('pgto-aj-tipo-' + docId);
+  const valEl  = document.getElementById('pgto-aj-val-' + docId);
+  if (!descEl || !tipoEl || !valEl) return;
+  const descricao = descEl.value.trim();
+  const valorBruto = parseBRL(valEl.value);
+  if (!descricao) { _editorToast('Informe uma descrição', true); return; }
+  if (!valorBruto || valorBruto <= 0) { _editorToast('Informe um valor válido', true); return; }
+  const valor = tipoEl.value === 'desconto' ? -valorBruto : valorBruto;
+  const ajustes = getAjustes(ev).slice();
+  ajustes.push({ descricao: descricao, valor: valor });
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  db.collection(col).doc(docId).update({ pgto_ajustes: ajustes })
+    .then(function() {
+      _pgtoUpdateLocal(docId, { pgto_ajustes: ajustes });
+      _editorToast((valor > 0 ? 'Adicional' : 'Desconto') + ' registrado');
+      // Fecha e reabre o modal com dados atualizados
+      fecharPgtoModal();
+      setTimeout(function() { abrirPgtoModal(docId); }, 100);
+    })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
+function removerAjuste(docId, idx) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const ajustes = getAjustes(ev).filter(function(_, i) { return i !== idx; });
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  db.collection(col).doc(docId).update({ pgto_ajustes: ajustes })
+    .then(function() {
+      _pgtoUpdateLocal(docId, { pgto_ajustes: ajustes });
+      _editorToast('Ajuste removido');
+      fecharPgtoModal();
+      setTimeout(function() { abrirPgtoModal(docId); }, 100);
+    })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
 }
 
 /* Salva os novos valores das parcelas no Firestore */
@@ -3067,7 +3200,7 @@ function renderPagamentos() {
 /* Constrói o HTML de um card de pagamento (compacto) */
 function buildPgtoCard(ev) {
   const docId = ev.id;
-  const total = valorEv(ev);
+  const total = valorEvFinal(ev);
   const pago = getTotalPagoAuto(ev);
   const restante = Math.max(0, total - pago);
   const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
@@ -3115,7 +3248,7 @@ function buildPgtoCardBody(ev, docId) {
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
   const isNota = ev._origem === 'nota';
   const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
-  const total = valorEv(ev);
+  const total = valorEvFinal(ev);
   const isPago = avulso >= total - 0.05 && total > 0;
 
   let chips = '';
@@ -3227,7 +3360,8 @@ function limparRecebimentoModal(docId) {
 /* Constrói o HTML completo do modal de informações */
 function buildPgtoModalHTML(ev) {
   const docId = ev.id;
-  const total = valorEv(ev);
+  const baseValor = valorEv(ev);
+  const total = valorEvFinal(ev);
   const pago = getTotalPagoAuto(ev);
   const restante = Math.max(0, total - pago);
   const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
@@ -3337,6 +3471,53 @@ function buildPgtoModalHTML(ev) {
       '<div class="pgto-parcelas" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">' + rows + '</div>';
   }
 
+  // ── Seção de Ajustes (adicionais e descontos) ──
+  const ajustes = getAjustes(ev);
+  const ajusteRows = ajustes.length
+    ? ajustes.map(function(a, i) {
+        const isDesc = a.valor < 0;
+        const cor = isDesc ? '#e05c5c' : '#25D366';
+        const sinal = isDesc ? '−' : '+';
+        return '<div class="pgto-ajuste-row">' +
+          '<div class="pgto-ajuste-desc">' + esc(a.descricao || '—') + '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px">' +
+            '<span style="color:' + cor + ';font-weight:700;font-family:\'Barlow Condensed\',sans-serif">' + sinal + ' ' + frs(Math.abs(a.valor)) + '</span>' +
+            '<button class="pgto-ajuste-del" onclick="removerAjuste(\'' + docId + '\',' + i + ')" title="Remover">×</button>' +
+          '</div>' +
+        '</div>';
+      }).join('')
+    : '<div style="font-size:0.72rem;color:var(--muted);padding:4px 0">Nenhum ajuste registrado.</div>';
+
+  const ajustesHTML =
+    '<div class="pgto-ajustes-sec">' +
+      '<div class="pgto-ajustes-title">Ajustes</div>' +
+      '<div id="pgto-ajuste-list-' + docId + '">' + ajusteRows + '</div>' +
+      // Linha base + ajustes se houver
+      (ajustes.length
+        ? '<div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">' +
+            '<span>Base</span><span>' + frs(baseValor) + '</span>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:var(--text);margin-top:4px">' +
+            '<span>Total ajustado</span><span style="color:var(--green)">' + frs(total) + '</span>' +
+          '</div>'
+        : '') +
+      // Formulário para adicionar ajuste
+      '<div class="pgto-ajuste-form" id="pgto-ajuste-form-' + docId + '">' +
+        '<input class="pgto-ajuste-input-desc" id="pgto-aj-desc-' + docId + '" type="text" placeholder="Descrição (ex: Iluminação adicional)">' +
+        '<div style="display:flex;gap:6px;align-items:center">' +
+          '<select class="pgto-ajuste-select" id="pgto-aj-tipo-' + docId + '">' +
+            '<option value="adicional">+ Adicional</option>' +
+            '<option value="desconto">− Desconto</option>' +
+          '</select>' +
+          '<div style="display:flex;align-items:center;gap:4px;flex:1">' +
+            '<span style="font-size:0.78rem;color:var(--muted)">R$</span>' +
+            '<input class="pgto-ajuste-input-val" id="pgto-aj-val-' + docId + '" type="text" placeholder="0,00">' +
+          '</div>' +
+          '<button class="pgto-btn-salvar" style="white-space:nowrap" onclick="adicionarAjuste(\'' + docId + '\')">Adicionar</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
   const calcHTML = buildPgtoCalcHTML(total, pago, restante, pct, status === 'quitado' ? 'quitado' : pago > 0 ? 'parcial' : 'pendente');
 
   // Seção de recebimento manual (para qualquer tipo exceto custom, que tem próprio editor)
@@ -3398,7 +3579,7 @@ function buildPgtoModalHTML(ev) {
 
   return '<div class="pgto-modal-box" onclick="event.stopPropagation()">' +
     headerHTML +
-    '<div class="pgto-modal-body">' + editorBannerHTML + progressHTML + resumoHTML + parcelasHTML + calcHTML + recebimentoHTML + editorParcelasHTML + '</div>' +
+    '<div class="pgto-modal-body">' + editorBannerHTML + progressHTML + resumoHTML + parcelasHTML + ajustesHTML + calcHTML + recebimentoHTML + editorParcelasHTML + '</div>' +
   '</div>';
 }
 
