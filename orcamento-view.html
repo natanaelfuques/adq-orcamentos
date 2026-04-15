@@ -1157,7 +1157,7 @@ function renderOrcamento(doc) {
   document.getElementById('cb-evento').textContent = [d.tipo_evento || d.evento || '', d.qtd_pessoas || ''].filter(Boolean).join(' · ');
   document.getElementById('cb-local').textContent = d.local_evento || d.local || '—';
   var _dataInicio = fmtData(d.data_evento || d.dataEvt || '');
-  var _dataFimRaw = d.dataFim || d.data_fim || '';
+  var _dataFimRaw = d.dataFim || d.data_fim || d.dataFimEvento || '';
   var _dataFimFmt = _dataFimRaw ? fmtData(_dataFimRaw) : '';
   document.getElementById('cb-data').textContent = _dataFimFmt ? _dataInicio + ' • ' + _dataFimFmt : _dataInicio;
 
@@ -1561,7 +1561,7 @@ function preencherSelects(d) {
   _orcData.local = d.local_evento || d.local || '';
   _orcData.data = d.data_evento || d.dataEvt || '';
   _orcData.multidia = !!(d.multidia);
-  _orcData.dataFim = d.dataFim || d.data_fim || '';
+  _orcData.dataFim = d.dataFim || d.data_fim || d.dataFimEvento || '';
   _orcData.valTotal = d.val_total || d.valor_total || '';
 
   // Mapa: label da opção → valor (para recuperar val_total ao enviar)
@@ -1663,10 +1663,10 @@ function toggleDadosReserva() {
     set('dr_evento', _orcData.evento);
     set('dr_local',  _orcData.local);
     set('dr_data',   _orcData.data);
-    // Exibir e preencher Data de Término se evento multi-dia
+    // Exibir e preencher Data de Término se houver dataFim
     var wrapFim = document.getElementById('dr_data_fim_wrap');
-    if (wrapFim) wrapFim.style.display = _orcData.multidia ? 'block' : 'none';
-    if (_orcData.multidia) set('dr_data_fim', _orcData.dataFim);
+    if (wrapFim) wrapFim.style.display = _orcData.dataFim ? 'block' : 'none';
+    if (_orcData.dataFim) set('dr_data_fim', _orcData.dataFim);
   } else {
     form.style.display = 'none';
     btn.innerHTML = '▶ Solicitar Contrato';

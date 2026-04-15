@@ -5948,12 +5948,19 @@ function coletarDadosOrcamento() {
     valorTotal = document.getElementById('det_valor') ? document.getElementById('det_valor').value : '';
   }
 
+  const _chkMultidia = document.getElementById('chk_multidia');
+  const _elDataFim   = document.getElementById('data_fim');
+  const _multidia    = !!(_chkMultidia && _chkMultidia.checked);
+  const _dataFim     = (_multidia && _elDataFim) ? (_elDataFim.value || '') : '';
+
   return Object.assign(base, {
     nome: nome,
     evento: base.tipo_evento,
     local: base.local_evento,
     local_evento_maps: base.local_evento_maps || '',
     dataEvt: base.data_evento,
+    multidia: _multidia,
+    dataFim:  _dataFim,
     valorTotal: valorTotal,
     opcoes: opcoes,
     aprovado: false
