@@ -1553,8 +1553,6 @@ function preencherSelects(d) {
   _orcData.evento = d.tipo_evento || d.evento || '';
   _orcData.local = d.local_evento || d.local || '';
   _orcData.data = d.data_evento || d.dataEvt || '';
-  _orcData.multidia = !!(d.multidia);
-  _orcData.dataFim = d.dataFim || d.data_fim || '';
   _orcData.valTotal = d.val_total || d.valor_total || '';
 
   // Mapa: label da opção → valor (para recuperar val_total ao enviar)
@@ -1784,8 +1782,6 @@ function enviarDadosReserva(e) {
     ev_resp:   resp,
     ev_local:  local,
     ev_data:   dataRaw,
-    ev_multidia: !!_orcData.multidia,
-    ev_data_fim: _orcData.multidia ? (_orcData.dataFim || '') : '',
     ev_inicio: inicio,
     ev_fim:    fim,
     val_total: valTotal,
@@ -1825,11 +1821,6 @@ function enviarDadosReserva(e) {
         var parts = dataRaw.split('-');
         if (parts.length === 3) dataFmt = parts[2] + '/' + parts[1] + '/' + parts[0];
       }
-      var dataFimFmt = '';
-      if (_orcData.multidia && _orcData.dataFim) {
-        var fimParts = _orcData.dataFim.split('-');
-        dataFimFmt = fimParts.length === 3 ? fimParts[2] + '/' + fimParts[1] + '/' + fimParts[0] : _orcData.dataFim;
-      }
       var linhas = [
         'Dados para elaboracao do contrato.',
         'Ref: ' + (_orcData.ref || ''),
@@ -1843,13 +1834,12 @@ function enviarDadosReserva(e) {
         (fone  ? 'Telefone: '  + fone  : ''),
         '',
         'EVENTO',
-        (evento      ? 'Evento: '              + evento   : ''),
-        (local       ? 'Local: '               + local    : ''),
-        (dataFmt     ? (_orcData.multidia ? 'Data inicio: ' : 'Data: ') + dataFmt : ''),
-        (dataFimFmt  ? 'Data termino: '        + dataFimFmt : ''),
-        (inicio      ? 'Inicio: '              + inicio   : ''),
-        (fim         ? 'Termino: '             + fim      : ''),
-        (resp        ? 'Responsavel no local: '+ resp     : ''),
+        (evento  ? 'Evento: '              + evento  : ''),
+        (local   ? 'Local: '               + local   : ''),
+        (dataFmt ? 'Data: '                + dataFmt : ''),
+        (inicio  ? 'Inicio: '              + inicio  : ''),
+        (fim     ? 'Termino: '             + fim     : ''),
+        (resp    ? 'Responsavel no local: '+ resp    : ''),
         '',
         (opcaoSel ? 'Opção: ' + opcaoSel : ''),
         (pgtoSel  ? 'Pagamento: ' + pgtoSel : ''),
