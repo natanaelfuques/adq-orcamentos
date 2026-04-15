@@ -4193,18 +4193,25 @@ function renderContabilidade() {
       const fieldNome = e._origem === 'nota' ? 'titulo' : 'cli_nome';
       const cli = nomeCli(e);
       const isNota = e._origem === 'nota';
-      const tipoBadge = isNota
-        ? '<span class="badge-origem evento-rapido">Evento rápido</span>'
-        : '<span class="badge-origem contrato">Contrato</span>';
+      const tipoTxt = isNota ? 'Evento rápido' : 'Contrato';
+      const tipoStyle = isNota
+        ? 'color:#25D366;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem'
+        : 'color:var(--muted);font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem';
       const pgto = isNota ? 'À vista' : getPgtoLabel(e);
+      // Status de pagamento via lógica de pagamentos
+      const evComOrigem = Object.assign({}, e, { _origem: isNota ? 'nota' : 'contrato' });
+      const pgtoStatus = getStatusPgto(evComOrigem);
+      const pgtoStatusMap = { quitado: 'Quitado', parcial: 'Parcial', pendente: 'Pendente', alerta: 'Monitorar', naovence: 'Pendente' };
+      const pgtoStatusTxt = pgtoStatusMap[pgtoStatus] || 'Pendente';
+      const pgtoStatusClass = pgtoStatus === 'alerta' ? 'alerta' : pgtoStatus;
       return `<tr>
         <td>${comp}</td>
         <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${col}" style="max-width:200px">${cli}</td>
-        <td>${tipoBadge}</td>
+        <td><span style="${tipoStyle}">${tipoTxt}</span></td>
         <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${col}">${dataEv(e)}</td>
         <td>${pgto}</td>
         <td class="r" style="color:var(--green);font-weight:700">${frs(getValorEvento(e))}</td>
-        <td><span class="badge ${st}">${st}</span></td>
+        <td><span class="pgto-status-badge ${pgtoStatusClass}">${pgtoStatusTxt}</span></td>
         <td class="col-del"><button class="btn-del-row" data-docid="${id}" data-col="${col}" title="Excluir">×</button></td>
       </tr>`;
     }).join('');
