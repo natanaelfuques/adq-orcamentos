@@ -1783,110 +1783,53 @@ function enviarDadosReserva(e) {
     }
   }
 
-  // Montar dados do contrato compatíveis com o gerador
-  var dadosContrato = {
-    _tipo: 'contrato',
-    cli_nome:  nome,
-    cli_doc:   doc,
-    cli_end:   end,
-    cli_cep:   cep,
-    cli_email: email,
-    cli_fone:  fone,
-    ev_nome:   evento,
-    ev_resp:   resp,
-    ev_local:  local,
-    ev_data:   dataRaw,
-    ev_multidia: !!_orcData.multidia,
-    ev_data_fim: _orcData.multidia ? (_orcData.dataFim || '') : '',
-    ev_inicio: inicio,
-    ev_fim:    fim,
-    val_total: valTotal,
-    pgto_sel: pgtoSlug,
-    pgto_custom: pgtoCustomVal,
-    data_entrada: (function() {
+  // Formatar datas para a mensagem
+  var dataFmt = dataRaw;
+  if (dataRaw) {
+    var parts = dataRaw.split('-');
+    if (parts.length === 3) dataFmt = parts[2] + '/' + parts[1] + '/' + parts[0];
+  }
+  var dataFimFmt = '';
+  var _dataFimSrc = dataFimRaw || (_orcData.dataFim || '');
+  if (_dataFimSrc) {
+    var fimParts = _dataFimSrc.split('-');
+    dataFimFmt = fimParts.length === 3 ? fimParts[2] + '/' + fimParts[1] + '/' + fimParts[0] : _dataFimSrc;
+  }
+
+  var linhas = [
+    'Dados para elaboracao do contrato.',
+    'Ref: ' + (_orcData.ref || ''),
+    '',
+    'CONTRATANTE',
+    (nome  ? 'Nome: '      + nome  : ''),
+    (doc   ? 'CPF/CNPJ: ' + doc   : ''),
+    (end   ? 'Endereco: '  + end   : ''),
+    (cep   ? 'CEP: '       + cep   : ''),
+    (email ? 'Email: '     + email : ''),
+    (fone  ? 'Telefone: '  + fone  : ''),
+    '',
+    'EVENTO',
+    (evento      ? 'Evento: '               + evento   : ''),
+    (local       ? 'Local: '                + local    : ''),
+    (dataFmt     ? (dataFimFmt ? 'Data inicio: ' : 'Data: ') + dataFmt : ''),
+    (dataFimFmt  ? 'Data termino: '         + dataFimFmt : ''),
+    (inicio      ? 'Inicio: '               + inicio   : ''),
+    (fim         ? 'Termino: '              + fim      : ''),
+    (resp        ? 'Responsavel no local: ' + resp     : ''),
+    '',
+    (opcaoSel ? 'Opcao: '    + opcaoSel : ''),
+    (pgtoSel  ? 'Pagamento: '+ pgtoSel  : ''),
+    (function() {
       var el = document.getElementById('entrada-data-input');
-      return el && el.value ? el.value : ''; // formato YYYY-MM-DD, compatível com input[type=date] do index
-    })(),
-    servicos: servicos,
-    aprovado: false,
-    orc_ref: _orcData.ref || '',
-    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-  };
+      if (!el || !el.value) return '';
+      var p = el.value.split('-');
+      var fmt = p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : el.value;
+      return 'Data da entrada (20%): ' + fmt;
+    })()
+  ].filter(function(l) { return l !== ''; });
 
-  // Botão feedback
-  var waLink = document.getElementById('wa-link-dados');
-  var btnOrigText = waLink ? waLink.innerHTML : '';
-  if (waLink) {
-    waLink.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 1h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3 15h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 1.5 C4 1.5 4 5 8 8 C12 11 12 14.5 12 14.5 L4 14.5 C4 14.5 4 11 8 8 C12 5 12 1.5 12 1.5 Z" fill="rgba(0,0,0,0.15)" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/><path d="M6 12.5 Q8 11 10 12.5" stroke="currentColor" stroke-width="0.8" stroke-linecap="round" fill="none"/></svg> Salvando...</span>';
-    waLink.style.pointerEvents = 'none';
-    waLink.style.opacity = '0.75';
-  }
-
-  var db = window._db;
-  if (!db) {
-    alert('Banco de dados não conectado.');
-    if (waLink) { waLink.innerHTML = btnOrigText; waLink.style.pointerEvents = ''; waLink.style.opacity = ''; }
-    return false;
-  }
-
-  db.collection('contratos').add(dadosContrato)
-    .then(function() {
-      // Também envia WhatsApp
-      var dataFmt = dataRaw;
-      if (dataRaw) {
-        var parts = dataRaw.split('-');
-        if (parts.length === 3) dataFmt = parts[2] + '/' + parts[1] + '/' + parts[0];
-      }
-      var dataFimFmt = '';
-      var _dataFimSrc = dataFimRaw || (_orcData.multidia ? (_orcData.dataFim || '') : '');
-      if (_orcData.multidia && _dataFimSrc) {
-        var fimParts = _dataFimSrc.split('-');
-        dataFimFmt = fimParts.length === 3 ? fimParts[2] + '/' + fimParts[1] + '/' + fimParts[0] : _dataFimSrc;
-      }
-      var linhas = [
-        'Dados para elaboracao do contrato.',
-        'Ref: ' + (_orcData.ref || ''),
-        '',
-        'CONTRATANTE',
-        (nome  ? 'Nome: '      + nome  : ''),
-        (doc   ? 'CPF/CNPJ: ' + doc   : ''),
-        (end   ? 'Endereco: '  + end   : ''),
-        (cep   ? 'CEP: '       + cep   : ''),
-        (email ? 'Email: '     + email : ''),
-        (fone  ? 'Telefone: '  + fone  : ''),
-        '',
-        'EVENTO',
-        (evento      ? 'Evento: '              + evento   : ''),
-        (local       ? 'Local: '               + local    : ''),
-        (dataFmt     ? (_orcData.multidia ? 'Data inicio: ' : 'Data: ') + dataFmt : ''),
-        (dataFimFmt  ? 'Data termino: '        + dataFimFmt : ''),
-        (inicio      ? 'Inicio: '              + inicio   : ''),
-        (fim         ? 'Termino: '             + fim      : ''),
-        (resp        ? 'Responsavel no local: '+ resp     : ''),
-        '',
-        (opcaoSel ? 'Opção: ' + opcaoSel : ''),
-        (pgtoSel  ? 'Pagamento: ' + pgtoSel : ''),
-        (function() {
-          var el = document.getElementById('entrada-data-input');
-          if (!el || !el.value) return '';
-          var p = el.value.split('-');
-          var fmt = p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : el.value;
-          return 'Data da entrada (20%): ' + fmt;
-        })()
-      ].filter(function(l) { return l !== ''; });
-
-      var waUrl = 'https://wa.me/5547991536771?text=' + encodeURIComponent(linhas.join('\n'));
-      window.open(waUrl, '_blank');
-
-      // Redirecionar para o gerador na aba Contratos Salvos
-      var base = window.location.href.split('?')[0];
-      base = base.substring(0, base.lastIndexOf('/') + 1);
-      window.location.href = base + 'index.html?tab=contratos';
-    })
-    .catch(function(err) {
-      alert('Erro ao salvar contrato: ' + err.message);
-      if (waLink) { waLink.innerHTML = btnOrigText; waLink.style.pointerEvents = ''; waLink.style.opacity = ''; }
-    });
+  var waUrl = 'https://wa.me/5547991536771?text=' + encodeURIComponent(linhas.join('\n'));
+  window.open(waUrl, '_blank');
 
   return false;
 }
