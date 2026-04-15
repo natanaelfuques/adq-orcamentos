@@ -834,6 +834,8 @@ header {
 .pgto-chip.alerta { border-color: rgba(224,92,92,0.45); color: #e05c5c; background: rgba(224,92,92,0.07); }
 .pgto-chip-toggle { cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
 .pgto-chip-toggle:hover { opacity: 0.75; transform: scale(0.96); }
+.pgto-chip-vista-pendente { border-color: rgba(224,92,92,0.45); color: #e05c5c; background: rgba(224,92,92,0.07); }
+.pgto-chip-vista-pago { border-color: rgba(37,211,102,0.35); color: #25D366; background: rgba(37,211,102,0.06); }
 .pgto-card-vals {
   display: flex;
   align-items: center;
@@ -2532,11 +2534,41 @@ function toggleAlertaChip(e, docId, parcelaIdx) {
   const ev = _pgtoEventoById(docId);
   if (!ev) return;
   if (temAlertaParcela(ev, parcelaIdx)) {
-    // já tem alerta → resolve
     resolverAlerta(docId, parcelaIdx);
   } else {
-    // não tem alerta → sinaliza problema sem prompt
     sinalizarProblema(docId, parcelaIdx, 'Não recebido');
+  }
+}
+
+/* Toggle pagamento à vista para eventos rápidos (notas):
+   pendente → confirma pagamento (salva pgto_valor_avulso = total)
+   pago     → desfaz (limpa pgto_valor_avulso) */
+function togglePagamentoVista(e, docId) {
+  e.stopPropagation();
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const total = valorEv(ev);
+  const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
+  const isPago = avulso >= total - 0.05 && total > 0;
+
+  if (isPago) {
+    // Desfaz: limpa o valor avulso
+    db.collection('notas').doc(docId).update({ pgto_valor_avulso: firebase.firestore.FieldValue.delete() })
+      .then(function() {
+        _pgtoUpdateLocal(docId, { pgto_valor_avulso: null });
+        renderPagamentos();
+        _editorToast('Pagamento desfeito');
+      })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+  } else {
+    // Confirma: salva o total como valor recebido
+    db.collection('notas').doc(docId).update({ pgto_valor_avulso: total })
+      .then(function() {
+        _pgtoUpdateLocal(docId, { pgto_valor_avulso: total });
+        renderPagamentos();
+        _editorToast('Pagamento confirmado ✓');
+      })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
   }
 }
 
@@ -3033,19 +3065,33 @@ function buildPgtoCard(ev) {
 function buildPgtoCardBody(ev, docId) {
   const parcelas = getParcelas(ev);
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const isNota = ev._origem === 'nota';
+  const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
+  const total = valorEv(ev);
+  const isPago = avulso >= total - 0.05 && total > 0;
 
-  const chips = parcelas.map(function(p) {
-    if (temAlertaParcela(ev, p.idx)) {
-      // Chip vermelho → clique resolve o alerta
-      return '<span class="pgto-chip alerta pgto-chip-toggle" title="Clique para marcar como resolvido" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">⚠ ' + p.label + '</span>';
+  let chips = '';
+
+  if (isNota) {
+    // Evento rápido: chip único de confirmação de pagamento à vista
+    if (isPago) {
+      // Verde: pago — clique desfaz
+      chips = '<span class="pgto-chip auto pgto-chip-toggle pgto-chip-vista-pago" title="Clique para desfazer pagamento" onclick="togglePagamentoVista(event,\'' + docId + '\')">✓ Pagamento à vista · ' + frs(avulso) + '</span>';
+    } else {
+      // Cinza/vermelho: pendente — clique confirma pagamento
+      chips = '<span class="pgto-chip pgto-chip-toggle pgto-chip-vista-pendente" title="Clique para confirmar recebimento" onclick="togglePagamentoVista(event,\'' + docId + '\')">⚠ Pagamento à vista</span>';
     }
-    if (isParcelaPagaAuto(p, ev, hoje)) {
-      // Chip verde → clique sinaliza problema
-      return '<span class="pgto-chip auto pgto-chip-toggle" title="Clique para sinalizar problema" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">✓ ' + p.label + '</span>';
-    }
-    // Chip futuro → clique sinaliza problema
-    return '<span class="pgto-chip futuro pgto-chip-toggle" title="Clique para sinalizar problema" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">' + p.label + '</span>';
-  }).join('');
+  } else {
+    chips = parcelas.map(function(p) {
+      if (temAlertaParcela(ev, p.idx)) {
+        return '<span class="pgto-chip alerta pgto-chip-toggle" title="Clique para marcar como resolvido" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">⚠ ' + p.label + '</span>';
+      }
+      if (isParcelaPagaAuto(p, ev, hoje)) {
+        return '<span class="pgto-chip auto pgto-chip-toggle" title="Clique para sinalizar problema" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">✓ ' + p.label + '</span>';
+      }
+      return '<span class="pgto-chip futuro pgto-chip-toggle" title="Clique para sinalizar problema" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">' + p.label + '</span>';
+    }).join('');
+  }
 
   return '<div class="pgto-chips pgto-chips-body">' + chips + '</div>' +
     '<div class="pgto-card-body-actions">' +
