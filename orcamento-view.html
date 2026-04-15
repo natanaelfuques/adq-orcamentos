@@ -1158,8 +1158,8 @@ function renderOrcamento(doc) {
   document.getElementById('cb-local').textContent = d.local_evento || d.local || '—';
   var _dataInicio = fmtData(d.data_evento || d.dataEvt || '');
   var _dataFimRaw = d.dataFim || d.data_fim || '';
-  var _dataFimFmt = (d.multidia && _dataFimRaw) ? fmtData(_dataFimRaw) : '';
-  document.getElementById('cb-data').textContent = _dataFimFmt ? _dataInicio + ' a ' + _dataFimFmt : _dataInicio;
+  var _dataFimFmt = _dataFimRaw ? fmtData(_dataFimRaw) : '';
+  document.getElementById('cb-data').textContent = _dataFimFmt ? _dataInicio + ' • ' + _dataFimFmt : _dataInicio;
 
   // Hero data — usa data de emissão (criadoEm), não a data do evento
   const emissaoDate = d.criadoEm ? (d.criadoEm.toDate ? d.criadoEm.toDate() : new Date(d.criadoEm)) : null;
