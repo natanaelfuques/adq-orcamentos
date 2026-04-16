@@ -1456,7 +1456,7 @@ header {
   <!-- BLOCO NOVO EVENTO -->
   <div class="nota-bloco" style="border:1px solid var(--border);border-radius:6px;background:var(--surface);padding:10px 12px;">
     <div style="display:flex;align-items:flex-start;gap:8px">
-      <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anotações / Evento rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()" style="border:none;background:transparent;padding:2px 0;flex:1;height:36px;min-height:36px;"></textarea>
+      <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anotações / Evento rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();salvarNota();}" style="border:none;background:transparent;padding:2px 0;flex:1;height:36px;min-height:36px;"></textarea>
       <button onclick="abrirModalIA()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:transparent;border:1px dashed #C8A94A;color:#C8A94A;border-radius:4px;padding:6px 10px;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;margin-top:1px">✦ IA</button>
     </div>
     <div class="nota-bloco-actions" id="nota-bloco-actions" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
@@ -5766,52 +5766,22 @@ function handleSalvosClick(e) {
   else if (action === 'calendar') { btn.blur(); registrarLogGerador('calendar', nome); gerarLinkCalendar(id); }
   else if (action === 'verificar-autentique') { verificarAssinaturaAutentique(id, btn); }
   else if (action === 'whatsapp' || action === 'whatsapp-orc' || action === 'whatsapp-nota') {
-    var fone = btn.getAttribute('data-fone') || '';
-    var numero = fone.replace(/\D/g, '');
-    if (!numero) { alert('Número de contato não encontrado.'); return; }
-    if (numero.length <= 11) numero = '55' + numero;
-    btn.blur();
-    registrarLogGerador('whatsapp', nome);
-    window.open('https://wa.me/' + numero, '_blank');
+    var _tipo = (action === 'whatsapp') ? 'contrato' : (action === 'whatsapp-orc') ? 'orc' : 'nota';
+    _abrirModalWpp(id, btn.getAttribute('data-fone') || '', _tipo, btn);
   }
   else if (action === 'whatsapp-ev') {
-    var foneEv = btn.getAttribute('data-fone') || '';
-    var numeroEv = foneEv.replace(/\D/g, '');
-    if (numeroEv) {
-      if (numeroEv.length <= 11) numeroEv = '55' + numeroEv;
-      btn.blur();
-      window.open('https://wa.me/' + numeroEv, '_blank');
+    var _foneEv = btn.getAttribute('data-fone') || '';
+    var _extraId = btn.getAttribute('data-nota-id') || '';
+    if (_foneEv) {
+      _abrirModalWpp(id, _foneEv, 'ev', btn, _extraId);
     } else if (db && id) {
-      var notaIdEv = btn.getAttribute('data-nota-id') || '';
-      var _resolveWppFoneEv = function(rawFone) {
-        var fFone = rawFone.replace(/\D/g, '');
-        if (!fFone) { alert('Número de contato não encontrado.'); return; }
-        // Persiste no eventos_campo para não precisar buscar novamente
-        var campoUpd = notaIdEv ? { contato: rawFone } : { cli_fone: rawFone };
-        db.collection('eventos_campo').doc(id).update(campoUpd).catch(function(){});
-        btn.style.borderColor = '#25D366';
-        btn.style.color = '#25D366';
-        btn.setAttribute('data-fone', rawFone);
-        if (fFone.length <= 11) fFone = '55' + fFone;
-        window.open('https://wa.me/' + fFone, '_blank');
-      };
-      if (notaIdEv) {
-        // Evento criado por nota — busca campo "contato" em notas
-        db.collection('notas').doc(notaIdEv).get().then(function(nDoc) {
-          var rawFone = nDoc.exists ? nDoc.data().contato || '' : '';
-          if (!rawFone) { alert('Número de contato não encontrado.'); return; }
-          _resolveWppFoneEv(rawFone);
-        }).catch(function() { alert('Número de contato não encontrado.'); });
-      } else {
-        // Evento criado por contrato — busca cli_fone / whatsapp_cliente em contratos
-        db.collection('contratos').doc(id).get().then(function(cDoc) {
-          var rawFone = cDoc.exists ? cDoc.data().cli_fone || cDoc.data().whatsapp_cliente || '' : '';
-          if (!rawFone) { alert('Número de contato não encontrado.'); return; }
-          _resolveWppFoneEv(rawFone);
-        }).catch(function() { alert('Número de contato não encontrado.'); });
-      }
+      // Sem fone em cache — busca no Firestore antes de abrir o modal
+      var _fetchEv = _extraId
+        ? db.collection('notas').doc(_extraId).get().then(function(d) { return d.exists ? d.data().contato || '' : ''; })
+        : db.collection('contratos').doc(id).get().then(function(d) { return d.exists ? d.data().cli_fone || d.data().whatsapp_cliente || '' : ''; });
+      _fetchEv.then(function(f) { _abrirModalWpp(id, f, 'ev', btn, _extraId); }).catch(function() { _abrirModalWpp(id, '', 'ev', btn, _extraId); });
     } else {
-      alert('Número de contato não encontrado.');
+      _abrirModalWpp(id, '', 'ev', btn, '');
     }
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
@@ -8067,62 +8037,89 @@ function renderNotas() {
   }
 }
 
-function _abrirModalContatoNota(id, btn) {
-  var old = document.getElementById('adq-contato-nota-modal');
+// ── Modal WhatsApp unificado ──────────────────────────────────────────────────
+// tipo: 'nota' | 'orc' | 'contrato' | 'ev'
+// btnEl: o botão clicado (para atualizar data-fone e classe após salvar)
+function _abrirModalWpp(id, foneAtual, tipo, btnEl, extraId) {
+  var old = document.getElementById('adq-wpp-modal');
   if (old) { old.remove(); return; }
 
-  var foneAtual = (btn ? btn.getAttribute('data-fone') : '') || '';
-
   var modal = document.createElement('div');
-  modal.id = 'adq-contato-nota-modal';
+  modal.id = 'adq-wpp-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px';
 
-  var s = 'font-family:\'Barlow\',sans-serif;';
-  var sLabel = 'display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;' + s;
-  var sBtn = 'border-radius:4px;padding:9px 16px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border:none;';
+  var sF  = "font-family:'Barlow',sans-serif;";
+  var sBC = "font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;padding:9px 16px;border:none;";
 
   modal.innerHTML =
     '<div style="background:#1e1e1e;border:1px solid #333;border-top:2px solid #25D366;border-radius:8px;padding:22px 20px;width:100%;max-width:360px;box-sizing:border-box">' +
-      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">WhatsApp</div>' +
-      '<label style="' + sLabel + '">Número de contato</label>' +
-      '<input id="adq-contato-nota-input" type="tel" autocomplete="off" value="' + escHtml(foneAtual) + '" placeholder="(47) 99999-9999" style="width:100%;background:#111;border:1px solid #444;color:#eee;' + s + 'font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'" onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarContatoNota(\'' + id + '\');}">' +
+      '<div style="' + sF + 'font-size:0.72rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">WhatsApp</div>' +
+      '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;' + sF + '">Número de contato</label>' +
+      '<input id="adq-wpp-input" type="tel" autocomplete="off" value="' + escHtml(foneAtual) + '" placeholder="(47) 99999-9999"' +
+        ' style="width:100%;background:#111;border:1px solid #444;color:#eee;' + sF + 'font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s"' +
+        ' onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'"' +
+        ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarWpp(\'' + id + '\',\'' + tipo + '\',false,\'' + (extraId||'') + '\');}">' +
       '<div style="display:flex;gap:8px">' +
-        '<button onclick="_salvarContatoNota(\'' + id + '\')" style="' + sBtn + 'flex:1;background:#25D366;color:#111">Abrir WhatsApp</button>' +
-        '<button onclick="document.getElementById(\'adq-contato-nota-modal\').remove()" style="' + sBtn + 'width:38px;background:transparent;border:1px solid #333;color:#666;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+        '<button onclick="_salvarWpp(\'' + id + '\',\'' + tipo + '\',true,\'' + (extraId||'') + '\')"  style="' + sBC + 'flex:1;background:#25D366;color:#111">Abrir WhatsApp</button>' +
+        '<button onclick="_salvarWpp(\'' + id + '\',\'' + tipo + '\',false,\'' + (extraId||'') + '\')" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#25D366\';this.style.color=\'#25D366\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
+        '<button onclick="document.getElementById(\'adq-wpp-modal\').remove()" style="' + sBC + 'width:38px;background:transparent;border:1px solid #333;color:#666;font-size:1.1rem;padding:9px 0" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
     '</div>';
 
+  // Guarda referência ao botão clicado para atualizar após salvar
+  modal._btnEl = btnEl;
   document.body.appendChild(modal);
   modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
 
-  var inp = document.getElementById('adq-contato-nota-input');
+  var inp = document.getElementById('adq-wpp-input');
   if (inp) { inp.focus(); inp.select(); }
 }
 
-function _salvarContatoNota(id) {
-  var inp = document.getElementById('adq-contato-nota-input');
+function _salvarWpp(id, tipo, abrirWpp, extraId) {
+  var inp = document.getElementById('adq-wpp-input');
   if (!inp) return;
   var fone = inp.value.trim();
   var numero = fone.replace(/\D/g, '');
-  if (!numero) { inp.style.borderColor = '#e55'; setTimeout(function(){ inp.style.borderColor = '#444'; }, 1000); return; }
+  if (!numero) {
+    inp.style.borderColor = '#e55';
+    setTimeout(function() { inp.style.borderColor = '#444'; }, 1000);
+    return;
+  }
 
-  // Persiste no Firestore
+  // Persiste no Firestore de acordo com o tipo
   if (db) {
-    db.collection('notas').doc(id).update({ contato: fone }).catch(function(){});
+    if (tipo === 'nota') {
+      db.collection('notas').doc(id).update({ contato: fone }).catch(function(){});
+    } else if (tipo === 'orc') {
+      db.collection('orcamentos').doc(id).update({ whatsapp_cliente: fone }).catch(function(){});
+    } else if (tipo === 'contrato') {
+      db.collection('contratos').doc(id).update({ cli_fone: fone }).catch(function(){});
+    } else if (tipo === 'ev') {
+      var campoEv = extraId ? { contato: fone } : { cli_fone: fone };
+      db.collection('eventos_campo').doc(id).update(campoEv).catch(function(){});
+    }
   }
 
-  // Atualiza o botão no card para refletir o novo número
-  var btnCard = document.querySelector('.btn-whatsapp[data-action="whatsapp-nota"][data-id="' + id + '"]');
-  if (btnCard) {
-    btnCard.setAttribute('data-fone', fone);
-    btnCard.classList.add('tem-fone');
+  // Atualiza o botão no card
+  var modal = document.getElementById('adq-wpp-modal');
+  var btnEl = modal ? modal._btnEl : null;
+  if (btnEl) {
+    btnEl.setAttribute('data-fone', fone);
+    btnEl.classList.add('tem-fone');
+    if (!btnEl.classList.contains('btn-whatsapp')) {
+      btnEl.style.color = '#25D366';
+      btnEl.style.borderColor = '#25D366';
+    }
   }
 
-  // Abre o WhatsApp
-  if (numero.length <= 11) numero = '55' + numero;
-  document.getElementById('adq-contato-nota-modal').remove();
-  window.open('https://wa.me/' + numero, '_blank');
+  if (modal) modal.remove();
+
+  if (abrirWpp) {
+    if (numero.length <= 11) numero = '55' + numero;
+    window.open('https://wa.me/' + numero, '_blank');
+  }
 }
+// ─────────────────────────────────────────────────────────────────────────────
 
 function handleNotasClick(e) {
   var btn = e.target.closest('[data-action]');
@@ -8324,46 +8321,21 @@ function handleNotasClick(e) {
       }).catch(function(e) { alert('Erro ao remover do painel: ' + e.message); });
 
   } else if (action === 'whatsapp-ev') {
-    var foneEv = btn.getAttribute('data-fone') || '';
-    var numeroEv = foneEv.replace(/\D/g, '');
-    if (numeroEv) {
-      if (numeroEv.length <= 11) numeroEv = '55' + numeroEv;
-      btn.blur();
-      window.open('https://wa.me/' + numeroEv, '_blank');
+    var _foneEvN = btn.getAttribute('data-fone') || '';
+    var _extraIdN = btn.getAttribute('data-nota-id') || '';
+    if (_foneEvN) {
+      _abrirModalWpp(id, _foneEvN, 'ev', btn, _extraIdN);
     } else if (db && id) {
-      var notaId = btn.getAttribute('data-nota-id') || '';
-      var _resolveWppFone = function(rawFone) {
-        var fFone = rawFone.replace(/\D/g, '');
-        if (!fFone) { alert('Número de contato não encontrado.'); return; }
-        // Persiste no eventos_campo para não precisar buscar de novo
-        var campoUpdate = notaId ? { contato: rawFone } : { cli_fone: rawFone };
-        db.collection('eventos_campo').doc(id).update(campoUpdate).catch(function(){});
-        btn.style.borderColor = '#25D366'; btn.style.color = '#25D366';
-        btn.setAttribute('data-fone', rawFone);
-        if (fFone.length <= 11) fFone = '55' + fFone;
-        window.open('https://wa.me/' + fFone, '_blank');
-      };
-      if (notaId) {
-        // Evento veio de nota — busca campo "contato" na coleção notas
-        db.collection('notas').doc(notaId).get().then(function(nDoc) {
-          var rawFone = nDoc.exists ? nDoc.data().contato || '' : '';
-          if (!rawFone) { alert('Número de contato não encontrado.'); return; }
-          _resolveWppFone(rawFone);
-        }).catch(function() { alert('Número de contato não encontrado.'); });
-      } else {
-        // Evento veio de contrato — busca cli_fone / whatsapp_cliente na coleção contratos
-        db.collection('contratos').doc(id).get().then(function(cDoc) {
-          var rawFone = cDoc.exists ? cDoc.data().cli_fone || cDoc.data().whatsapp_cliente || '' : '';
-          if (!rawFone) { alert('Número de contato não encontrado.'); return; }
-          _resolveWppFone(rawFone);
-        }).catch(function() { alert('Número de contato não encontrado.'); });
-      }
+      var _fetchEvN = _extraIdN
+        ? db.collection('notas').doc(_extraIdN).get().then(function(d) { return d.exists ? d.data().contato || '' : ''; })
+        : db.collection('contratos').doc(id).get().then(function(d) { return d.exists ? d.data().cli_fone || d.data().whatsapp_cliente || '' : ''; });
+      _fetchEvN.then(function(f) { _abrirModalWpp(id, f, 'ev', btn, _extraIdN); }).catch(function() { _abrirModalWpp(id, '', 'ev', btn, _extraIdN); });
     } else {
-      alert('Número de contato não encontrado.');
+      _abrirModalWpp(id, '', 'ev', btn, '');
     }
 
   } else if (action === 'whatsapp-nota') {
-    _abrirModalContatoNota(id, btn);
+    _abrirModalWpp(id, btn.getAttribute('data-fone') || '', 'nota', btn);
 
   } else if (action === 'painel-nota') {
     if (!db) return;
