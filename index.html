@@ -3841,6 +3841,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (_abriDoc || _deepLinkTentativas > 40) {
                   clearInterval(_deepLinkInterval);
                   if (_abriDoc) {
+                    // Abrir caixa de busca se estiver fechada
+                    if (!_buscaAberta) {
+                      _buscaAberta = true;
+                      var _searchBtn = document.getElementById('salvos-search-btn');
+                      if (_searchBtn) _searchBtn.classList.add('active');
+                      if (typeof atualizarAreaBusca === 'function') atualizarAreaBusca();
+                    }
                     var _buscaInput = document.getElementById('busca-con-input');
                     if (_buscaInput) {
                       // Usa o código de referência como termo — único, sempre existe
@@ -6565,8 +6572,9 @@ function renderContratos(docs) {
 }
 
 function _renderContratosComEtapa(lista, docs, etapaMap) {
-  lista.innerHTML = docs.map(function(doc) {
-    var nome    = doc.cli_nome || '';
+  var _btnRelatorios = '<a href="relatorios.html" target="_self" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;background:rgba(74,200,122,0.08);border:1px solid rgba(74,200,122,0.35);border-radius:6px;padding:11px 16px;margin-bottom:14px;color:#4AC87A;font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;transition:background 0.18s,border-color 0.18s" onmouseover="this.style.background=\'rgba(74,200,122,0.18)\';this.style.borderColor=\'rgba(74,200,122,0.7)\'" onmouseout="this.style.background=\'rgba(74,200,122,0.08)\';this.style.borderColor=\'rgba(74,200,122,0.35)\'"><span>Abrir Relatórios</span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></a>';
+  lista.innerHTML = _btnRelatorios + docs.map(function(doc) {
+    var nome    = (doc.cli_nome || '').toUpperCase();
     var evento  = doc.ev_nome  || '';
     var data    = doc.ev_data || '';
     var dataFmt = data && data.length === 10 && data.indexOf('-') !== -1
