@@ -6038,11 +6038,12 @@ function salvarNaNuvem() {
 function renderSalvos(docs) {
   var lista = document.getElementById('salvos-lista');
   if (!lista) return;
+  var _btnEstoque = '<a href="estoque.html" target="_self" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;background:rgba(74,144,200,0.08);border:1px solid rgba(74,144,200,0.35);border-radius:6px;padding:11px 16px;margin-bottom:14px;color:#4A90C8;font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;transition:background 0.18s,border-color 0.18s" onmouseover="this.style.background=\'rgba(74,144,200,0.18)\';this.style.borderColor=\'rgba(74,144,200,0.7)\'" onmouseout="this.style.background=\'rgba(74,144,200,0.08)\';this.style.borderColor=\'rgba(74,144,200,0.35)\'"><span>Abrir Estoque</span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg></a>';
   if (docs.length === 0) {
-    lista.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum orçamento salvo ainda.</div>';
+    lista.innerHTML = _btnEstoque + '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.9rem">Nenhum orçamento salvo ainda.</div>';
     return;
   }
-  lista.innerHTML = docs.map(function(doc) {
+  lista.innerHTML = _btnEstoque + docs.map(function(doc) {
     var nome    = doc.nome_cliente || doc.nome || '';
     var evento  = doc.tipo_evento  || doc.evento || '';
     var data    = doc.data_evento  || doc.dataEvt || '';
