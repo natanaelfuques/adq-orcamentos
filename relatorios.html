@@ -4457,28 +4457,34 @@ function renderEventos() {
   const todos = todoEventosFiltrados();
   const deContratos = todos.filter(e => e._origem === 'contrato');
   const deNotas = todos.filter(e => e._origem === 'nota');
-  const confirmados = todos.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
   const recTotal = todos.reduce((s,e) => s + valorEv(e), 0);
+  const evQuitados = todos.filter(e => getStatusPgto(e) === 'quitado');
+  const evParciais = todos.filter(e => getStatusPgto(e) === 'parcial');
+  const evPendentes = todos.filter(e => getStatusPgto(e) === 'pendente');
+  const evAlerta = todos.filter(e => getStatusPgto(e) === 'alerta');
+  const totalRecebido = todos.reduce((s,e) => s + getTotalPagoAuto(e), 0);
+  const totalRestante = Math.max(0, recTotal - totalRecebido);
 
   document.getElementById('kpi-ev').innerHTML = `
-    <div class="kpi-card gold">
+    <div class="kpi-card">
       <div class="kpi-label">Total de eventos</div>
       <div class="kpi-value">${todos.length}</div>
       <div class="kpi-sub">${deContratos.length} contratos · ${deNotas.length} eventos rápidos</div>
     </div>
     <div class="kpi-card green">
-      <div class="kpi-label">Confirmados / Concluídos</div>
-      <div class="kpi-value">${confirmados.length}</div>
+      <div class="kpi-label">Quitados</div>
+      <div class="kpi-value">${evQuitados.length}</div>
+      <div class="kpi-sub">${frsShort(totalRecebido)} recebido</div>
     </div>
     <div class="kpi-card blue">
-      <div class="kpi-label">Valor total no período</div>
-      <div class="kpi-value">${frsShort(recTotal)}</div>
-      <div class="kpi-sub">Contratos + eventos rápidos com valor</div>
+      <div class="kpi-label">A receber</div>
+      <div class="kpi-value">${frsShort(totalRestante)}</div>
+      <div class="kpi-sub">${evPendentes.length} pendente(s) · ${evParciais.length} parcial(is)</div>
     </div>
-    <div class="kpi-card orange">
-      <div class="kpi-label">Eventos sem contrato</div>
-      <div class="kpi-value">${deNotas.length}</div>
-      <div class="kpi-sub">Eventos rápidos</div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Monitoramento</div>
+      <div class="kpi-value">${evAlerta.length}</div>
+      <div class="kpi-sub">Pendência sinalizada</div>
     </div>
   `;
 
