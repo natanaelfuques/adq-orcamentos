@@ -1232,8 +1232,8 @@ header {
 }
 .pgto-resumo-row:last-child { border-bottom: none; }
 .pgto-calc {
-  background: rgba(46,158,79,0.06);
-  border: 1px solid rgba(46,158,79,0.2);
+  background: rgba(74,144,200,0.06);
+  border: 1px solid rgba(74,144,200,0.2);
   border-radius: 6px;
   padding: 12px 14px;
   margin-top: 12px;
@@ -1245,7 +1245,7 @@ header {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--green);
+  color: var(--blue);
   margin-bottom: 8px;
 }
 .pgto-calc-row {
@@ -1255,7 +1255,7 @@ header {
   font-size: 0.82rem;
   padding: 3px 0;
 }
-.pgto-calc-row.total { font-weight: 800; font-size: 0.92rem; padding-top: 8px; border-top: 1px solid rgba(46,158,79,0.2); margin-top: 4px; }
+.pgto-calc-row.total { font-weight: 800; font-size: 0.92rem; padding-top: 8px; border-top: 1px solid rgba(74,144,200,0.2); margin-top: 4px; }
 .pgto-status-badge {
   display: inline-block;
   font-size: 0.62rem;
@@ -3013,7 +3013,7 @@ function buildPgtoCalcHTML(total, pago, restante, pct, statusPgto) {
   return '<div class="pgto-progress-bar"><div class="pgto-progress-fill" style="width:' + pct.toFixed(1) + '%;background:' + fillColor + '"></div></div>' +
     '<div class="pgto-calc">' +
       '<div class="pgto-calc-title">Calculadora de Pagamento</div>' +
-      '<div class="pgto-calc-row"><span style="color:var(--muted)">Valor total contratado</span><span style="color:var(--green);font-weight:700">' + frs(total) + '</span></div>' +
+      '<div class="pgto-calc-row"><span style="color:var(--muted)">Valor total contratado</span><span style="color:var(--blue);font-weight:700">' + frs(total) + '</span></div>' +
       '<div class="pgto-calc-row"><span style="color:var(--muted)">Total recebido</span><span style="color:' + (pago > 0 ? '#25D366' : 'var(--muted)') + ';font-weight:700">' + frs(pago) + '</span></div>' +
       '<div class="pgto-calc-row total"><span>Saldo a receber</span><span style="color:' + (restante <= 0 ? '#25D366' : '#e05c5c') + '">' + (restante <= 0 ? '✓ Quitado' : frs(restante)) + '</span></div>' +
       '<div class="pgto-calc-row" style="margin-top:6px"><span style="color:var(--muted);font-size:0.75rem">Progresso</span><span style="color:var(--muted);font-size:0.75rem">' + pct.toFixed(0) + '%</span></div>' +
