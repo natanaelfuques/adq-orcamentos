@@ -114,3 +114,57 @@ header {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ── Tema claro ──────────────────────────────────── */
+html.light-theme {
+  --dark:     #DEDEDE;
+  --darker:   #EBEBEB;
+  --surface:  #FFFFFF;
+  --surface2: #F5F5F5;
+  --border:   #C4C4C4;
+  --border2:  #D8D8D8;
+  --text:     #1A1A1A;
+  --muted:    #6B6B6B;
+  --gold-dim: rgba(0,0,0,0.06);
+}
+
+/* Fundo e texto base */
+html.light-theme body,
+html.light-theme html { background: var(--darker); color: var(--text); }
+
+/* Inputs e textareas */
+html.light-theme input,
+html.light-theme textarea,
+html.light-theme select {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+html.light-theme input::placeholder,
+html.light-theme textarea::placeholder { color: var(--muted) !important; opacity: 1; }
+
+/* Login */
+html.light-theme .login-screen { background: var(--darker); }
+html.light-theme .login-box { background: var(--surface); border-color: var(--border); }
+html.light-theme .login-box input { background: var(--surface2); color: var(--text); border-color: var(--border); }
+
+/* Scrollbar no tema claro */
+html.light-theme ::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* ── Botão de tema (dia/noite) ───────────────────── */
+.btn-tema {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--muted);
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-tema:hover { border-color: var(--gold); color: var(--gold); }

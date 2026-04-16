@@ -39,6 +39,8 @@
   --orange: #27AE60;
   --yellow: #F5A623;
 }
+/* Tema claro — verde ligeiramente mais escuro para contraste */
+html.light-theme { --gold: #1E7A3A; --green: #1E7A3A; --gold-dim: rgba(30,122,58,0.12); --surface2: #F5F5F5; --border: #C4C4C4; --border2: #D8D8D8; --muted: #6B6B6B; }
 
 body {
   font-family: 'Barlow', sans-serif;
@@ -1593,6 +1595,7 @@ header {
 <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="14"><circle cx="12" cy="12" r="3"></circle><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"></path><path d="M12 2v2M12 20v2M2 12h2M20 12h2"></path></svg>
 <span class="adm-label">Admin</span>
 </button>
+<button class="btn-tema" onclick="toggleTheme()" title="Tema claro"></button>
 <button class="btn-logout" onclick="fazerLogout()">Sair</button>
 </div>
 </header>

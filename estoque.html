@@ -27,6 +27,8 @@
     --blue: #4A90C8;
     --purple: #7B22B8;
   }
+  /* Tema claro — azul ligeiramente mais escuro para contraste */
+  html.light-theme { --gold: #2B75BE; --gold-dim: rgba(43,117,190,0.12); --surface2: #F5F5F5; --border2: #D8D8D8; }
 
   body {
     font-family: 'Barlow', sans-serif;
@@ -2191,6 +2193,7 @@
       <button id="btn-instalar" onclick="instalarApp()" class="btn-hd" title="Instalar app" style="display:none;align-items:center;gap:5px;border-color:var(--gold);color:var(--gold)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Instalar</button>
       <button class="btn-hd" onclick="abrirModalCategorias()" title="Gerenciar categorias" style="display:flex;align-items:center;gap:5px;border-color:rgba(74,144,217,0.5);color:var(--gold)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Categorias</button>
       <button class="btn-hd" onclick="abrirAgenda()" title="Agenda de eventos" id="btn-agenda" style="display:flex;align-items:center;gap:5px;border-color:rgba(245,166,35,0.5);color:#F5A623"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda<span id="agenda-badge" style="display:none;background:#F5A623;color:#111;border-radius:9px;padding:0 5px;font-size:0.55rem;font-weight:800;line-height:15px">0</span></button>
+      <button class="btn-tema" onclick="toggleTheme()" title="Tema claro"></button>
       <button class="btn-hd danger" onclick="sair()" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
     </div>
   </header>
