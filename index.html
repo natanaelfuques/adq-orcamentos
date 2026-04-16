@@ -7324,7 +7324,6 @@ function _pedirLinkManualmente(contratoId, btnCard, btnColar) {
 function abrirModalLinkAssinatura(id, btnEl) {
   var linkAtual = btnEl ? (btnEl.getAttribute('data-link') || '') : '';
 
-  // Remove modal anterior se existir
   var old = document.getElementById('adq-link-ass-modal');
   if (old) old.remove();
 
@@ -7332,51 +7331,44 @@ function abrirModalLinkAssinatura(id, btnEl) {
   modal.id = 'adq-link-ass-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px';
 
-  if (linkAtual) {
-    // Modo: link já existe — opções de abrir ou trocar
-    modal.innerHTML = [
-      '<div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:380px;box-sizing:border-box">',
-        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:14px">Link de Assinatura</div>',
-        '<div style="font-size:0.72rem;color:#888;word-break:break-all;line-height:1.5;margin-bottom:16px;background:#111;border:1px solid #333;border-radius:4px;padding:10px 12px">' + escHtml(linkAtual) + '</div>',
-        '<div style="display:flex;gap:8px;flex-wrap:wrap">',
-          '<a href="' + escHtml(linkAtual) + '" target="_blank" onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="flex:1;min-width:80px;text-align:center;background:#4A90C8;border:1px solid #4A90C8;color:#111;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none">Abrir</a>',
-          '<button onclick="_trocarLinkAssinatura(\'' + id + '\')" style="flex:1;min-width:80px;background:transparent;border:1px solid #555;color:#aaa;padding:9px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">Trocar</button>',
-          '<button onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="width:34px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
-        '</div>',
-      '</div>'
-    ].join('');
-  } else {
-    // Modo: sem link — colar novo link
-    modal.innerHTML = [
-      '<div style="background:#1e1e1e;border:1px solid #4A90C8;border-radius:8px;padding:24px 22px;width:100%;max-width:380px;box-sizing:border-box">',
-        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px">Link de Assinatura</div>',
-        '<input id="adq-link-ass-input" type="url" placeholder="Cole o link aqui..." autocomplete="off" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'">',
-        '<div style="display:flex;gap:8px">',
-          '<button onclick="_salvarLinkAssinatura(\'' + id + '\')" style="flex:1;background:#4A90C8;border:none;color:#111;padding:10px;border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer">OK</button>',
-          '<button onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="width:40px;background:transparent;border:1px solid #333;color:#666;border-radius:4px;cursor:pointer;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>',
-        '</div>',
-      '</div>'
-    ].join('');
-    // Fechar ao clicar fora
-    modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
-    document.body.appendChild(modal);
-    setTimeout(function() { var inp = document.getElementById('adq-link-ass-input'); if (inp) inp.focus(); }, 60);
-    return;
-  }
+  var sF  = "font-family:'Barlow',sans-serif;";
+  var sBC = "font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;padding:9px 16px;border:none;";
 
+  modal.innerHTML =
+    '<div style="background:#1e1e1e;border:1px solid #333;border-top:2px solid #4A90C8;border-radius:8px;padding:22px 20px;width:100%;max-width:380px;box-sizing:border-box">' +
+      '<div style="' + sF + 'font-size:0.72rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Link de Assinatura</div>' +
+      '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;' + sF + '">Link</label>' +
+      '<input id="adq-link-ass-input" type="url" autocomplete="off" value="' + escHtml(linkAtual) + '" placeholder="Cole o link aqui..."' +
+        ' style="width:100%;background:#111;border:1px solid #444;color:#eee;' + sF + 'font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s"' +
+        ' onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'"' +
+        ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarLinkAssinatura(\'' + id + '\',false);}">' +
+      '<div style="display:flex;gap:8px">' +
+        '<button onclick="_salvarLinkAssinatura(\'' + id + '\',true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#111">Abrir</button>' +
+        '<button onclick="_salvarLinkAssinatura(\'' + id + '\',false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
+        '<button onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+      '</div>' +
+    '</div>';
+
+  modal._btnEl = btnEl;
   modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
   document.body.style.overflow = 'hidden';
   document.body.appendChild(modal);
+
+  setTimeout(function() {
+    var inp = document.getElementById('adq-link-ass-input');
+    if (inp) { inp.focus(); if (linkAtual) inp.select(); }
+  }, 60);
 }
 
-function _salvarLinkAssinatura(id) {
+function _salvarLinkAssinatura(id, abrirLink) {
   var inp = document.getElementById('adq-link-ass-input');
   var link = inp ? inp.value.trim() : '';
   if (!db) { alert('Banco de dados não conectado.'); return; }
+
   var updateVal = link ? { link_assinatura: link } : { link_assinatura: firebase.firestore.FieldValue.delete() };
   db.collection('contratos').doc(id).update(updateVal)
     .then(function() {
-      // Atualizar botão inline (status row) sem re-render
+      // Atualizar botão inline (status row)
       var btn = document.querySelector('.salvo-card button[onclick*="abrirModalLinkAssinatura(\'' + id + '\'"]');
       if (btn) {
         btn.setAttribute('data-link', link);
@@ -7390,17 +7382,21 @@ function _salvarLinkAssinatura(id) {
         linkBtn.setAttribute('data-link', link);
         if (link) { linkBtn.classList.add('primary'); } else { linkBtn.classList.remove('primary'); }
       }
-      document.getElementById('adq-link-ass-modal').remove();
+      document.body.style.overflow = '';
+      var modal = document.getElementById('adq-link-ass-modal');
+      if (modal) modal.remove();
+
+      if (abrirLink && link) {
+        window.open(link, '_blank');
+      }
     })
     .catch(function(e) { alert('Erro ao salvar: ' + e.message); });
 }
 
 function _trocarLinkAssinatura(id) {
   document.getElementById('adq-link-ass-modal').remove();
-  // Abrir modal de inserção
   var fakeBtn = { getAttribute: function() { return ''; } };
   abrirModalLinkAssinatura(id, fakeBtn);
-  // Após renderizar, apontar o save para atualização (mesma função já faz update)
 }
 
 function removerDoPainel(contratoId) {
@@ -8062,7 +8058,7 @@ function _abrirModalWpp(id, foneAtual, tipo, btnEl, extraId) {
       '<div style="display:flex;gap:8px">' +
         '<button onclick="_salvarWpp(\'' + id + '\',\'' + tipo + '\',true,\'' + (extraId||'') + '\')"  style="' + sBC + 'flex:1;background:#25D366;color:#111">Abrir WhatsApp</button>' +
         '<button onclick="_salvarWpp(\'' + id + '\',\'' + tipo + '\',false,\'' + (extraId||'') + '\')" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#25D366\';this.style.color=\'#25D366\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
-        '<button onclick="document.getElementById(\'adq-wpp-modal\').remove()" style="' + sBC + 'width:38px;background:transparent;border:1px solid #333;color:#666;font-size:1.1rem;padding:9px 0" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+        '<button onclick="document.getElementById(\'adq-wpp-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
     '</div>';
 
