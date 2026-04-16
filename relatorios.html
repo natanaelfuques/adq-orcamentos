@@ -3397,10 +3397,11 @@ function buildPgtoCard(ev) {
 
   const nomeExib = nomeCli(ev) !== '—' ? nomeCli(ev) : tipoEv(ev);
   const pgtoLabel = getPgtoLabel(ev);
+  const isQuitado = restante <= 0 || status === 'quitado';
   const valPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
-  const valPagoCor = pago <= 0 ? 'var(--muted)' : restante <= 0 ? 'var(--green)' : '#F5A623';
-  const valResta = restante <= 0 ? '✓ Quitado' : 'Falta ' + frs(restante);
-  const valRestaCor = restante <= 0 ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
+  const valPagoCor = pago <= 0 ? 'var(--muted)' : isQuitado ? 'var(--green)' : '#F5A623';
+  const valResta = isQuitado ? '✓ Quitado' : 'Falta ' + frs(restante);
+  const valRestaCor = isQuitado ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
 
   return '<div class="pgto-card' + cardClass + '" id="pgto-card-' + docId + '">' +
     // Cabeçalho: nome + badge
@@ -3904,10 +3905,11 @@ function _pgtoRefreshCardDOM(docId) {
   const badgeClass = status === 'quitado' ? 'quitado' : status === 'alerta' ? 'alerta' : status === 'parcial' ? 'parcial' : 'pendente';
   const badgeTxt = status === 'quitado' ? '✓ Quitado' : status === 'alerta' ? '⚠ Monitorar' : status === 'parcial' ? 'Parcial' : 'Pendente';
   const fillColor = status === 'quitado' ? '#25D366' : status === 'alerta' ? '#e05c5c' : status === 'parcial' ? '#F5A623' : '#555';
+  const isQuitado = restante <= 0 || status === 'quitado';
   const valPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
-  const valPagoCor = pago <= 0 ? 'var(--muted)' : restante <= 0 ? 'var(--green)' : '#F5A623';
-  const valResta = restante <= 0 ? '✓ Quitado' : 'Falta ' + frs(restante);
-  const valRestaCor = restante <= 0 ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
+  const valPagoCor = pago <= 0 ? 'var(--muted)' : isQuitado ? 'var(--green)' : '#F5A623';
+  const valResta = isQuitado ? '✓ Quitado' : 'Falta ' + frs(restante);
+  const valRestaCor = isQuitado ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
 
   // Atualiza borda do card
   card.className = 'pgto-card' + (status === 'alerta' ? ' pgto-card-alerta' : status === 'quitado' ? ' pgto-card-quitado' : '');
