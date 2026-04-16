@@ -2671,16 +2671,19 @@ function promptSinalizarProblema(docId, parcelaIdx) {
   sinalizarProblema(docId, parcelaIdx, motivo || 'Não recebido');
 }
 
-/* Toggle direto no chip: verde/futuro → alerta; alerta → resolve.
-   Atualiza o card in-place. Reposicionamento só ao fechar. */
+/* Toggle direto no chip.
+   ⚠ alerta     → resolve alerta
+   ✓ pago manual → desmarca (remove registro)
+   ✓ pago por data → sinaliza problema
+   pendente (futuro) → marca como pago (adiciona registro) */
 function toggleAlertaChip(e, docId, parcelaIdx) {
   e.stopPropagation();
   const ev = _pgtoEventoById(docId);
   if (!ev || !db) return;
   const col = ev._origem === 'nota' ? 'notas' : 'contratos';
 
+  // ── ⚠ Tem alerta → resolve ──
   if (temAlertaParcela(ev, parcelaIdx)) {
-    // Resolve alerta — atualiza local e DOM
     const alertas = getAlertasPgto(ev).filter(function(a) { return a.parcela_idx !== parcelaIdx; });
     db.collection(col).doc(docId).update({ pgto_alertas: alertas })
       .then(function() {
@@ -2689,8 +2692,43 @@ function toggleAlertaChip(e, docId, parcelaIdx) {
         _pgtoRefreshCardDOM(docId);
       })
       .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
-  } else {
-    // Sinaliza problema — atualiza local e DOM
+    return;
+  }
+
+  // ── Verificar se foi pago manualmente (pgto_registros) ──
+  const registros = getPgtoRegistros(ev);
+  const hasRegistro = registros.some(function(r) { return r.parcela_idx === parcelaIdx; });
+
+  if (hasRegistro) {
+    // ✓ pago manual → desmarcar
+    const novosReg = registros.filter(function(r) { return r.parcela_idx !== parcelaIdx; });
+    const total = valorEv(ev);
+    const totalPago = novosReg.reduce(function(s, r) { return s + (parseFloat(r.valor) || 0); }, 0);
+    const upd = { pgto_registros: novosReg };
+    upd.status_pgto = totalPago >= total - 0.05 && total > 0 ? 'quitado' : totalPago > 0 ? 'parcial' : 'pendente';
+    db.collection(col).doc(docId).update(upd)
+      .then(function() {
+        _pgtoUpdateLocal(docId, upd);
+        _pgtoDirty[docId] = true;
+        _pgtoRefreshCardDOM(docId);
+        _editorToast('Pagamento desmarcado');
+      })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+    return;
+  }
+
+  // ── Verificar se é pago por data (auto) ou pendente ──
+  const parcelas = getParcelas(ev);
+  const parcela = parcelas.find(function(p) { return p.idx === parcelaIdx; });
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const pagoPorData = parcela && parcela.vencimento && (function() {
+    const vp = parcela.vencimento.split('-');
+    if (vp.length !== 3) return false;
+    return new Date(parseInt(vp[0]), parseInt(vp[1]) - 1, parseInt(vp[2])) <= hoje;
+  })();
+
+  if (pagoPorData) {
+    // ✓ pago por data → sinalizar problema
     const alertas = getAlertasPgto(ev).slice();
     alertas.push({ parcela_idx: parcelaIdx, motivo: 'Não recebido', data: new Date().toLocaleDateString('pt-BR') });
     db.collection(col).doc(docId).update({ pgto_alertas: alertas })
@@ -2698,6 +2736,23 @@ function toggleAlertaChip(e, docId, parcelaIdx) {
         _pgtoUpdateLocal(docId, { pgto_alertas: alertas });
         _pgtoDirty[docId] = true;
         _pgtoRefreshCardDOM(docId);
+      })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+  } else {
+    // Pendente → marcar como pago (adiciona registro)
+    const valor = parcela ? parcela.valor : 0;
+    const novosReg = registros.slice();
+    novosReg.push({ parcela_idx: parcelaIdx, valor: valor, data: new Date().toISOString().slice(0, 10), marcadoEm: Date.now() });
+    const total = valorEv(ev);
+    const totalPago = novosReg.reduce(function(s, r) { return s + (parseFloat(r.valor) || 0); }, 0);
+    const upd = { pgto_registros: novosReg };
+    upd.status_pgto = totalPago >= total - 0.05 && total > 0 ? 'quitado' : totalPago > 0 ? 'parcial' : 'pendente';
+    db.collection(col).doc(docId).update(upd)
+      .then(function() {
+        _pgtoUpdateLocal(docId, upd);
+        _pgtoDirty[docId] = true;
+        _pgtoRefreshCardDOM(docId);
+        _editorToast('Pagamento registrado ✓');
       })
       .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
   }
@@ -3396,7 +3451,7 @@ function buildPgtoCardBody(ev, docId) {
       if (isParcelaPagaAuto(p, ev, hoje)) {
         return '<span class="pgto-chip auto pgto-chip-toggle" title="Clique para sinalizar problema" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">✓ ' + p.label + '</span>';
       }
-      return '<span class="pgto-chip futuro pgto-chip-toggle" title="Clique para sinalizar problema" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">' + p.label + '</span>';
+      return '<span class="pgto-chip futuro pgto-chip-toggle" title="Clique para marcar como pago" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">' + p.label + '</span>';
     }).join('');
   }
 
