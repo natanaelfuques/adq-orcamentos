@@ -701,7 +701,6 @@
     font-weight: 700;
     color: var(--text);
     letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
   .salvo-card-meta {
     font-size: 0.78rem;
@@ -1295,6 +1294,7 @@ header {
   color: var(--text);
   letter-spacing: 0.04em;
   margin-bottom: 4px;
+  text-transform: uppercase;
 }
 /* Título vazio: ocupa zero espaço e é invisível */
 .nota-card-titulo--vazio {
@@ -7872,7 +7872,7 @@ function renderNotas() {
     // Nome + evento (só exibe o subtítulo se for diferente do título principal)
     var _cardMainTitle = ev.cli_nome || ev.ev_nome || 'Cliente';
     card += '<div style="min-width:0">'
-      +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(_cardMainTitle)+'</div>';
+      +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase">'+escHtml(_cardMainTitle)+'</div>';
     if (ev.ev_nome && ev.cli_nome && ev.cli_nome !== ev.ev_nome) card += '<div style="font-size:0.72rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(ev.ev_nome)+'</div>';
     if (ev.val_total) card += '<div style="font-size:0.68rem;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;color:#C8A94A;margin-top:2px">R$ '+escHtml(formatBRL(parseBRL(ev.val_total)))+'</div>';
     card += '</div></div>';
