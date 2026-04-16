@@ -280,6 +280,7 @@ header {
 .kpi-card.purple::before { background: var(--purple); }
 .kpi-card.orange::before { background: var(--orange); }
 .kpi-card.red::before   { background: var(--red); }
+.kpi-card.amber::before { background: #F5A623; }
 
 .kpi-label {
   font-family: 'Barlow Condensed', sans-serif;
@@ -309,6 +310,7 @@ header {
 .pgto-kpi-grid .kpi-card.green.pgto-active           { border-color: var(--green); }
 .pgto-kpi-grid .kpi-card.blue.pgto-active            { border-color: var(--blue); }
 .pgto-kpi-grid .kpi-card.red.pgto-active             { border-color: var(--red); }
+.pgto-kpi-grid .kpi-card.amber.pgto-active           { border-color: #F5A623; }
 .kpi-delta {
   font-size: 0.7rem;
   font-weight: 700;
@@ -1642,14 +1644,8 @@ header {
 <div class="tab-slider" id="tab-slider">
 <!-- ════ TAB: PAGAMENTOS ════ -->
 <div class="tab-panel active" id="tab-pagamentos"><div class="tab-panel-inner">
-<!-- Filtros -->
-<div class="pgto-filtros">
-<button class="pgto-filtro-btn active" id="btn-filtro-30dias" data-filtro="30dias" onclick="filtroPgto('30dias',this)">30 Dias</button>
-<button class="pgto-filtro-btn" data-filtro="todos" onclick="filtroPgto('todos',this)">Todos</button>
-<button class="pgto-filtro-btn" data-filtro="pendentes" onclick="filtroPgto('pendentes',this)">Pendentes</button>
-<button class="pgto-filtro-btn" data-filtro="parcial" onclick="filtroPgto('parcial',this)">Parcial</button>
-<button class="pgto-filtro-btn" data-filtro="quitados" onclick="filtroPgto('quitados',this)">Quitados</button>
-<button class="pgto-filtro-btn monitor-btn" data-filtro="monitoramento" onclick="filtroPgto('monitoramento',this)">⚠ Monitoramento</button>
+<!-- Barra de busca + legenda -->
+<div class="pgto-filtros" style="justify-content:space-between">
 <span class="pgto-legenda-tipo">Contratos: Automático&nbsp;&nbsp;·&nbsp;&nbsp;Eventos rápidos: Manual</span>
 <input class="pgto-busca" id="pgto-busca" oninput="renderPagamentos()" placeholder="Buscar cliente..." type="text"/>
 </div>
@@ -2454,7 +2450,7 @@ function trocarTab(tab, smooth) {
 // TAB: PAGAMENTOS
 // ══════════════════════════════════════════
 
-let _pgtoFiltro = '30dias';
+let _pgtoFiltro = 'todos';
 let _pgtoAbertos = {}; // { docId: true/false }
 let _pgtoDirty = {}; // { docId: true } — cards com dados alterados aguardando reposicionamento
 
@@ -2911,16 +2907,8 @@ function pgtoEditorResetar(docId) {
   pgtoEditorCalcTotal(docId);
 }
 
-function filtroPgto(filtro, btn) {
+function filtroPgto(filtro) {
   _pgtoFiltro = filtro;
-  document.querySelectorAll('.pgto-filtro-btn').forEach(function(b) { b.classList.remove('active'); });
-  if (btn && btn.classList.contains('pgto-filtro-btn')) {
-    btn.classList.add('active');
-  } else {
-    // clicou num KPI card — ativa o botão correspondente
-    var matchBtn = document.querySelector('.pgto-filtro-btn[data-filtro="' + filtro + '"]');
-    if (matchBtn) matchBtn.classList.add('active');
-  }
   renderPagamentos();
 }
 
@@ -3289,13 +3277,15 @@ function renderPagamentos() {
   const totalPago = todosBase.reduce(function(s, e) { return s + getTotalPagoAuto(e); }, 0);
   const totalRestante = Math.max(0, totalReceita - totalPago);
   const quitados = todosBase.filter(function(e) { return getStatusPgto(e) === 'quitado'; }).length;
+  const parciais = todosBase.filter(function(e) { return getStatusPgto(e) === 'parcial'; }).length;
   const emMonitoramento = todosBase.filter(function(e) { return getStatusPgto(e) === 'alerta'; }).length;
 
   document.getElementById('kpi-pgto').innerHTML =
-    '<div class="kpi-card' + (_pgtoFiltro === 'todos' ? ' pgto-active' : '') + '" data-filtro="todos" onclick="filtroPgto(\'todos\',null,this)" title="Ver todos os eventos"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
-    '<div class="kpi-card green' + (_pgtoFiltro === 'quitados' ? ' pgto-active' : '') + '" data-filtro="quitados" onclick="filtroPgto(\'quitados\',null,this)" title="Ver quitados"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
-    '<div class="kpi-card blue' + (_pgtoFiltro === 'pendentes' ? ' pgto-active' : '') + '" data-filtro="pendentes" onclick="filtroPgto(\'pendentes\',null,this)" title="Ver pendentes"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
-    '<div class="kpi-card red' + (_pgtoFiltro === 'monitoramento' ? ' pgto-active' : '') + '" data-filtro="monitoramento" onclick="filtroPgto(\'monitoramento\',null,this)" title="Ver monitoramento"><div class="kpi-label">Monitoramento</div><div class="kpi-value">' + emMonitoramento + '</div><div class="kpi-sub">Pendência sinalizada</div></div>';
+    '<div class="kpi-card' + (_pgtoFiltro === 'todos' ? ' pgto-active' : '') + '" data-filtro="todos" onclick="filtroPgto(\'todos\')" title="Ver todos os eventos"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
+    '<div class="kpi-card green' + (_pgtoFiltro === 'quitados' ? ' pgto-active' : '') + '" data-filtro="quitados" onclick="filtroPgto(\'quitados\')" title="Ver quitados"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
+    '<div class="kpi-card blue' + (_pgtoFiltro === 'pendentes' ? ' pgto-active' : '') + '" data-filtro="pendentes" onclick="filtroPgto(\'pendentes\')" title="Ver pendentes"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
+    '<div class="kpi-card amber' + (_pgtoFiltro === 'parcial' ? ' pgto-active' : '') + '" data-filtro="parcial" onclick="filtroPgto(\'parcial\')" title="Ver parciais"><div class="kpi-label">Parcial</div><div class="kpi-value">' + parciais + '</div><div class="kpi-sub">Com pagamento parcial</div></div>' +
+    '<div class="kpi-card red' + (_pgtoFiltro === 'monitoramento' ? ' pgto-active' : '') + '" data-filtro="monitoramento" onclick="filtroPgto(\'monitoramento\')" title="Ver monitoramento"><div class="kpi-label">Monitoramento</div><div class="kpi-value">' + emMonitoramento + '</div><div class="kpi-sub">Pendência sinalizada</div></div>';
 
   const container = document.getElementById('pgto-lista');
   if (!lista.length) {
