@@ -3065,17 +3065,20 @@ function distribuirAutomatico(docId, totalStr) {
     const p = evDataStr.split('-');
     const evDate = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
     evDate.setHours(0,0,0,0);
+    // Limite: 5 dias antes do evento
+    const limDate = new Date(evDate);
+    limDate.setDate(limDate.getDate() - 5);
     const hoje = new Date();
     hoje.setHours(0,0,0,0);
 
-    // 1 parcela por mês restante (arredondado), mínimo 1
-    const diffDias = Math.ceil((evDate - hoje) / (1000 * 60 * 60 * 24));
-    n = Math.max(1, Math.round(diffDias / 30));
+    // 1 parcela por mês restante (arredondado, usando o limite de 5 dias antes), mínimo 1
+    const diffDias = Math.ceil((limDate - hoje) / (1000 * 60 * 60 * 24));
+    n = Math.max(1, Math.round(Math.max(diffDias, 0) / 30));
 
-    // Datas: +1 mês, +2 meses... última = data do evento
+    // Datas: +1 mês, +2 meses... última = 5 dias antes do evento
     for (var i = 1; i <= n; i++) {
       if (i === n) {
-        datas.push(evDate.toISOString().slice(0, 10));
+        datas.push(limDate.toISOString().slice(0, 10));
       } else {
         const d = new Date(hoje);
         d.setMonth(d.getMonth() + i);
