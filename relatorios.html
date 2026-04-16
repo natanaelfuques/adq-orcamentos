@@ -101,7 +101,7 @@ header {
 
 /* ── PERÍODO SELECTOR ── */
 .periodo-bar {
-  background: var(--darker);
+  background: var(--dark);
   border-bottom: 1px solid var(--border);
   padding: 9px 28px;
   display: flex;
@@ -272,6 +272,7 @@ header {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
+  background: rgba(180,180,180,0.35);
 }
 .kpi-card.gold::before  { background: var(--green); }
 .kpi-card.green::before { background: var(--green); }
@@ -298,6 +299,16 @@ header {
   margin-bottom: 4px;
 }
 .kpi-sub { font-size: 0.72rem; color: var(--muted); }
+/* KPI cards clicáveis na aba Pagamentos */
+.pgto-kpi-grid .kpi-card {
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+.pgto-kpi-grid .kpi-card:hover { border-color: rgba(255,255,255,0.2); background: #1e1e1e; }
+.pgto-kpi-grid .kpi-card.pgto-active                { border-color: rgba(200,200,200,0.55); }
+.pgto-kpi-grid .kpi-card.green.pgto-active           { border-color: var(--green); }
+.pgto-kpi-grid .kpi-card.blue.pgto-active            { border-color: var(--blue); }
+.pgto-kpi-grid .kpi-card.red.pgto-active             { border-color: var(--red); }
 .kpi-delta {
   font-size: 0.7rem;
   font-weight: 700;
@@ -1633,17 +1644,23 @@ header {
 <div class="tab-panel active" id="tab-pagamentos"><div class="tab-panel-inner">
 <!-- Filtros -->
 <div class="pgto-filtros">
-<button class="pgto-filtro-btn active" id="btn-filtro-30dias" onclick="filtroPgto('30dias',this)">30 Dias</button>
-<button class="pgto-filtro-btn" onclick="filtroPgto('todos',this)">Todos</button>
-<button class="pgto-filtro-btn" onclick="filtroPgto('pendentes',this)">Pendentes</button>
-<button class="pgto-filtro-btn" onclick="filtroPgto('parcial',this)">Parcial</button>
-<button class="pgto-filtro-btn" onclick="filtroPgto('quitados',this)">Quitados</button>
-<button class="pgto-filtro-btn monitor-btn" onclick="filtroPgto('monitoramento',this)">⚠ Monitoramento</button>
+<button class="pgto-filtro-btn active" id="btn-filtro-30dias" data-filtro="30dias" onclick="filtroPgto('30dias',this)">30 Dias</button>
+<button class="pgto-filtro-btn" data-filtro="todos" onclick="filtroPgto('todos',this)">Todos</button>
+<button class="pgto-filtro-btn" data-filtro="pendentes" onclick="filtroPgto('pendentes',this)">Pendentes</button>
+<button class="pgto-filtro-btn" data-filtro="parcial" onclick="filtroPgto('parcial',this)">Parcial</button>
+<button class="pgto-filtro-btn" data-filtro="quitados" onclick="filtroPgto('quitados',this)">Quitados</button>
+<button class="pgto-filtro-btn monitor-btn" data-filtro="monitoramento" onclick="filtroPgto('monitoramento',this)">⚠ Monitoramento</button>
 <span class="pgto-legenda-tipo">Contratos: Automático&nbsp;&nbsp;·&nbsp;&nbsp;Eventos rápidos: Manual</span>
 <input class="pgto-busca" id="pgto-busca" oninput="renderPagamentos()" placeholder="Buscar cliente..." type="text"/>
 </div>
 <!-- KPIs -->
 <div class="pgto-kpi-grid" id="kpi-pgto"></div>
+<!-- Separador -->
+<div class="pgto-separador-passados" style="margin:18px 0 12px">
+  <div class="pgto-separador-linha"></div>
+  <span class="pgto-separador-label">Eventos</span>
+  <div class="pgto-separador-linha"></div>
+</div>
 <!-- Lista de eventos / contratos -->
 <div id="pgto-lista"></div>
 </div></div><!-- /tab-pagamentos -->
@@ -2842,7 +2859,13 @@ function pgtoEditorResetar(docId) {
 function filtroPgto(filtro, btn) {
   _pgtoFiltro = filtro;
   document.querySelectorAll('.pgto-filtro-btn').forEach(function(b) { b.classList.remove('active'); });
-  if (btn) btn.classList.add('active');
+  if (btn && btn.classList.contains('pgto-filtro-btn')) {
+    btn.classList.add('active');
+  } else {
+    // clicou num KPI card — ativa o botão correspondente
+    var matchBtn = document.querySelector('.pgto-filtro-btn[data-filtro="' + filtro + '"]');
+    if (matchBtn) matchBtn.classList.add('active');
+  }
   renderPagamentos();
 }
 
@@ -3135,10 +3158,10 @@ function renderPagamentos() {
   const emMonitoramento = todosBase.filter(function(e) { return getStatusPgto(e) === 'alerta'; }).length;
 
   document.getElementById('kpi-pgto').innerHTML =
-    '<div class="kpi-card"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
-    '<div class="kpi-card green"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
-    '<div class="kpi-card blue"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
-    '<div class="kpi-card red"><div class="kpi-label">Monitoramento</div><div class="kpi-value">' + emMonitoramento + '</div><div class="kpi-sub">Pendência sinalizada</div></div>';
+    '<div class="kpi-card' + (_pgtoFiltro === 'todos' ? ' pgto-active' : '') + '" data-filtro="todos" onclick="filtroPgto(\'todos\',null,this)" title="Ver todos os eventos"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
+    '<div class="kpi-card green' + (_pgtoFiltro === 'quitados' ? ' pgto-active' : '') + '" data-filtro="quitados" onclick="filtroPgto(\'quitados\',null,this)" title="Ver quitados"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
+    '<div class="kpi-card blue' + (_pgtoFiltro === 'pendentes' ? ' pgto-active' : '') + '" data-filtro="pendentes" onclick="filtroPgto(\'pendentes\',null,this)" title="Ver pendentes"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
+    '<div class="kpi-card red' + (_pgtoFiltro === 'monitoramento' ? ' pgto-active' : '') + '" data-filtro="monitoramento" onclick="filtroPgto(\'monitoramento\',null,this)" title="Ver monitoramento"><div class="kpi-label">Monitoramento</div><div class="kpi-value">' + emMonitoramento + '</div><div class="kpi-sub">Pendência sinalizada</div></div>';
 
   const container = document.getElementById('pgto-lista');
   if (!lista.length) {
