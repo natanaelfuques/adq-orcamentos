@@ -3818,10 +3818,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var btnConTodos = document.getElementById('filtro-con-todos');
   if (btnConTodos) btnConTodos.classList.add('active');
 
-  // ── DEEP LINK: ?tab=contratos ──
+  // ── DEEP LINK: ?tab=contratos[&abrir=ID] ──
   (function() {
     var params = new URLSearchParams(window.location.search);
-    if (params.get('tab') === 'contratos') {
+    var abrirId = params.get('abrir');
+    if (params.get('tab') === 'contratos' || abrirId) {
       var tentativas = 0;
       var intervalo = setInterval(function() {
         tentativas++;
@@ -3829,7 +3830,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (app && app.style.display !== 'none') {
           clearInterval(intervalo);
           switchMain('salvos');
-          setTimeout(function() { switchSalvosTab('contratos'); }, 200);
+          setTimeout(function() {
+            switchSalvosTab('contratos');
+            if (abrirId) {
+              setTimeout(function() {
+                abrirContrato(abrirId);
+                // Destacar o card do contrato na lista
+                setTimeout(function() {
+                  var card = document.querySelector('[data-id="' + abrirId + '"]');
+                  if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.style.transition = 'box-shadow 0.3s';
+                    card.style.boxShadow = '0 0 0 2px var(--gold)';
+                    setTimeout(function() { card.style.boxShadow = ''; }, 2500);
+                  }
+                }, 600);
+              }, 400);
+            }
+          }, 200);
           history.replaceState(null, '', window.location.pathname);
         }
         if (tentativas > 60) clearInterval(intervalo);
@@ -11063,5 +11081,4 @@ function _montarNotaLivre(d) {
 }
 </script>
 </div>
-</body>
-</html>`;
+</body

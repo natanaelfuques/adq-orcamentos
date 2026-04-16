@@ -3437,10 +3437,20 @@ function buildPgtoModalHTML(ev) {
       '</div>' +
     '</div>';
 
+  // Referência e link para o contrato no index.html
+  const refCodigo = '# ' + docId.substring(0, 8).toUpperCase();
+  const linkContrato = ev._origem === 'contrato'
+    ? '<a href="index.html?tab=contratos&abrir=' + docId + '" target="_blank" style="color:var(--gold);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:0.78rem;text-decoration:none;letter-spacing:0.08em;display:inline-flex;align-items:center;gap:5px">' +
+        refCodigo +
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+      '</a>'
+    : '<span style="font-family:\'Barlow Condensed\',sans-serif;color:var(--muted);font-size:0.78rem;letter-spacing:0.08em">' + refCodigo + '</span>';
+
   // Resumo
   const resumoHTML =
     '<div class="pgto-resumo-pgto" style="max-width:100%">' +
       '<div class="pgto-resumo-pgto-title">Informações do contrato</div>' +
+      '<div class="pgto-resumo-row"><span style="color:var(--muted)">Referência</span><span>' + linkContrato + '</span></div>' +
       '<div class="pgto-resumo-row"><span style="color:var(--muted)">Tipo de pagamento</span><span>' + pgtoLabel + '</span></div>' +
       '<div class="pgto-resumo-row"><span style="color:var(--muted)">Origem</span><span>' + origem + '</span></div>' +
       '<div class="pgto-resumo-row"><span style="color:var(--muted)">Data do evento</span><span>' + dataEv(ev) + '</span></div>' +
