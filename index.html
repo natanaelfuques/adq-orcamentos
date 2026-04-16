@@ -6857,43 +6857,51 @@ function _atualizarMapaContatos() {
     if (nome && fone && !mapa[nome]) mapa[nome] = fone;
   });
   _mapaContatosClientes = mapa;
+  console.log('[AdQ] Mapa contatos:', Object.keys(mapa).length, 'entradas', mapa);
 }
 
-// Busca o melhor match de contato para um nome digitado.
-// Retorna string do fone ou '' se não encontrado.
 function _buscarContatoPorNome(nome) {
   if (!nome || nome.length < 3) return '';
   var chave = _normalizarNomeCliente(nome);
+  // Exato
   if (_mapaContatosClientes[chave]) return _mapaContatosClientes[chave];
-  // Busca parcial: verifica se alguma chave começa com o que foi digitado
+  // Prefixo: chave começa com o digitado, ou digitado começa com chave
   var keys = Object.keys(_mapaContatosClientes);
   for (var i = 0; i < keys.length; i++) {
     if (keys[i].indexOf(chave) === 0 || chave.indexOf(keys[i]) === 0) {
       return _mapaContatosClientes[keys[i]];
     }
   }
+  // Contém: chave salva contém o texto digitado (ex: digitar "erimar" acha "erimar netto")
+  for (var j = 0; j < keys.length; j++) {
+    if (keys[j].indexOf(chave) !== -1) {
+      return _mapaContatosClientes[keys[j]];
+    }
+  }
   return '';
 }
 
-// Chama ao digitar no campo nome; preenche o campo de fone se encontrar match
-// e o campo de fone ainda estiver vazio (não sobrescreve digitação manual).
-function _autoFillContato(nomeInputId, foneInputId) {
+// Preenche o campo de fone a partir do nome digitado.
+// overwrite=false (padrao) -> so preenche se fone vazio
+// overwrite=true -> sempre preenche ao achar match (modal evento rapido)
+function _autoFillContato(nomeInputId, foneInputId, overwrite) {
   var nomeEl = document.getElementById(nomeInputId);
   var foneEl = document.getElementById(foneInputId);
   if (!nomeEl || !foneEl) return;
-  if (foneEl.value.trim()) return; // já preenchido manualmente, não sobrescreve
+  if (!overwrite && foneEl.value.trim()) return;
   var fone = _buscarContatoPorNome(nomeEl.value);
   if (fone) {
     foneEl.value = fone;
-    // Feedback visual sutil
     foneEl.style.borderColor = '#C8A94A';
     setTimeout(function() { foneEl.style.borderColor = '#444'; }, 1200);
+  } else if (overwrite) {
+    foneEl.value = '';
   }
 }
 
-// Wrapper específico para o modal "Editar Evento Rápido"
+// Wrapper para o modal "Editar Evento Rapido" - sempre sobrescreve ao redigitar
 function _autoFillContatoNota() {
-  _autoFillContato('nota-edit-titulo', 'nota-edit-contato');
+  _autoFillContato('nota-edit-titulo', 'nota-edit-contato', true);
 }
 
 function toggleBuscaSalvos() {
