@@ -2247,16 +2247,17 @@ function getPgtoLabel(c) {
 }
 
 function nomeCli(c) {
+  var _n;
   // Contratos: nome do contratante em cli_nome
-  if (c.cli_nome) return c.cli_nome;
+  if (c.cli_nome) { _n = c.cli_nome; }
   // Notas/eventos rápidos: título vem como "Nome — Descrição" ou "Nome: Descrição"
-  // O nome é sempre a primeira parte antes do separador
-  if (c._origem === 'nota' && c.titulo) {
+  else if (c._origem === 'nota' && c.titulo) {
     const sep = c.titulo.match(/^(.+?)\s*[\u2014\-\u2013:]\s*.+/);
-    return sep ? sep[1].trim() : c.titulo.trim();
+    _n = sep ? sep[1].trim() : c.titulo.trim();
+  } else {
+    _n = c.nome_cliente || c.cliente || c.nome || '—';
   }
-  // cli_nome → contratos | nome_cliente / cliente / nome → variações legadas
-  return c.cli_nome || c.nome_cliente || c.cliente || c.nome || '—';
+  return _n === '—' ? '—' : _n.toUpperCase();
 }
 
 function contatoCli(c) {
