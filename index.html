@@ -7619,7 +7619,7 @@ function salvarNota() {
       switchSalvosTab('notas');
     }
   }).catch(function(e) {
-    alert('Erro ao salvar anotação: ' + e.message);
+    alert('Erro ao salvar evento rápido: ' + e.message);
   });
 }
 
@@ -7997,7 +7997,7 @@ function renderNotas() {
       + '</svg>'
       + '</button>';
     card += '<button class="btn-salvo" data-action="editar-nota" data-id="' + id + '">Editar</button>';
-    card += '<button class="btn-salvo danger" data-action="excluir-nota" data-id="' + id + '" data-nome="' + (titulo || 'esta anotação') + '">Excluir</button>';
+    card += '<button class="btn-salvo danger" data-action="excluir-nota" data-id="' + id + '" data-nome="' + (titulo || 'este evento rápido') + '">Excluir</button>';
     card += '<button class="btn-salvo' + (noPainel ? ' no-painel' : '') + '" data-action="painel-nota" data-id="' + id + '" data-no-painel="' + (noPainel ? '1' : '0') + '" title="' + (noPainel ? 'Remover do painel' : 'Enviar para o painel') + '">Painel</button>';
     card += '</div>';
     card += '</div>';
@@ -8074,7 +8074,7 @@ function handleNotasClick(e) {
   var nome   = btn.getAttribute('data-nome') || '';
 
   if (action === 'excluir-nota') {
-    if (!confirm('Excluir anotação "' + nome + '"?')) return;
+    if (!confirm('Excluir evento rápido "' + nome + '"?')) return;
     if (!db) return;
     db.collection('notas').doc(id).delete()
       .catch(function(e) { alert('Erro ao excluir: ' + e.message); });
@@ -8341,7 +8341,7 @@ function handleNotasClick(e) {
       db.collection('notas').doc(id).get().then(function(docSnap) {
         if (!docSnap.exists) return Promise.reject(new Error('Nota não encontrada'));
         var nota = docSnap.data();
-        var evNome  = (nota.titulo || 'Anotação').substring(0, 80);
+        var evNome  = (nota.titulo || 'Evento rápido').substring(0, 80);
         var evLocal = nota.ev_local || '';
         var evData  = nota.ev_data  || '';
         var itens   = Array.isArray(nota.itens) ? nota.itens : [];
@@ -8412,7 +8412,7 @@ function _abrirModalEditarNota(nota) {
   }).join('');
 
   modal.innerHTML = '<div style="background:#1e1e1e;border:1px solid #333;border-top:2px solid #C8A94A;border-radius:8px;padding:24px 22px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;box-sizing:border-box">' +
-    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Editar Anotação</div>' +
+    '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Editar Evento Rápido</div>' +
 
     '<div style="display:flex;gap:8px;margin-bottom:12px">' +
       '<div style="flex:1">' +
@@ -8560,7 +8560,7 @@ function _salvarEdicaoNota(id) {
         return (item.toLowerCase().indexOf('obs:') === 0 || item.toLowerCase().indexOf('obs.') === 0) ? 'obs' : 'item';
       });
       db.collection('eventos_campo').doc(painelId).update({
-        ev_nome:    titulo.trim() || 'Anotação',
+        ev_nome:    titulo.trim() || 'Evento rápido',
         ev_local:   evLocal.trim(),
         ev_data:    evData.trim(),
         ev_inicio:  evInicio.trim(),

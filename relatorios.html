@@ -1667,7 +1667,7 @@ header {
 <!-- ════ TAB: EVENTOS ════ -->
 <div class="tab-panel" id="tab-eventos"><div class="tab-panel-inner">
 <div class="kpi-grid" id="kpi-ev"></div>
-<p class="sec-title">Todos os eventos no período — contratos + notas</p>
+<p class="sec-title">Todos os eventos no período — contratos + eventos rápidos</p>
 <div class="table-card table-scroll">
 <table>
 <thead>
@@ -3398,9 +3398,9 @@ function buildPgtoCard(ev) {
   const nomeExib = nomeCli(ev) !== '—' ? nomeCli(ev) : tipoEv(ev);
   const pgtoLabel = getPgtoLabel(ev);
   const valPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
-  const valPagoCor = pago > 0 ? 'var(--green)' : 'var(--muted)';
+  const valPagoCor = pago <= 0 ? 'var(--muted)' : restante <= 0 ? 'var(--green)' : '#F5A623';
   const valResta = restante <= 0 ? '✓ Quitado' : 'Falta ' + frs(restante);
-  const valRestaCor = restante <= 0 ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : '#F5A623');
+  const valRestaCor = restante <= 0 ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
 
   return '<div class="pgto-card' + cardClass + '" id="pgto-card-' + docId + '">' +
     // Cabeçalho: nome + badge
@@ -3640,7 +3640,7 @@ function buildPgtoModalHTML(ev) {
 
   const nomeExib = nomeCli(ev) !== '—' ? nomeCli(ev) : tipoEv(ev);
   const pgtoLabel = getPgtoLabel(ev);
-  const origem = ev._origem === 'nota' ? 'nota' : 'contrato';
+  const origem = ev._origem === 'nota' ? 'evento rápido' : 'contrato';
   const contatoEvHTML = contatoWA(ev);
 
   // Cabeçalho modal
@@ -3905,9 +3905,9 @@ function _pgtoRefreshCardDOM(docId) {
   const badgeTxt = status === 'quitado' ? '✓ Quitado' : status === 'alerta' ? '⚠ Monitorar' : status === 'parcial' ? 'Parcial' : 'Pendente';
   const fillColor = status === 'quitado' ? '#25D366' : status === 'alerta' ? '#e05c5c' : status === 'parcial' ? '#F5A623' : '#555';
   const valPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
-  const valPagoCor = pago > 0 ? 'var(--green)' : 'var(--muted)';
+  const valPagoCor = pago <= 0 ? 'var(--muted)' : restante <= 0 ? 'var(--green)' : '#F5A623';
   const valResta = restante <= 0 ? '✓ Quitado' : 'Falta ' + frs(restante);
-  const valRestaCor = restante <= 0 ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : '#F5A623');
+  const valRestaCor = restante <= 0 ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
 
   // Atualiza borda do card
   card.className = 'pgto-card' + (status === 'alerta' ? ' pgto-card-alerta' : status === 'quitado' ? ' pgto-card-quitado' : '');
@@ -4472,7 +4472,7 @@ function renderEventos() {
     <div class="kpi-card gold">
       <div class="kpi-label">Total de eventos</div>
       <div class="kpi-value">${todos.length}</div>
-      <div class="kpi-sub">${deContratos.length} contratos · ${deNotas.length} anotações</div>
+      <div class="kpi-sub">${deContratos.length} contratos · ${deNotas.length} eventos rápidos</div>
     </div>
     <div class="kpi-card green">
       <div class="kpi-label">Confirmados / Concluídos</div>
@@ -4481,12 +4481,12 @@ function renderEventos() {
     <div class="kpi-card blue">
       <div class="kpi-label">Valor total no período</div>
       <div class="kpi-value">${frsShort(recTotal)}</div>
-      <div class="kpi-sub">Contratos + notas com valor</div>
+      <div class="kpi-sub">Contratos + eventos rápidos com valor</div>
     </div>
     <div class="kpi-card orange">
       <div class="kpi-label">Eventos sem contrato</div>
       <div class="kpi-value">${deNotas.length}</div>
-      <div class="kpi-sub">Criados por anotação</div>
+      <div class="kpi-sub">Eventos rápidos</div>
     </div>
   `;
 
@@ -4995,7 +4995,7 @@ function abrirPainelAdmin() {
             '<div style="font-size:0.78rem;color:#888;line-height:1.8">' +
               'Contratos: <span style="color:#ccc" id="adm-count-contratos">—</span><br>' +
               'Orçamentos: <span style="color:#ccc" id="adm-count-orcamentos">—</span><br>' +
-              'Notas: <span style="color:#ccc" id="adm-count-notas">—</span>' +
+              'Eventos rápidos: <span style="color:#ccc" id="adm-count-notas">—</span>' +
             '</div>' +
           '</div>' +
           '<div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px">' +
@@ -5262,7 +5262,7 @@ document.addEventListener('click', function(e) {
     p.then(function() {
       return db.collection('notas').doc(docId).delete();
     }).then(function() {
-      _editorToast('Nota excluída!');
+      _editorToast('Evento rápido excluído!');
       renderTudo();
     }).catch(function(err) { _editorToast('Erro: ' + err.message, true); });
   } else {
