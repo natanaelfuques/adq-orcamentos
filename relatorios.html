@@ -3647,7 +3647,10 @@ function buildPgtoModalHTML(ev) {
   const headerHTML =
     '<div class="pgto-modal-header">' +
       '<div class="pgto-modal-header-info">' +
-        '<div class="pgto-modal-nome">' + nomeExib + '</div>' +
+        '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">' +
+          '<div class="pgto-modal-nome">' + nomeExib + '</div>' +
+          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1.15rem;font-weight:800;color:var(--blue);letter-spacing:0.04em;white-space:nowrap">' + frs(total) + '</div>' +
+        '</div>' +
         '<div class="pgto-modal-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
       '<span class="pgto-status-badge ' + badgeClass + '">' + badgeTxt + '</span>' +
@@ -3812,8 +3815,6 @@ function buildPgtoModalHTML(ev) {
       '</div>' +
     '</div>';
 
-  const calcHTML = buildPgtoCalcHTML(total, pago, restante, pct, status === 'quitado' ? 'quitado' : pago > 0 ? 'parcial' : 'pendente');
-
   // Seção de recebimento manual (para qualquer tipo exceto custom, que tem próprio editor)
   const isCustom = (ev.pgto_tipo === 'custom' || ev.pgto_sel === 'custom');
   const avulsoAtual = parseFloat(ev.pgto_valor_avulso) || 0;
@@ -3873,7 +3874,7 @@ function buildPgtoModalHTML(ev) {
 
   return '<div class="pgto-modal-box" onclick="event.stopPropagation()">' +
     headerHTML +
-    '<div class="pgto-modal-body">' + editorBannerHTML + progressHTML + resumoHTML + parcelasHTML + ajustesHTML + calcHTML + recebimentoHTML + editorParcelasHTML + '</div>' +
+    '<div class="pgto-modal-body">' + editorBannerHTML + progressHTML + resumoHTML + parcelasHTML + ajustesHTML + recebimentoHTML + editorParcelasHTML + '</div>' +
   '</div>';
 }
 
