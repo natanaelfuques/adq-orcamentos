@@ -1456,7 +1456,7 @@ header {
   <!-- BLOCO NOVO EVENTO -->
   <div class="nota-bloco" style="border:1px solid var(--border);border-radius:6px;background:var(--surface);padding:10px 12px;">
     <div style="display:flex;align-items:flex-start;gap:8px">
-      <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anotações / Evento rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();salvarNota();}" style="border:none;background:transparent;padding:2px 0;flex:1;height:36px;min-height:36px;"></textarea>
+      <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anotações / Evento rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()" style="border:none;background:transparent;padding:2px 0;flex:1;height:36px;min-height:36px;"></textarea>
       <button onclick="abrirModalIA()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:transparent;border:1px dashed #C8A94A;color:#C8A94A;border-radius:4px;padding:6px 10px;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;margin-top:1px">✦ IA</button>
     </div>
     <div class="nota-bloco-actions" id="nota-bloco-actions" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
@@ -5906,7 +5906,6 @@ function iniciarListenerSalvos() {
       const docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
       _todosOrcamentos = docs;
-      _atualizarMapaContatos();
       filtrarSalvos();
       window._countOrcamentos = docs.length;
       if (_salvosTab !== 'contratos') atualizarContadorSalvos();
@@ -6398,7 +6397,6 @@ function iniciarListenerContratos() {
       var docs = [];
       snap.forEach(function(doc) { docs.push(Object.assign({id: doc.id}, doc.data())); });
       _todosContratos = docs;
-      _atualizarMapaContatos();
       filtrarContratos();
       window._countContratos = docs.length;
       if (_salvosTab === 'contratos') atualizarContadorSalvos();
@@ -6837,46 +6835,6 @@ var _filtroEv = 'todos';
 var _etapaMapContratos = {};
 var _todosOrcamentos = [];
 var _todosContratos = [];
-
-// ── Mapa nome→fone para autopreenchimento ao salvar ──────────────────────────
-var _mapaContatosClientes = {};
-
-function _normalizarNome(s) {
-  return (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function _atualizarMapaContatos() {
-  var m = {};
-  (_todosOrcamentos || []).concat(_todosContratos || []).forEach(function(d) {
-    var nome = _normalizarNome(d.cli_nome || d.nome_cliente || '');
-    var fone = (d.cli_fone || '').replace(/\D/g, '');
-    if (nome && fone && !m[nome]) m[nome] = d.cli_fone || fone;
-  });
-  _mapaContatosClientes = m;
-}
-
-function _buscarContatoPorNome(nome) {
-  if (!nome || nome.length < 3) return '';
-  var chave = _normalizarNome(nome);
-  var keys  = Object.keys(_mapaContatosClientes);
-  // 1. exato
-  if (_mapaContatosClientes[chave]) return _mapaContatosClientes[chave];
-  // 2. chave salva começa com o digitado (ex: "erimar" → "erimar netto")
-  for (var i = 0; i < keys.length; i++) {
-    if (keys[i].indexOf(chave) === 0) return _mapaContatosClientes[keys[i]];
-  }
-  // 3. digitado começa com chave salva (nome completo digitado, salvo abreviado)
-  for (var j = 0; j < keys.length; j++) {
-    if (chave.indexOf(keys[j]) === 0) return _mapaContatosClientes[keys[j]];
-  }
-  // 4. contém (substring)
-  for (var k = 0; k < keys.length; k++) {
-    if (keys[k].indexOf(chave) !== -1 || chave.indexOf(keys[k]) !== -1) {
-      return _mapaContatosClientes[keys[k]];
-    }
-  }
-  return '';
-}
 
 function toggleBuscaSalvos() {
   _buscaAberta = !_buscaAberta;
@@ -7648,7 +7606,6 @@ function salvarNota() {
     itens:    [],
     ev_data:  dataHoje,
     ev_local: '',
-    contato:  _buscarContatoPorNome(texto),
     no_painel: false,
     criador: ((window._currentUser || firebase.auth().currentUser) ? (window._currentUser || firebase.auth().currentUser).email : ''),
     criadoEm: firebase.firestore.FieldValue.serverTimestamp()
@@ -8110,6 +8067,63 @@ function renderNotas() {
   }
 }
 
+function _abrirModalContatoNota(id, btn) {
+  var old = document.getElementById('adq-contato-nota-modal');
+  if (old) { old.remove(); return; }
+
+  var foneAtual = (btn ? btn.getAttribute('data-fone') : '') || '';
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-contato-nota-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var s = 'font-family:\'Barlow\',sans-serif;';
+  var sLabel = 'display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;' + s;
+  var sBtn = 'border-radius:4px;padding:9px 16px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border:none;';
+
+  modal.innerHTML =
+    '<div style="background:#1e1e1e;border:1px solid #333;border-top:2px solid #25D366;border-radius:8px;padding:22px 20px;width:100%;max-width:360px;box-sizing:border-box">' +
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">WhatsApp</div>' +
+      '<label style="' + sLabel + '">Número de contato</label>' +
+      '<input id="adq-contato-nota-input" type="tel" autocomplete="off" value="' + escHtml(foneAtual) + '" placeholder="(47) 99999-9999" style="width:100%;background:#111;border:1px solid #444;color:#eee;' + s + 'font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'" onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarContatoNota(\'' + id + '\');}">' +
+      '<div style="display:flex;gap:8px">' +
+        '<button onclick="_salvarContatoNota(\'' + id + '\')" style="' + sBtn + 'flex:1;background:#25D366;color:#111">Abrir WhatsApp</button>' +
+        '<button onclick="document.getElementById(\'adq-contato-nota-modal\').remove()" style="' + sBtn + 'width:38px;background:transparent;border:1px solid #333;color:#666;font-size:1.1rem" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+
+  var inp = document.getElementById('adq-contato-nota-input');
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function _salvarContatoNota(id) {
+  var inp = document.getElementById('adq-contato-nota-input');
+  if (!inp) return;
+  var fone = inp.value.trim();
+  var numero = fone.replace(/\D/g, '');
+  if (!numero) { inp.style.borderColor = '#e55'; setTimeout(function(){ inp.style.borderColor = '#444'; }, 1000); return; }
+
+  // Persiste no Firestore
+  if (db) {
+    db.collection('notas').doc(id).update({ contato: fone }).catch(function(){});
+  }
+
+  // Atualiza o botão no card para refletir o novo número
+  var btnCard = document.querySelector('.btn-whatsapp[data-action="whatsapp-nota"][data-id="' + id + '"]');
+  if (btnCard) {
+    btnCard.setAttribute('data-fone', fone);
+    btnCard.classList.add('tem-fone');
+  }
+
+  // Abre o WhatsApp
+  if (numero.length <= 11) numero = '55' + numero;
+  document.getElementById('adq-contato-nota-modal').remove();
+  window.open('https://wa.me/' + numero, '_blank');
+}
+
 function handleNotasClick(e) {
   var btn = e.target.closest('[data-action]');
   if (!btn) return;
@@ -8349,12 +8363,7 @@ function handleNotasClick(e) {
     }
 
   } else if (action === 'whatsapp-nota') {
-    var fone = btn.getAttribute('data-fone') || '';
-    var numero = fone.replace(/\D/g, '');
-    if (!numero) { alert('Número de contato não encontrado.'); return; }
-    if (numero.length <= 11) numero = '55' + numero;
-    btn.blur();
-    window.open('https://wa.me/' + numero, '_blank');
+    _abrirModalContatoNota(id, btn);
 
   } else if (action === 'painel-nota') {
     if (!db) return;
@@ -8554,7 +8563,6 @@ function _adicionarItemNota() {
 function _salvarEdicaoNota(id) {
   var titulo  = (document.getElementById('nota-edit-titulo') || {}).value || '';
   var contato = (document.getElementById('nota-edit-contato') || {}).value || '';
-  if (!contato.trim()) contato = _buscarContatoPorNome(titulo);
   var evData  = (document.getElementById('nota-edit-data')   || {}).value || '';
   var evLocal  = (document.getElementById('nota-edit-local')  || {}).value || '';
   var evMaps   = evLocal.trim() ? ((document.getElementById('nota-edit-maps')   || {}).value || '') : '';
