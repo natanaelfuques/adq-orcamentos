@@ -6881,27 +6881,33 @@ function _buscarContatoPorNome(nome) {
   return '';
 }
 
-// Preenche o campo de fone a partir do nome digitado.
-// overwrite=false (padrao) -> so preenche se fone vazio
-// overwrite=true -> sempre preenche ao achar match (modal evento rapido)
-function _autoFillContato(nomeInputId, foneInputId, overwrite) {
+var _autoFilledContato = ''; // rastreia o ultimo valor preenchido automaticamente
+
+function _autoFillContato(nomeInputId, foneInputId) {
   var nomeEl = document.getElementById(nomeInputId);
   var foneEl = document.getElementById(foneInputId);
   if (!nomeEl || !foneEl) return;
-  if (!overwrite && foneEl.value.trim()) return;
+  var foneAtual = foneEl.value.trim();
+  // Nao sobrescreve se o usuario digitou manualmente (valor diferente do ultimo autofill)
+  if (foneAtual && foneAtual !== _autoFilledContato) return;
   var fone = _buscarContatoPorNome(nomeEl.value);
   if (fone) {
     foneEl.value = fone;
+    _autoFilledContato = fone;
     foneEl.style.borderColor = '#C8A94A';
     setTimeout(function() { foneEl.style.borderColor = '#444'; }, 1200);
-  } else if (overwrite) {
-    foneEl.value = '';
+  } else {
+    // So limpa se o valor atual foi preenchido automaticamente
+    if (foneAtual && foneAtual === _autoFilledContato) {
+      foneEl.value = '';
+      _autoFilledContato = '';
+    }
   }
 }
 
-// Wrapper para o modal "Editar Evento Rapido" - sempre sobrescreve ao redigitar
+// Wrapper para o modal "Editar Evento Rapido"
 function _autoFillContatoNota() {
-  _autoFillContato('nota-edit-titulo', 'nota-edit-contato', true);
+  _autoFillContato('nota-edit-titulo', 'nota-edit-contato');
 }
 
 function toggleBuscaSalvos() {
