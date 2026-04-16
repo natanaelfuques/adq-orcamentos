@@ -4498,8 +4498,11 @@ function renderEventos() {
     const valorStyle = val > 0 ? 'color:var(--green);font-weight:700' : 'color:var(--muted)';
     const nomeExib = nomeCli(e);
     const id = e.id;
-    // Badge de status: notas com painel_id → "painel" (roxo)
-    const statusBadge = (e._origem === 'nota' && e.painel_id) ? '<span class="badge painel">painel</span>' : `<span class="badge ${st}">${st}</span>`;
+    // Badge de status: usa status de pagamento
+    const pgSt = getStatusPgto(e);
+    const pgClass = pgSt === 'quitado' ? 'quitado' : pgSt === 'alerta' ? 'alerta' : pgSt === 'parcial' ? 'parcial' : 'pendente';
+    const pgTxt = pgSt === 'quitado' ? '✓ Quitado' : pgSt === 'alerta' ? '⚠ Monitorar' : pgSt === 'parcial' ? 'Parcial' : 'Pendente';
+    const statusBadge = `<span class="pgto-status-badge ${pgClass}">${pgTxt}</span>`;
     const origemLabel = e._origem === 'nota'
       ? '<span class="badge-origem evento-rapido">Evento rápido</span>'
       : '<span class="badge-origem contrato">Contrato</span>';
