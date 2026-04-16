@@ -116,16 +116,22 @@ header {
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
 /* ── Tema claro ──────────────────────────────────── */
+/*
+  Hierarquia de 3 camadas:
+  --dark    #B8B8B8  → header, tab-bar (mais escuro)
+  --darker  #E0E0E0  → fundo do body (cinza médio)
+  --surface #F8F8F8  → cards, painéis (quase branco)
+*/
 html.light-theme {
-  --dark:     #DEDEDE;
-  --darker:   #EBEBEB;
-  --surface:  #FFFFFF;
-  --surface2: #F5F5F5;
-  --border:   #C4C4C4;
-  --border2:  #D8D8D8;
+  --dark:     #B8B8B8;
+  --darker:   #E0E0E0;
+  --surface:  #F8F8F8;
+  --surface2: #EFEFEF;
+  --border:   #A8A8A8;
+  --border2:  #C8C8C8;
   --text:     #1A1A1A;
-  --muted:    #6B6B6B;
-  --gold-dim: rgba(0,0,0,0.06);
+  --muted:    #606060;
+  --gold-dim: rgba(0,0,0,0.07);
 }
 
 /* Fundo e texto base */
@@ -138,15 +144,15 @@ html.light-theme textarea,
 html.light-theme select {
   background: var(--surface) !important;
   color: var(--text) !important;
-  border-color: var(--border) !important;
+  border-color: var(--border2) !important;
 }
 html.light-theme input::placeholder,
 html.light-theme textarea::placeholder { color: var(--muted) !important; opacity: 1; }
 
 /* Login */
 html.light-theme .login-screen { background: var(--darker); }
-html.light-theme .login-box { background: var(--surface); border-color: var(--border); }
-html.light-theme .login-box input { background: var(--surface2); color: var(--text); border-color: var(--border); }
+html.light-theme .login-box { background: var(--surface); border-color: var(--border2); }
+html.light-theme .login-box input { background: #FFFFFF; color: var(--text); border-color: var(--border2); }
 
 /* Scrollbar no tema claro */
 html.light-theme ::-webkit-scrollbar-thumb { background: var(--border); }
