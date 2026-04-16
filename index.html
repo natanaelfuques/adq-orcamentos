@@ -1486,7 +1486,7 @@ header {
               <button class="btn-preset" id="btn-cliente-preset-1" onclick="abrirModalClientePreset(this,1)">#1</button><button class="btn-preset" id="btn-cliente-preset-2" onclick="abrirModalClientePreset(this,2)">#2</button><button class="btn-preset" id="btn-cliente-preset-3" onclick="abrirModalClientePreset(this,3)">#3</button>
             </div>
           </div>
-          <input type="text" id="nome_cliente" placeholder="Ex: João Silva" autocomplete="off" oninput="_autoFillContato('nome_cliente','cli_fone')" />
+          <input type="text" id="nome_cliente" placeholder="Ex: João Silva" />
         </div>
         <div>
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
@@ -2139,10 +2139,7 @@ Revestimento</textarea>
         </div>
         <div>
           <label>Telefone / WhatsApp</label>
-          <div style="display:flex;gap:4px;align-items:center">
-            <input type="tel" id="cli_fone" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20" style="flex:1">
-            <button type="button" title="Buscar contato pelo nome" onclick="_autoFillContato('nome_cliente','cli_fone',true)" style="flex-shrink:0;background:transparent;border:1px solid #444;border-radius:4px;color:#666;cursor:pointer;padding:0;width:34px;height:38px;display:flex;align-items:center;justify-content:center;transition:border-color 0.2s,color 0.2s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#444';this.style.color='#666'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></button>
-          </div>
+          <input type="tel" id="cli_fone" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20">
         </div>
       </div>
     </div>
@@ -6841,74 +6838,44 @@ var _etapaMapContratos = {};
 var _todosOrcamentos = [];
 var _todosContratos = [];
 
-// ─── Cache de contatos por nome de cliente ───────────────────────────────────
-// Populado automaticamente a partir de orçamentos e contratos salvos.
-// Chave: nome normalizado (minúsculo, sem espaços extras)
-// Valor: fone string
+// ── Mapa nome→fone para autopreenchimento ao salvar ──────────────────────────
 var _mapaContatosClientes = {};
 
-function _normalizarNomeCliente(nome) {
-  return (nome || '').trim().toLowerCase().replace(/\s+/g, ' ');
+function _normalizarNome(s) {
+  return (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
 function _atualizarMapaContatos() {
-  var mapa = {};
-  var fontes = (_todosOrcamentos || []).concat(_todosContratos || []);
-  fontes.forEach(function(doc) {
-    var nome = _normalizarNomeCliente(doc.cli_nome || doc.nome_cliente || '');
-    var fone = (doc.cli_fone || '').trim();
-    if (nome && fone && !mapa[nome]) mapa[nome] = fone;
+  var m = {};
+  (_todosOrcamentos || []).concat(_todosContratos || []).forEach(function(d) {
+    var nome = _normalizarNome(d.cli_nome || d.nome_cliente || '');
+    var fone = (d.cli_fone || '').replace(/\D/g, '');
+    if (nome && fone && !m[nome]) m[nome] = d.cli_fone || fone;
   });
-  _mapaContatosClientes = mapa;
-  console.log('[AdQ] Mapa contatos:', Object.keys(mapa).length, 'entradas', mapa);
+  _mapaContatosClientes = m;
 }
 
 function _buscarContatoPorNome(nome) {
   if (!nome || nome.length < 3) return '';
-  var chave = _normalizarNomeCliente(nome);
-  // Exato
+  var chave = _normalizarNome(nome);
+  var keys  = Object.keys(_mapaContatosClientes);
+  // 1. exato
   if (_mapaContatosClientes[chave]) return _mapaContatosClientes[chave];
-  // Prefixo: chave começa com o digitado, ou digitado começa com chave
-  var keys = Object.keys(_mapaContatosClientes);
+  // 2. chave salva começa com o digitado (ex: "erimar" → "erimar netto")
   for (var i = 0; i < keys.length; i++) {
-    if (keys[i].indexOf(chave) === 0 || chave.indexOf(keys[i]) === 0) {
-      return _mapaContatosClientes[keys[i]];
-    }
+    if (keys[i].indexOf(chave) === 0) return _mapaContatosClientes[keys[i]];
   }
-  // Contém: chave salva contém o texto digitado (ex: digitar "erimar" acha "erimar netto")
+  // 3. digitado começa com chave salva (nome completo digitado, salvo abreviado)
   for (var j = 0; j < keys.length; j++) {
-    if (keys[j].indexOf(chave) !== -1) {
-      return _mapaContatosClientes[keys[j]];
+    if (chave.indexOf(keys[j]) === 0) return _mapaContatosClientes[keys[j]];
+  }
+  // 4. contém (substring)
+  for (var k = 0; k < keys.length; k++) {
+    if (keys[k].indexOf(chave) !== -1 || chave.indexOf(keys[k]) !== -1) {
+      return _mapaContatosClientes[keys[k]];
     }
   }
   return '';
-}
-
-var _autoFilledContato = ''; // rastreia o ultimo valor preenchido automaticamente
-
-function _autoFillContato(nomeInputId, foneInputId, forcar) {
-  var nomeEl = document.getElementById(nomeInputId);
-  var foneEl = document.getElementById(foneInputId);
-  if (!nomeEl || !foneEl) return;
-  var foneAtual = foneEl.value.trim();
-  // Se nao forcado: nao sobrescreve se o usuario digitou manualmente
-  if (!forcar && foneAtual && foneAtual !== _autoFilledContato) return;
-  var fone = _buscarContatoPorNome(nomeEl.value);
-  if (fone) {
-    foneEl.value = fone;
-    _autoFilledContato = fone;
-    foneEl.style.borderColor = '#C8A94A';
-    setTimeout(function() { foneEl.style.borderColor = '#444'; }, 1200);
-  } else if (!forcar && foneAtual && foneAtual === _autoFilledContato) {
-    foneEl.value = '';
-    _autoFilledContato = '';
-  }
-}
-
-// Wrapper para o modal "Editar Evento Rapido"
-// forcar=true: botao de busca (ignora protecao de nao sobrescrever)
-function _autoFillContatoNota(forcar) {
-  _autoFillContato('nota-edit-titulo', 'nota-edit-contato', forcar);
 }
 
 function toggleBuscaSalvos() {
@@ -7675,14 +7642,13 @@ function salvarNota() {
   var mm = String(hoje.getMonth()+1).padStart(2,'0');
   var aaaa = hoje.getFullYear();
   var dataHoje = aaaa + '-' + mm + '-' + dd;
-  var contatoAuto = _buscarContatoPorNome(texto);
   db.collection('notas').add({
     titulo:   texto,
     texto:    '',
     itens:    [],
     ev_data:  dataHoje,
     ev_local: '',
-    contato:  contatoAuto,
+    contato:  _buscarContatoPorNome(texto),
     no_painel: false,
     criador: ((window._currentUser || firebase.auth().currentUser) ? (window._currentUser || firebase.auth().currentUser).email : ''),
     criadoEm: firebase.firestore.FieldValue.serverTimestamp()
@@ -8495,14 +8461,11 @@ function _abrirModalEditarNota(nota) {
     '<div style="display:flex;gap:8px;margin-bottom:12px">' +
       '<div style="flex:1">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Título</label>' +
-        '<input id="nota-edit-titulo" type="text" autocomplete="off" value="' + escHtml(nota.titulo || '') + '" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'" oninput="_autoFillContatoNota()">' +
+        '<input id="nota-edit-titulo" type="text" value="' + escHtml(nota.titulo || '') + '" style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.9rem;padding:9px 12px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
       '</div>' +
       '<div style="width:120px;flex-shrink:0">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Contato</label>' +
-        '<div style="display:flex;gap:4px;align-items:center">' +
-        '<input id="nota-edit-contato" type="tel" autocomplete="off" value="' + escHtml(nota.contato || '') + '" placeholder="(47) 9..." style="flex:1;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:9px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
-        '<button type="button" title="Buscar contato pelo nome" onclick="_autoFillContatoNota(true)" style="flex-shrink:0;background:transparent;border:1px solid #444;border-radius:4px;color:#666;cursor:pointer;padding:0;width:30px;height:36px;display:flex;align-items:center;justify-content:center;transition:border-color 0.2s,color 0.2s" onmouseover="this.style.borderColor=\'#C8A94A\';this.style.color=\'#C8A94A\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#666\'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></button>' +
-        '</div>' +
+        '<input id="nota-edit-contato" type="tel" value="' + escHtml(nota.contato || '') + '" placeholder="(47) 9..." style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:9px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
       '</div>' +
     '</div>' +
 
@@ -8591,7 +8554,6 @@ function _adicionarItemNota() {
 function _salvarEdicaoNota(id) {
   var titulo  = (document.getElementById('nota-edit-titulo') || {}).value || '';
   var contato = (document.getElementById('nota-edit-contato') || {}).value || '';
-  // Se contato vazio, tenta buscar pelo título
   if (!contato.trim()) contato = _buscarContatoPorNome(titulo);
   var evData  = (document.getElementById('nota-edit-data')   || {}).value || '';
   var evLocal  = (document.getElementById('nota-edit-local')  || {}).value || '';
