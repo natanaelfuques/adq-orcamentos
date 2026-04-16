@@ -3842,8 +3842,9 @@ document.addEventListener('DOMContentLoaded', function() {
                   clearInterval(_deepLinkInterval);
                   if (_abriDoc) {
                     var _buscaInput = document.getElementById('busca-con-input');
-                    if (_buscaInput && _abriDoc.cli_nome) {
-                      _buscaInput.value = _abriDoc.cli_nome;
+                    if (_buscaInput) {
+                      // Usa o código de referência como termo — único, sempre existe
+                      _buscaInput.value = abrirId.substring(0, 8).toLowerCase();
                       if (typeof filtrarContratos === 'function') filtrarContratos();
                     }
                   }
