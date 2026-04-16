@@ -2139,7 +2139,10 @@ Revestimento</textarea>
         </div>
         <div>
           <label>Telefone / WhatsApp</label>
-          <input type="tel" id="cli_fone" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20">
+          <div style="display:flex;gap:4px;align-items:center">
+            <input type="tel" id="cli_fone" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20" style="flex:1">
+            <button type="button" title="Buscar contato pelo nome" onclick="_autoFillContato('nome_cliente','cli_fone',true)" style="flex-shrink:0;background:transparent;border:1px solid #444;border-radius:4px;color:#666;cursor:pointer;padding:0;width:34px;height:38px;display:flex;align-items:center;justify-content:center;transition:border-color 0.2s,color 0.2s" onmouseover="this.style.borderColor='#C8A94A';this.style.color='#C8A94A'" onmouseout="this.style.borderColor='#444';this.style.color='#666'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></button>
+          </div>
         </div>
       </div>
     </div>
@@ -6883,31 +6886,29 @@ function _buscarContatoPorNome(nome) {
 
 var _autoFilledContato = ''; // rastreia o ultimo valor preenchido automaticamente
 
-function _autoFillContato(nomeInputId, foneInputId) {
+function _autoFillContato(nomeInputId, foneInputId, forcar) {
   var nomeEl = document.getElementById(nomeInputId);
   var foneEl = document.getElementById(foneInputId);
   if (!nomeEl || !foneEl) return;
   var foneAtual = foneEl.value.trim();
-  // Nao sobrescreve se o usuario digitou manualmente (valor diferente do ultimo autofill)
-  if (foneAtual && foneAtual !== _autoFilledContato) return;
+  // Se nao forcado: nao sobrescreve se o usuario digitou manualmente
+  if (!forcar && foneAtual && foneAtual !== _autoFilledContato) return;
   var fone = _buscarContatoPorNome(nomeEl.value);
   if (fone) {
     foneEl.value = fone;
     _autoFilledContato = fone;
     foneEl.style.borderColor = '#C8A94A';
     setTimeout(function() { foneEl.style.borderColor = '#444'; }, 1200);
-  } else {
-    // So limpa se o valor atual foi preenchido automaticamente
-    if (foneAtual && foneAtual === _autoFilledContato) {
-      foneEl.value = '';
-      _autoFilledContato = '';
-    }
+  } else if (!forcar && foneAtual && foneAtual === _autoFilledContato) {
+    foneEl.value = '';
+    _autoFilledContato = '';
   }
 }
 
 // Wrapper para o modal "Editar Evento Rapido"
-function _autoFillContatoNota() {
-  _autoFillContato('nota-edit-titulo', 'nota-edit-contato');
+// forcar=true: botao de busca (ignora protecao de nao sobrescrever)
+function _autoFillContatoNota(forcar) {
+  _autoFillContato('nota-edit-titulo', 'nota-edit-contato', forcar);
 }
 
 function toggleBuscaSalvos() {
@@ -7674,12 +7675,14 @@ function salvarNota() {
   var mm = String(hoje.getMonth()+1).padStart(2,'0');
   var aaaa = hoje.getFullYear();
   var dataHoje = aaaa + '-' + mm + '-' + dd;
+  var contatoAuto = _buscarContatoPorNome(texto);
   db.collection('notas').add({
     titulo:   texto,
     texto:    '',
     itens:    [],
     ev_data:  dataHoje,
     ev_local: '',
+    contato:  contatoAuto,
     no_painel: false,
     criador: ((window._currentUser || firebase.auth().currentUser) ? (window._currentUser || firebase.auth().currentUser).email : ''),
     criadoEm: firebase.firestore.FieldValue.serverTimestamp()
@@ -8496,7 +8499,10 @@ function _abrirModalEditarNota(nota) {
       '</div>' +
       '<div style="width:120px;flex-shrink:0">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Contato</label>' +
-        '<input id="nota-edit-contato" type="tel" autocomplete="off" value="' + escHtml(nota.contato || '') + '" placeholder="(47) 9..." style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:9px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '<div style="display:flex;gap:4px;align-items:center">' +
+        '<input id="nota-edit-contato" type="tel" autocomplete="off" value="' + escHtml(nota.contato || '') + '" placeholder="(47) 9..." style="flex:1;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:9px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '<button type="button" title="Buscar contato pelo nome" onclick="_autoFillContatoNota(true)" style="flex-shrink:0;background:transparent;border:1px solid #444;border-radius:4px;color:#666;cursor:pointer;padding:0;width:30px;height:36px;display:flex;align-items:center;justify-content:center;transition:border-color 0.2s,color 0.2s" onmouseover="this.style.borderColor=\'#C8A94A\';this.style.color=\'#C8A94A\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#666\'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></button>' +
+        '</div>' +
       '</div>' +
     '</div>' +
 
@@ -8585,6 +8591,8 @@ function _adicionarItemNota() {
 function _salvarEdicaoNota(id) {
   var titulo  = (document.getElementById('nota-edit-titulo') || {}).value || '';
   var contato = (document.getElementById('nota-edit-contato') || {}).value || '';
+  // Se contato vazio, tenta buscar pelo título
+  if (!contato.trim()) contato = _buscarContatoPorNome(titulo);
   var evData  = (document.getElementById('nota-edit-data')   || {}).value || '';
   var evLocal  = (document.getElementById('nota-edit-local')  || {}).value || '';
   var evMaps   = evLocal.trim() ? ((document.getElementById('nota-edit-maps')   || {}).value || '') : '';
