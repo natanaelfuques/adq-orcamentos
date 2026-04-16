@@ -3041,17 +3041,80 @@ function removerParcelaCustom(docId, idx) {
   _atualizarParcelasCustomLocal(docId, arr);
 }
 
-/* Distribui o restante automaticamente */
+/* Distribui o restante em N parcelas iguais até a data do evento */
 function distribuirAutomatico(docId, totalStr) {
   const total = parseFloat(totalStr) || 0;
   const ev = _pgtoEventoById(docId);
   if (!ev) return;
-  const arr = (ev.pgto_parcelas_custom || []).slice();
-  const soma = arr.reduce(function(s, p) { return s + (parseFloat(p.valor) || 0); }, 0);
-  const restante = Math.max(0, total - soma);
+
+  // Lê soma atual dos inputs (preserva edições não salvas)
+  const rows = document.querySelectorAll('[id^="pgto-custom-row-' + docId + '-"]');
+  let somaAtual = 0;
+  rows.forEach(function(row, i) {
+    const inp = document.getElementById('pgto-cval-' + docId + '-' + i);
+    if (inp) somaAtual += parseBRL(inp.value || '0');
+  });
+  const restante = parseFloat(Math.max(0, total - somaAtual).toFixed(2));
   if (restante < 0.01) return;
-  arr.push({ label: 'Entrada ' + (arr.length + 1), valor: restante, vencimento: '' });
-  _atualizarParcelasCustomLocal(docId, arr);
+
+  // Pergunta número de parcelas
+  const nStr = prompt('Dividir ' + frs(restante) + ' em quantas parcelas iguais?\n(as datas serão distribuídas até a data do evento)', '2');
+  if (!nStr) return;
+  const n = parseInt(nStr);
+  if (!n || n < 1 || n > 36) return;
+
+  // Calcula datas equidistantes de hoje até a data do evento
+  const evDataStr = ev.ev_data || ev.data_evento || ev.dataEvt || '';
+  const datas = [];
+  if (evDataStr) {
+    const p = evDataStr.split('-');
+    const evMs = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])).setHours(0,0,0,0);
+    const hojeMs = new Date().setHours(0,0,0,0);
+    const step = (evMs - hojeMs) / n;
+    for (var i = 1; i <= n; i++) {
+      const d = new Date(hojeMs + step * i);
+      d.setHours(0,0,0,0);
+      datas.push(d.toISOString().slice(0, 10));
+    }
+  }
+
+  // Valor base por parcela — extras (centavos) vão na última
+  const valorBase = Math.floor((restante / n) * 100) / 100;
+  const extra = parseFloat((restante - valorBase * n).toFixed(2));
+
+  // Preserva entradas já digitadas nos inputs
+  const arrAtual = [];
+  rows.forEach(function(row, i) {
+    const label = (document.getElementById('pgto-clabel-' + docId + '-' + i) || {}).value || ('Entrada ' + (i + 1));
+    const valRaw = (document.getElementById('pgto-cval-' + docId + '-' + i) || {}).value || '0';
+    const venc = (document.getElementById('pgto-cvenc-' + docId + '-' + i) || {}).value || '';
+    arrAtual.push({ label: label, valor: parseBRL(valRaw), vencimento: venc });
+  });
+
+  // Adiciona as novas parcelas
+  const baseIdx = arrAtual.length;
+  for (var j = 0; j < n; j++) {
+    const valor = j === n - 1 ? parseFloat((valorBase + extra).toFixed(2)) : valorBase;
+    arrAtual.push({
+      label: 'Parcela ' + (baseIdx + j + 1),
+      valor: valor,
+      vencimento: datas[j] || ''
+    });
+  }
+
+  // Atualiza estado local e re-renderiza o editor
+  const idxMain = _contratos.findIndex(function(x) { return x.id === docId; });
+  const idxNota = _notas.findIndex(function(x) { return x.id === docId; });
+  if (idxMain >= 0) _contratos[idxMain].pgto_parcelas_custom = arrAtual;
+  if (idxNota >= 0) _notas[idxNota].pgto_parcelas_custom = arrAtual;
+  const ev2 = _pgtoEventoById(docId);
+  if (!ev2) return;
+  const edEl = document.getElementById('pgto-custom-editor-' + docId);
+  if (edEl) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = buildCustomParcelasEditorHTML(ev2);
+    edEl.parentNode.replaceChild(tmp.firstChild, edEl);
+  }
 }
 
 function _atualizarParcelasCustomLocal(docId, arr) {
