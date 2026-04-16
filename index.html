@@ -1456,7 +1456,7 @@ header {
   <!-- BLOCO NOVO EVENTO -->
   <div class="nota-bloco" style="border:1px solid var(--border);border-radius:6px;background:var(--surface);padding:10px 12px;">
     <div style="display:flex;align-items:flex-start;gap:8px">
-      <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anotações / Evento rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()" style="border:none;background:transparent;padding:2px 0;flex:1;height:36px;min-height:36px;"></textarea>
+      <textarea id="nota-bloco-texto-input" class="nota-bloco-input" placeholder="Anotações / Evento rápido..." rows="1" oninput="notaBlocoAutoResize(this)" onfocus="notaBlocoFocus()" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();salvarNota();}" style="border:none;background:transparent;padding:2px 0;flex:1;height:36px;min-height:36px;"></textarea>
       <button onclick="abrirModalIA()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:transparent;border:1px dashed #C8A94A;color:#C8A94A;border-radius:4px;padding:6px 10px;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;margin-top:1px">✦ IA</button>
     </div>
     <div class="nota-bloco-actions" id="nota-bloco-actions" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
@@ -8482,7 +8482,7 @@ function _abrirModalEditarNota(nota) {
       '</div>' +
       '<div style="width:120px;flex-shrink:0">' +
         '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px">Contato</label>' +
-        '<input id="nota-edit-contato" type="tel" value="' + escHtml(nota.contato || '') + '" placeholder="(47) 9..." style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:9px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
+        '<input id="nota-edit-contato" type="tel" autocomplete="off" value="' + escHtml(nota.contato || '') + '" placeholder="(47) 9..." style="width:100%;background:#111;border:1px solid #444;color:#eee;font-family:\'Barlow\',sans-serif;font-size:0.85rem;padding:9px 10px;border-radius:4px;outline:none;box-sizing:border-box;transition:border-color 0.2s" onfocus="this.style.borderColor=\'#C8A94A\'" onblur="this.style.borderColor=\'#444\'">' +
       '</div>' +
     '</div>' +
 
