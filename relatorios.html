@@ -3495,6 +3495,75 @@ function fecharPgtoModal() {
   setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
 }
 
+/* Mesma lógica de toggleAlertaChip mas re-abre o modal após a ação */
+function toggleParcelaModal(docId, parcelaIdx) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+
+  function _refresh() {
+    _pgtoDirty[docId] = true;
+    _pgtoRefreshCardDOM(docId);
+    fecharPgtoModal();
+    setTimeout(function() { abrirPgtoModal(docId); }, 320);
+  }
+
+  // ⚠ Tem alerta → resolve
+  if (temAlertaParcela(ev, parcelaIdx)) {
+    const alertas = getAlertasPgto(ev).filter(function(a) { return a.parcela_idx !== parcelaIdx; });
+    db.collection(col).doc(docId).update({ pgto_alertas: alertas })
+      .then(function() { _pgtoUpdateLocal(docId, { pgto_alertas: alertas }); _refresh(); })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+    return;
+  }
+
+  // ✓ Pago manual → desmarcar
+  const registros = getPgtoRegistros(ev);
+  const hasRegistro = registros.some(function(r) { return r.parcela_idx === parcelaIdx; });
+  if (hasRegistro) {
+    const novosReg = registros.filter(function(r) { return r.parcela_idx !== parcelaIdx; });
+    const total = valorEv(ev);
+    const totalPago = novosReg.reduce(function(s, r) { return s + (parseFloat(r.valor) || 0); }, 0);
+    const upd = { pgto_registros: novosReg };
+    upd.status_pgto = totalPago >= total - 0.05 && total > 0 ? 'quitado' : totalPago > 0 ? 'parcial' : 'pendente';
+    db.collection(col).doc(docId).update(upd)
+      .then(function() { _pgtoUpdateLocal(docId, upd); _refresh(); _editorToast('Pagamento desmarcado'); })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+    return;
+  }
+
+  // Verificar se é pago por data ou pendente
+  const parcelas = getParcelas(ev);
+  const parcela = parcelas.find(function(p) { return p.idx === parcelaIdx; });
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const pagoPorData = parcela && parcela.vencimento && (function() {
+    const vp = parcela.vencimento.split('-');
+    if (vp.length !== 3) return false;
+    return new Date(parseInt(vp[0]), parseInt(vp[1]) - 1, parseInt(vp[2])) <= hoje;
+  })();
+
+  if (pagoPorData) {
+    // ✓ pago por data → sinalizar problema
+    const alertas = getAlertasPgto(ev).slice();
+    alertas.push({ parcela_idx: parcelaIdx, motivo: 'Não recebido', data: new Date().toLocaleDateString('pt-BR') });
+    db.collection(col).doc(docId).update({ pgto_alertas: alertas })
+      .then(function() { _pgtoUpdateLocal(docId, { pgto_alertas: alertas }); _refresh(); })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+  } else {
+    // Pendente → marcar como pago
+    const valor = parcela ? parcela.valor : 0;
+    const novosReg = registros.slice();
+    novosReg.push({ parcela_idx: parcelaIdx, valor: valor, data: new Date().toISOString().slice(0, 10), marcadoEm: Date.now() });
+    const total = valorEv(ev);
+    const totalPago = novosReg.reduce(function(s, r) { return s + (parseFloat(r.valor) || 0); }, 0);
+    const upd = { pgto_registros: novosReg };
+    upd.status_pgto = totalPago >= total - 0.05 && total > 0 ? 'quitado' : totalPago > 0 ? 'parcial' : 'pendente';
+    db.collection(col).doc(docId).update(upd)
+      .then(function() { _pgtoUpdateLocal(docId, upd); _refresh(); _editorToast('Pagamento registrado ✓'); })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+  }
+}
+
 /* Preview em tempo real enquanto digita o valor recebido */
 function pgtoModalPreview(docId, total) {
   const inp = document.getElementById('pgto-modal-recebido-' + docId);
@@ -3630,6 +3699,7 @@ function buildPgtoModalHTML(ev) {
   // Editor customizado ou parcelas detalhadas
   const customEditorHTML = (ev.pgto_tipo === 'custom' || ev.pgto_sel === 'custom')
     ? buildCustomParcelasEditorHTML(ev) : '';
+  const registros = getPgtoRegistros(ev);
 
   let parcelasHTML = '';
   if (customEditorHTML) {
@@ -3662,15 +3732,23 @@ function buildPgtoModalHTML(ev) {
       } else {
         statusTxt = vencStr ? 'Vence em: ' + vencStr : 'Sem data definida';
       }
+      // Pago manualmente via registro?
+      const isManual = !notaPaga && registros.some(function(r) { return r.parcela_idx === p.idx; });
       // Botão de ação da parcela
       const actionBtn = notaPaga
-        ? '' // já pago: sem botão
+        ? ''
         : temAlerta
-          ? '<button class="pgto-resolver-btn" onclick="resolverAlerta(\'' + docId + '\',' + p.idx + ');fecharPgtoModal()">✓ Resolver</button>'
+          ? '<button class="pgto-resolver-btn" onclick="event.stopPropagation();toggleParcelaModal(\'' + docId + '\',' + p.idx + ')">✓ Resolver</button>'
           : notaEmMonitorAuto
-            ? '<button class="pgto-resolver-btn" onclick="togglePagamentoVista(event,\'' + docId + '\');fecharPgtoModal()">✓ Resolver</button>'
-            : '<button class="pgto-alerta-btn" onclick="promptSinalizarProblema(\'' + docId + '\',' + p.idx + ')">⚠ Problema</button>';
-      return '<div class="' + itemClass + '">' +
+            ? '<button class="pgto-resolver-btn" onclick="event.stopPropagation();togglePagamentoVista(event,\'' + docId + '\');fecharPgtoModal()">✓ Resolver</button>'
+            : isManual
+              ? '<button class="pgto-resolver-btn" onclick="event.stopPropagation();toggleParcelaModal(\'' + docId + '\',' + p.idx + ')">Desfazer</button>'
+              : isAuto
+                ? '<button class="pgto-alerta-btn" onclick="event.stopPropagation();toggleParcelaModal(\'' + docId + '\',' + p.idx + ')">⚠ Problema</button>'
+                : '<button class="pgto-resolver-btn" onclick="event.stopPropagation();toggleParcelaModal(\'' + docId + '\',' + p.idx + ')">✓ Marcar pago</button>';
+      // Card clicável (exceto notas pagas)
+      const cardClick = notaPaga || notaEmMonitorAuto ? '' : ' style="cursor:pointer" onclick="toggleParcelaModal(\'' + docId + '\',' + p.idx + ')"';
+      return '<div class="' + itemClass + '"' + cardClick + '>' +
         '<div class="pgto-parcela-icon">' + icon + '</div>' +
         '<div class="pgto-parcela-info">' +
           '<div class="pgto-parcela-label">' + p.label + '</div>' +
