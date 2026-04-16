@@ -3833,24 +3833,31 @@ document.addEventListener('DOMContentLoaded', function() {
           setTimeout(function() {
             switchSalvosTab('contratos');
             if (abrirId) {
-              // Preenche busca com o nome do contrato e destaca o card na lista
-              var _abriDoc = (_todosContratos || []).find(function(d) { return d.id === abrirId; });
-              if (_abriDoc) {
-                var _buscaInput = document.getElementById('busca-con-input');
-                if (_buscaInput && _abriDoc.cli_nome) {
-                  _buscaInput.value = _abriDoc.cli_nome;
-                  if (typeof filtrarContratos === 'function') filtrarContratos();
+              // Aguarda _todosContratos carregar do Firestore, depois filtra e destaca
+              var _deepLinkTentativas = 0;
+              var _deepLinkInterval = setInterval(function() {
+                _deepLinkTentativas++;
+                var _abriDoc = (_todosContratos || []).find(function(d) { return d.id === abrirId; });
+                if (_abriDoc || _deepLinkTentativas > 40) {
+                  clearInterval(_deepLinkInterval);
+                  if (_abriDoc) {
+                    var _buscaInput = document.getElementById('busca-con-input');
+                    if (_buscaInput && _abriDoc.cli_nome) {
+                      _buscaInput.value = _abriDoc.cli_nome;
+                      if (typeof filtrarContratos === 'function') filtrarContratos();
+                    }
+                  }
+                  setTimeout(function() {
+                    var card = document.querySelector('.salvo-card[data-id="' + abrirId + '"]');
+                    if (card) {
+                      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      card.style.transition = 'box-shadow 0.4s';
+                      card.style.boxShadow = '0 0 0 2px var(--gold)';
+                      setTimeout(function() { card.style.boxShadow = ''; }, 2800);
+                    }
+                  }, 300);
                 }
-              }
-              setTimeout(function() {
-                var card = document.querySelector('.salvo-card[data-id="' + abrirId + '"]');
-                if (card) {
-                  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  card.style.transition = 'box-shadow 0.4s';
-                  card.style.boxShadow = '0 0 0 2px var(--gold)';
-                  setTimeout(function() { card.style.boxShadow = ''; }, 2800);
-                }
-              }, 700);
+              }, 250);
             }
           }, 200);
           history.replaceState(null, '', window.location.pathname);
@@ -6892,7 +6899,8 @@ function filtrarContratos() {
   var filtrados = _todosContratos.filter(function(doc) {
     var nome = (doc.cli_nome || '').toLowerCase();
     var dataEvt = (doc.ev_data || '').split('-').reverse().join('/'); // dd/mm/aaaa
-    var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0;
+    var ref = (doc.id || '').substring(0, 8).toLowerCase();
+    var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0 || ref.indexOf(termo.replace('#','').trim()) >= 0;
     var aprovado = doc.aprovado ? true : false;
     var sc = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
     var etapa = _etapaMapContratos[doc.id] || '';
