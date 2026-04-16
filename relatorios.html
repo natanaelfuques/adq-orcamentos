@@ -2589,17 +2589,22 @@ function isParcelaPagaAuto(parcela, ev, hoje) {
 
 /* Calcula total pago.
    - pgto_valor_avulso tem prioridade (registro manual do modal)
-   - NOTAS sem avulso: sempre R$ 0 (exige confirmação manual)
-   - CONTRATOS: soma parcelas vencidas automaticamente */
+   - NOTAS sem avulso: apenas adicionais marcados como pagos
+   - CONTRATOS: soma parcelas vencidas + adicionais marcados como pagos */
 function getTotalPagoAuto(ev) {
   const avulso = parseFloat(ev.pgto_valor_avulso) || 0;
-  if (avulso > 0) return avulso;
-  if (ev._origem === 'nota') return 0;
+  // Adicionais (ajustes positivos) marcados como pagos
+  const pagoAjustes = getAjustes(ev).reduce(function(s, a) {
+    return s + (a.pago && a.valor > 0 ? a.valor : 0);
+  }, 0);
+  if (avulso > 0) return avulso + pagoAjustes;
+  if (ev._origem === 'nota') return pagoAjustes;
   const parcelas = getParcelas(ev);
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
-  return parcelas.reduce(function(s, p) {
+  const pagoParc = parcelas.reduce(function(s, p) {
     return s + (isParcelaPagaAuto(p, ev, hoje) ? p.valor : 0);
   }, 0);
+  return pagoParc + pagoAjustes;
 }
 
 /* Atualiza dados locais em _contratos e _notas sem reload */
@@ -2724,7 +2729,25 @@ function pgtoEditorCalcTotal(docId) {
   if (el) el.textContent = frs(novoTotal);
 }
 
-/* ── AJUSTES: adicionar e remover ── */
+/* ── AJUSTES: toggle pago, adicionar e remover ── */
+
+/* Toggle recebimento de adicional diretamente no chip do card */
+function toggleAjustePago(e, docId, ajusteIdx) {
+  e.stopPropagation();
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const ajustes = getAjustes(ev).map(function(a, i) {
+    return i === ajusteIdx ? Object.assign({}, a, { pago: !a.pago }) : a;
+  });
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  db.collection(col).doc(docId).update({ pgto_ajustes: ajustes })
+    .then(function() {
+      _pgtoUpdateLocal(docId, { pgto_ajustes: ajustes });
+      _pgtoDirty[docId] = true;
+      _pgtoRefreshCardDOM(docId);
+    })
+    .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+}
 
 function adicionarAjuste(docId) {
   const ev = _pgtoEventoById(docId);
@@ -2739,7 +2762,7 @@ function adicionarAjuste(docId) {
   if (!valorBruto || valorBruto <= 0) { _editorToast('Informe um valor válido', true); return; }
   const valor = tipoEl.value === 'desconto' ? -valorBruto : valorBruto;
   const ajustes = getAjustes(ev).slice();
-  ajustes.push({ descricao: descricao, valor: valor });
+  ajustes.push({ descricao: descricao, valor: valor, pago: false });
   const col = ev._origem === 'nota' ? 'notas' : 'contratos';
   db.collection(col).doc(docId).update({ pgto_ajustes: ajustes })
     .then(function() {
@@ -3258,10 +3281,8 @@ function buildPgtoCardBody(ev, docId) {
   if (isNota) {
     // Evento rápido: chip único de confirmação de pagamento à vista
     if (isPago) {
-      // Verde: pago — clique desfaz
       chips = '<span class="pgto-chip auto pgto-chip-toggle pgto-chip-vista-pago" title="Clique para desfazer pagamento" onclick="togglePagamentoVista(event,\'' + docId + '\')">✓ Pagamento à vista · ' + frs(avulso) + '</span>';
     } else {
-      // Cinza/vermelho: pendente — clique confirma pagamento
       chips = '<span class="pgto-chip pgto-chip-toggle pgto-chip-vista-pendente" title="Clique para confirmar recebimento" onclick="togglePagamentoVista(event,\'' + docId + '\')">⚠ Pagamento à vista</span>';
     }
   } else {
@@ -3276,7 +3297,19 @@ function buildPgtoCardBody(ev, docId) {
     }).join('');
   }
 
-  return '<div class="pgto-chips pgto-chips-body">' + chips + '</div>' +
+  // Chips de adicionais (ajustes positivos) — clique toggle pago/não pago
+  const ajustes = getAjustes(ev);
+  const chipsAjustes = ajustes
+    .filter(function(a) { return a.valor > 0; })
+    .map(function(a, i) {
+      const label = (a.descricao || 'Adicional').slice(0, 22);
+      if (a.pago) {
+        return '<span class="pgto-chip auto pgto-chip-toggle pgto-chip-ajuste" title="' + esc(a.descricao || '') + ' · Clique para marcar como não recebido" onclick="toggleAjustePago(event,\'' + docId + '\',' + i + ')">✓ ' + label + '</span>';
+      }
+      return '<span class="pgto-chip futuro pgto-chip-toggle pgto-chip-ajuste" title="' + esc(a.descricao || '') + ' · Clique para confirmar recebimento" onclick="toggleAjustePago(event,\'' + docId + '\',' + i + ')">' + label + '</span>';
+    }).join('');
+
+  return '<div class="pgto-chips pgto-chips-body">' + chips + chipsAjustes + '</div>' +
     '<div class="pgto-card-body-actions">' +
       '<button class="pgto-info-btn" onclick="abrirPgtoModal(\'' + docId + '\')">↗ Exibir informações completas</button>' +
     '</div>';
