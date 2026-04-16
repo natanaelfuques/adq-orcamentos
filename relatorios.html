@@ -3040,7 +3040,7 @@ function removerParcelaCustom(docId, idx) {
   _atualizarParcelasCustomLocal(docId, arr);
 }
 
-/* Distribui o restante em N parcelas iguais até a data do evento */
+/* Distribui o restante em parcelas mensais até a data do evento (sem perguntar) */
 function distribuirAutomatico(docId, totalStr) {
   const total = parseFloat(totalStr) || 0;
   const ev = _pgtoEventoById(docId);
@@ -3056,28 +3056,35 @@ function distribuirAutomatico(docId, totalStr) {
   const restante = parseFloat(Math.max(0, total - somaAtual).toFixed(2));
   if (restante < 0.01) return;
 
-  // Pergunta número de parcelas
-  const nStr = prompt('Dividir ' + frs(restante) + ' em quantas parcelas iguais?\n(as datas serão distribuídas até a data do evento)', '2');
-  if (!nStr) return;
-  const n = parseInt(nStr);
-  if (!n || n < 1 || n > 36) return;
-
-  // Calcula datas equidistantes de hoje até a data do evento
+  // Data do evento
   const evDataStr = ev.ev_data || ev.data_evento || ev.dataEvt || '';
+  let n = 1;
   const datas = [];
+
   if (evDataStr) {
     const p = evDataStr.split('-');
-    const evMs = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])).setHours(0,0,0,0);
-    const hojeMs = new Date().setHours(0,0,0,0);
-    const step = (evMs - hojeMs) / n;
+    const evDate = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+    evDate.setHours(0,0,0,0);
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+
+    // 1 parcela por mês restante (arredondado), mínimo 1
+    const diffDias = Math.ceil((evDate - hoje) / (1000 * 60 * 60 * 24));
+    n = Math.max(1, Math.round(diffDias / 30));
+
+    // Datas: +1 mês, +2 meses... última = data do evento
     for (var i = 1; i <= n; i++) {
-      const d = new Date(hojeMs + step * i);
-      d.setHours(0,0,0,0);
-      datas.push(d.toISOString().slice(0, 10));
+      if (i === n) {
+        datas.push(evDate.toISOString().slice(0, 10));
+      } else {
+        const d = new Date(hoje);
+        d.setMonth(d.getMonth() + i);
+        datas.push(d.toISOString().slice(0, 10));
+      }
     }
   }
 
-  // Valor base por parcela — extras (centavos) vão na última
+  // Valor base por parcela — centavos extras na última
   const valorBase = Math.floor((restante / n) * 100) / 100;
   const extra = parseFloat((restante - valorBase * n).toFixed(2));
 
