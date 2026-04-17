@@ -2181,19 +2181,14 @@ Revestimento</textarea>
         <input type="url" id="ev_maps" placeholder="https://maps.app.goo.gl/..." oninput="_agendarRascunho();_atualizarBtnMaps()" style="display:none">
       </div>
       <div class="grid-3">
-        <div>
-          <label>Data do Evento</label>
-          <input type="date" id="ev_data"
-            style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
-            onchange="sincronizarDataDateEv(this);_validarDataEvPassada(this);_atualizarDuracaoEvContr()" />
-          <!-- Toggle multi-dia contrato -->
-          <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
-            <label class="include-toggle" onclick="event.stopPropagation();_toggleMultiDiaContr(this.querySelector('input'))">
-              <input type="checkbox" id="ev_chk_multidia" onchange="_toggleMultiDiaContr(this)" />
-              <span>Evento com mais de um dia</span>
-            </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
+          <div>
+            <label>Data do Evento</label>
+            <input type="date" id="ev_data"
+              style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
+              onchange="sincronizarDataDateEv(this);_validarDataEvPassada(this);_atualizarDuracaoEvContr()" />
           </div>
-          <div id="ev_painel_data_fim" style="display:none;margin-top:8px">
+          <div id="ev_painel_data_fim">
             <label style="margin-bottom:6px">Data de Término</label>
             <input type="date" id="ev_data_fim"
               style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
@@ -3221,11 +3216,9 @@ function resetFormularioContrato() {
    'val_total','pgto_custom','data_entrada'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  // Resetar multi-dia
-  var chkMultiRst = document.getElementById('ev_chk_multidia');
-  if (chkMultiRst) { chkMultiRst.checked = false; _toggleMultiDiaContr(chkMultiRst); }
+  // Resetar data de término
   var elFimRst = document.getElementById('ev_data_fim');
-  if (elFimRst) elFimRst.value = '';
+  if (elFimRst) { elFimRst.value = ''; _atualizarDuracaoEvContr(); }
   // Reset forma pagamento
   const vista = document.querySelector('input[name="pgto"][value="vista"]');
   if (vista) { vista.checked = true; vista.dispatchEvent(new Event('change')); }
@@ -3513,16 +3506,11 @@ function aplicarOpcaoSelecionada() {
   setVal('ev_local', d.local || d.local_evento || '');
   setVal('ev_maps',  d.local_evento_maps || d.ev_maps || d.maps_link || (document.getElementById('ev_maps')||{}).value || ''); _atualizarBtnMaps();
   setVal('ev_data',   d.dataEvt    || '');
-  // Propagar multi-dia do orçamento para o contrato
+  // Propagar data de término do orçamento para o contrato
   var _dataFimOrcProp = d.dataFim || d.data_fim || '';
-  var chkMC = document.getElementById('ev_chk_multidia');
-  if (chkMC) {
-    chkMC.checked = !!(d.multidia) || !!_dataFimOrcProp;
-    _toggleMultiDiaContr(chkMC);
-    if (_dataFimOrcProp) {
-      var elFimMC = document.getElementById('ev_data_fim');
-      if (elFimMC) { elFimMC.value = _dataFimOrcProp; _atualizarDuracaoEvContr(); }
-    }
+  if (_dataFimOrcProp) {
+    var elFimMC = document.getElementById('ev_data_fim');
+    if (elFimMC) { elFimMC.value = _dataFimOrcProp; _atualizarDuracaoEvContr(); }
   }
   setVal('ev_inicio', d.ev_inicio  || '');
   setVal('ev_fim',    d.ev_fim     || '');
@@ -3973,7 +3961,7 @@ function _salvarRascunhoContrato() {
     var pgtoRadio = document.querySelector('input[name="pgto"]:checked');
     var nParc = document.querySelector('input[name="nparcelas"]:checked');
     var dados = { _ts: Date.now(), servicos: servicos, pgto_sel: pgtoRadio ? pgtoRadio.value : 'vista', nparcelas: nParc ? nParc.value : '',
-                  ev_multidia: !!(document.getElementById('ev_chk_multidia') || {}).checked };
+                  ev_multidia: !!(document.getElementById('ev_data_fim') || {}).value };
     _DRAFT_CAMPOS.forEach(function(id) {
       var el = document.getElementById(id);
       if (el) dados[id] = el.value;
@@ -4023,13 +4011,8 @@ function _aplicarRascunhoContrato() {
     var d = JSON.parse(raw);
     var set = function(id, val) { var el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
     _DRAFT_CAMPOS.forEach(function(id) { set(id, d[id] || ''); });
-    // Restaurar multi-dia
-    var chkMultiR = document.getElementById('ev_chk_multidia');
-    if (chkMultiR) {
-      chkMultiR.checked = !!d.ev_multidia;
-      _toggleMultiDiaContr(chkMultiR);
-      if (d.ev_data_fim) { var elFimR = document.getElementById('ev_data_fim'); if (elFimR) { elFimR.value = d.ev_data_fim; _atualizarDuracaoEvContr(); } }
-    }
+    // Restaurar data de término
+    if (d.ev_data_fim) { var elFimR = document.getElementById('ev_data_fim'); if (elFimR) { elFimR.value = d.ev_data_fim; _atualizarDuracaoEvContr(); } }
     var pgtoRadio = document.querySelector('input[name="pgto"][value="' + (d.pgto_sel || 'vista') + '"]');
     if (pgtoRadio) { pgtoRadio.checked = true; pgtoRadio.dispatchEvent(new Event('change')); }
     if (d.pgto_sel === 'parcelado' && d.nparcelas) {
@@ -4773,23 +4756,10 @@ function _toggleEvDataLivre(chk) {
     inputLivre.style.display = 'none';
   }
 }
-function _toggleMultiDiaContr(chk) {
-  var painel = document.getElementById('ev_painel_data_fim');
-  if (!painel) return;
-  if (chk.checked) {
-    painel.style.display = 'block';
-    _atualizarDuracaoEvContr();
-  } else {
-    painel.style.display = 'none';
-    var fim = document.getElementById('ev_data_fim');
-    if (fim) fim.value = '';
-    var lbl = document.getElementById('ev_label_duracao');
-    if (lbl) lbl.textContent = '';
-  }
+function _toggleMultiDiaContr() {
+  _atualizarDuracaoEvContr();
 }
 function _atualizarDuracaoEvContr() {
-  var chk = document.getElementById('ev_chk_multidia');
-  if (!chk || !chk.checked) return;
   var ini = document.getElementById('ev_data');
   var fim = document.getElementById('ev_data_fim');
   var lbl = document.getElementById('ev_label_duracao');
@@ -5008,11 +4978,8 @@ function preencherContratoDados() {
   set('ev_resp',    d.ev_resp);
   set('ev_local',   d.ev_local);
   set('ev_maps',    d.ev_maps); _atualizarBtnMaps();
-  // Restaurar multi-dia
-  var chkMultiLoad = document.getElementById('ev_chk_multidia');
-  if (chkMultiLoad) { chkMultiLoad.checked = !!d.ev_multidia; _toggleMultiDiaContr(chkMultiLoad); }
   set('ev_data',    d.ev_data);
-  if (d.ev_multidia && d.ev_data_fim) {
+  if (d.ev_data_fim) {
     var elFimLoad = document.getElementById('ev_data_fim');
     if (elFimLoad) { elFimLoad.value = d.ev_data_fim; _atualizarDuracaoEvContr(); }
   }
@@ -5112,7 +5079,7 @@ function gerarContrato() {
   const evResp   = document.getElementById('ev_resp').value.trim()  || '—';
   const evLocal  = document.getElementById('ev_local').value.trim() || '—';
   const evData   = document.getElementById('ev_data').value;
-  const _evMultidia  = !!(document.getElementById('ev_chk_multidia')?.checked);
+  const _evMultidia  = !!(document.getElementById('ev_data_fim')?.value);
   const _evDataFimEl = document.getElementById('ev_data_fim');
   const evDataFim    = (_evMultidia && _evDataFimEl) ? _evDataFimEl.value : '';
   const evIni    = _resolverHora(document.getElementById('ev_inicio').value);
@@ -6353,7 +6320,7 @@ function coletarDadosContrato() {
     ev_local:  get('ev_local'),
     ev_maps:   get('ev_maps'),
     ev_data:             get('ev_data'),
-    ev_multidia:         !!(document.getElementById('ev_chk_multidia') || {}).checked,
+    ev_multidia:         !!(document.getElementById('ev_data_fim') || {}).value,
     ev_data_fim:         (document.getElementById('ev_data_fim') || {}).value || '',
     ev_inicio: get('ev_inicio'),
     ev_fim:    get('ev_fim'),
@@ -6604,7 +6571,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
       ? data.split('-').reverse().join('/')
       : data;
     // Se multi-dia, mostrar intervalo no card
-    if (doc.ev_multidia && doc.ev_data_fim) {
+    if (doc.ev_data_fim) {
       var fimFmt = doc.ev_data_fim.split('-').reverse().join('/');
       dataFmt = dataFmt + ' – ' + fimFmt;
     }
@@ -6711,12 +6678,6 @@ function abrirContrato(id) {
     set('ev_local',  d.ev_local  || '');
     set('ev_maps',   d.ev_maps   || ''); _atualizarBtnMaps();
     set('ev_data',   d.ev_data   || '');
-    // Restaurar multi-dia
-    var chkMultiC = document.getElementById('ev_chk_multidia');
-    if (chkMultiC) {
-      chkMultiC.checked = !!d.ev_multidia;
-      _toggleMultiDiaContr(chkMultiC);
-    }
     if (d.ev_data_fim) {
       var elFimC = document.getElementById('ev_data_fim');
       if (elFimC) { elFimC.value = d.ev_data_fim; _atualizarDuracaoEvContr(); }
@@ -11255,4 +11216,4 @@ function _montarNotaLivre(d) {
 }
 </script>
 </div>
-</body
+</body                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
