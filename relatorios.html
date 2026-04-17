@@ -3327,8 +3327,6 @@ function renderPagamentos() {
   const hojeMs = (function() { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
   function _isPast(ev) { const t = _dataEvNum(ev); return t !== Infinity && t < hojeMs; }
 
-  const alertasFuturos  = comAlerta.filter(function(ev) { return !_isPast(ev); });
-  const alertasPassados = comAlerta.filter(function(ev) { return  _isPast(ev); });
   const normaisFuturos  = semAlerta.filter(function(ev) { return !_isPast(ev); });
   const normaisPassados = semAlerta.filter(function(ev) { return  _isPast(ev); });
 
@@ -3347,38 +3345,30 @@ function renderPagamentos() {
 
   let html = '';
 
-  // Monitoramento — futuros
-  if (alertasFuturos.length > 0) {
+  // Monitoramento — TODOS juntos no topo (futuros + passados)
+  if (comAlerta.length > 0) {
     html += '<div class="pgto-monitoramento-sec">' +
-      '<div class="pgto-monitoramento-header">⚠&nbsp; Monitoramento — ' + alertasFuturos.length + ' evento(s) com pendência manual</div>' +
-      _grade(alertasFuturos) +
+      '<div class="pgto-monitoramento-header">⚠&nbsp; Monitoramento — ' + comAlerta.length + ' evento(s) com pendência</div>' +
+      _grade(comAlerta) +
       '</div>';
   }
 
   // Normais — futuros
   if (normaisFuturos.length > 0) {
-    const label = (alertasFuturos.length > 0)
+    const label = (comAlerta.length > 0)
       ? '<div class="pgto-normal-header">Pagamentos em dia — ' + normaisFuturos.length + ' evento(s)</div>' : '';
     html += label + _grade(normaisFuturos);
   }
 
-  // Separador (só se tiver passados para mostrar)
-  const temPassados = alertasPassados.length > 0 || normaisPassados.length > 0;
-  const temFuturos  = alertasFuturos.length  > 0 || normaisFuturos.length  > 0;
+  // Separador (só se tiver passados normais para mostrar)
+  const temPassados = normaisPassados.length > 0;
+  const temFuturos  = comAlerta.length > 0 || normaisFuturos.length > 0;
   if (temPassados && temFuturos) html += separador;
-
-  // Monitoramento — passados
-  if (alertasPassados.length > 0) {
-    html += '<div class="pgto-monitoramento-sec" style="margin-top:0">' +
-      '<div class="pgto-monitoramento-header">⚠&nbsp; Monitoramento — ' + alertasPassados.length + ' evento(s) já realizados com pendência</div>' +
-      _grade(alertasPassados) +
-      '</div>';
-  }
 
   // Normais — passados
   if (normaisPassados.length > 0) {
-    const label = (alertasPassados.length > 0 || temFuturos)
-      ? '<div class="pgto-normal-header" style="margin-top:' + (alertasPassados.length > 0 ? '20px' : '0') + '">' + normaisPassados.length + ' evento(s) já realizados</div>' : '';
+    const label = temFuturos
+      ? '<div class="pgto-normal-header" style="margin-top:0">' + normaisPassados.length + ' evento(s) já realizados</div>' : '';
     html += label + _grade(normaisPassados);
   }
 
