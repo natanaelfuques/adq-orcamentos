@@ -1,4 +1,4 @@
-const CACHE = 'adq-orcamentos-v1';
+const CACHE = 'adq-orcamentos-v2';
 
 self.addEventListener('install', e => {
   e.waitUntil(
