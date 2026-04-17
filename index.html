@@ -5835,7 +5835,7 @@ function handleSalvosClick(e) {
     btn.textContent = novoLabel;
     btn.setAttribute('data-status', novoStatus);
     btn.setAttribute('data-aprovado', novoAprovado);
-    var isReadonly = novoStatus === 'andamento' || novoStatus === 'concluido';
+    var isReadonly = novoStatus === 'concluido';
     btn.className = (isReadonly ? 'salvo-status status-readonly' : 'salvo-status') + (novaClasse ? ' ' + novaClasse : '');
     btn.style.cssText = isReadonly ? '' : (novoStatus === 'cancelado' ? 'cursor:pointer' : 'cursor:pointer;background:transparent');
     var monRow = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('.salvo-montagem-row');
@@ -6404,7 +6404,7 @@ function iniciarListenerContratos() {
           statusBtn.setAttribute('data-status', _statusCon);
           statusBtn.setAttribute('data-aprovado', aprovado);
           var _etapaAtual = statusBtn.getAttribute('data-etapa') || '';
-          if (_etapaAtual === 'andamento' || _etapaAtual === 'concluido') {
+          if (_etapaAtual === 'concluido') {
             statusBtn.className = 'salvo-status status-readonly' + _scClass;
           } else {
             statusBtn.className = 'salvo-status' + _scClass;
@@ -6443,7 +6443,7 @@ function iniciarListenerContratos() {
       var aprovado = btn.getAttribute('data-aprovado') === 'true';
       var statusClass, statusLabel, clickable;
       if (etapa === 'andamento') {
-        statusClass = 'andamento'; statusLabel = 'Em andamento'; clickable = false;
+        statusClass = 'andamento'; statusLabel = 'Em andamento'; clickable = true;
       } else if (etapa === 'concluido') {
         statusClass = 'concluido'; statusLabel = 'Concluído'; clickable = false;
       } else if (etapa === 'eventos') {
@@ -6583,8 +6583,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     var etapa = etapaMap[id]; // 'eventos','andamento','concluido' ou undefined
     // Determinar estado visual do botão
     var _statusCon = doc.status_contrato || (aprovado ? 'assinado' : 'pendente');
-    // Override visual por etapa do painel (andamento/concluido são readonly)
-    var _etapaOverride = etapa === 'andamento' || etapa === 'concluido';
+    // Override visual por etapa do painel (só concluido é readonly)
+    var _etapaOverride = etapa === 'concluido';
     var _dispStatus = _etapaOverride ? etapa : _statusCon;
     var statusClass = _dispStatus === 'confirmado' ? ' confirmado'
                     : _dispStatus === 'assinado'   ? ' aprovado'
