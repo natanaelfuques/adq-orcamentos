@@ -2536,7 +2536,9 @@ function getStatusPgto(ev) {
   if (total <= 0) return 'naovence';
   const alertas = getAlertasPgto(ev);
   const pago = getTotalPagoAuto(ev);
-  if (pago >= total - 0.05) return 'quitado';
+  if (pago >= total - 0.05) return 'quitado'; // auto-quitado tem prioridade absoluta
+  // Override manual de status (não sobrescreve quitado por pagamento)
+  if (ev.pgto_status_override) return ev.pgto_status_override;
   if (alertas.length > 0) return 'alerta';
   // Notas: se evento já passou e nada foi registrado → monitoramento automático
   if (ev._origem === 'nota' && pago <= 0) {
@@ -2654,6 +2656,81 @@ function resolverAlerta(docId, parcelaIdx) {
   db.collection(col).doc(docId).update({ pgto_alertas: alertas })
     .then(function() {
       _pgtoUpdateLocal(docId, { pgto_alertas: alertas });
+      if (_pgtoAbertos[docId]) { _pgtoDirty[docId] = true; _pgtoRefreshCardDOM(docId); }
+      else renderPagamentos();
+    })
+    .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
+/* ── OVERRIDE MANUAL DE STATUS ──────────────────────────────────────────────── */
+
+function _abrirMenuStatusPgto(e, docId) {
+  e.stopPropagation();
+  // Fechar menu existente
+  const velho = document.getElementById('pgto-status-menu');
+  if (velho) { velho.remove(); if (velho.dataset.id === docId) return; }
+
+  const ev = _pgtoEventoById(docId);
+  if (!ev) return;
+  const atual = getStatusPgto(ev);
+
+  const opcoes = [
+    { val: '',        txt: '↺ Auto',      cor: '#888' },
+    { val: 'quitado', txt: '✓ Quitado',   cor: '#25D366' },
+    { val: 'parcial', txt: '◑ Parcial',   cor: '#F5A623' },
+    { val: 'pendente',txt: '● Pendente',  cor: '#aaa'    },
+    { val: 'alerta',  txt: '⚠ Monitorar', cor: '#e05c5c' },
+  ];
+
+  const menu = document.createElement('div');
+  menu.id = 'pgto-status-menu';
+  menu.dataset.id = docId;
+  menu.style.cssText = 'position:fixed;z-index:9999;background:#1e1e1e;border:1px solid #333;border-radius:8px;padding:6px 0;box-shadow:0 6px 24px rgba(0,0,0,0.5);min-width:150px';
+  menu.innerHTML = opcoes.map(function(o) {
+    const ativo = (o.val === '' && !ev.pgto_status_override) || o.val === atual;
+    return '<div data-val="' + o.val + '" style="padding:8px 14px;font-size:0.75rem;font-weight:700;color:' + o.cor + ';cursor:pointer;background:' + (ativo ? 'rgba(255,255,255,0.05)' : 'transparent') + ';transition:background 0.1s" onmouseover="this.style.background=\'rgba(255,255,255,0.08)\'" onmouseout="this.style.background=\'' + (ativo ? 'rgba(255,255,255,0.05)' : 'transparent') + '\'">' + o.txt + (ativo ? ' ✓' : '') + '</div>';
+  }).join('');
+
+  // Posicionar próximo ao badge clicado
+  const rect = e.target.getBoundingClientRect();
+  document.body.appendChild(menu);
+  const mh = menu.offsetHeight;
+  const spaceAbove = rect.top;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  menu.style.top = (spaceBelow >= mh || spaceBelow >= spaceAbove)
+    ? (rect.bottom + 4) + 'px'
+    : (rect.top - mh - 4) + 'px';
+  const leftPos = Math.min(rect.left, window.innerWidth - menu.offsetWidth - 8);
+  menu.style.left = leftPos + 'px';
+
+  // Click em uma opção
+  menu.addEventListener('click', function(ev2) {
+    ev2.stopPropagation();
+    const item = ev2.target.closest('[data-val]');
+    if (!item) return;
+    menu.remove();
+    _salvarStatusOverridePgto(docId, item.dataset.val || null);
+  });
+
+  // Fechar ao clicar fora
+  setTimeout(function() {
+    document.addEventListener('click', function _close(ev2) {
+      document.removeEventListener('click', _close);
+      const m = document.getElementById('pgto-status-menu');
+      if (m) m.remove();
+    });
+  }, 10);
+}
+
+function _salvarStatusOverridePgto(docId, novoStatus) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  const upd = novoStatus ? { pgto_status_override: novoStatus } : { pgto_status_override: firebase.firestore.FieldValue.delete() };
+  db.collection(col).doc(docId).update(upd)
+    .then(function() {
+      const updates = novoStatus ? { pgto_status_override: novoStatus } : { pgto_status_override: null };
+      _pgtoUpdateLocal(docId, updates);
       if (_pgtoAbertos[docId]) { _pgtoDirty[docId] = true; _pgtoRefreshCardDOM(docId); }
       else renderPagamentos();
     })
@@ -3409,7 +3486,7 @@ function buildPgtoCard(ev) {
         '<div class="pgto-card-nome">' + nomeExib + kmBadge + '</div>' +
         '<div class="pgto-card-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
-      '<span class="pgto-status-badge ' + badgeClass + '">' + badgeTxt + '</span>' +
+      '<span class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
     '</div>' +
     // Barra de progresso (sempre visível)
     '<div class="pgto-card-progress"><div class="pgto-progress-bar"><div class="pgto-progress-fill" style="width:' + pct.toFixed(1) + '%;background:' + fillColor + '"></div></div></div>' +
