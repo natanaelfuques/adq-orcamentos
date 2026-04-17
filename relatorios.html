@@ -2613,12 +2613,12 @@ function _diasEmAtraso(ev) {
   return diff > 0 ? diff : 0;
 }
 
-/* Glow colorido no badge por dias em atraso: azul(1-30) → âmbar(31-60) → vermelho(61+) */
+/* Glow colorido no badge por dias em atraso: azul(1-7) → âmbar(8-30) → vermelho(30+) */
 function _glowAtrasoStyle(ev) {
   const dias = _diasEmAtraso(ev);
   if (dias <= 0) return '';
-  if (dias <= 30) return 'box-shadow:0 0 7px 1px rgba(74,144,200,0.65)';
-  if (dias <= 60) return 'box-shadow:0 0 8px 2px rgba(245,166,35,0.75)';
+  if (dias <= 7) return 'box-shadow:0 0 7px 1px rgba(74,144,200,0.65)';
+  if (dias <= 30) return 'box-shadow:0 0 8px 2px rgba(245,166,35,0.75)';
   return 'box-shadow:0 0 10px 3px rgba(224,92,92,0.85)';
 }
 
