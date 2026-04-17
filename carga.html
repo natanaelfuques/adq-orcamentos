@@ -838,6 +838,58 @@
   .kit-editor-slots { grid-template-columns: repeat(3, 1fr); }
   .modal-box { padding: 16px; }
 }
+
+/* ── Kit inline slots ──────────────────────────────── */
+.kit-inline-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin: 8px 0 6px;
+}
+.kit-inline-slot {
+  background: var(--surface2);
+  border: 1.5px dashed var(--border);
+  border-radius: 6px;
+  min-height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+  padding: 5px 4px;
+  text-align: center;
+}
+.kit-inline-slot.drag-over { border-color: var(--gold); background: var(--gold-dim); }
+.kit-inline-slot.filled { border-style: solid; border-color: var(--gold); background: rgba(74,144,217,0.07); }
+.kit-inline-slot .slot-num { position:absolute;top:2px;left:4px;font-size:0.45rem;color:var(--border2); }
+.kit-inline-slot .slot-nome { font-size:0.6rem;font-weight:700;color:var(--text);line-height:1.1;word-break:break-word; }
+.kit-inline-slot .slot-remove {
+  position:absolute;top:2px;right:2px;background:rgba(224,92,92,0.2);border:none;
+  border-radius:3px;color:var(--red);cursor:pointer;padding:1px 3px;font-size:0.5rem;
+  line-height:1;display:none;
+}
+.kit-inline-slot.filled:hover .slot-remove { display:block; }
+.kit-expand-btn {
+  background:transparent;border:none;color:var(--muted);cursor:pointer;
+  padding:2px 5px;border-radius:4px;font-size:0.65rem;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;letter-spacing:0.05em;text-transform:uppercase;transition:color 0.15s;
+}
+.kit-expand-btn:hover { color:var(--gold); }
+/* ── Equip como drop target para acessórios ─────────── */
+.equip-card.acess-drop-over { border-color: var(--gold); background: rgba(74,144,217,0.06); }
+/* ── Evento como drop target para veículo ──────────── */
+.ev-chip.veiculo-drop-over { border-color: var(--gold) !important; background: var(--gold-dim); transform: scale(1.03); }
+/* ── Veículo draggable ──────────────────────────────── */
+.veiculo-card[draggable="true"] { cursor: grab; }
+.veiculo-card.dragging { opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -1031,6 +1083,9 @@ var _cargaAtual   = null; // carga em montagem (não salva) {kits:[{kit_id,kit_n
 
 var _kitEditorId  = null; // ID do kit sendo editado (null = novo)
 var _kitEditorSlots = new Array(9).fill(null); // slots do kit editor
+var _kitExpandidos = {};   // {kitId: true} kits com slots expandidos
+var _kitSlotsEdit  = {};   // {kitId: [slot0..slot8]} edições em curso
+var _equipAcessCarga = {}; // {equipId: [{id,nome}]} acessórios adicionados nesta sessão
 
 var _dragTipo     = null; // 'kit' | 'equip' | 'acess'
 var _dragId       = null; // ID do item sendo arrastado
@@ -1170,7 +1225,12 @@ function renderEventos() {
     else if (evDate <= semana) urgClass = ' hoje';
     var cargaClass = eventosComCarga.has(ev.id) ? ' com-carga' : ' sem-carga';
     var nome = ev.nome_cliente || ev.nome || 'Evento';
-    return '<div class="ev-chip' + sel + urgClass + cargaClass + '" onclick="selecionarEvento(\'' + ev.id + '\')" title="' + esc(nome) + '">' +
+    return '<div class="ev-chip' + sel + urgClass + cargaClass + '" id="evchip-' + ev.id + '"' +
+      ' onclick="selecionarEvento(\'' + ev.id + '\')"' +
+      ' ondragover="dragOverEvento(event,\'' + ev.id + '\')"' +
+      ' ondragleave="dragLeaveEvento(event,\'' + ev.id + '\')"' +
+      ' ondrop="dropVeiculoNoEvento(event,\'' + ev.id + '\')"' +
+      ' title="' + esc(nome) + '">' +
       '<div class="ev-chip-data">' + fmtData(ev.ev_data) + '</div>' +
       '<div class="ev-chip-nome">' + esc(nome) + '</div>' +
       (ev.ev_local ? '<div class="ev-chip-local">' + esc(ev.ev_local) + '</div>' : '') +
@@ -1228,7 +1288,11 @@ function renderVeiculos() {
       ? '<img class="veiculo-img" src="' + v.img + '" alt="' + esc(v.nome) + '">' 
       : '<div class="veiculo-img-placeholder">🚚</div>';
 
-    return '<div class="veiculo-card' + sel + '" id="vcard-' + v.id + '" onclick="selecionarVeiculo(\'' + v.id + '\')"' +
+    return '<div class="veiculo-card' + sel + '" id="vcard-' + v.id + '"' +
+      ' draggable="true"' +
+      ' ondragstart="dragStartVeiculo(\'' + v.id + '\')"' +
+      ' ondragend="dragEndVeiculo(\'' + v.id + '\')"' +
+      ' onclick="selecionarVeiculo(\'' + v.id + '\')"' +
       ' ondragover="dragOverVeiculoSlot(event,\'' + v.id + '\')" ondragleave="dragLeaveVeiculoSlot(event,\'' + v.id + '\')" ondrop="dropNoVeiculo(event,\'' + v.id + '\')">' +
       imgHtml +
       '<div class="veiculo-body">' +
@@ -1271,35 +1335,166 @@ function renderKits() {
     grid.innerHTML = '<div class="empty-state">Nenhum kit cadastrado. Crie um kit acima.</div>';
     return;
   }
-  var html = list.map(function(k) {
-    var itens = Array.isArray(k.itens) ? k.itens : [];
-    var totalSlots = 9;
-    var usados = Math.min(itens.length, totalSlots);
-    var slotsHtml = '';
-    for (var i = 0; i < totalSlots; i++) {
-      slotsHtml += '<div class="kit-slot-mini' + (i < usados ? ' filled' : '') + '"></div>';
-    }
-    var countLabel = itens.length === 0 ? 'Vazio' 
-      : itens.length === 1 ? '1 equipamento'
-      : itens.length + ' equipamentos';
-    return '<div class="kit-card" draggable="true" id="kcard-' + k.id + '"' +
-      ' ondragstart="dragStartKit(\'' + k.id + '\')" ondragend="dragEndKit(\'' + k.id + '\')">' +
-      '<div class="kit-card-header">' +
-        '<div class="kit-card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>' +
-        '<div class="kit-card-nome">' + esc(k.nome) + '</div>' +
-      '</div>' +
-      '<div class="kit-card-count">' + countLabel + '</div>' +
-      '<div class="kit-slots-mini">' + slotsHtml + '</div>' +
-      '<div class="kit-drag-hint">Arraste → Veículo</div>' +
-      '<div class="kit-card-actions">' +
-        '<button class="kit-btn" onclick="event.stopPropagation();abrirKitEditor(\'' + k.id + '\')">Editar</button>' +
-      '</div>' +
-      '</div>';
-  }).join('');
-  grid.innerHTML = html;
+  grid.innerHTML = list.map(function(k) { return _buildKitCard(k); }).join('');
 }
 
-// ════════════════════════════════════════════════════
+function _buildKitCard(k) {
+  var expanded = !!_kitExpandidos[k.id];
+  var slots = _kitSlotsEdit[k.id] || _kitSlotsFromItens(k);
+  var usados = slots.filter(function(s) { return s !== null; }).length;
+  var countLabel = usados === 0 ? 'Vazio' : usados + ' equipamento' + (usados !== 1 ? 's' : '');
+  var kid = k.id;
+
+  var slotsHtml = '';
+  if (expanded) {
+    for (var i = 0; i < 9; i++) {
+      var s = slots[i];
+      var cls = 'kit-inline-slot' + (s ? ' filled' : '');
+      if (s) {
+        slotsHtml += '<div class="' + cls + '"'
+          + ' ondragover="dragOverKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
+          + ' ondragleave="dragLeaveKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
+          + ' ondrop="dropNoKitInlineSlot(event,\'' + kid + '\',' + i + ')">'
+          + '<span class="slot-num">' + (i+1) + '</span>'
+          + '<button class="slot-remove" onclick="event.stopPropagation();removerKitInlineSlot(\'' + kid + '\',' + i + ')">x</button>'
+          + '<div style="font-size:0.9rem">' + (s.tipo === 'kit' ? '&#128193;' : '&#128295;') + '</div>'
+          + '<div class="slot-nome">' + (s.nome ? s.nome.substring(0,12) : '') + '</div>'
+          + '</div>';
+      } else {
+        slotsHtml += '<div class="' + cls + '"'
+          + ' ondragover="dragOverKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
+          + ' ondragleave="dragLeaveKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
+          + ' ondrop="dropNoKitInlineSlot(event,\'' + kid + '\',' + i + ')">'
+          + '<span class="slot-num">' + (i+1) + '</span>'
+          + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+          + '</div>';
+      }
+    }
+  } else {
+    for (var j = 0; j < 9; j++) {
+      slotsHtml += '<div class="kit-slot-mini' + (slots[j] ? ' filled' : '') + '"></div>';
+    }
+  }
+
+  return '<div class="kit-card" draggable="true" id="kcard-' + kid + '"'
+    + ' ondragstart="dragStartKit(\'' + kid + '\')" ondragend="dragEndKit(\'' + kid + '\')">'
+    + '<div class="kit-card-header">'
+    + '<div class="kit-card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>'
+    + '<div class="kit-card-nome">' + esc(k.nome) + '</div>'
+    + '<button class="kit-expand-btn" onclick="event.stopPropagation();toggleKitExpand(\'' + kid + '\')">'
+    + (expanded ? '&#9650; Fechar' : '&#9660; Slots')
+    + '</button>'
+    + '</div>'
+    + '<div class="kit-card-count">' + countLabel + '</div>'
+    + (expanded
+        ? '<div class="kit-inline-slots">' + slotsHtml + '</div>'
+          + '<div style="font-size:0.62rem;color:var(--muted);text-align:center;margin:2px 0 5px">Arraste equipamentos para os slots</div>'
+          + '<button class="kit-btn" style="width:100%;margin-bottom:4px" onclick="event.stopPropagation();salvarKitInline(\'' + kid + '\')">Salvar kit</button>'
+        : '<div class="kit-slots-mini">' + slotsHtml + '</div>')
+    + '<div class="kit-drag-hint" style="margin-top:4px">Arraste kit &#8594; Veiculo</div>'
+    + '</div>';
+}
+
+function _kitSlotsFromItens(k) {
+  var slots = new Array(9).fill(null);
+  var itens = Array.isArray(k.itens) ? k.itens : [];
+  itens.forEach(function(it, i) {
+    if (i >= 9) return;
+    if (it.equipId) {
+      var eq = _equipamentos[it.equipId];
+      slots[i] = { tipo: 'equipamento', id: it.equipId, nome: eq ? eq.nome : (it.nome || 'Equip'), qtd: it.qtd || 1 };
+    } else if (it.kitId) {
+      var kt = _kits[it.kitId];
+      slots[i] = { tipo: 'kit', id: it.kitId, nome: kt ? kt.nome : (it.nome || 'Kit'), qtd: 1 };
+    }
+  });
+  return slots;
+}
+
+function toggleKitExpand(kitId) {
+  if (_kitExpandidos[kitId]) {
+    delete _kitExpandidos[kitId];
+    delete _kitSlotsEdit[kitId];
+  } else {
+    _kitExpandidos[kitId] = true;
+    _kitSlotsEdit[kitId] = _kitSlotsFromItens(_kits[kitId] || {});
+  }
+  renderKits();
+}
+
+function dragOverKitInlineSlot(event, kitId, idx) {
+  if (_dragTipo !== 'equip' && _dragTipo !== 'kit') return;
+  if (_dragTipo === 'kit' && _dragId === kitId) return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.dataTransfer.dropEffect = 'move';
+  var slots = document.querySelectorAll('#kcard-' + kitId + ' .kit-inline-slot');
+  if (slots[idx]) slots[idx].classList.add('drag-over');
+}
+function dragLeaveKitInlineSlot(event, kitId, idx) {
+  var slots = document.querySelectorAll('#kcard-' + kitId + ' .kit-inline-slot');
+  if (slots[idx]) slots[idx].classList.remove('drag-over');
+}
+function dropNoKitInlineSlot(event, kitId, idx) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (!_dragId) return;
+  if (!_kitSlotsEdit[kitId]) {
+    _kitExpandidos[kitId] = true;
+    _kitSlotsEdit[kitId] = _kitSlotsFromItens(_kits[kitId] || {});
+  }
+  if (_dragTipo === 'equip') {
+    var eq = _equipamentos[_dragId];
+    if (!eq) return;
+    _kitSlotsEdit[kitId][idx] = { tipo: 'equipamento', id: _dragId, nome: eq.nome, qtd: 1 };
+    toast('+ ' + eq.nome + ' Slot ' + (idx+1));
+  } else if (_dragTipo === 'kit') {
+    var k2 = _kits[_dragId];
+    if (!k2 || _dragId === kitId) return;
+    for (var i = 0; i < 3; i++) {
+      if (idx + i >= 9) break;
+      _kitSlotsEdit[kitId][idx+i] = i === 0
+        ? { tipo: 'kit',     id: _dragId, nome: k2.nome, qtd: 1 }
+        : { tipo: 'kit-ext', id: _dragId, nome: k2.nome, qtd: 1 };
+    }
+    toast('+ Kit ' + k2.nome + ' Slots ' + (idx+1) + '-' + Math.min(idx+3,9));
+  }
+  renderKits();
+}
+function removerKitInlineSlot(kitId, idx) {
+  if (!_kitSlotsEdit[kitId]) return;
+  var slot = _kitSlotsEdit[kitId][idx];
+  if (slot && slot.tipo === 'kit-ext') {
+    for (var i = idx; i >= 0; i--) {
+      if (_kitSlotsEdit[kitId][i] && _kitSlotsEdit[kitId][i].tipo === 'kit') {
+        for (var j = i; j < i+3 && j < 9; j++) _kitSlotsEdit[kitId][j] = null;
+        break;
+      }
+    }
+  } else {
+    _kitSlotsEdit[kitId][idx] = null;
+  }
+  renderKits();
+}
+function salvarKitInline(kitId) {
+  var slots = _kitSlotsEdit[kitId];
+  if (!slots) return;
+  var itens = [];
+  for (var i = 0; i < 9; i++) {
+    var s = slots[i];
+    if (!s || s.tipo === 'kit-ext') continue;
+    if (s.tipo === 'equipamento') itens.push({ equipId: s.id, qtd: s.qtd || 1, acessorios: '', nome: s.nome });
+    else if (s.tipo === 'kit') itens.push({ kitId: s.id, qtd: 1, nome: s.nome, _isKit: true });
+  }
+  db.collection('kits').doc(kitId).update({ itens: itens, _atualizado: Date.now() })
+    .then(function() {
+      toast('Kit salvo!');
+      delete _kitExpandidos[kitId];
+      delete _kitSlotsEdit[kitId];
+    })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
 // RENDER: Equipamentos
 // ════════════════════════════════════════════════════
 function renderEquipamentos() {
@@ -1324,13 +1519,19 @@ function renderEquipamentos() {
     }).join('');
     if (subitens.length > 4) acessHtml += '<span class="equip-acess-chip">+' + (subitens.length-4) + '</span>';
     return '<div class="equip-card" draggable="true" id="ecard-' + e.id + '"' +
-      ' ondragstart="dragStartEquip(\'' + e.id + '\')" ondragend="dragEndEquip(\'' + e.id + '\')">' +
+      ' ondragstart="dragStartEquip(\'' + e.id + '\')" ondragend="dragEndEquip(\'' + e.id + '\')"' +
+      ' ondragover="dragOverEquip(event,\'' + e.id + '\')" ondragleave="dragLeaveEquip(event,\'' + e.id + '\')" ondrop="dropAcessNoEquip(event,\'' + e.id + '\')">' +
       '<div class="equip-card-header">' +
         '<div class="equip-card-icon">' + icon + '</div>' +
         '<div><div class="equip-card-nome">' + esc(e.nome) + '</div>' +
           '<div class="equip-card-cat">' + esc(e.categoria||'Outros') + '</div></div>' +
       '</div>' +
       (acessHtml ? '<div class="equip-card-acess">' + acessHtml + '</div>' : '') +
+      (_equipAcessCarga[e.id] && _equipAcessCarga[e.id].length
+        ? '<div class="equip-card-acess" style="border-top:1px solid var(--border);margin-top:4px;padding-top:3px">' +
+          _equipAcessCarga[e.id].map(function(a){ return '<span class="equip-acess-chip" style="border-color:var(--green);color:var(--green)">+' + esc(a.nome) + '</span>'; }).join('') +
+          '</div>'
+        : '') +
       '</div>';
   }).join('');
   grid.innerHTML = html;
@@ -1469,7 +1670,82 @@ function dragEndEquip(id) {
   _dragTipo = null; _dragId = null;
   var el = document.getElementById('ecard-' + id);
   if (el) el.classList.remove('dragging');
-  document.querySelectorAll('.kit-editor-slot.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+  document.querySelectorAll('.kit-editor-slot.drag-over, .kit-inline-slot.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+  document.querySelectorAll('.equip-card.acess-drop-over').forEach(function(el) { el.classList.remove('acess-drop-over'); });
+}
+
+// Veículo → Evento
+function dragStartVeiculo(id) {
+  _dragTipo = 'veiculo'; _dragId = id;
+  setTimeout(function() {
+    var el = document.getElementById('vcard-' + id);
+    if (el) el.classList.add('dragging');
+  }, 0);
+}
+function dragEndVeiculo(id) {
+  _dragTipo = null; _dragId = null;
+  var el = document.getElementById('vcard-' + id);
+  if (el) el.classList.remove('dragging');
+  document.querySelectorAll('.ev-chip.veiculo-drop-over').forEach(function(el) { el.classList.remove('veiculo-drop-over'); });
+}
+function dragOverEvento(event, eventoId) {
+  if (_dragTipo !== 'veiculo') return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  var chip = document.getElementById('evchip-' + eventoId);
+  if (chip) chip.classList.add('veiculo-drop-over');
+}
+function dragLeaveEvento(event, eventoId) {
+  var chip = document.getElementById('evchip-' + eventoId);
+  if (chip) chip.classList.remove('veiculo-drop-over');
+}
+function dropVeiculoNoEvento(event, eventoId) {
+  event.preventDefault();
+  if (_dragTipo !== 'veiculo' || !_dragId) return;
+  var veiculoId = _dragId;
+  var ev = _eventos.find(function(e) { return e.id === eventoId; });
+  var v  = _veiculos.find(function(v) { return v.id === veiculoId; });
+  if (!ev || !v) return;
+  // Verifica se há kits no veículo
+  var kitsIds = _cargaAtual && _cargaAtual.kits_veiculo && _cargaAtual.kits_veiculo[veiculoId] || [];
+  if (!kitsIds.length) {
+    toast('Adicione pelo menos um kit ao veículo antes de confirmar.', true);
+    return;
+  }
+  // Seleciona o evento automaticamente se ainda não estava
+  if (!_eventoSel || _eventoSel.id !== eventoId) {
+    selecionarEvento(eventoId);
+  }
+  confirmarCarga(veiculoId, eventoId);
+}
+
+// Acessório → Equipamento
+function dragOverEquip(event, equipId) {
+  if (_dragTipo !== 'acess') return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.dataTransfer.dropEffect = 'move';
+  var card = document.getElementById('ecard-' + equipId);
+  if (card) card.classList.add('acess-drop-over');
+}
+function dragLeaveEquip(event, equipId) {
+  var card = document.getElementById('ecard-' + equipId);
+  if (card) card.classList.remove('acess-drop-over');
+}
+function dropAcessNoEquip(event, equipId) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (_dragTipo !== 'acess' || !_dragId) return;
+  var acess = _acessorios[_dragId];
+  if (!acess) return;
+  if (!_equipAcessCarga[equipId]) _equipAcessCarga[equipId] = [];
+  // Evita duplicata
+  if (_equipAcessCarga[equipId].some(function(a){ return a.id === _dragId; })) {
+    toast('Acessório já adicionado a este equipamento.', true); return;
+  }
+  _equipAcessCarga[equipId].push({ id: _dragId, nome: acess.nome });
+  toast('+ ' + acess.nome + ' → ' + (_equipamentos[equipId] ? _equipamentos[equipId].nome : 'Equip'));
+  renderEquipamentos();
 }
 
 function dragStartAcess(id) {
@@ -1653,13 +1929,13 @@ function confirmarCarga(veiculoId) {
 
   // Verifica se já existe carga para este evento+veículo
   var existente = Object.values(_cargas).find(function(c) {
-    return c.evento_id === _eventoSel.id && c.veiculo_id === veiculoId;
+    return c.evento_id === eventoAlvo.id && c.veiculo_id === veiculoId;
   });
 
   var payload = {
-    evento_id:    _eventoSel.id,
-    evento_nome:  _eventoSel.nome_cliente || _eventoSel.nome || 'Evento',
-    evento_data:  _eventoSel.ev_data,
+    evento_id:    eventoAlvo.id,
+    evento_nome:  eventoAlvo.nome_cliente || eventoAlvo.nome || 'Evento',
+    evento_data:  eventoAlvo.ev_data,
     veiculo_id:   veiculoId,
     veiculo_nome: veiculo ? veiculo.nome : 'Veículo',
     kits:         kitsData,
