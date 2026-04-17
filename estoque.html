@@ -1985,22 +1985,22 @@
   .kit-search-draggable:hover { border-color: rgba(74,144,217,0.4); }
   .kit-item-chip { cursor: default; }
 
-  /* ── AGENDA ── */
+  /* ── AGENDA CALENDAR ── */
   .agenda-modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 999;
     display: flex; align-items: flex-start; justify-content: center;
-    padding: 16px 8px; overflow-y: auto;
+    padding: 12px 8px; overflow-y: auto;
   }
   .agenda-modal {
     background: var(--dark); border: 1px solid var(--border);
-    border-radius: 10px; width: 100%; max-width: 680px;
+    border-radius: 10px; width: 100%; max-width: 980px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6); flex-shrink: 0;
-    margin: auto 0;
+    margin: auto 0; display: flex; flex-direction: column;
+    max-height: calc(100vh - 24px); overflow: hidden;
   }
   .agenda-modal-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 18px; border-bottom: 1px solid var(--border2);
-    gap: 10px;
+    padding: 12px 18px; border-bottom: 1px solid var(--border2); flex-shrink: 0;
   }
   .agenda-modal-title {
     font-family: 'Barlow Condensed', sans-serif;
@@ -2012,120 +2012,162 @@
     cursor: pointer; font-size: 1.2rem; padding: 2px 6px; line-height: 1;
   }
   .agenda-modal-close:hover { color: var(--text); }
-  .agenda-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 14px; }
+  /* Layout dois painéis */
+  .agenda-layout { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+  .agenda-cal-panel {
+    flex: 1; display: flex; flex-direction: column; min-width: 0;
+    border-right: 1px solid var(--border2);
+  }
+  .agenda-right-panel {
+    width: 280px; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden;
+  }
+  /* Navegação de mês */
+  .agenda-cal-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 14px; border-bottom: 1px solid var(--border2); flex-shrink: 0;
+  }
+  .agenda-nav-btn {
+    background: none; border: 1px solid var(--border2); color: var(--muted);
+    border-radius: 5px; width: 28px; height: 28px; cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .agenda-nav-btn:hover { border-color: #F5A623; color: #F5A623; }
+  .agenda-mes-label {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 1rem;
+    font-weight: 800; color: var(--text); text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .agenda-mes-today-btn {
+    background: none; border: 1px solid var(--border2); color: var(--muted);
+    border-radius: 5px; padding: 3px 10px; cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.62rem;
+    font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .agenda-mes-today-btn:hover { border-color: #F5A623; color: #F5A623; }
+  /* Cabeçalho dias da semana */
+  .agenda-dow-row {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    border-bottom: 1px solid var(--border2); flex-shrink: 0;
+  }
+  .agenda-dow-cell {
+    text-align: center; padding: 5px 0;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem;
+    font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);
+  }
+  /* Grid do calendário */
+  .agenda-cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    flex: 1; overflow-y: auto;
+  }
+  .agenda-cal-cell {
+    border-right: 1px solid var(--border2); border-bottom: 1px solid var(--border2);
+    padding: 4px 3px; min-height: 80px; cursor: pointer;
+    transition: background 0.12s;
+  }
+  .agenda-cal-cell:hover { background: rgba(255,255,255,0.02); }
+  .agenda-cal-cell.outro-mes { opacity: 0.28; cursor: default; pointer-events: none; }
+  .agenda-cal-cell.hoje-cell { background: rgba(245,166,35,0.06); }
+  .agenda-cal-cell.sel-cell { background: rgba(245,166,35,0.11) !important; outline: 1px solid rgba(245,166,35,0.38) !important; outline-offset: -1px; }
+  .agenda-cal-day-num {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; font-weight: 700;
+    color: var(--text); width: 20px; height: 20px; display: flex;
+    align-items: center; justify-content: center; border-radius: 50%; margin-bottom: 2px;
+  }
+  .agenda-cal-day-num.hoje-num { background: #F5A623; color: #111; }
+  .agenda-cal-ev-bar {
+    font-size: 0.55rem; font-weight: 700; font-family: 'Barlow Condensed', sans-serif;
+    border-radius: 3px; padding: 1px 4px; margin-bottom: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; display: block;
+  }
+  .agenda-cal-ev-bar:hover { filter: brightness(1.25); }
+  .agenda-cal-more { font-size: 0.52rem; color: var(--muted); padding: 0 3px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; }
+  /* Painel direito — cabeçalho e form */
+  .agenda-right-header {
+    padding: 9px 14px; border-bottom: 1px solid var(--border2);
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem;
+    font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  }
   .agenda-form {
-    background: var(--surface2); border-radius: 8px;
-    padding: 14px; display: flex; flex-direction: column; gap: 10px;
-    border: 1px solid var(--border2);
+    padding: 10px 14px; display: flex; flex-direction: column; gap: 7px; flex-shrink: 0;
+    border-bottom: 1px solid var(--border2);
   }
-  .agenda-form-title {
-    font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem;
-    font-weight: 800; color: var(--muted); text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-  .agenda-form-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .agenda-form-row .form-input { flex: 1; min-width: 120px; }
-  .agenda-form-row .form-input[type="date"],
-  .agenda-form-row .form-input[type="time"] { flex: 0 0 auto; }
   .agenda-btn-save {
     background: #F5A623; color: #111; border: none; border-radius: 5px;
-    padding: 0 16px; height: 32px; font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
+    padding: 0 14px; height: 30px; font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
     letter-spacing: 0.08em; cursor: pointer; transition: opacity 0.15s;
-    align-self: flex-start;
   }
   .agenda-btn-save:hover { opacity: 0.85; }
-  .agenda-filter-row {
-    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
-  }
-  .agenda-filter-btn {
-    background: var(--surface2); border: 1px solid var(--border2);
-    color: var(--muted); border-radius: 14px; padding: 4px 12px;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem;
-    font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-    cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s;
-  }
-  .agenda-filter-btn:hover, .agenda-filter-btn.active {
-    border-color: #F5A623; color: #F5A623; background: rgba(245,166,35,0.08);
-  }
-  .agenda-list { display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; }
-  .agenda-card {
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: 8px; padding: 12px 14px; display: flex;
-    flex-direction: column; gap: 6px; position: relative;
-    transition: border-color 0.15s;
-  }
-  .agenda-card.conflict { border-color: #e05c5c; background: rgba(224,92,92,0.05); }
-  .agenda-card.ativo { border-color: var(--green); background: rgba(37,211,102,0.04); }
-  .agenda-card.passado { opacity: 0.55; }
-  .agenda-card-top {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  }
-  .agenda-card-nome {
-    font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem;
-    font-weight: 800; color: var(--text); flex: 1; min-width: 0;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .agenda-card-status {
+  .agenda-action-btn {
+    background: none; border: 1px solid var(--border2); color: var(--muted);
+    border-radius: 4px; padding: 0 10px; height: 28px;
     font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem;
+    font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: 0.15s;
+  }
+  .agenda-action-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .agenda-action-btn.del:hover { border-color: var(--red); color: var(--red); }
+  /* Painel direito — lista do dia */
+  .agenda-dia-lista { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .agenda-dia-lista-header {
+    padding: 7px 14px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.62rem;
+    font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border2); flex-shrink: 0; background: var(--surface2);
+  }
+  .agenda-dia-card {
+    padding: 8px 14px; border-bottom: 1px solid var(--border2);
+    display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background 0.12s;
+  }
+  .agenda-dia-card:hover { background: rgba(255,255,255,0.03); }
+  .agenda-dia-card.conflict-card { border-left: 2px solid var(--red); }
+  .agenda-dia-card.ativo-card { border-left: 2px solid var(--green); }
+  .agenda-dia-card-nome {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 800; color: var(--text);
+  }
+  .agenda-dia-card-info { font-size: 0.63rem; color: var(--muted); }
+  .agenda-dia-card-kits { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; }
+  .agenda-dia-card-actions { display: flex; gap: 5px; margin-top: 3px; }
+  .agenda-card-status {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.56rem;
     font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 2px 7px; border-radius: 9px; flex-shrink: 0;
+    padding: 1px 6px; border-radius: 8px; flex-shrink: 0;
   }
   .status-ativo { background: rgba(37,211,102,0.15); color: var(--green); }
   .status-futuro { background: rgba(74,144,217,0.15); color: var(--blue); }
   .status-passado { background: rgba(136,136,136,0.1); color: var(--muted); }
   .status-conflito { background: rgba(224,92,92,0.15); color: var(--red); }
-  .agenda-card-datas {
-    font-size: 0.72rem; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap;
-  }
-  .agenda-card-datas span { display: flex; align-items: center; gap: 4px; }
-  .agenda-card-kits {
-    display: flex; flex-wrap: wrap; gap: 5px;
-  }
   .agenda-kit-chip {
     background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.3);
-    color: #F5A623; border-radius: 5px; padding: 2px 8px;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem;
+    color: #F5A623; border-radius: 4px; padding: 1px 6px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.56rem;
     font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    display: flex; align-items: center; gap: 4px;
   }
-  .agenda-kit-chip.conflict-chip {
-    background: rgba(224,92,92,0.1); border-color: rgba(224,92,92,0.4); color: var(--red);
-  }
-  .agenda-card-obs { font-size: 0.7rem; color: #666; font-style: italic; }
-  .agenda-card-actions {
-    display: flex; gap: 6px; align-items: center; margin-top: 2px;
-  }
-  .agenda-action-btn {
-    background: none; border: 1px solid var(--border2); color: var(--muted);
-    border-radius: 4px; padding: 2px 8px; font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em;
-    text-transform: uppercase; cursor: pointer; transition: 0.15s;
-  }
-  .agenda-action-btn:hover { border-color: var(--gold); color: var(--gold); }
-  .agenda-action-btn.del:hover { border-color: var(--red); color: var(--red); }
-  .agenda-conflict-warn {
-    background: rgba(224,92,92,0.1); border: 1px solid rgba(224,92,92,0.3);
-    border-radius: 6px; padding: 8px 12px; font-size: 0.7rem; color: var(--red);
-    display: flex; align-items: flex-start; gap: 8px;
-  }
-  .agenda-empty {
-    text-align: center; padding: 24px; color: var(--muted);
-    font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem;
+  .agenda-kit-chip.conflict-chip { background: rgba(224,92,92,0.1); border-color: rgba(224,92,92,0.4); color: var(--red); }
+  .agenda-empty-dia {
+    text-align: center; padding: 24px 14px; color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem;
     text-transform: uppercase; letter-spacing: 0.08em;
   }
   .agenda-kit-select-list {
-    display: flex; flex-direction: column; gap: 4px; max-height: 160px;
+    display: flex; flex-direction: column; gap: 2px; max-height: 110px;
     overflow-y: auto; background: var(--darker); border: 1px solid var(--border2);
-    border-radius: 6px; padding: 6px;
+    border-radius: 6px; padding: 4px;
   }
   .agenda-kit-select-item {
-    display: flex; align-items: center; gap: 8px; padding: 6px 8px;
-    border-radius: 5px; cursor: pointer; transition: background 0.12s;
-    font-size: 0.78rem; color: var(--text); user-select: none;
+    display: flex; align-items: center; gap: 6px; padding: 4px 6px;
+    border-radius: 4px; cursor: pointer; transition: background 0.12s;
+    font-size: 0.75rem; color: var(--text); user-select: none;
   }
   .agenda-kit-select-item:hover { background: var(--surface); }
-  .agenda-kit-select-item input[type=checkbox] { accent-color: #F5A623; width: 14px; height: 14px; }
+  .agenda-kit-select-item input[type=checkbox] { accent-color: #F5A623; width: 13px; height: 13px; }
+  @media (max-width: 640px) {
+    .agenda-modal { max-height: 95vh; }
+    .agenda-layout { flex-direction: column; }
+    .agenda-cal-panel { border-right: none; border-bottom: 1px solid var(--border2); max-height: 55vh; }
+    .agenda-right-panel { width: 100%; }
+    .agenda-cal-cell { min-height: 52px; }
+  }
   /* Conflict dot on kit cards */
   .kit-conflict-dot {
     width: 7px; height: 7px; background: var(--red); border-radius: 50%;
@@ -5050,18 +5092,24 @@ renderKitSearchResults = function() {
 
 
 /* ═══════════════════════════════════════════════════════════
-   MÓDULO AGENDA DE EVENTOS / RESERVAS
+   MÓDULO AGENDA DE EVENTOS / RESERVAS — GOOGLE CALENDAR STYLE
    ═══════════════════════════════════════════════════════════ */
 
-var _reservas = {};       // {id: {nome, dataInicio, dataFim, kits:[id,...], obs, criado}}
-var _agFiltro = 'todos';
+var _reservas = {};
 var _agEditandoId = null;
+var _agMes = new Date().getMonth();
+var _agAno = new Date().getFullYear();
+var _agDiaSelecionado = null;
 
 // ── Abrir/fechar ──────────────────────────────────────────
 function abrirAgenda() {
+  _agMes = new Date().getMonth();
+  _agAno = new Date().getFullYear();
+  _agDiaSelecionado = null;
   document.getElementById('agenda-modal-overlay').style.display = 'flex';
+  _renderAgendaCalendar();
   _renderAgendaKitChecklist();
-  _renderAgendaLista();
+  _renderAgendaListaDia(null);
   _preencherDatasHoje();
 }
 
@@ -5089,28 +5137,21 @@ function iniciarAgenda() {
     snap.forEach(function(doc) {
       _reservas[doc.id] = Object.assign({id: doc.id}, doc.data());
     });
-    _renderAgendaLista();
+    _renderAgendaCalendar();
+    _renderAgendaListaDia(_agDiaSelecionado);
     _atualizarBadgeAgenda();
     _atualizarConflitosNosKits();
-  }, function(err) {
-    console.warn('Agenda snapshot error:', err);
-  });
+  }, function(err) { console.warn('Agenda snapshot error:', err); });
 }
 
 // ── Badge no botão ────────────────────────────────────────
 function _atualizarBadgeAgenda() {
   var agora = new Date();
-  var futuros = Object.values(_reservas).filter(function(r) {
-    return new Date(r.dataFim) >= agora;
-  });
+  var futuros = Object.values(_reservas).filter(function(r) { return new Date(r.dataFim) >= agora; });
   var badge = document.getElementById('agenda-badge');
   if (!badge) return;
-  if (futuros.length > 0) {
-    badge.textContent = futuros.length;
-    badge.style.display = 'inline';
-  } else {
-    badge.style.display = 'none';
-  }
+  if (futuros.length > 0) { badge.textContent = futuros.length; badge.style.display = 'inline'; }
+  else { badge.style.display = 'none'; }
 }
 
 // ── Status de uma reserva ─────────────────────────────────
@@ -5118,8 +5159,7 @@ function _statusReserva(r) {
   var agora = new Date();
   var ini = new Date(r.dataInicio);
   var fim = new Date(r.dataFim);
-  var conflito = _detectarConflito(r.id, r.kits || [], r.dataInicio, r.dataFim);
-  if (conflito.length > 0) return 'conflito';
+  if (_detectarConflito(r.id, r.kits || [], r.dataInicio, r.dataFim).length > 0) return 'conflito';
   if (agora >= ini && agora <= fim) return 'ativo';
   if (agora < ini) return 'futuro';
   return 'passado';
@@ -5128,15 +5168,10 @@ function _statusReserva(r) {
 // ── Detectar conflitos ────────────────────────────────────
 function _detectarConflito(excluirId, kits, dataInicio, dataFim) {
   if (!kits || kits.length === 0) return [];
-  var ini = new Date(dataInicio);
-  var fim = new Date(dataFim);
-  var conflicts = [];
+  var ini = new Date(dataInicio), fim = new Date(dataFim), conflicts = [];
   Object.values(_reservas).forEach(function(r) {
-    if (r.id === excluirId) return;
-    if (!r.kits || r.kits.length === 0) return;
-    var rIni = new Date(r.dataInicio);
-    var rFim = new Date(r.dataFim);
-    // Overlap?
+    if (r.id === excluirId || !r.kits || r.kits.length === 0) return;
+    var rIni = new Date(r.dataInicio), rFim = new Date(r.dataFim);
     if (ini <= rFim && fim >= rIni) {
       kits.forEach(function(k) {
         if (r.kits.indexOf(k) !== -1) conflicts.push({reservaId: r.id, reservaNome: r.nome, kitId: k});
@@ -5144,6 +5179,160 @@ function _detectarConflito(excluirId, kits, dataInicio, dataFim) {
     }
   });
   return conflicts;
+}
+
+// ── Navegação de mês ──────────────────────────────────────
+function _navMes(delta) {
+  _agMes += delta;
+  if (_agMes > 11) { _agMes = 0; _agAno++; }
+  if (_agMes < 0) { _agMes = 11; _agAno--; }
+  _renderAgendaCalendar();
+}
+
+function _irParaHoje() {
+  _agMes = new Date().getMonth();
+  _agAno = new Date().getFullYear();
+  _agDiaSelecionado = new Date().toISOString().slice(0,10);
+  _renderAgendaCalendar();
+  _renderAgendaListaDia(_agDiaSelecionado);
+}
+
+// ── Render do calendário mensal ───────────────────────────
+function _renderAgendaCalendar() {
+  var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var label = document.getElementById('agenda-mes-label');
+  if (label) label.textContent = meses[_agMes] + ' de ' + _agAno;
+
+  var grid = document.getElementById('agenda-cal-grid');
+  if (!grid) return;
+
+  var hoje = new Date();
+  var hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0') + '-' + String(hoje.getDate()).padStart(2,'0');
+  var primeiroDia = new Date(_agAno, _agMes, 1);
+  var ultimoDia = new Date(_agAno, _agMes + 1, 0);
+  var startDow = primeiroDia.getDay();
+
+  var cells = [];
+  for (var i = 0; i < startDow; i++) {
+    cells.push({ date: new Date(_agAno, _agMes, 1 - (startDow - i)), outroMes: true });
+  }
+  for (var d = 1; d <= ultimoDia.getDate(); d++) {
+    cells.push({ date: new Date(_agAno, _agMes, d), outroMes: false });
+  }
+  var linhas = Math.ceil(cells.length / 7);
+  if (linhas < 5) linhas = 5;
+  var total = linhas * 7;
+  for (var j = cells.length; j < total; j++) {
+    var extra = j - startDow - ultimoDia.getDate() + 1;
+    cells.push({ date: new Date(_agAno, _agMes + 1, extra), outroMes: true });
+  }
+
+  grid.innerHTML = cells.map(function(cell) {
+    var d = cell.date;
+    var ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    var isHoje = ds === hojeStr;
+    var isSel  = ds === _agDiaSelecionado;
+
+    var resDia = Object.values(_reservas).filter(function(r) {
+      var ini = r.dataInicio ? r.dataInicio.slice(0,10) : null;
+      var fim = r.dataFim   ? r.dataFim.slice(0,10)    : ini;
+      return ini && ds >= ini && ds <= fim;
+    }).sort(function(a,b) { return new Date(a.dataInicio) - new Date(b.dataInicio); });
+
+    var MAX = 3;
+    var bars = resDia.slice(0, MAX).map(function(r) {
+      var st  = _statusReserva(r);
+      var cor = st === 'conflito' ? '#e05c5c' : st === 'ativo' ? '#25D366' : st === 'passado' ? '#555' : '#F5A623';
+      return '<div class="agenda-cal-ev-bar" style="background:' + cor + '22;color:' + cor + ';border-left:2px solid ' + cor + '"' +
+        ' onclick="event.stopPropagation();editarReserva(\'' + r.id + '\')" title="' + esc(r.nome||'') + '">' +
+        esc(r.nome || 'Sem nome') + '</div>';
+    }).join('');
+    if (resDia.length > MAX) bars += '<div class="agenda-cal-more">+' + (resDia.length - MAX) + ' mais</div>';
+
+    var cls = 'agenda-cal-cell' + (cell.outroMes?' outro-mes':'') + (isHoje?' hoje-cell':'') + (isSel?' sel-cell':'');
+    var numCls = 'agenda-cal-day-num' + (isHoje?' hoje-num':'');
+    var click = cell.outroMes ? '' : ' onclick="_clicarDia(\'' + ds + '\')"';
+    return '<div class="' + cls + '"' + click + '>' +
+      '<div class="' + numCls + '">' + d.getDate() + '</div>' + bars + '</div>';
+  }).join('');
+}
+
+// ── Clicar em um dia ──────────────────────────────────────
+function _clicarDia(dateStr) {
+  _agDiaSelecionado = dateStr;
+  _renderAgendaCalendar();
+  document.getElementById('ag-data-inicio').value = dateStr;
+  document.getElementById('ag-data-fim').value = dateStr;
+  if (!_agEditandoId) {
+    var n = document.getElementById('ag-nome');
+    if (n) { n.focus(); }
+  }
+  _renderAgendaListaDia(dateStr);
+}
+
+// ── Render lista do dia ───────────────────────────────────
+function _fmtDt(iso) {
+  if (!iso) return '—';
+  var d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function _renderAgendaListaDia(dateStr) {
+  var lista   = document.getElementById('agenda-lista');
+  var header  = document.getElementById('agenda-dia-lista-header');
+  if (!lista) return;
+
+  var arr = Object.values(_reservas).sort(function(a,b) {
+    return new Date(a.dataInicio) - new Date(b.dataInicio);
+  });
+
+  if (dateStr) {
+    arr = arr.filter(function(r) {
+      var ini = r.dataInicio ? r.dataInicio.slice(0,10) : null;
+      var fim = r.dataFim   ? r.dataFim.slice(0,10)    : ini;
+      return ini && dateStr >= ini && dateStr <= fim;
+    });
+    if (header) {
+      var d = new Date(dateStr + 'T12:00:00');
+      header.textContent = d.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'});
+      header.style.textTransform = 'capitalize';
+    }
+  } else {
+    if (header) { header.textContent = 'Todas as reservas'; header.style.textTransform = ''; }
+  }
+
+  if (arr.length === 0) {
+    lista.innerHTML = '<div class="agenda-empty-dia">' + (dateStr ? 'Nenhuma reserva neste dia' : 'Nenhuma reserva') + '</div>';
+    return;
+  }
+
+  lista.innerHTML = arr.map(function(r) {
+    var st = _statusReserva(r);
+    var kits = r.kits || [];
+    var conflicts = _detectarConflito(r.id, kits, r.dataInicio, r.dataFim);
+    var conflictKitIds = conflicts.map(function(c) { return c.kitId; });
+    var stLabel = {ativo:'Em Andamento', futuro:'Futuro', passado:'Encerrado', conflito:'⚠ Conflito'}[st] || st;
+    var cardCls = 'agenda-dia-card' + (st==='conflito'?' conflict-card':st==='ativo'?' ativo-card':'');
+    var kitsHtml = kits.length === 0 ? '' :
+      '<div class="agenda-dia-card-kits">' + kits.map(function(kid) {
+        var kit = _kits[kid]; var nome = kit ? (kit.nome||kid) : kid;
+        var isC = conflictKitIds.indexOf(kid) !== -1;
+        return '<span class="agenda-kit-chip' + (isC?' conflict-chip':'') + '">' + (isC?'⚠ ':'') + esc(nome) + '</span>';
+      }).join('') + '</div>';
+    return '<div class="' + cardCls + '" onclick="editarReserva(\'' + r.id + '\')">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px">' +
+        '<div class="agenda-dia-card-nome">' + esc(r.nome||'Sem nome') + '</div>' +
+        '<span class="agenda-card-status status-' + st + '">' + stLabel + '</span>' +
+      '</div>' +
+      '<div class="agenda-dia-card-info">' + _fmtDt(r.dataInicio) + ' → ' + _fmtDt(r.dataFim) + '</div>' +
+      kitsHtml +
+      (r.obs ? '<div style="font-size:0.62rem;color:#555;font-style:italic">' + esc(r.obs) + '</div>' : '') +
+      '<div class="agenda-dia-card-actions" onclick="event.stopPropagation()">' +
+        '<button class="agenda-action-btn" onclick="editarReserva(\'' + r.id + '\')">Editar</button>' +
+        '<button class="agenda-action-btn del" onclick="excluirReserva(\'' + r.id + '\')">Excluir</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // ── Render checklist de kits no form ─────────────────────
@@ -5160,67 +5349,37 @@ function _renderAgendaKitChecklist() {
       (_reservas[_agEditandoId].kits || []).indexOf(kit.id) !== -1 : false;
     return '<label class="agenda-kit-select-item">' +
       '<input type="checkbox" class="ag-kit-check" value="' + esc(kit.id) + '"' + (checked ? ' checked' : '') + '> ' +
-      '<span>' + esc(kit.nome || 'Kit sem nome') + '</span>' +
-      '</label>';
+      '<span>' + esc(kit.nome || 'Kit sem nome') + '</span></label>';
   }).join('');
 }
 
 function _getKitsChecked() {
-  var checks = document.querySelectorAll('.ag-kit-check:checked');
-  return Array.from(checks).map(function(c) { return c.value; });
+  return Array.from(document.querySelectorAll('.ag-kit-check:checked')).map(function(c) { return c.value; });
 }
 
 // ── Salvar reserva ────────────────────────────────────────
 function salvarReserva() {
   var nome = (document.getElementById('ag-nome').value || '').trim();
   if (!nome) { toast('Informe o nome do evento'); return; }
-
   var dataIni = document.getElementById('ag-data-inicio').value;
   var horaIni = document.getElementById('ag-hora-inicio').value || '00:00';
-  var dataFim = document.getElementById('ag-data-fim').value;
+  var dataFim = document.getElementById('ag-data-fim').value || dataIni;
   var horaFim = document.getElementById('ag-hora-fim').value || '23:59';
-  var obs = (document.getElementById('ag-obs').value || '').trim();
-
+  var obs     = (document.getElementById('ag-obs').value || '').trim();
   if (!dataIni) { toast('Informe a data de início'); return; }
-  if (!dataFim) { dataFim = dataIni; }
-
   var dataInicio = dataIni + 'T' + horaIni;
   var dataFimStr = dataFim + 'T' + horaFim;
-
-  if (new Date(dataInicio) > new Date(dataFimStr)) {
-    toast('Data de fim deve ser após o início'); return;
-  }
-
-  var kits = _getKitsChecked();
-
-  var payload = {
-    nome: nome,
-    dataInicio: dataInicio,
-    dataFim: dataFimStr,
-    kits: kits,
-    obs: obs,
-    atualizado: firebase.firestore.FieldValue.serverTimestamp()
-  };
-
+  if (new Date(dataInicio) > new Date(dataFimStr)) { toast('Data de fim deve ser após o início'); return; }
+  var kits    = _getKitsChecked();
+  var payload = { nome: nome, dataInicio: dataInicio, dataFim: dataFimStr, kits: kits, obs: obs, atualizado: firebase.firestore.FieldValue.serverTimestamp() };
   var btn = document.querySelector('.agenda-btn-save');
   btn.disabled = true; btn.textContent = 'Salvando...';
-
-  var op;
-  if (_agEditandoId) {
-    op = db.collection('reservas').doc(_agEditandoId).update(payload);
-  } else {
-    payload.criado = firebase.firestore.FieldValue.serverTimestamp();
-    op = db.collection('reservas').add(payload);
-  }
-
-  op.then(function() {
-    toast(_agEditandoId ? 'Reserva atualizada!' : 'Reserva criada!');
-    cancelarEdicaoAgenda();
-  }).catch(function(e) {
-    toast('Erro: ' + e.message);
-  }).finally(function() {
-    btn.disabled = false; btn.textContent = 'Salvar Reserva';
-  });
+  var op = _agEditandoId
+    ? db.collection('reservas').doc(_agEditandoId).update(payload)
+    : (payload.criado = firebase.firestore.FieldValue.serverTimestamp(), db.collection('reservas').add(payload));
+  op.then(function() { toast(_agEditandoId ? 'Reserva atualizada!' : 'Reserva criada!'); cancelarEdicaoAgenda(); })
+    .catch(function(e) { toast('Erro: ' + e.message); })
+    .finally(function() { btn.disabled = false; btn.textContent = 'Salvar Reserva'; });
 }
 
 // ── Editar reserva ────────────────────────────────────────
@@ -5229,32 +5388,23 @@ function editarReserva(id) {
   if (!r) return;
   _agEditandoId = id;
   document.getElementById('ag-nome').value = r.nome || '';
-  var ini = r.dataInicio || '';
-  var fim = r.dataFim || '';
-  if (ini) {
-    document.getElementById('ag-data-inicio').value = ini.slice(0,10);
-    document.getElementById('ag-hora-inicio').value = ini.slice(11,16) || '08:00';
-  }
-  if (fim) {
-    document.getElementById('ag-data-fim').value = fim.slice(0,10);
-    document.getElementById('ag-hora-fim').value = fim.slice(11,16) || '20:00';
-  }
+  var ini = r.dataInicio || '', fim = r.dataFim || '';
+  if (ini) { document.getElementById('ag-data-inicio').value = ini.slice(0,10); document.getElementById('ag-hora-inicio').value = ini.slice(11,16) || '08:00'; }
+  if (fim) { document.getElementById('ag-data-fim').value   = fim.slice(0,10); document.getElementById('ag-hora-fim').value   = fim.slice(11,16) || '20:00'; }
   document.getElementById('ag-obs').value = r.obs || '';
   _renderAgendaKitChecklist();
   document.getElementById('agenda-form-label').textContent = '✎ Editando reserva';
   document.getElementById('ag-cancelar-btn').style.display = '';
-  document.getElementById('agenda-form-container').scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 function cancelarEdicaoAgenda() {
   _agEditandoId = null;
-  document.getElementById('ag-nome').value = '';
-  document.getElementById('ag-obs').value = '';
-  document.getElementById('ag-data-inicio').value = '';
-  document.getElementById('ag-data-fim').value = '';
+  ['ag-nome','ag-obs','ag-data-inicio','ag-data-fim'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
   document.getElementById('ag-hora-inicio').value = '08:00';
-  document.getElementById('ag-hora-fim').value = '20:00';
-  document.getElementById('agenda-form-label').textContent = '＋ Nova Reserva';
+  document.getElementById('ag-hora-fim').value    = '20:00';
+  document.getElementById('agenda-form-label').textContent = '+ Nova Reserva';
   document.getElementById('ag-cancelar-btn').style.display = 'none';
   _renderAgendaKitChecklist();
   _preencherDatasHoje();
@@ -5263,183 +5413,109 @@ function cancelarEdicaoAgenda() {
 // ── Excluir reserva ───────────────────────────────────────
 function excluirReserva(id) {
   if (!confirm('Excluir esta reserva?')) return;
-  db.collection('reservas').doc(id).delete().then(function() {
-    toast('Reserva excluída');
-  });
+  db.collection('reservas').doc(id).delete().then(function() { toast('Reserva excluída'); });
 }
 
-// ── Filtrar lista ─────────────────────────────────────────
-function filtrarAgenda(tipo, el) {
-  _agFiltro = tipo;
-  document.querySelectorAll('.agenda-filter-btn').forEach(function(b) { b.classList.remove('active'); });
-  if (el) el.classList.add('active');
-  _renderAgendaLista();
-}
-
-// ── Render lista de reservas ──────────────────────────────
-function _fmtDt(iso) {
-  if (!iso) return '—';
-  var d = new Date(iso);
-  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-}
-
-function _renderAgendaLista() {
-  var lista = document.getElementById('agenda-lista');
-  if (!lista) return;
-
-  var agora = new Date();
-  var reservasArr = Object.values(_reservas).sort(function(a,b) {
-    return new Date(a.dataInicio) - new Date(b.dataInicio);
-  });
-
-  // Filtrar
-  reservasArr = reservasArr.filter(function(r) {
-    var st = _statusReserva(r);
-    if (_agFiltro === 'todos') return true;
-    return st === _agFiltro;
-  });
-
-  if (reservasArr.length === 0) {
-    lista.innerHTML = '<div class="agenda-empty">Nenhuma reserva ' +
-      (_agFiltro === 'todos' ? '' : 'com filtro "' + _agFiltro + '"') + '</div>';
-    return;
-  }
-
-  lista.innerHTML = reservasArr.map(function(r) {
-    var st = _statusReserva(r);
-    var kits = r.kits || [];
-    var conflicts = _detectarConflito(r.id, kits, r.dataInicio, r.dataFim);
-    var conflictKitIds = conflicts.map(function(c) { return c.kitId; });
-
-    var statusLabel = {ativo:'Em Andamento', futuro:'Futuro', passado:'Encerrado', conflito:'⚠ Conflito'}[st] || st;
-    var statusClass = 'status-' + st;
-    var cardClass = 'agenda-card' + (st === 'conflito' ? ' conflict' : st === 'ativo' ? ' ativo' : st === 'passado' ? ' passado' : '');
-
-    var kitsHtml = kits.length === 0
-      ? '<span style="font-size:0.65rem;color:#444">Nenhum kit</span>'
-      : kits.map(function(kid) {
-          var kit = _kits[kid];
-          var nome = kit ? (kit.nome || kid) : kid;
-          var isConflict = conflictKitIds.indexOf(kid) !== -1;
-          return '<span class="agenda-kit-chip' + (isConflict ? ' conflict-chip' : '') + '">' +
-            (isConflict ? '⚠ ' : '') + esc(nome) + '</span>';
-        }).join('');
-
-    var conflictMsg = '';
-    if (conflicts.length > 0) {
-      var conflictNames = [...new Set(conflicts.map(function(c) { return c.reservaNome; }))];
-      conflictMsg = '<div class="agenda-conflict-warn"><span>⚠</span><span>Conflito com: <b>' + conflictNames.map(esc).join(', ') + '</b></span></div>';
-    }
-
-    return '<div class="' + cardClass + '">' +
-      '<div class="agenda-card-top">' +
-        '<div class="agenda-card-nome">' + esc(r.nome || 'Sem nome') + '</div>' +
-        '<span class="agenda-card-status ' + statusClass + '">' + statusLabel + '</span>' +
-      '</div>' +
-      '<div class="agenda-card-datas">' +
-        '<span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg> Saída: ' + _fmtDt(r.dataInicio) + '</span>' +
-        '<span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg> Retorno: ' + _fmtDt(r.dataFim) + '</span>' +
-      '</div>' +
-      '<div class="agenda-card-kits">' + kitsHtml + '</div>' +
-      (r.obs ? '<div class="agenda-card-obs">' + esc(r.obs) + '</div>' : '') +
-      conflictMsg +
-      '<div class="agenda-card-actions">' +
-        '<button class="agenda-action-btn" onclick="editarReserva(\'' + r.id + '\')">Editar</button>' +
-        '<button class="agenda-action-btn del" onclick="excluirReserva(\'' + r.id + '\')">Excluir</button>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-}
-
-// ── Marcar kits com conflito ───────────────────────────────
+// ── Marcar kits com conflito ──────────────────────────────
 function _atualizarConflitosNosKits() {
-  // Marca pontos vermelhos nos kits cards se tiverem conflito ativo/futuro
   var agora = new Date();
   var kitsComConflito = new Set();
   Object.values(_reservas).forEach(function(r) {
-    if (new Date(r.dataFim) < agora) return; // passado, ignore
-    var conflicts = _detectarConflito(r.id, r.kits || [], r.dataInicio, r.dataFim);
-    conflicts.forEach(function(c) { kitsComConflito.add(c.kitId); });
+    if (new Date(r.dataFim) < agora) return;
+    _detectarConflito(r.id, r.kits || [], r.dataInicio, r.dataFim).forEach(function(c) { kitsComConflito.add(c.kitId); });
   });
-
-  // Remove dots antigos
   document.querySelectorAll('.kit-conflict-dot').forEach(function(d) { d.remove(); });
-
-  // Adiciona dot nos kits com conflito
   kitsComConflito.forEach(function(kitId) {
     var card = document.getElementById('kit-card-' + kitId);
     if (card) {
       var nome = card.querySelector('.kit-folder-name');
       if (nome && !nome.querySelector('.kit-conflict-dot')) {
         var dot = document.createElement('span');
-        dot.className = 'kit-conflict-dot';
-        dot.title = 'Conflito de datas!';
+        dot.className = 'kit-conflict-dot'; dot.title = 'Conflito de datas!';
         nome.appendChild(dot);
       }
     }
   });
 }
 
-/* ── Chamar iniciarAgenda() após login ── */
-
-// Sobrescrever a implementação antiga (a nova usa eventos em vez de onclick inline)
 </script>
 
 
   <!-- ═══════════════════════════════════════════
        MODAL AGENDA DE EVENTOS
   ═══════════════════════════════════════════ -->
-  <div id="agenda-modal-overlay" class="agenda-modal-overlay" style="display:none" onclick="fecharAgendaSeBackground(event)">
+  <div id="agenda-modal-overlay" class="agenda-modal-overlay" data-modal-static="1" style="display:none" onclick="fecharAgendaSeBackground(event)">
     <div class="agenda-modal">
+      <!-- Cabeçalho -->
       <div class="agenda-modal-header">
         <div>
           <div class="agenda-modal-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             Agenda de Eventos
           </div>
-          <div style="font-size:0.62rem;color:var(--muted);margin-top:2px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase">Reserve kits por data &bull; Detecta conflitos automaticamente</div>
+          <div style="font-size:0.6rem;color:var(--muted);margin-top:2px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase">Reserve kits por data &bull; Detecta conflitos automaticamente</div>
         </div>
         <button class="agenda-modal-close" onclick="fecharAgenda()">✕</button>
       </div>
 
-      <div class="agenda-body">
-        <!-- FORM NOVA RESERVA -->
-        <div class="agenda-form" id="agenda-form-container">
-          <div class="agenda-form-title" id="agenda-form-label">＋ Nova Reserva</div>
-          <div class="agenda-form-row">
-            <input type="text" class="form-input" id="ag-nome" placeholder="Nome do evento (ex: Casamento João e Ana)" style="flex:2;min-width:200px" />
+      <!-- Layout principal: calendário + painel direito -->
+      <div class="agenda-layout">
+
+        <!-- ── Painel esquerdo: calendário ── -->
+        <div class="agenda-cal-panel">
+          <!-- Navegação de mês -->
+          <div class="agenda-cal-nav">
+            <button class="agenda-nav-btn" onclick="_navMes(-1)" title="Mês anterior">&#8249;</button>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span class="agenda-mes-label" id="agenda-mes-label"></span>
+              <button class="agenda-mes-today-btn" onclick="_irParaHoje()">Hoje</button>
+            </div>
+            <button class="agenda-nav-btn" onclick="_navMes(1)" title="Próximo mês">&#8250;</button>
           </div>
-          <div class="agenda-form-row">
-            <input type="date" class="form-input" id="ag-data-inicio" title="Data de saída" />
-            <input type="time" class="form-input" id="ag-hora-inicio" value="08:00" title="Hora de saída" style="max-width:100px" />
-            <span style="align-self:center;color:var(--muted);font-size:0.7rem">até</span>
-            <input type="date" class="form-input" id="ag-data-fim" title="Data de retorno" />
-            <input type="time" class="form-input" id="ag-hora-fim" value="20:00" title="Hora de retorno" style="max-width:100px" />
+          <!-- Dias da semana -->
+          <div class="agenda-dow-row">
+            <div class="agenda-dow-cell">Dom</div>
+            <div class="agenda-dow-cell">Seg</div>
+            <div class="agenda-dow-cell">Ter</div>
+            <div class="agenda-dow-cell">Qua</div>
+            <div class="agenda-dow-cell">Qui</div>
+            <div class="agenda-dow-cell">Sex</div>
+            <div class="agenda-dow-cell">Sáb</div>
           </div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:700">Kits reservados</div>
-          <div class="agenda-kit-select-list" id="agenda-kit-checklist">
-            <div style="color:var(--muted);font-size:0.72rem;padding:4px">Nenhum kit disponível</div>
+          <!-- Grid de dias (preenchido por JS) -->
+          <div class="agenda-cal-grid" id="agenda-cal-grid"></div>
+        </div>
+
+        <!-- ── Painel direito: form + lista do dia ── -->
+        <div class="agenda-right-panel">
+          <!-- Cabeçalho do form -->
+          <div class="agenda-right-header">
+            <span id="agenda-form-label">+ Nova Reserva</span>
+            <button id="ag-cancelar-btn" class="agenda-action-btn" onclick="cancelarEdicaoAgenda()" style="display:none">Cancelar</button>
           </div>
-          <input type="text" class="form-input" id="ag-obs" placeholder="Observação (opcional)" />
-          <div style="display:flex;gap:8px">
+          <!-- Formulário -->
+          <div class="agenda-form">
+            <input type="text" class="form-input" id="ag-nome" placeholder="Nome do evento" style="font-size:0.82rem" />
+            <div style="display:grid;grid-template-columns:1fr 82px;gap:4px">
+              <input type="date" class="form-input" id="ag-data-inicio" title="Data de início" style="font-size:0.75rem" />
+              <input type="time" class="form-input" id="ag-hora-inicio" value="08:00" title="Hora de início" style="font-size:0.75rem" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 82px;gap:4px">
+              <input type="date" class="form-input" id="ag-data-fim" title="Data de retorno" style="font-size:0.75rem" />
+              <input type="time" class="form-input" id="ag-hora-fim" value="20:00" title="Hora de retorno" style="font-size:0.75rem" />
+            </div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:700">Kits reservados</div>
+            <div class="agenda-kit-select-list" id="agenda-kit-checklist">
+              <div style="color:var(--muted);font-size:0.72rem;padding:4px">Nenhum kit disponível</div>
+            </div>
+            <input type="text" class="form-input" id="ag-obs" placeholder="Observação (opcional)" style="font-size:0.75rem" />
             <button class="agenda-btn-save" onclick="salvarReserva()">Salvar Reserva</button>
-            <button class="agenda-action-btn" id="ag-cancelar-btn" onclick="cancelarEdicaoAgenda()" style="display:none">Cancelar</button>
           </div>
-        </div>
-
-        <!-- FILTROS -->
-        <div class="agenda-filter-row">
-          <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:700">Filtrar:</span>
-          <button class="agenda-filter-btn active" data-f="todos" onclick="filtrarAgenda('todos',this)">Todos</button>
-          <button class="agenda-filter-btn" data-f="ativo" onclick="filtrarAgenda('ativo',this)">Em andamento</button>
-          <button class="agenda-filter-btn" data-f="futuro" onclick="filtrarAgenda('futuro',this)">Futuros</button>
-          <button class="agenda-filter-btn" data-f="conflito" onclick="filtrarAgenda('conflito',this)">Conflitos</button>
-          <button class="agenda-filter-btn" data-f="passado" onclick="filtrarAgenda('passado',this)">Passados</button>
-        </div>
-
-        <!-- LISTA DE RESERVAS -->
-        <div class="agenda-list" id="agenda-lista">
-          <div class="agenda-empty">Nenhuma reserva encontrada</div>
+          <!-- Lista de reservas do dia selecionado -->
+          <div class="agenda-dia-lista" id="agenda-dia-lista">
+            <div class="agenda-dia-lista-header" id="agenda-dia-lista-header">Todas as reservas</div>
+            <div id="agenda-lista"><div class="agenda-empty-dia">Nenhuma reserva</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -6865,154 +6941,4 @@ function vmSlotGridDrop(ev) {
   if (existente) { existente.qtd = (existente.qtd || 1) + 1; }
   else { _veiculoItensAtual.push({ id: itemId, nome: nome, tipo: tipo, qtd: 1 }); }
 
-  if (grid) grid.innerHTML = _buildVmSlotsHtml();
-}
-
-function _renderVmSearch() {
-  var busca = (document.getElementById('vm-search') ? document.getElementById('vm-search').value : '').toLowerCase().trim();
-  var container = document.getElementById('vm-search-results');
-  if (!container) return;
-
-  var resultados = [];
-  Object.values(_kits).forEach(function(k) {
-    if (!busca || (k.nome || '').toLowerCase().includes(busca))
-      resultados.push({ id: k.id, nome: k.nome || 'Kit', tipo: 'kit' });
-  });
-  Object.values(_equipamentos).forEach(function(e) {
-    if (!busca || (e.nome || '').toLowerCase().includes(busca))
-      resultados.push({ id: e.id, nome: e.nome || 'Equip.', tipo: 'eq' });
-  });
-  Object.values(_acessorios).forEach(function(a) {
-    if (!busca || (a.nome || '').toLowerCase().includes(busca))
-      resultados.push({ id: a.id, nome: a.nome || 'Ac.', tipo: 'acessorio' });
-  });
-
-  resultados = resultados.slice(0, 20);
-  if (!resultados.length) {
-    container.innerHTML = '<div style="padding:8px;text-align:center;color:#444;font-size:0.72rem">Sem resultados</div>';
-    return;
-  }
-
-  container.innerHTML = resultados.map(function(r) {
-    var tipoLabel = r.tipo === 'kit' ? 'Kit' : r.tipo === 'eq' ? 'Equip.' : 'Acessório';
-    return '<div class="vm-search-item">' +
-      '<span class="vm-search-item-nome">' + esc(r.nome) + '</span>' +
-      '<span class="vm-search-item-tipo">' + tipoLabel + '</span>' +
-      '<button class="vm-add-btn" onclick="_vmAdicionarItem(\'' + r.id + '\',\'' + esc(r.nome) + '\',\'' + r.tipo + '\')" title="Adicionar">' +
-        '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-      '</button>' +
-    '</div>';
-  }).join('');
-}
-
-function _vmAdicionarItem(id, nome, tipo) {
-  var existente = _veiculoItensAtual.find(function(it) { return it.id === id; });
-  if (existente) { existente.qtd = (existente.qtd || 1) + 1; }
-  else { _veiculoItensAtual.push({ id: id, nome: nome, tipo: tipo, qtd: 1 }); }
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.innerHTML = _buildVmSlotsHtml();
-  toast(nome + ' adicionado!');
-}
-
-function _salvarVeiculo() {
-  var nome = (document.getElementById('vf-nome') ? document.getElementById('vf-nome').value : '').trim();
-  if (!nome) { toast('Informe o nome do veículo.', true); return; }
-
-  var eventoIdEl = document.getElementById('vf-evento-id');
-  var dados = {
-    nome: nome,
-    placa: (document.getElementById('vf-placa') ? document.getElementById('vf-placa').value : '').trim().toUpperCase(),
-    tipo: (document.getElementById('vf-tipo') ? document.getElementById('vf-tipo').value : 'van'),
-    capacidade: parseInt(document.getElementById('vf-capacidade') ? document.getElementById('vf-capacidade').value : 20) || 20,
-    itens: _veiculoItensAtual,
-    evento_id: eventoIdEl ? eventoIdEl.value : (_veiculos[_veiculoEditandoId] ? (_veiculos[_veiculoEditandoId].evento_id || '') : ''),
-    _atualizado: Date.now()
-  };
-
-  var promise;
-  if (_veiculoEditandoId) {
-    promise = db.collection('veiculos').doc(_veiculoEditandoId).update(dados);
-  } else {
-    dados._criado = Date.now();
-    dados._ordem = Object.keys(_veiculos).length;
-    promise = db.collection('veiculos').add(dados);
-  }
-
-  promise.then(function() {
-    fecharTodosModais();
-    toast(_veiculoEditandoId ? 'Veículo atualizado!' : 'Veículo adicionado!');
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
-}
-
-function _confirmarExcluirVeiculo(veiculoId) {
-  var v = _veiculos[veiculoId];
-  if (!confirm('Excluir veículo "' + (v ? v.nome : '') + '"?')) return;
-  db.collection('veiculos').doc(veiculoId).delete().then(function() {
-    fecharTodosModais();
-    toast('Veículo excluído.');
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
-}
-
-// ── Drag de kits para veículos: patch no renderGrid de kits ──
-// Também faz eq cards arrastáveis para eventos e veículos
-var _renderGridOrigVeiculos = renderGrid;
-renderGrid = function(equips) {
-  _renderGridOrigVeiculos(equips);
-  setTimeout(function() {
-    var grid = document.getElementById('equip-grid');
-    if (!grid) return;
-    grid.querySelectorAll('.eq-card').forEach(function(card) {
-      var onclick = card.getAttribute('onclick') || '';
-      var match = onclick.match(/abrirDetalhe\('([^']+)'\)/);
-      if (!match) return;
-      var id = match[1];
-      // Sobrescreve o dragstart existente para incluir tipo
-      card.addEventListener('dragstart', function(ev) {
-        ev.dataTransfer.setData('tipo', 'eq');
-        ev.dataTransfer.setData('text/plain', id);
-      }, true);
-    });
-  }, 80);
-};
-
-// ── Inicialização: patch na função de iniciarEstoque ──
-var _iniciarEstoqueOrigVeiculos = iniciarEstoque;
-iniciarEstoque = function() {
-  _iniciarEstoqueOrigVeiculos();
-  iniciarVeiculos();
-  iniciarEventosAndamento();
-  // Posicionar seção de eventos antes dos kits
-  setTimeout(function() {
-    var sec = document.getElementById('eventos-andamento-section');
-    var kitsSection = document.getElementById('kits-section');
-    if (sec && kitsSection && kitsSection.parentNode) {
-      kitsSection.parentNode.insertBefore(sec, kitsSection);
-    }
-  }, 200);
-};
-
-// Estatística de veículos no stats bar
-var _renderStatsOrigV = renderStats;
-renderStats = function() {
-  _renderStatsOrigV();
-  // Injeta stat de veículos se não existir
-  var statsBar = document.querySelector('.stats-bar');
-  if (statsBar && !document.getElementById('stat-veiculos')) {
-    var sep = document.createElement('div');
-    sep.className = 'stat-sep';
-    var item = document.createElement('div');
-    item.className = 'stat-item';
-    item.id = 'stat-btn-veiculos';
-    item.title = 'Total de veículos';
-    item.style.cursor = 'default';
-    item.innerHTML = '<div class="stat-value" style="color:#F5A623" id="stat-veiculos">0</div><div class="stat-label">Veículos</div>';
-    statsBar.appendChild(sep);
-    statsBar.appendChild(item);
-  }
-  var statV = document.getElementById('stat-veiculos');
-  if (statV) statV.textContent = Object.keys(_veiculos).length;
-};
-
-</script>
-</body>
-</html>
+  if (grid) grid.innerHTML = _bui
