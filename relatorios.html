@@ -1626,10 +1626,14 @@ header {
     <span style="color:var(--muted)">até</span>
     <input id="data-fim" onchange="aplicarCustom()" type="date"/>
   </div>
-  <span style="margin-left:auto;display:flex;align-items:center;gap:7px">
+  <span style="margin-left:auto;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
     <span style="font-size:0.58rem;font-weight:800;background:rgba(245,166,35,0.12);color:#F5A623;border:1px solid rgba(245,166,35,0.35);border-radius:3px;padding:1px 6px;letter-spacing:0.08em;white-space:nowrap">NF</span>
     <button class="export-btn" onclick="exportarCSV()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar CSV
+    </button>
+    <span style="font-size:0.58rem;font-weight:800;background:rgba(139,92,246,0.12);color:#9B5CE5;border:1px solid rgba(139,92,246,0.3);border-radius:3px;padding:1px 6px;letter-spacing:0.08em;white-space:nowrap">KM</span>
+    <button class="export-btn" onclick="exportarCSV_KM()" style="border-color:#9B5CE5;color:#9B5CE5">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar KM
     </button>
   </span>
 </div>
@@ -1793,6 +1797,8 @@ header {
 </div>
 <p class="sec-title">Previsão de receita — próximos 3 meses</p>
 <div class="kpi-grid" id="kpi-previsao"></div>
+<p class="sec-title" style="margin-top:28px">Insights de sazonalidade</p>
+<div id="saz-insights" style="margin-top:8px"></div>
 </div></div>
 <!-- ════ TAB: CLIENTES ════ -->
 <div class="tab-panel" id="tab-clientes"><div class="tab-panel-inner">
@@ -2593,6 +2599,43 @@ function _kmBadge(ev) {
   return id === 'karielen' ? '<span class="km-badge">KM</span>' : '';
 }
 
+/* Aging report — dias em atraso desde a data do evento (apenas se não quitado) */
+function _diasEmAtraso(ev) {
+  const status = getStatusPgto(ev);
+  if (status === 'quitado' || status === 'naovence') return 0;
+  const evStr = ev.ev_data || ev.data_evento || ev.dataEvt || '';
+  if (!evStr) return 0;
+  const p = evStr.split('-');
+  if (p.length !== 3) return 0;
+  const evDate = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const diff = Math.floor((hoje - evDate) / 86400000);
+  return diff > 0 ? diff : 0;
+}
+
+/* Glow colorido no badge por dias em atraso: azul(1-30) → âmbar(31-60) → vermelho(61+) */
+function _glowAtrasoStyle(ev) {
+  const dias = _diasEmAtraso(ev);
+  if (dias <= 0) return '';
+  if (dias <= 30) return 'box-shadow:0 0 7px 1px rgba(74,144,200,0.65)';
+  if (dias <= 60) return 'box-shadow:0 0 8px 2px rgba(245,166,35,0.75)';
+  return 'box-shadow:0 0 10px 3px rgba(224,92,92,0.85)';
+}
+
+/* Revenue recognition — evento realizado = confirmado/concluído OU data do evento já passou (não cancelado) */
+function _eventoRealizado(e) {
+  const st = getStatusContrato(e);
+  if (st === 'cancelado') return false;
+  if (['confirmado', 'concluido'].includes(st)) return true;
+  const evStr = e.ev_data || e.data_evento || e.dataEvt || '';
+  if (!evStr) return false;
+  const p = evStr.split('-');
+  if (p.length !== 3) return false;
+  const evDate = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  return evDate < hoje;
+}
+
 /* Verifica se uma parcela específica tem alerta ativo */
 function temAlertaParcela(ev, parcelaIdx) {
   return getAlertasPgto(ev).some(function(a) { return a.parcela_idx === parcelaIdx; });
@@ -3375,9 +3418,12 @@ function renderPagamentos() {
   const quitados = todosBase.filter(function(e) { return getStatusPgto(e) === 'quitado'; }).length;
   const parciais = todosBase.filter(function(e) { return getStatusPgto(e) === 'parcial'; }).length;
   const emMonitoramento = todosBase.filter(function(e) { return getStatusPgto(e) === 'alerta'; }).length;
+  // "Total a faturar" = apenas eventos confirmados/concluídos (receita garantida)
+  const confirmedBase = todosBase.filter(function(e) { return ['confirmado','concluido'].includes(getStatusContrato(e)); });
+  const totalConfirmado = confirmedBase.reduce(function(s, e) { return s + valorEv(e); }, 0);
 
   document.getElementById('kpi-pgto').innerHTML =
-    '<div class="kpi-card' + (_pgtoFiltro === 'todos' ? ' pgto-active' : '') + '" data-filtro="todos" onclick="filtroPgto(\'todos\')" title="Ver todos os eventos"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalReceita) + '</div><div class="kpi-sub">' + todosBase.length + ' evento(s) com valor</div></div>' +
+    '<div class="kpi-card' + (_pgtoFiltro === 'todos' ? ' pgto-active' : '') + '" data-filtro="todos" onclick="filtroPgto(\'todos\')" title="Ver todos os eventos"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalConfirmado) + '</div><div class="kpi-sub">' + confirmedBase.length + ' confirmado(s) · ' + todosBase.length + ' total</div></div>' +
     '<div class="kpi-card green' + (_pgtoFiltro === 'quitados' ? ' pgto-active' : '') + '" data-filtro="quitados" onclick="filtroPgto(\'quitados\')" title="Ver quitados"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
     '<div class="kpi-card blue' + (_pgtoFiltro === 'pendentes' ? ' pgto-active' : '') + '" data-filtro="pendentes" onclick="filtroPgto(\'pendentes\')" title="Ver pendentes"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)</div></div>' +
     '<div class="kpi-card amber' + (_pgtoFiltro === 'parcial' ? ' pgto-active' : '') + '" data-filtro="parcial" onclick="filtroPgto(\'parcial\')" title="Ver parciais"><div class="kpi-label">Parcial</div><div class="kpi-value">' + parciais + '</div><div class="kpi-sub">Com pagamento parcial</div></div>' +
@@ -3502,7 +3548,7 @@ function buildPgtoCard(ev) {
         '<div class="pgto-card-nome">' + nomeExib + kmBadge + '</div>' +
         '<div class="pgto-card-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
-      '<span class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
+      '<span class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer;' + _glowAtrasoStyle(ev) + '" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
     '</div>' +
     // Barra de progresso (sempre visível)
     '<div class="pgto-card-progress"><div class="pgto-progress-bar"><div class="pgto-progress-fill" style="width:' + pct.toFixed(1) + '%;background:' + fillColor + '"></div></div></div>' +
@@ -4008,7 +4054,7 @@ function _pgtoRefreshCardDOM(docId) {
 
   // Atualiza badge de status no header
   const badge = card.querySelector('.pgto-status-badge');
-  if (badge) { badge.className = 'pgto-status-badge ' + badgeClass; badge.textContent = badgeTxt; }
+  if (badge) { badge.className = 'pgto-status-badge ' + badgeClass; badge.textContent = badgeTxt; badge.style.cssText = 'cursor:pointer;' + _glowAtrasoStyle(ev); }
 
   // Atualiza barra de progresso
   const fill = card.querySelector('.pgto-progress-fill');
@@ -4108,6 +4154,11 @@ function renderFinanceiro() {
   const recKmFin = confKm.reduce((s,e) => s + getValorEvento(e), 0);
   const recNfFin = confNf.reduce((s,e) => s + getValorEvento(e), 0);
 
+  // Imposto estimado NF = 7% sobre o total recebido de eventos NF
+  const todosNF = todos.filter(e => { const id = e.emitente && (e.emitente.id || e.emitente); return id !== 'karielen'; });
+  const recebidoNF = todosNF.reduce((s,e) => s + getTotalPagoAuto(e), 0);
+  const impostoNF = recebidoNF * 0.07;
+
   document.getElementById('kpi-fin').innerHTML = `
     <div class="kpi-card gold">
       <div class="kpi-label">Receita confirmada</div>
@@ -4138,6 +4189,16 @@ function renderFinanceiro() {
       <div class="kpi-label">Receita <span class="km-badge" style="font-size:0.65rem">KM</span> (confirmada)</div>
       <div class="kpi-value">${frsShort(recKmFin)}</div>
       <div class="kpi-sub">${confKm.length} evento(s)</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Imposto estimado NF (7%)</div>
+      <div class="kpi-value">${frsShort(impostoNF)}</div>
+      <div class="kpi-sub">Sobre ${frsShort(recebidoNF)} recebido NF</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(139,92,246,0.25);background:rgba(139,92,246,0.04)">
+      <div class="kpi-label">Imposto <span class="km-badge" style="font-size:0.65rem">KM</span></div>
+      <div class="kpi-value" style="color:#9B5CE5;font-size:1.3rem">Isento</div>
+      <div class="kpi-sub">MEI — sem IRPJ/CSLL s/ faturamento</div>
     </div>
   `;
 
@@ -4660,7 +4721,7 @@ function renderEventos() {
 // TAB 4 – CLIENTES
 // ══════════════════════════════════════════
 function renderClientes() {
-  // Contratos + notas, sem duplicatas
+  // Contratos + notas, sem duplicatas — excluídos cancelados para ticket médio correto
   const todos = todoEventosFiltrados();
   const confirmados = todos.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
 
@@ -4896,6 +4957,81 @@ function renderSazonalidade() {
       <div class="kpi-sub">${p.confirmados} confirmados · ${frsShort(p.receita)} previsto</div>
     </div>
   `).join('');
+
+  // ── Insights acionáveis de sazonalidade ──
+  const totalEventos = volMes.reduce((a,b) => a + b, 0);
+  const insightsEl = document.getElementById('saz-insights');
+  if (!insightsEl) return;
+
+  if (totalEventos === 0) {
+    insightsEl.innerHTML = '<p style="color:var(--muted);font-size:0.85rem">Nenhum dado disponível para o período selecionado.</p>';
+    return;
+  }
+
+  const mediaEventosMes = totalEventos / 12;
+  const mediaMesComEvento = totalEventos / (volMes.filter(v => v > 0).length || 1);
+
+  // Meses fortes (acima da média)
+  const mesesFortes = MESES_FULL.filter((_, i) => volMes[i] >= mediaEventosMes * 1.3 && volMes[i] > 0)
+    .sort((a, b) => volMes[MESES_FULL.indexOf(b)] - volMes[MESES_FULL.indexOf(a)]);
+
+  // Meses fracos (abaixo da média ou zerados)
+  const mesesFracos = MESES_FULL.filter((_, i) => volMes[i] < mediaEventosMes * 0.6)
+    .sort((a, b) => volMes[MESES_FULL.indexOf(a)] - volMes[MESES_FULL.indexOf(b)]);
+
+  // Meses sem nenhum evento
+  const mesesZero = MESES_FULL.filter((_, i) => volMes[i] === 0);
+
+  // Mês atual e próximo: prospecção recomendada?
+  const mesAtual = hoje.getMonth();
+  const mesProximo = (mesAtual + 1) % 12;
+  const eventosProxMes = volMes[mesProximo];
+  const proxMesNome = MESES_FULL[mesProximo];
+
+  let html = '<div style="display:grid;gap:12px">';
+
+  // Bloco meses fortes
+  if (mesesFortes.length) {
+    html += `<div style="background:rgba(37,211,102,0.06);border:1px solid rgba(37,211,102,0.2);border-radius:8px;padding:14px 16px">
+      <div style="font-size:0.78rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">📈 Alta temporada</div>
+      <div style="font-size:0.88rem;color:var(--text)">${mesesFortes.join(', ')} — meses com maior volume histórico. <span style="color:var(--muted)">Garanta disponibilidade de equipe e equipamentos com antecedência.</span></div>
+    </div>`;
+  }
+
+  // Bloco meses fracos
+  if (mesesFracos.length) {
+    html += `<div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.25);border-radius:8px;padding:14px 16px">
+      <div style="font-size:0.78rem;font-weight:700;color:#F5A623;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">📉 Baixa temporada</div>
+      <div style="font-size:0.88rem;color:var(--text)">${mesesFracos.slice(0,5).join(', ')} — abaixo da média. <span style="color:var(--muted)">Intensifique prospecção ativa nesses meses — contato com clientes recorrentes, pacotes especiais e parcerias com espaços de eventos.</span></div>
+    </div>`;
+  }
+
+  // Meses zerados
+  if (mesesZero.length) {
+    html += `<div style="background:rgba(224,92,92,0.05);border:1px solid rgba(224,92,92,0.2);border-radius:8px;padding:14px 16px">
+      <div style="font-size:0.78rem;font-weight:700;color:#e05c5c;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">⚠ Meses sem eventos registrados</div>
+      <div style="font-size:0.88rem;color:var(--text)">${mesesZero.join(', ')}. <span style="color:var(--muted)">Considere campanhas de desconto antecipado ou contato com venues parceiros para gerar demanda nesses períodos.</span></div>
+    </div>`;
+  }
+
+  // Aviso próximo mês fraco
+  if (eventosProxMes < mediaEventosMes * 0.5 && totalEventos >= 6) {
+    html += `<div style="background:rgba(74,144,200,0.06);border:1px solid rgba(74,144,200,0.2);border-radius:8px;padding:14px 16px">
+      <div style="font-size:0.78rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">💡 Ação recomendada — ${proxMesNome}</div>
+      <div style="font-size:0.88rem;color:var(--text)">${proxMesNome} historicamente tem poucos eventos (${eventosProxMes} no histórico). <span style="color:var(--muted)">Bom momento para entrar em contato com leads e clientes antigos para fechar datas.</span></div>
+    </div>`;
+  }
+
+  // Resumo numérico
+  html += `<div style="background:var(--darker);border-radius:8px;padding:12px 16px;display:flex;gap:24px;flex-wrap:wrap">
+    <div><span style="font-size:0.75rem;color:var(--muted)">Média mensal</span><div style="font-size:1rem;font-weight:700;color:var(--text)">${mediaEventosMes.toFixed(1)} eventos/mês</div></div>
+    <div><span style="font-size:0.75rem;color:var(--muted)">Meses ativos</span><div style="font-size:1rem;font-weight:700;color:var(--text)">${volMes.filter(v => v > 0).length}/12</div></div>
+    <div><span style="font-size:0.75rem;color:var(--muted)">Pico histórico</span><div style="font-size:1rem;font-weight:700;color:var(--green)">${MESES_FULL[volMes.indexOf(Math.max(...volMes))]} (${Math.max(...volMes)} eventos)</div></div>
+    ${mesesZero.length ? `<div><span style="font-size:0.75rem;color:var(--muted)">Meses zerados</span><div style="font-size:1rem;font-weight:700;color:#e05c5c">${mesesZero.length}</div></div>` : ''}
+  </div>`;
+
+  html += '</div>';
+  insightsEl.innerHTML = html;
 }
 
 // ══════════════════════════════════════════
@@ -4920,11 +5056,13 @@ function renderContabilidade() {
     const id = e.emitente && (e.emitente.id || e.emitente);
     return _contFiltroEmitente === 'km' ? id === 'karielen' : id !== 'karielen';
   });
-  const confirmados = ativosVisiveis.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
+  // Receita reconhecida = confirmado/concluído OU data do evento já passou (serviço entregue)
+  const confirmados = ativosVisiveis.filter(e => _eventoRealizado(e));
+  const pendentes = ativosVisiveis.filter(e => !_eventoRealizado(e) && getStatusContrato(e) !== 'cancelado');
 
   const recBruta = confirmados.reduce((s,e) => s + getValorEvento(e), 0);
   const recPotencial = ativosVisiveis.reduce((s,e) => s + getValorEvento(e), 0);
-  const ativosNaoConf = ativosVisiveis.filter(e => !['confirmado','concluido'].includes(getStatusContrato(e)));
+  const ativosNaoConf = pendentes;
 
   // Label período
   const ini = _dataIni ? _dataIni.toLocaleDateString('pt-BR') : 'Início';
@@ -4944,11 +5082,16 @@ function renderContabilidade() {
     document.getElementById('cont-cnpj').textContent = '(a preencher)';
   }
 
+  // Imposto estimado NF = 7% sobre recebido de eventos NF
+  const _contNF = confirmados.filter(e => { const id = e.emitente && (e.emitente.id || e.emitente); return id !== 'karielen'; });
+  const _recebidoContNF = _contNF.reduce((s,e) => s + getTotalPagoAuto(e), 0);
+  const _impostoContNF = _recebidoContNF * 0.07;
+
   document.getElementById('kpi-cont').innerHTML = `
     <div class="kpi-card gold">
-      <div class="kpi-label">Receita bruta (confirmados)</div>
+      <div class="kpi-label">Receita reconhecida</div>
       <div class="kpi-value">${frsShort(recBruta)}</div>
-      <div class="kpi-sub">${confirmados.length} eventos</div>
+      <div class="kpi-sub">${confirmados.length} eventos realizados/confirmados</div>
     </div>
     <div class="kpi-card blue">
       <div class="kpi-label">Receita potencial (todos ativos)</div>
@@ -4960,9 +5103,19 @@ function renderContabilidade() {
       <div class="kpi-value">${frsShort(confirmados.length ? recBruta / confirmados.length : 0)}</div>
     </div>
     <div class="kpi-card orange">
-      <div class="kpi-label">A receber</div>
+      <div class="kpi-label">Pendentes (futuros)</div>
       <div class="kpi-value">${ativosNaoConf.length}</div>
       <div class="kpi-sub">${frsShort(ativosNaoConf.reduce((s,e)=>s+getValorEvento(e),0))}</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Imposto estimado NF (7%)</div>
+      <div class="kpi-value">${frsShort(_impostoContNF)}</div>
+      <div class="kpi-sub">Sobre ${frsShort(_recebidoContNF)} recebido NF</div>
+    </div>
+    <div class="kpi-card" style="border-color:rgba(139,92,246,0.25);background:rgba(139,92,246,0.04)">
+      <div class="kpi-label">Imposto <span class="km-badge" style="font-size:0.65rem">KM</span></div>
+      <div class="kpi-value" style="color:#9B5CE5;font-size:1.3rem">Isento</div>
+      <div class="kpi-sub">MEI — isento de IRPJ/CSLL</div>
     </div>
   `;
 
@@ -5018,7 +5171,7 @@ function renderContabilidade() {
     const label = MESES_FULL[d.getMonth()] + ' ' + d.getFullYear();
     if (!mensal[k]) mensal[k] = { label, qtd: 0, receita: 0 };
     mensal[k].qtd++;
-    if (['confirmado','concluido'].includes(getStatusContrato(e))) mensal[k].receita += getValorEvento(e);
+    if (_eventoRealizado(e)) mensal[k].receita += getValorEvento(e);
   });
 
   const mensalList = Object.entries(mensal).sort((a,b) => a[0].localeCompare(b[0]));
@@ -5063,6 +5216,23 @@ function exportarCSV() {
     formatDateBR(e.criadoEm)
   ]);
   downloadCSV([header, ...rows], 'relatorio_eventos_NF');
+}
+
+function exportarCSV_KM() {
+  const todos = todoEventosFiltrados().filter(function(e) {
+    const id = e.emitente && (e.emitente.id || e.emitente);
+    return id === 'karielen'; // apenas KM
+  });
+  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Origem','Criado em'];
+  const rows = todos.map(e => [
+    nomeCli(e), tipoEv(e), dataEv(e),
+    e.ev_local || e.local_evento || e.local || '',
+    getValorEvento(e).toFixed(2).replace('.', ','),
+    getPgtoLabel(e), getStatusContrato(e),
+    e._origem === 'nota' ? 'nota' : 'contrato',
+    formatDateBR(e.criadoEm)
+  ]);
+  downloadCSV([header, ...rows], 'relatorio_eventos_KM');
 }
 
 function exportarContabilidade() {
