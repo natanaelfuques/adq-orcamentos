@@ -9559,11 +9559,14 @@ function abrirModalConfiguracoes() {
           <div id="cfg-firebase-fields" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
 
-        <!-- Autentique -->
+        <!-- Autentique NF -->
         <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
           <div style="margin-bottom:10px">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Autentique</div>
-            <div style="font-size:0.68rem;color:#555">Token de API para assinatura digital de contratos.</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Autentique</div>
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:800;color:#C8A94A;background:rgba(200,169,74,0.12);border:1px solid rgba(200,169,74,0.35);border-radius:3px;padding:1px 6px;letter-spacing:0.1em">NF</span>
+            </div>
+            <div style="font-size:0.68rem;color:#555;margin-top:2px">Token da conta NF Soluções para Eventos.</div>
           </div>
           <div style="position:relative">
             <input id="cfg-api-autentique" type="password" value="" autocomplete="new-password" placeholder="Cole seu token aqui" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:9px 36px 9px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
@@ -9574,6 +9577,26 @@ function abrirModalConfiguracoes() {
             <button onclick="_limparApiAutentique()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#555'"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3L9 9M9 3L3 9"/></svg></button>
           </div>
           <div id="cfg-api-autentique-status" style="display:none;margin-top:8px;font-size:0.7rem;text-align:center"></div>
+        </div>
+
+        <!-- Autentique KM -->
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
+          <div style="margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Autentique</div>
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;font-weight:800;color:#c87aff;background:rgba(180,80,255,0.12);border:1px solid rgba(180,80,255,0.35);border-radius:3px;padding:1px 6px;letter-spacing:0.1em">KM</span>
+            </div>
+            <div style="font-size:0.68rem;color:#555;margin-top:2px">Token da conta Karielen Nunes Moreira.</div>
+          </div>
+          <div style="position:relative">
+            <input id="cfg-api-autentique-km" type="password" value="" autocomplete="new-password" placeholder="Cole o token da KM aqui" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:9px 36px 9px 10px;border-radius:4px;font-family:monospace;font-size:0.72rem;box-sizing:border-box" />
+            <button onclick="_toggleApiVis('cfg-api-autentique-km',this)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#555;cursor:pointer;padding:4px;display:flex;align-items:center" title="Mostrar/ocultar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button onclick="_salvarApiAutentiqueKM()" style="flex:1;background:#1e1e1e;border:1px solid #333;color:#aaa;padding:9px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center;gap:5px" onmouseover="this.style.borderColor='#25D366';this.style.color='#25D366'" onmouseout="this.style.borderColor='#333';this.style.color='#aaa'"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5L5 9.5L10 3"/></svg> Salvar</button>
+            <button onclick="_limparApiAutentiqueKM()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;transition:border-color 0.15s,color 0.15s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor='#e55';this.style.color='#e55'" onmouseout="this.style.borderColor='#333';this.style.color='#555'"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3L9 9M9 3L3 9"/></svg></button>
+          </div>
+          <div id="cfg-api-autentique-km-status" style="display:none;margin-top:8px;font-size:0.7rem;text-align:center"></div>
         </div>
 
         <!-- Anthropic (IA) -->
@@ -10843,10 +10866,15 @@ function _initAbaAPIs() {
       '</div>';
     }).join('');
   }
-  // Autentique: load current value
+  // Autentique NF: load current value
   var autInp = document.getElementById('cfg-api-autentique');
   if (autInp && typeof AUTENTIQUE_TOKEN !== 'undefined' && AUTENTIQUE_TOKEN) {
     autInp.value = AUTENTIQUE_TOKEN;
+  }
+  // Autentique KM: load current value
+  var autInpKM = document.getElementById('cfg-api-autentique-km');
+  if (autInpKM && typeof AUTENTIQUE_TOKEN_KM !== 'undefined' && AUTENTIQUE_TOKEN_KM) {
+    autInpKM.value = AUTENTIQUE_TOKEN_KM;
   }
   // Anthropic: load current value
   var antInp = document.getElementById('cfg-api-anthropic');
@@ -10890,6 +10918,32 @@ function _limparApiAutentique() {
   _apiStatus(st, 'Token removido.', '#C8A94A');
 }
 
+function _salvarApiAutentiqueKM() {
+  var inp = document.getElementById('cfg-api-autentique-km');
+  var st = document.getElementById('cfg-api-autentique-km-status');
+  if (!inp) return;
+  var val = inp.value.trim();
+  if (!val) { _apiStatus(st, 'Token vazio.', '#e55'); return; }
+  AUTENTIQUE_TOKEN_KM = val;
+  _apiStatus(st, 'Salvando...', '#c87aff');
+  if (db) {
+    db.collection('config').doc('apis').set({ autentique_token_km: val }, { merge: true })
+      .then(function() { _apiStatus(st, '✓ Token KM salvo na nuvem!', '#25D366'); })
+      .catch(function(e) { _apiStatus(st, 'Erro: ' + e.message, '#e55'); });
+  } else {
+    _apiStatus(st, '✓ Token KM salvo na sessão.', '#c87aff');
+  }
+}
+
+function _limparApiAutentiqueKM() {
+  var inp = document.getElementById('cfg-api-autentique-km');
+  var st = document.getElementById('cfg-api-autentique-km-status');
+  if (inp) inp.value = '';
+  AUTENTIQUE_TOKEN_KM = '';
+  if (db) db.collection('config').doc('apis').set({ autentique_token_km: '' }, { merge: true }).catch(function(){});
+  _apiStatus(st, 'Token KM removido.', '#c87aff');
+}
+
 function _salvarApiAnthropic() {
   var inp = document.getElementById('cfg-api-anthropic');
   var st = document.getElementById('cfg-api-anthropic-status');
@@ -10924,13 +10978,14 @@ function _apiStatus(el, msg, color) {
   setTimeout(function() { if (el) el.style.display = 'none'; }, 3500);
 }
 
-// Carregar token Autentique do Firestore ao logar
+// Carregar tokens Autentique do Firestore ao logar
 function _carregarTokensAPIs() {
   if (!db) return;
   db.collection('config').doc('apis').get().then(function(doc) {
     if (doc.exists) {
       var d = doc.data();
-      if (d.autentique_token) AUTENTIQUE_TOKEN = d.autentique_token;
+      if (d.autentique_token)    AUTENTIQUE_TOKEN    = d.autentique_token;
+      if (d.autentique_token_km) AUTENTIQUE_TOKEN_KM = d.autentique_token_km;
     }
   }).catch(function(){});
 }
