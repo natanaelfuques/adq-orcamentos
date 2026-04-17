@@ -96,6 +96,23 @@
   }
   .include-toggle input:checked + span { color: var(--gold); }
 
+  /* ── TOGGLE EMITENTE (NF ↔ Karielen) ── */
+  .emit-toggle-wrap { display:flex; align-items:center; gap:8px; }
+  .emit-toggle-track {
+    position: relative; width: 36px; height: 20px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 10px; cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .emit-toggle-track.on { background: var(--gold); border-color: var(--gold); }
+  .emit-toggle-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--muted); transition: left 0.2s, background 0.2s;
+  }
+  .emit-toggle-track.on .emit-toggle-thumb { left: 19px; background: #111; }
+  .emit-lbl { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; transition: color 0.2s; cursor: pointer; }
+
   @media (max-width: 600px) {
     .collapse-header .include-toggle span { display: none; }
   }
@@ -2080,8 +2097,15 @@ Revestimento</textarea>
   </div>
 
   <!-- HEADER CONTRATO -->
-  <div class="card" style="padding:14px 20px;margin-bottom:20px">
+  <div class="card" style="padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
     <div class="section-title" style="margin:0;border:none;padding:0">Contrato</div>
+    <div class="emit-toggle-wrap" onclick="_toggleEmitente()" style="user-select:none">
+      <span id="emit-lbl-nf" class="emit-lbl" style="color:var(--gold)">NF</span>
+      <div id="emit-toggle-track" class="emit-toggle-track">
+        <div class="emit-toggle-thumb"></div>
+      </div>
+      <span id="emit-lbl-kar" class="emit-lbl" style="color:var(--muted)">Karielen</span>
+    </div>
   </div>
 
   <!-- CONTRATANTE -->
@@ -2278,6 +2302,48 @@ Revestimento</textarea>
 <script>
 // ─── Logo em base64 (embutida) ───────────────────────────────────────────────
 const LOGO_B64 = document.getElementById("logo-jpg-data").getAttribute("data-b64");
+
+// ─── Emitentes do contrato ────────────────────────────────────────────────────
+const _EMITENTES = {
+  nf: {
+    id:       'nf',
+    label:    'NF',
+    nome:     'NF SOLUÇÕES PARA EVENTOS LTDA',
+    cnpj:     '49.276.147/0001-06',
+    end:      'Felipe Schmidt, 280 – São Luiz, Brusque/SC',
+    email:    'audiodequalidadebox@gmail.com',
+    fone:     '(47) 99153-6771',
+    pix:      '49.276.147/0001-06',
+    pixNome:  'NF SOLUÇÕES PARA EVENTOS',
+    fantasia: 'ÁUDIO DE QUALIDADE',
+    usaLogo:  true
+  },
+  karielen: {
+    id:       'karielen',
+    label:    'Karielen',
+    nome:     'KARIELEN NUNES MOREIRA',
+    cnpj:     '61.374.208/0001-65',
+    end:      'Rua Felipe Schmidt 280, AP203 – São Luiz, Brusque/SC',
+    email:    '',
+    fone:     '(47) 99153-6771',
+    pix:      '61.374.208/0001-65',
+    pixNome:  'KARIELEN NUNES MOREIRA',
+    fantasia: 'ÁUDIO DE QUALIDADE',
+    usaLogo:  false
+  }
+};
+var _emitenteSel = 'nf'; // 'nf' | 'karielen'
+function getEmitente() { return _EMITENTES[_emitenteSel] || _EMITENTES.nf; }
+function _toggleEmitente() {
+  _emitenteSel = _emitenteSel === 'nf' ? 'karielen' : 'nf';
+  var kar = _emitenteSel === 'karielen';
+  var track = document.getElementById('emit-toggle-track');
+  if (track) { if (kar) track.classList.add('on'); else track.classList.remove('on'); }
+  var lNF  = document.getElementById('emit-lbl-nf');
+  var lKar = document.getElementById('emit-lbl-kar');
+  if (lNF)  lNF.style.color  = kar ? 'var(--muted)' : 'var(--gold)';
+  if (lKar) lKar.style.color = kar ? 'var(--gold)'  : 'var(--muted)';
+}
 
 let detCount = 8;
 function addDetItem() {
@@ -5066,7 +5132,7 @@ function gerarContrato() {
   if (cliEmail) cliLinha += `, e-mail: ${cliEmail}`;
   if (cliFone) cliLinha += `, contato: ${cliFone}`;
   const dataEntradaVal = document.getElementById('data_entrada') ? document.getElementById('data_entrada').value : '';
-  const contratoHTML = buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataFim, evMultidia: _evMultidia, evIni, evFim, valTotal, servicos, pgto: pgtoTexto(), dataEntrada: dataEntradaVal });
+  const contratoHTML = buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataFim, evMultidia: _evMultidia, evIni, evFim, valTotal, servicos, pgto: pgtoTexto(), dataEntrada: dataEntradaVal, emitente: getEmitente() });
   const iframe = document.getElementById('pdf-frame-contrato');
   iframe.srcdoc = contratoHTML;
   document.getElementById('preview-area-contrato').style.display = 'block';
@@ -5087,7 +5153,8 @@ function imprimirContrato() {
   }
 }
 
-function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataFim, evMultidia, evIni, evFim, valTotal, servicos, pgto, dataEntrada }) {
+function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, evLocal, evData, evDataFim, evMultidia, evIni, evFim, valTotal, servicos, pgto, dataEntrada, emitente }) {
+  emitente = emitente || _EMITENTES.nf;
   const _fmtEvData = fmtData(evData);
   const _fmtEvDataFim = evDataFim ? fmtData(evDataFim) : '';
   // Calcular duração para multi-dia
@@ -5190,12 +5257,15 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
 <body>
 <div class="page">
   <div class="doc-header">
-    <img src="data:image/png;base64,${LOGO_B64}" style="height:48px;mix-blend-mode:screen" alt="Logo Áudio de Qualidade">
+    ${emitente.usaLogo
+      ? `<img src="data:image/png;base64,${LOGO_B64}" style="height:48px;mix-blend-mode:screen" alt="Logo Áudio de Qualidade">`
+      : `<div style="font-family:'Open Sans',sans-serif;font-size:13pt;font-weight:700;color:#C8A94A;letter-spacing:0.04em">${emitente.nome}</div>`
+    }
     <div class="doc-header-info">
-      CNPJ: 49.276.147/0001-06<br>
-      Felipe Schmidt, 280 – São Luiz, Brusque/SC<br>
-      <strong>audiodequalidadebox@gmail.com</strong><br>
-      <strong>(47) 99153-6771</strong>
+      CNPJ: ${emitente.cnpj}<br>
+      ${emitente.end}<br>
+      ${emitente.email ? `<strong>${emitente.email}</strong><br>` : ''}
+      <strong>${emitente.fone}</strong>
     </div>
   </div>
 
@@ -5206,7 +5276,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
     </div>
 
     <div class="parties">
-      Por este instrumento particular de contrato, de um lado, <strong>${cliLinha}</strong>, doravante denominado(a) <strong>CONTRATANTE</strong>; e de outro <strong>NF SOLUÇÕES PARA EVENTOS LTDA</strong>, CNPJ: 49.276.147/0001-06, Brusque-SC, São Luiz, Rua Felipe Schmidt 280, com nome fantasia <strong>ÁUDIO DE QUALIDADE</strong>, doravante denominado(a) <strong>CONTRATADO</strong>, pelo presente instrumento ajustam a prestação de serviços profissionais, conforme as condições e cláusulas que seguem:
+      Por este instrumento particular de contrato, de um lado, <strong>${cliLinha}</strong>, doravante denominado(a) <strong>CONTRATANTE</strong>; e de outro <strong>${emitente.nome}</strong>, CNPJ: ${emitente.cnpj}, ${emitente.end}, com nome fantasia <strong>${emitente.fantasia}</strong>, doravante denominado(a) <strong>CONTRATADO</strong>, pelo presente instrumento ajustam a prestação de serviços profissionais, conforme as condições e cláusulas que seguem:
     </div>
 
     <div class="cl1">
@@ -5235,7 +5305,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
         <p class="valor-linha">§ 3º — O presente serviço será remunerado pela quantia total de <u>R$ ${valTotal}</u> sendo realizado da seguinte forma:</p>
         <p class="cl-par indent">— ${pgto}</p>
         ${dataEntrada ? '<p class="cl-par indent" style="margin-top:4px">Data de pagamento da entrada: <strong>' + fmtData(dataEntrada) + '</strong></p>' : ''}
-        <p class="pix-linha">Chave PIX CNPJ: <strong>49.276.147/0001-06</strong> — NF SOLUÇÕES PARA EVENTOS</p>
+        <p class="pix-linha">Chave PIX CNPJ: <strong>${emitente.pix}</strong> — ${emitente.pixNome}</p>
         </div>
       </div>
     </div>
@@ -5324,7 +5394,7 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
   </div>
 
   <div class="doc-footer" style="margin-top:24px">
-    <strong>(47) 99153-6771</strong> &nbsp;•&nbsp; @audiodequalidade &nbsp;•&nbsp; Facebook.com/audiodequalidade &nbsp;•&nbsp; CNPJ 49.276.147/0001-06
+    <strong>${emitente.fone}</strong> &nbsp;•&nbsp; @audiodequalidade &nbsp;•&nbsp; Facebook.com/audiodequalidade &nbsp;•&nbsp; CNPJ ${emitente.cnpj}
   </div>
 </div>
 </div>
@@ -6296,7 +6366,8 @@ function coletarDadosContrato() {
     entrada_manual: _entradaManual ? true : false,
     servicos:  servicos,
     aprovado:  false,
-    orc_ref:   _currentOrcRef || ''
+    orc_ref:   _currentOrcRef || '',
+    emitente:  _emitenteSel
   };
 }
 
@@ -8963,7 +9034,8 @@ function _abrirModalAutentiqueDoCard(contratoId, dadosContrato, btnCard) {
         valTotal:    d.val_total   || '',
         servicos:    servicos,
         pgto:        pgtoTextoCard,
-        dataEntrada: d.data_entrada || ''
+        dataEntrada: d.data_entrada || '',
+        emitente:    _EMITENTES[d.emitente] || _EMITENTES.nf
       });
 
       if (!htmlContrato) {
