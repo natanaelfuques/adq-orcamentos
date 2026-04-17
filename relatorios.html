@@ -5205,18 +5205,32 @@ function renderContabilidade() {
 // ══════════════════════════════════════════
 // EXPORTAR CSV
 // ══════════════════════════════════════════
+// Helpers para exportação CSV
+function _csvTipoEv(e) {
+  const t = tipoEv(e); const n = nomeCli(e);
+  return (!t || t === '—' || t === n) ? '—' : t;
+}
+function _csvPgto(e) {
+  const p = getPgtoLabel(e);
+  return (!p || p === '—') ? 'Personalizado' : p;
+}
+function _csvStatus(e) {
+  const st = getStatusPgto(e);
+  return { quitado: 'Quitado', parcial: 'Parcial', pendente: 'Pendente', alerta: 'Monitorar', naovence: 'Pendente' }[st] || 'Pendente';
+}
+
 function exportarCSV() {
   const todos = todoEventosFiltrados().filter(function(e) {
     const id = e.emitente && (e.emitente.id || e.emitente);
     return id !== 'karielen'; // apenas NF
   });
-  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Origem','Criado em'];
+  const header = ['Data Evento','Cliente','Tipo Evento','Local','Valor','Pagamento','Status Pagamento','Origem','Criado em'];
   const rows = todos.map(e => [
-    nomeCli(e), tipoEv(e), dataEv(e),
+    dataEv(e), nomeCli(e), _csvTipoEv(e),
     e.ev_local || e.local_evento || e.local || '',
     getValorEvento(e).toFixed(2).replace('.', ','),
-    getPgtoLabel(e), getStatusContrato(e),
-    e._origem === 'nota' ? 'nota' : 'contrato',
+    _csvPgto(e), _csvStatus(e),
+    e._origem === 'nota' ? 'Evento rápido' : 'Contrato',
     formatDateBR(e.criadoEm)
   ]);
   downloadCSV([header, ...rows], 'relatorio_eventos_NF');
@@ -5227,13 +5241,13 @@ function exportarCSV_KM() {
     const id = e.emitente && (e.emitente.id || e.emitente);
     return id === 'karielen'; // apenas KM
   });
-  const header = ['Cliente','Tipo Evento','Data Evento','Local','Valor','Pagamento','Status','Origem','Criado em'];
+  const header = ['Data Evento','Cliente','Tipo Evento','Local','Valor','Pagamento','Status Pagamento','Origem','Criado em'];
   const rows = todos.map(e => [
-    nomeCli(e), tipoEv(e), dataEv(e),
+    dataEv(e), nomeCli(e), _csvTipoEv(e),
     e.ev_local || e.local_evento || e.local || '',
     getValorEvento(e).toFixed(2).replace('.', ','),
-    getPgtoLabel(e), getStatusContrato(e),
-    e._origem === 'nota' ? 'nota' : 'contrato',
+    _csvPgto(e), _csvStatus(e),
+    e._origem === 'nota' ? 'Evento rápido' : 'Contrato',
     formatDateBR(e.criadoEm)
   ]);
   downloadCSV([header, ...rows], 'relatorio_eventos_KM');
@@ -5244,7 +5258,7 @@ function exportarContabilidade() {
     const id = e.emitente && (e.emitente.id || e.emitente);
     return id !== 'karielen'; // apenas NF
   });
-  const header = ['Competência (ev)','Cliente','Tipo Evento','Tipo Registro','Data Evento','Forma Pgto','Valor Contrato','Status'];
+  const header = ['Data Evento','Competência','Cliente','Tipo Evento','Tipo Registro','Forma Pgto','Valor Contrato','Status Pagamento'];
   const rows = cons.map(c => {
     const evStr = c.ev_data || c.data_evento || c.dataEvt || '';
     let d = null;
@@ -5253,9 +5267,9 @@ function exportarContabilidade() {
     const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '';
     const isNota = c._origem === 'nota';
     const tipoRegistro = isNota ? 'Evento rápido' : 'Contrato';
-    const pgto = isNota ? 'À vista' : getPgtoLabel(c);
-    return [comp, nomeCli(c), tipoEv(c), tipoRegistro, dataEv(c), pgto,
-      getValorEvento(c).toFixed(2).replace('.', ','), getStatusContrato(c)];
+    const pgto = isNota ? 'À vista' : _csvPgto(c);
+    return [dataEv(c), comp, nomeCli(c), _csvTipoEv(c), tipoRegistro, pgto,
+      getValorEvento(c).toFixed(2).replace('.', ','), _csvStatus(c)];
   });
   downloadCSV([header, ...rows], 'relatorio_contabil');
 }
