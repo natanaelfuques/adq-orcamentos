@@ -1,5 +1,5 @@
 # Memória do Projeto — Áudio de Qualidade
-*Atualizado: 2026-04-16 — versão estável confirmada por Natanael*
+*Atualizado: 2026-04-17*
 
 ---
 
@@ -18,9 +18,9 @@
 - URL: `https://github.com/natanaelfuques/adq-orcamentos`
 - Branch: `main`
 - Pasta de entrega: `AdQ` (montada no Cowork em `/sessions/.../mnt/AdQ`)
-- Repo local para git: `/sessions/trusting-cool-shannon/git-push/`
-- PAT mais recente: `ghp_****` (não salvar token aqui — pedir para Natanael quando precisar)
-- Para subir: copiar arquivo para `/git-push/` → `git add` → `git commit` → `git push https://<PAT>@github.com/...`
+- Repo local para git: criar pasta git-push na sessão atual → clonar/fetch → copiar arquivo → commit → push
+- PAT: salvo em `SECRETS.local` (só no PC, nunca vai ao GitHub — ignorado pelo .gitignore)
+- Para subir: copiar arquivo para git-push → `git add` → `git commit` → `git push https://<PAT>@github.com/natanaelfuques/adq-orcamentos.git`
 
 ### Firebase
 - **Projeto:** `adq-orcamentos`
@@ -29,7 +29,8 @@
 - **Project ID:** `adq-orcamentos`
 - **App ID:** `1:3618259495:web:4b749f1c9124f9c243c402`
 - **SDK:** Firebase 9.x/10.x compat. `orcamento-view.html` usa Firebase 8.x (manter separado)
-- **Coleções Firestore:** `orcamentos`, `_contratos`, `_notas`, `eventos_campo`, `logs_ip`, `acessos_painel`, `configuracoes`
+- **Coleções Firestore:** `orcamentos`, `_contratos`, `notas` (eventos rápidos), `eventos_campo`, `logs_ip`, `acessos_painel`, `configuracoes`, `config` (metas/APIs)
+- **Atenção:** coleção de eventos rápidos é `notas` (sem underscore) — MEMORIA.md anterior tinha `_notas` por engano
 
 ---
 
@@ -135,6 +136,13 @@ const valRestaCor = isQuitado ? 'var(--green)' : (status === 'alerta' ? '#e05c5c
 ### index.html
 - Botão "Abrir Estoque" adicionado na aba Orçamentos (estilo azul)
 - "Evento rápido" substituído nos textos visíveis (modal edição, confirm exclusão, alert de erro, fallback de nome)
+- **Todos os status de contrato são clicáveis manualmente** — `_etapaOverride = false`, sem restrição de readonly em nenhum status (incluindo Em Andamento e Concluído)
+- **Meta Checklist Painel removida por completo** — HTML do painel admin, funções `_calcularChecklist` e `_verificarChecklistParaNotif`, bloco no modal de metas, campos do cache `_metasValoresAtuais`
+
+### Metas (index.html)
+- Cálculo usa `Promise.all([eventos_campo, notas])` — eventos rápidos **fora** do painel (`no_painel !== true`) entram na contagem para evitar duplicata com os que já estão em `eventos_campo`
+- Funções afetadas: `_calcularProgressoMetas` e `_verificarMetasAoAbrir`
+- `_metasValoresAtuais` contém: `{ receita, eventos, ticket, anual, sequencia, sequenciaLabel }`
 
 ---
 
@@ -194,6 +202,33 @@ index.html → coletarDadosContrato() → Firebase: _contratos
 | 2026-04 | Notificação arrastada movia painel de abas | `touchstart` ignora toques em `#meta-notif-banner` |
 | 2026-04 | Botão dia/noite causava bugs no swipe mobile | Removido de todos os apps (index, painel, relatorios, estoque, styles, utils) |
 | 2026-04 | Data de término só aparecia com checkbox | Removido checkbox, campo sempre visível ao lado da data de início |
+| 2026-04 | Botão Verificar não aparecia nos cards | Adicionado `data-action="verificar-autentique"` no card builder quando `doc.autentique_id` existe |
+| 2026-04 | Polling usava token NF fixo para contratos KM | `_pollingAutentique` agora usa `_getAutentiqueToken(dados.emitente)` |
+| 2026-04 | `createLinkToSignature` usava token NF para contratos KM | Corrigido para usar `token` do parâmetro em vez de `AUTENTIQUE_TOKEN` fixo |
+| 2026-04 | Link de assinatura não retornado pela API após `createDocument` | Aguardar 3s e tentar `createLinkToSignature` para cada assinatura em sequência (era timing) |
+| 2026-04 | Status "Em Andamento" não era clicável para trocar manualmente | Removido `_etapaOverride` para todos os status — todos são editáveis manualmente |
+| 2026-04 | Eventos passados iam para o final da coluna "Eventos" no painel | `renderBoard()` agora renderiza `passados` no topo com label "Realizados" |
+| 2026-04 | Eventos rápidos não contavam nas metas | `_calcularProgressoMetas` e `_verificarMetasAoAbrir` agora consultam `notas` + `eventos_campo` |
+| 2026-04 | Meta "Checklist Painel" aparecia no cabeçalho e admin sem utilidade | Removida por completo (HTML, JS, modal) |
+
+---
+
+## Autentique — Comportamento da API
+
+- `createDocument` **não retorna** `signatures[].link.short_link` na conta atual
+- `document(id)` query também retorna `link: null` nas assinaturas
+- **Solução que funciona:** aguardar ~3s e chamar `createLinkToSignature(public_id)` para cada assinatura
+- `createLinkToSignature` retorna `without_action_in_document` se chamado imediatamente (antes do processamento)
+- Após 3s funciona corretamente — confirmado em produção
+
+## Autentique — Webhook KM
+
+- **Endpoint cadastrado no Autentique (conta KM):** `https://webhookautentique-z5dkury3fq-uc.a.run.app`
+- **Webhook Secret KM:** `01KPCJSW8Z34EBJPPJ6VCW12FM` (salvo como var de ambiente `AUTENTIQUE_WEBHOOK_SECRET_KM` no Cloud Run)
+- **Cloud Function:** `webhookAutentique` — Node.js 24, região us-central1
+- **O que faz:** recebe `document.finished` → busca contrato por `autentique_id` no Firestore → atualiza `status_contrato: 'assinado'`
+- Funciona para NF e KM sem distinção (busca por `autentique_id` independente do emitente)
+- **Token KM no painel admin:** aba APIs → campo "Autentique KM" → salva em `config/apis.autentique_token_km`
 
 ---
 
@@ -203,4 +238,4 @@ index.html → coletarDadosContrato() → Firebase: _contratos
 - Sempre fazer push ao GitHub após cada alteração
 - **Base para edição:** usar os arquivos de `/sessions/trusting-cool-shannon/git-push/` OU `/sessions/trusting-cool-shannon/mnt/AdQ/` — ambos são confiáveis, pois Natanael sempre sobe as alterações que faz localmente
 - **Durante uma sessão de edição:** sempre usar a versão mais recente do arquivo — se já editei o arquivo na sessão atual, a versão em memória já está atualizada; não usar cópia antiga
-- Push: copiar para `/sessions/trusting-cool-shannon/git-push/` → commit → push com PAT
+- Push: copiar par
