@@ -902,6 +902,7 @@
     position: relative;
     overflow: hidden;
     width: 100%;
+    touch-action: pan-y; /* browser cuida do scroll vertical; JS cuida do swipe horizontal */
   }
 
   /* ── SALVOS: scroll interno na lista ── */
@@ -7001,7 +7002,8 @@ function filtrarContratos() {
         isHorizontal = Math.abs(dx) > Math.abs(dy);
       }
       if (!isHorizontal) return;
-      e.preventDefault();
+      // touch-action: pan-y no CSS já impede o browser de fazer pan horizontal,
+      // então não precisamos de e.preventDefault() aqui (permite scroll vertical nativo)
 
       var physIdx = VIRTUAL[currentIdx].phys;
       var nextVirtLeft  = currentIdx - 1;
