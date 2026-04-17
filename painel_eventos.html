@@ -1522,10 +1522,25 @@ function renderBoard() {
 
     // Split: past vs future/current, filtered by period
     var isRealizados = _periodo === 'realizados';
-    var futuros = isRealizados
-      ? colunas[col].filter(function(ev) { return isPast(ev); })
-      : colunas[col].filter(function(ev) { return !isPast(ev) && matchesPeriodo(ev, _periodo); });
-    var passados = isRealizados ? [] : colunas[col].filter(function(ev) { return isPast(ev); });
+    var futuros, passados;
+    if (col === 'concluido' && _periodo === '30dias') {
+      // Concluído no filtro 30 dias: janela -7 dias até +30 dias
+      var _ini30c = new Date(); _ini30c.setHours(0,0,0,0); _ini30c.setDate(_ini30c.getDate() - 7);
+      var _fim30c = new Date(); _fim30c.setHours(0,0,0,0); _fim30c.setDate(_fim30c.getDate() + 30);
+      futuros = colunas[col].filter(function(ev) {
+        if (!ev.ev_data) return false;
+        var p = ev.ev_data.split('-');
+        var d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+        return d >= _ini30c && d <= _fim30c;
+      });
+      passados = [];
+    } else if (isRealizados) {
+      futuros  = colunas[col].filter(function(ev) { return isPast(ev); });
+      passados = [];
+    } else {
+      futuros  = colunas[col].filter(function(ev) { return !isPast(ev) && matchesPeriodo(ev, _periodo); });
+      passados = colunas[col].filter(function(ev) { return isPast(ev); });
+    }
 
     // Sort by date ascending (futuros) or by proximity to today (andamento/concluido)
     function sortByDate(arr) {
