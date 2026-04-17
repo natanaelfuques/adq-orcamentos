@@ -6936,7 +6936,10 @@ function filtrarContratos() {
   var isDragging = false;
   var isHorizontal = null;
 
-  function getTrackWidth() { return window.innerWidth; }
+  function getTrackWidth() {
+    var el = document.getElementById('swipe-container');
+    return el ? Math.round(el.getBoundingClientRect().width) : window.innerWidth;
+  }
 
   function setTranslate(x, animate) {
     if (!track) return;
@@ -7056,6 +7059,11 @@ function filtrarContratos() {
   window._syncVirtualIdx = function(vIdx) {
     if (vIdx >= 0 && vIdx < TOTAL_VIRTUAL) currentIdx = vIdx;
   };
+
+  // Reposiciona ao rotacionar tela (evita desalinhamento)
+  window.addEventListener('resize', function() {
+    goToVirtual(currentIdx, false);
+  });
 })();
 
 // ═══ SINCRONIZAÇÃO PAINEL ═══
