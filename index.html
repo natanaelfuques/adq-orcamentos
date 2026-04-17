@@ -6982,8 +6982,11 @@ function filtrarContratos() {
     goToVirtual(0, false);
 
     track.addEventListener('touchstart', function(e) {
-      // Ignore touches that start inside the salvos inner swipe area
-      if (e.target.closest && e.target.closest('#salvos-swipe-track')) {
+      // Ignore touches that start inside the salvos inner swipe area ou notificações
+      if (e.target.closest && (
+          e.target.closest('#salvos-swipe-track') ||
+          e.target.closest('#meta-notif-banner')
+      )) {
         isDragging = false;
         return;
       }
@@ -7025,8 +7028,9 @@ function filtrarContratos() {
     track.addEventListener('touchend', function(e) {
       if (!isDragging || !isHorizontal) { isDragging = false; return; }
       isDragging = false;
-      // Se estamos no painel salvos (phys=1), o swipe interno já cuidou da navegação
-      if (VIRTUAL[currentIdx].phys === 1) return;
+      // Se estamos no painel salvos (phys=1), o swipe interno já cuidou da navegação,
+      // mas ainda fazemos o snap-back para não deixar o track fora do centro
+      if (VIRTUAL[currentIdx].phys === 1) { goToVirtual(currentIdx, true); return; }
       var dx = e.changedTouches[0].clientX - touchStartX;
       var threshold = getTrackWidth() * 0.3;
       if (dx < -threshold && currentIdx < TOTAL_VIRTUAL - 1) {
