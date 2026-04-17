@@ -799,9 +799,13 @@
   .btn-autentique-check:hover { border-color: #4A90C8; color: #4A90C8; }
   .btn-autentique-check.verificando { border-color: var(--gold); color: var(--gold); pointer-events: none; }
   .btn-autentique-check.assinado-aut { border-color: #25D366; color: #25D366; pointer-events: none; }
-  .btn-whatsapp:focus, .btn-calendar:focus { outline: none; }
-  .btn-whatsapp:active, .btn-calendar:active { opacity: 0.7; }
-  .btn-whatsapp:not(:active), .btn-calendar:not(:active) { -webkit-tap-highlight-color: transparent; }
+  .btn-maps { border-color: var(--border); color: var(--muted); }
+  .btn-maps:hover { background: var(--border); color: var(--text); }
+  .btn-maps.tem-maps { border-color: var(--border); color: #4A90C8; }
+  .btn-maps.tem-maps:hover { background: #4A90C8 !important; border-color: #4A90C8 !important; color: #fff !important; }
+  .btn-whatsapp:focus, .btn-calendar:focus, .btn-maps:focus { outline: none; }
+  .btn-whatsapp:active, .btn-calendar:active, .btn-maps:active { opacity: 0.7; }
+  .btn-whatsapp:not(:active), .btn-calendar:not(:active), .btn-maps:not(:active) { -webkit-tap-highlight-color: transparent; }
   .salvo-status.status-readonly { cursor: default; }
   .salvo-status.status-readonly:hover { opacity: 1; }
 
@@ -5774,6 +5778,7 @@ function handleSalvosClick(e) {
   }
   else if (action === 'excluir-contrato') excluirContrato(id, nome);
   else if (action === 'calendar') { btn.blur(); registrarLogGerador('calendar', nome); gerarLinkCalendar(id); }
+  else if (action === 'maps-contrato') { btn.blur(); _abrirModalMaps(id, btn.getAttribute('data-maps') || '', btn); }
   else if (action === 'verificar-autentique') { verificarAssinaturaAutentique(id, btn); }
   else if (action === 'whatsapp' || action === 'whatsapp-orc' || action === 'whatsapp-nota') {
     var _tipo = (action === 'whatsapp') ? 'contrato' : (action === 'whatsapp-orc') ? 'orc' : 'nota';
@@ -6622,6 +6627,9 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '</div>';
     card += '<div class="salvo-status-row">';
     card += '<button class="salvo-status btn-whatsapp' + (_wTemFone ? ' tem-fone' : '') + '" data-action="whatsapp" data-id="' + id + '" data-fone="' + escHtml(doc.cli_fone || '') + '" title="WhatsApp" style="padding:0;min-width:unset;flex:unset;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center">' + _waSvgCon + '</button>';
+    var _mapsUrl = doc.local_evento_maps || doc.ev_maps || doc.maps_link || '';
+    var _mapsSvgCon = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+    card += '<button class="salvo-status btn-maps' + (_mapsUrl ? ' tem-maps' : '') + '" data-action="maps-contrato" data-id="' + id + '" data-maps="' + escHtml(_mapsUrl) + '" title="' + (_mapsUrl ? 'Abrir no Maps' : 'Colar link do Maps') + '" style="padding:0;min-width:unset;flex:unset;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center">' + _mapsSvgCon + '</button>';
     var calClass = doc.calendar_adicionado ? 'salvo-status btn-calendar btn-calendar-ok' : 'salvo-status btn-calendar';
     card += '<button class="' + calClass + '" data-action="calendar" data-id="' + id + '" title="Google Calendar" style="padding:0;min-width:unset;flex:unset;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center">'
       + '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'
@@ -8123,6 +8131,77 @@ function _salvarWpp(id, tipo, abrirWpp, extraId) {
     if (numero.length <= 11) numero = '55' + numero;
     window.open('https://wa.me/' + numero, '_blank');
   }
+}
+// ── Modal Maps (contrato) ─────────────────────────────────────────────────────
+function _abrirModalMaps(id, mapsAtual, btnEl) {
+  var old = document.getElementById('adq-maps-modal');
+  if (old) { old.remove(); return; }
+
+  // Se já tem link e não é um clique de edição, abre direto
+  if (mapsAtual && btnEl && !btnEl._mapsEditar) {
+    btnEl._mapsEditar = true;
+    window.open(mapsAtual, '_blank');
+    setTimeout(function() { if (btnEl) btnEl._mapsEditar = false; }, 3000);
+    return;
+  }
+  if (btnEl) btnEl._mapsEditar = false;
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-maps-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var sF  = "font-family:'Barlow',sans-serif;";
+  var sBC = "font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;padding:9px 16px;border:none;";
+
+  modal.innerHTML =
+    '<div style="background:#1e1e1e;border:1px solid #333;border-top:2px solid #4A90C8;border-radius:8px;padding:22px 20px;width:100%;max-width:400px;box-sizing:border-box">' +
+      '<div style="' + sF + 'font-size:0.72rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Google Maps — Local do Evento</div>' +
+      '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;' + sF + '">Link do Maps</label>' +
+      '<input id="adq-maps-input" type="url" autocomplete="off" value="' + escHtml(mapsAtual) + '" placeholder="https://maps.app.goo.gl/..."' +
+        ' style="width:100%;background:#111;border:1px solid #444;color:#eee;' + sF + 'font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s"' +
+        ' onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'"' +
+        ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarMaps(\'' + id + '\',false);}">' +
+      '<div style="display:flex;gap:8px">' +
+        '<button onclick="_salvarMaps(\'' + id + '\',true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">Abrir Maps</button>' +
+        '<button onclick="_salvarMaps(\'' + id + '\',false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
+        '<button onclick="document.getElementById(\'adq-maps-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+      '</div>' +
+    '</div>';
+
+  modal._btnEl = btnEl;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+
+  var inp = document.getElementById('adq-maps-input');
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function _salvarMaps(id, abrirMaps) {
+  var inp = document.getElementById('adq-maps-input');
+  if (!inp) return;
+  var link = inp.value.trim();
+
+  if (!link) {
+    inp.style.borderColor = '#e55';
+    setTimeout(function() { inp.style.borderColor = '#444'; }, 1000);
+    return;
+  }
+
+  if (db) {
+    db.collection('contratos').doc(id).update({ local_evento_maps: link }).catch(function(){});
+  }
+
+  var modal = document.getElementById('adq-maps-modal');
+  var btnEl = modal ? modal._btnEl : null;
+  if (btnEl) {
+    btnEl.setAttribute('data-maps', link);
+    btnEl.setAttribute('title', 'Abrir no Maps');
+    btnEl.classList.add('tem-maps');
+  }
+
+  if (modal) modal.remove();
+
+  if (abrirMaps) window.open(link, '_blank');
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
