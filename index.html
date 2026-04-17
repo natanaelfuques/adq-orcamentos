@@ -5732,7 +5732,7 @@ function handleSalvosClick(e) {
           btn.classList.add('primary');
           btn.textContent = 'Link';
           abrirModalLinkAssinatura(id, btn);
-        } else if (d.autentique_public_id && AUTENTIQUE_TOKEN) {
+        } else if (d.autentique_public_id && _getAutentiqueToken(d.emitente)) {
           btn.textContent = '...';
           var linkQuery = 'mutation { createLinkToSignature(public_id: "' + d.autentique_public_id + '") { short_link } }';
           var _fdLink = new FormData();
@@ -5740,7 +5740,7 @@ function handleSalvosClick(e) {
           _fdLink.append('map', '{}');
           fetch('https://autentique.natanael-fuques.workers.dev/', {
             method: 'POST',
-            headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
+            headers: { 'X-Autentique-Token': _getAutentiqueToken(d.emitente) },
             body: _fdLink
           })
           .then(function(r) { return r.json(); })
@@ -6665,6 +6665,11 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
       + '<line x1="9" y1="0.5" x2="9" y2="3.5"/>'
       + '</svg>'
       + '</button>';
+    if (doc.autentique_id) {
+      var _autClass = (_statusCon === 'assinado') ? 'salvo-status btn-autentique-check assinado-aut' : 'salvo-status btn-autentique-check';
+      var _autLabel = (_statusCon === 'assinado') ? '✓ Assinado' : 'Verificar';
+      card += '<button class="' + _autClass + '" data-action="verificar-autentique" data-id="' + id + '" data-aut-id="' + escHtml(doc.autentique_id) + '" data-emitente="' + escHtml(doc.emitente || 'nf') + '">' + _autLabel + '</button>';
+    }
 
     if (statusClickable) {
       card += '<button class="salvo-status' + statusClass + '" data-action="toggle-aprovado-contrato" data-id="' + id + '" data-status="' + _statusCon + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '" style="cursor:pointer;background:transparent">' + statusLabel + '</button>';
@@ -7460,7 +7465,9 @@ function removerDoPainel(contratoId) {
 function verificarAssinaturaAutentique(contratoId, btn) {
   var autId = btn ? btn.getAttribute('data-aut-id') : '';
   if (!autId) { alert('ID do Autentique não encontrado.'); return; }
-  if (!AUTENTIQUE_TOKEN) { alert('Token do Autentique não configurado.'); return; }
+  var _emitVerif = btn ? (btn.getAttribute('data-emitente') || 'nf') : 'nf';
+  var _tokenVerif = _getAutentiqueToken(_emitVerif);
+  if (!_tokenVerif) { alert('Token do Autentique não configurado.'); return; }
 
   btn.textContent = 'Verificando...';
   btn.className = 'salvo-status btn-autentique-check verificando';
@@ -7472,7 +7479,7 @@ function verificarAssinaturaAutentique(contratoId, btn) {
   _fdVerif.append('map', '{}');
   fetch('https://autentique.natanael-fuques.workers.dev/', {
     method: 'POST',
-    headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
+    headers: { 'X-Autentique-Token': _tokenVerif },
     body: _fdVerif
   })
   .then(function(res) { return res.json(); })
@@ -7527,13 +7534,14 @@ function _pollingAutentique() {
         if (sc === 'assinado' || sc === 'confirmado') return;
         var autId = dados.autentique_id;
         var cid = docSnap.id;
+        var _pollToken = _getAutentiqueToken(dados.emitente || 'nf');
         var query = 'query { document(id: "' + autId + '") { signatures { signed_at { date } } } }';
         var _fdPoll = new FormData();
         _fdPoll.append('operations', JSON.stringify({ query: query, variables: {} }));
         _fdPoll.append('map', '{}');
         fetch('https://autentique.natanael-fuques.workers.dev/', {
           method: 'POST',
-          headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
+          headers: { 'X-Autentique-Token': _pollToken },
           body: _fdPoll
         })
         .then(function(r) { return r.json(); })
@@ -8643,7 +8651,14 @@ function _salvarEdicaoNota(id) {
 
 // ═══ INTEGRAÇÃO AUTENTIQUE ═══
 
-var AUTENTIQUE_TOKEN = '8b5f17b0484b1d67752fa6d30c059b590decb430f782fa8443a806b814ffd1b0';  // ← cole seu token de API aqui
+var AUTENTIQUE_TOKEN    = '8b5f17b0484b1d67752fa6d30c059b590decb430f782fa8443a806b814ffd1b0';  // NF Soluções
+var AUTENTIQUE_TOKEN_KM = '83ccd7cb9e902d5b2c1734eae870857afb71f4fdce9ef9cd49bae0bc534e3130';  // Karielen
+
+// Retorna o token correto conforme emitente ('nf' | 'karielen' | objeto _EMITENTES)
+function _getAutentiqueToken(emitente) {
+  var id = emitente ? (typeof emitente === 'string' ? emitente : emitente.id) : _emitenteSel;
+  return id === 'karielen' ? AUTENTIQUE_TOKEN_KM : AUTENTIQUE_TOKEN;
+}
 
 // ── CHAVE ANTHROPIC (IA) ──────────────────────────────────────────────────────
 var ANTHROPIC_KEY = localStorage.getItem('adq_anthropic_key') || '';  // chave salva localmente no device
@@ -8706,8 +8721,9 @@ function _confirmarAutentique() {
     alert('Informe um e-mail válido para o signatário.');
     return;
   }
-  if (!AUTENTIQUE_TOKEN) {
-    alert('Configure o AUTENTIQUE_TOKEN no código antes de usar esta função.');
+  var _tokenAtual = _getAutentiqueToken(_emitenteSel);
+  if (!_tokenAtual) {
+    alert('Token do Autentique não configurado para este emitente.');
     return;
   }
 
@@ -8725,7 +8741,7 @@ function _confirmarAutentique() {
   var _nomeCliente = (document.getElementById('cli_nome') || {}).value || 'Cliente'; var _evDataRaw = (document.getElementById('ev_data') || {}).value || ''; var _partes = _evDataRaw.split('-'); var _dd = (_partes[2] || ''); var _mm = (_partes[1] || ''); var _aaaa = (_partes[0] || ''); if (!_dd || !_mm || !_aaaa) { var _hoje = new Date(); _dd = String(_hoje.getDate()).padStart(2,'0'); _mm = String(_hoje.getMonth()+1).padStart(2,'0'); _aaaa = String(_hoje.getFullYear()); } var nomeContrato = 'CONTRATO - ' + _nomeCliente.toUpperCase() + ' ' + _dd + '-' + _mm + '-' + _aaaa;
   var htmlContrato = iframe.srcdoc;
 
-  _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox)
+  _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox, _tokenAtual)
     .then(function(resultado) {
       var modal = document.getElementById('adq-autentique-modal');
       if (modal) modal.remove();
@@ -8770,7 +8786,8 @@ function _confirmarAutentique() {
     });
 }
 
-function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, htmlConteudo, sandbox) {
+function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, htmlConteudo, sandbox, token) {
+  token = token || AUTENTIQUE_TOKEN;
   var ENDPOINT = 'https://autentique.natanael-fuques.workers.dev/';
 
   var query = sandbox
@@ -8816,7 +8833,7 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
 
   return fetch(ENDPOINT, {
     method: 'POST',
-    headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
+    headers: { 'X-Autentique-Token': token },
     body: formData
   })
   .then(function(res) { return res.json(); })
@@ -8998,8 +9015,9 @@ function _abrirModalAutentiqueDoCard(contratoId, dadosContrato, btnCard) {
       alert('Informe um e-mail válido para o signatário.');
       return;
     }
-    if (!AUTENTIQUE_TOKEN) {
-      alert('Configure o AUTENTIQUE_TOKEN antes de usar esta função.');
+    var _tokenCard = _getAutentiqueToken(dadosContrato.emitente || 'nf');
+    if (!_tokenCard) {
+      alert('Token do Autentique não configurado para este emitente.');
       return;
     }
 
@@ -9051,7 +9069,7 @@ function _abrirModalAutentiqueDoCard(contratoId, dadosContrato, btnCard) {
       var _dd = _dataParts[2] || ''; var _mm = _dataParts[1] || ''; var _aaaa = _dataParts[0] || '';
       var nomeContrato = 'CONTRATO - ' + (d.cli_nome || 'Cliente').toUpperCase() + ' ' + _dd + '-' + _mm + '-' + _aaaa;
 
-      _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox)
+      _enviarDocumentoAutentique(nomeContrato, email, nome, htmlContrato, sandbox, _tokenCard)
         .then(function(resultado) {
           var modalEl = document.getElementById('adq-autentique-modal');
           if (modalEl) modalEl.remove();
