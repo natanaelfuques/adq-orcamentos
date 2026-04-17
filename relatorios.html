@@ -1628,13 +1628,11 @@ header {
     <input id="data-fim" onchange="aplicarCustom()" type="date"/>
   </div>
   <span style="margin-left:auto;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-    <span class="nf-badge" style="margin-left:0">NF</span>
     <button class="export-btn" onclick="exportarCSV()" style="border-color:#F5A623;color:#F5A623">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar CSV
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="nf-badge" style="margin-left:0;margin-right:5px">NF</span>Exportar CSV
     </button>
-    <span style="font-size:0.58rem;font-weight:800;background:rgba(139,92,246,0.12);color:#9B5CE5;border:1px solid rgba(139,92,246,0.3);border-radius:3px;padding:1px 6px;letter-spacing:0.08em;white-space:nowrap">KM</span>
     <button class="export-btn" onclick="exportarCSV_KM()" style="border-color:#9B5CE5;color:#9B5CE5">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar CSV
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="km-badge" style="margin-left:0;margin-right:5px">KM</span>Exportar CSV
     </button>
   </span>
 </div>
@@ -1888,8 +1886,8 @@ Regime: <span class="config-field-editable" data-config="empresa" data-field="re
 </table>
 </div>
 <div style="text-align:right;margin-top:8px;display:flex;align-items:center;justify-content:flex-end;gap:7px">
-  <span class="nf-badge" style="margin-left:0">NF</span>
   <button class="export-btn" onclick="exportarContabilidade()" style="border-color:#F5A623;color:#F5A623">
+    <span class="nf-badge" style="margin-left:0;margin-right:5px">NF</span>
     ⬇ Exportar relatório contábil (CSV)
   </button>
 </div>
