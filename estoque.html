@@ -2057,12 +2057,14 @@
   }
   /* Grid do calendário */
   .agenda-cal-grid {
-    display: grid; grid-template-columns: repeat(7, 1fr);
-    flex: 1; overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    flex: 1; overflow: hidden;
   }
   .agenda-cal-cell {
     border-right: 1px solid var(--border2); border-bottom: 1px solid var(--border2);
-    padding: 4px 3px; min-height: 80px; cursor: pointer;
+    padding: 4px 3px; overflow: hidden; cursor: pointer;
     transition: background 0.12s;
   }
   .agenda-cal-cell:hover { background: rgba(255,255,255,0.02); }
@@ -2166,7 +2168,7 @@
     .agenda-layout { flex-direction: column; }
     .agenda-cal-panel { border-right: none; border-bottom: 1px solid var(--border2); max-height: 55vh; }
     .agenda-right-panel { width: 100%; }
-    .agenda-cal-cell { min-height: 52px; }
+    .agenda-cal-grid { grid-template-rows: repeat(6, 1fr); }
   }
   /* Conflict dot on kit cards */
   .kit-conflict-dot {
@@ -5212,6 +5214,7 @@ function _renderAgendaCalendar() {
   var ultimoDia = new Date(_agAno, _agMes + 1, 0);
   var startDow = primeiroDia.getDay();
 
+  // Sempre 42 células (6 linhas × 7 colunas) — tamanho fixo independente do mês
   var cells = [];
   for (var i = 0; i < startDow; i++) {
     cells.push({ date: new Date(_agAno, _agMes, 1 - (startDow - i)), outroMes: true });
@@ -5219,12 +5222,9 @@ function _renderAgendaCalendar() {
   for (var d = 1; d <= ultimoDia.getDate(); d++) {
     cells.push({ date: new Date(_agAno, _agMes, d), outroMes: false });
   }
-  var linhas = Math.ceil(cells.length / 7);
-  if (linhas < 5) linhas = 5;
-  var total = linhas * 7;
-  for (var j = cells.length; j < total; j++) {
-    var extra = j - startDow - ultimoDia.getDate() + 1;
-    cells.push({ date: new Date(_agAno, _agMes + 1, extra), outroMes: true });
+  var nextDay = 1;
+  while (cells.length < 42) {
+    cells.push({ date: new Date(_agAno, _agMes + 1, nextDay++), outroMes: true });
   }
 
   grid.innerHTML = cells.map(function(cell) {
@@ -6941,4 +6941,4 @@ function vmSlotGridDrop(ev) {
   if (existente) { existente.qtd = (existente.qtd || 1) + 1; }
   else { _veiculoItensAtual.push({ id: itemId, nome: nome, tipo: tipo, qtd: 1 }); }
 
-  if (grid) grid.innerHTML = _bui
+  if (grid) grid.innerHTML = _build
