@@ -8857,39 +8857,37 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
       return { id: doc.id, name: doc.name, link: link, public_id: publicId };
     }
 
-    // Se não veio link mas temos public_id, chama createLinkToSignature
-    if (publicId) {
-      console.log('[AdQ] Link não veio no createDocument, chamando createLinkToSignature com public_id:', publicId);
-      var linkQuery = 'mutation { createLinkToSignature(public_id: "' + publicId + '") { short_link } }';
-      var linkFormData = new FormData();
-      linkFormData.append('operations', JSON.stringify({ query: linkQuery, variables: {} }));
-      linkFormData.append('map', '{}');
+    // Link não veio no createDocument — busca o documento pelo id para obter os links frescos
+    if (doc.id) {
+      console.log('[AdQ] Link não veio no createDocument, buscando documento pelo id:', doc.id);
+      var fetchQuery = 'query { document(id: "' + doc.id + '") { id signatures { public_id link { short_link } } } }';
+      var fetchFD = new FormData();
+      fetchFD.append('operations', JSON.stringify({ query: fetchQuery, variables: {} }));
+      fetchFD.append('map', '{}');
       return fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'X-Autentique-Token': token },
-        body: linkFormData
+        body: fetchFD
       })
       .then(function(r2) { return r2.json(); })
       .then(function(d2) {
-        console.log('[AdQ] createLinkToSignature response completo:', JSON.stringify(d2));
-        var shortLink = '';
-        if (d2.data && d2.data.createLinkToSignature && d2.data.createLinkToSignature.short_link) {
-          shortLink = d2.data.createLinkToSignature.short_link;
-        }
-        if (!shortLink) {
-          console.warn('[AdQ] createLinkToSignature não retornou link:', JSON.stringify(d2));
-        }
-        return { id: doc.id, name: doc.name, link: shortLink, public_id: publicId };
+        console.log('[AdQ] document query response:', JSON.stringify(d2));
+        var fetchedDoc = d2.data && d2.data.document;
+        var fetchedSig = (fetchedDoc && fetchedDoc.signatures && fetchedDoc.signatures[0]) || {};
+        var fetchedLink = (fetchedSig.link && fetchedSig.link.short_link) ? fetchedSig.link.short_link : '';
+        var fetchedPid  = fetchedSig.public_id || publicId;
+        if (!fetchedLink) console.warn('[AdQ] document query também não retornou link');
+        return { id: doc.id, name: doc.name, link: fetchedLink, public_id: fetchedPid };
       })
       .catch(function(err) {
-        console.warn('[AdQ] Erro ao gerar link via createLinkToSignature:', err);
+        console.warn('[AdQ] Erro ao buscar documento:', err);
         return { id: doc.id, name: doc.name, link: '', public_id: publicId };
       });
     }
 
-    // Sem link e sem public_id
-    console.warn('[AdQ] Nenhum public_id retornado pelo createDocument');
-    return { id: doc.id, name: doc.name, link: '', public_id: '' };
+    // Sem id
+    console.warn('[AdQ] Nenhum id retornado pelo createDocument');
+    return { id: '', name: doc.name, link: '', public_id: '' };
   });
 }
 
