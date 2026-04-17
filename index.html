@@ -8137,15 +8137,6 @@ function _abrirModalMaps(id, mapsAtual, btnEl) {
   var old = document.getElementById('adq-maps-modal');
   if (old) { old.remove(); return; }
 
-  // Se já tem link e não é um clique de edição, abre direto
-  if (mapsAtual && btnEl && !btnEl._mapsEditar) {
-    btnEl._mapsEditar = true;
-    window.open(mapsAtual, '_blank');
-    setTimeout(function() { if (btnEl) btnEl._mapsEditar = false; }, 3000);
-    return;
-  }
-  if (btnEl) btnEl._mapsEditar = false;
-
   var modal = document.createElement('div');
   modal.id = 'adq-maps-modal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px';
