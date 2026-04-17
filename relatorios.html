@@ -3386,10 +3386,24 @@ function renderPagamentos() {
     if (_dataFim && d > _dataFim) return false;
     return true;
   }
+  // Eventos dentro do período selecionado
   const todosContratos = _contratos.filter(_dentroPeríodoPgto).map(function(c) { return Object.assign({}, c, { _origem: 'contrato' }); });
   const notaIdsComContrato = new Set(todosContratos.map(function(c) { return c.nota_id; }).filter(Boolean));
   const todosNotas = _notas.filter(_dentroPeríodoPgto).filter(function(n) { return !notaIdsComContrato.has(n.id); });
-  const todosBase = [...todosContratos, ...todosNotas]
+
+  // Eventos em monitoramento FORA do período — sempre inclusos independente do filtro
+  const idsNoPeriodo = new Set([...todosContratos, ...todosNotas].map(function(e) { return e.id; }));
+  function _isAlertaEv(e) {
+    const ev = Object.assign({}, e, { _origem: e._origem || 'contrato' });
+    return getStatusPgto(ev) === 'alerta';
+  }
+  const alertaForaPeriodo = [
+    ..._contratos.filter(function(c) { return !_dentroPeríodoPgto(c) && _isAlertaEv(Object.assign({}, c, { _origem: 'contrato' })); })
+                 .map(function(c) { return Object.assign({}, c, { _origem: 'contrato' }); }),
+    ..._notas.filter(function(n) { return !_dentroPeríodoPgto(n) && !notaIdsComContrato.has(n.id) && _isAlertaEv(Object.assign({}, n, { _origem: 'nota' })); })
+  ].filter(function(e) { return !idsNoPeriodo.has(e.id); });
+
+  const todosBase = [...todosContratos, ...todosNotas, ...alertaForaPeriodo]
     .filter(function(e) { return valorEv(e) > 0 && !e.removido_manualmente; });
 
   // Filtro de busca + status
