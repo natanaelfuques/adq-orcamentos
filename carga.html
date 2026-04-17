@@ -274,7 +274,7 @@
 }
 .veiculo-kits-slots {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 5px;
 }
 .veiculo-kit-slot {
@@ -1210,7 +1210,7 @@ function renderVeiculos() {
     var kitsNesseVeiculo = _cargaAtual && _cargaAtual.kits_veiculo && _cargaAtual.kits_veiculo[v.id] || [];
 
     var slotsHtml = '';
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < 8; i++) {
       if (kitsNesseVeiculo[i]) {
         var k = _kits[kitsNesseVeiculo[i]];
         var kNome = k ? k.nome : 'Kit';
@@ -1431,7 +1431,7 @@ function dropNoVeiculo(event, veiculoId) {
   if (!_cargaAtual.kits_veiculo[veiculoId]) _cargaAtual.kits_veiculo[veiculoId] = [];
 
   var arr = _cargaAtual.kits_veiculo[veiculoId];
-  if (arr.length >= 6) { toast('Máximo de 6 kits por veículo!', true); return; }
+  if (arr.length >= 8) { toast('Máximo de 8 kits por veículo!', true); return; }
   if (arr.indexOf(_dragId) !== -1) { toast('Kit já adicionado a este veículo.', true); return; }
 
   arr.push(_dragId);
