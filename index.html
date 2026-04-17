@@ -9453,17 +9453,6 @@ function abrirModalConfiguracoes() {
         </div>
 
         <!-- Checklist 100% -->
-        <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.1em">Checklist Completo</div>
-            <div id="meta-checklist-pct" style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;color:#555"></div>
-          </div>
-          <div style="font-size:0.68rem;color:#555;margin-bottom:10px">Eventos do mês com todos os itens marcados</div>
-          <div style="background:#1a1a1a;border-radius:4px;height:22px;overflow:hidden;position:relative;margin-bottom:4px">
-            <div id="meta-checklist-bar" style="height:100%;background:linear-gradient(90deg,#25D366,#30e876);border-radius:4px;transition:width 0.6s ease;width:0%"></div>
-            <div id="meta-checklist-valor" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)"></div>
-          </div>
-        </div>
 
         <!-- Sequência de meses -->
         <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">
@@ -9934,7 +9923,7 @@ var _metasAllData = {}; // todos os dados do Firestore (cache)
 var _metaNotificado = {};
 var _metaListenerUnsubscribe = null; // controla o listener em tempo real
 // Cache dos valores reais calculados — lido pelo modal de troféu sem depender do DOM admin
-var _metasValoresAtuais = { receita: 0, eventos: 0, ticket: 0, anual: 0, checklistOk: false, checklistTotal: 0, checklistCompletos: 0, sequencia: 0, sequenciaLabel: '' };
+var _metasValoresAtuais = { receita: 0, eventos: 0, ticket: 0, anual: 0, sequencia: 0, sequenciaLabel: '' };
 
 function _metaChaveMes(mes, ano) {
   return ano + '-' + String(mes + 1).padStart(2, '0');
@@ -10090,36 +10079,34 @@ function _calcularProgressoMetas() {
   var anoEl = document.getElementById('meta-anual-ano');
   if (anoEl) anoEl.textContent = 'Acumulado do ano ' + _metaAnoAtual;
 
-  // Buscar todos os eventos no painel (contratos + eventos rápidos)
-  db.collection('eventos_campo')
-    .get()
-    .then(function(snap) {
+  // Buscar todos os eventos (painel + eventos rápidos não enviados ao painel)
+  Promise.all([
+    db.collection('eventos_campo').get(),
+    db.collection('notas').get()
+  ]).then(function(results) {
+      var snapCampo = results[0];
+      var snapNotas = results[1];
       var totalReceita = 0;
       var totalEventos = 0;
       var totalAnual = 0;
       var receitaPorMes = {};
 
-      snap.forEach(function(doc) {
-        var d = doc.data();
-
+      function _contabilizar(d) {
         var dataRef = _parseDataContrato(d);
         if (!dataRef) return;
-
         var valor = _extrairValor(d);
-
-        // Acumular por mês para sequência
         var chave = dataRef.getFullYear() + '-' + String(dataRef.getMonth() + 1).padStart(2, '0');
         receitaPorMes[chave] = (receitaPorMes[chave] || 0) + valor;
+        if (dataRef >= inicioMes && dataRef <= fimMes) { totalEventos++; totalReceita += valor; }
+        if (dataRef >= inicioAno && dataRef <= fimAno) { totalAnual += valor; }
+      }
 
-        // Mês selecionado
-        if (dataRef >= inicioMes && dataRef <= fimMes) {
-          totalEventos++;
-          totalReceita += valor;
-        }
-        // Ano selecionado
-        if (dataRef >= inicioAno && dataRef <= fimAno) {
-          totalAnual += valor;
-        }
+      snapCampo.forEach(function(doc) { _contabilizar(doc.data()); });
+      // Notas fora do painel (no_painel !== true) para não contar em duplicata
+      snapNotas.forEach(function(doc) {
+        var d = doc.data();
+        if (d.no_painel) return; // já está em eventos_campo
+        _contabilizar(d);
       });
 
       var ticketMedio = totalEventos > 0 ? totalReceita / totalEventos : 0;
@@ -10135,14 +10122,8 @@ function _calcularProgressoMetas() {
       _renderProgressoMeta('ticket', ticketMedio, _metasConfig.ticket, true);
       _renderProgressoMeta('anual', totalAnual, _metasConfig.anual, true);
       _calcularSequenciaMetas(receitaPorMes);
-
-      // Checklist: buscar eventos_campo do mês, depois verificar conquistas com tudo
-      _calcularChecklist(inicioMes, fimMes, function(checklistOk) {
-        _metasValoresAtuais.checklistOk = checklistOk;
-        _verificarConquistas(totalReceita, totalEventos, ticketMedio, totalAnual, checklistOk);
-        // Notificação imediata usando os valores já calculados (sem nova query ao Firestore)
-        _verificarConquistasImediato(totalReceita, totalEventos, ticketMedio, totalAnual, checklistOk);
-      });
+      _verificarConquistas(totalReceita, totalEventos, ticketMedio, totalAnual);
+      _verificarConquistasImediato(totalReceita, totalEventos, ticketMedio, totalAnual);
     })
     .catch(function(e) {
       console.warn('Erro ao calcular metas:', e);
@@ -10261,82 +10242,6 @@ function _calcularSequenciaMetas(receitaPorMes) {
   if (detalheEl) detalheEl.textContent = seqDetalhe;
 }
 
-function _calcularChecklist(inicioMes, fimMes, callback) {
-  if (!db) { if (callback) callback(false); return; }
-
-  db.collection('eventos_campo').get().then(function(snap) {
-    var totalEventosMes = 0;
-    var eventosCompletos = 0;
-
-    snap.forEach(function(doc) {
-      var ev = doc.data();
-      var dataRef = null;
-      if (ev.ev_data) {
-        if (ev.ev_data.indexOf('-') !== -1) {
-          var pts = ev.ev_data.split('-');
-          if (pts.length === 3) dataRef = new Date(parseInt(pts[0]), parseInt(pts[1]) - 1, parseInt(pts[2]));
-        } else if (ev.ev_data.indexOf('/') !== -1) {
-          var pts2 = ev.ev_data.split('/');
-          if (pts2.length === 3) dataRef = new Date(parseInt(pts2[2]), parseInt(pts2[1]) - 1, parseInt(pts2[0]));
-        }
-      }
-      if (!dataRef && ev.criadoEm && ev.criadoEm.toDate) {
-        dataRef = ev.criadoEm.toDate();
-      }
-      if (!dataRef || isNaN(dataRef.getTime())) return;
-      if (dataRef < inicioMes || dataRef > fimMes) return;
-      if (!ev.servicos || !ev.servicos.length) return;
-      // Contabiliza apenas eventos com status "concluido" no painel
-      if ((ev.etapa || 'eventos') !== 'concluido') return;
-
-
-
-      totalEventosMes++;
-      var itensOk = ev.itens_ok || {};
-      var removidos = ev.itens_removidos || {};
-      var todosMarcados = true;
-
-      for (var i = 0; i < ev.servicos.length; i++) {
-        var isObs = ev.servicos[i].toLowerCase().indexOf('obs:') === 0 || ev.servicos[i].toLowerCase().indexOf('obs.') === 0;
-        if (isObs || removidos[i] || removidos[String(i)]) continue;
-        if (!itensOk[i] && !itensOk[String(i)]) { todosMarcados = false; break; }
-      }
-      if (todosMarcados) eventosCompletos++;
-    });
-
-    var bar = document.getElementById('meta-checklist-bar');
-    var valor = document.getElementById('meta-checklist-valor');
-    var pctEl = document.getElementById('meta-checklist-pct');
-
-    var checklistCompleto = false;
-
-    // Salvar no cache global independente do DOM do painel admin estar aberto
-    _metasValoresAtuais.checklistTotal    = totalEventosMes;
-    _metasValoresAtuais.checklistCompletos = eventosCompletos;
-
-    if (totalEventosMes > 0) {
-      var pct = (eventosCompletos / totalEventosMes) * 100;
-      checklistCompleto = (pct >= 100);
-      // Atualizar DOM do painel admin se estiver aberto
-      if (bar && valor) {
-        bar.style.width = pct.toFixed(1) + '%';
-        valor.textContent = eventosCompletos + ' / ' + totalEventosMes + ' eventos';
-        if (pctEl) {
-          pctEl.textContent = pct.toFixed(0) + '%';
-          pctEl.style.color = pct >= 100 ? '#25D366' : pct >= 70 ? '#C8A94A' : '#555';
-        }
-      }
-    } else {
-      if (bar && valor) {
-        bar.style.width = '0%';
-        valor.textContent = 'Sem eventos no mês';
-        if (pctEl) pctEl.textContent = '';
-      }
-    }
-
-    if (callback) callback(checklistCompleto);
-  }).catch(function() { if (callback) callback(false); });
-}
 
 function _renderProgressoMeta(tipo, atual, meta, isCurrency) {
   var bar = document.getElementById('meta-' + tipo + '-bar');
@@ -10385,7 +10290,7 @@ function _formatarRS(v) {
   return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function _verificarConquistas(receita, eventos, ticket, anual, checklistOk) {
+function _verificarConquistas(receita, eventos, ticket, anual) {
   var banner = document.getElementById('meta-banner-conquista');
   var texto = document.getElementById('meta-banner-texto');
   if (!banner || !texto) return;
@@ -10404,9 +10309,6 @@ function _verificarConquistas(receita, eventos, ticket, anual, checklistOk) {
   if (_metasConfig.anual > 0 && anual >= _metasConfig.anual) {
     msgs.push('Faturamento anual');
   }
-  if (checklistOk) {
-    msgs.push('Checklist completo');
-  }
 
   if (msgs.length > 0) {
     texto.textContent = msgs.length === 1
@@ -10419,7 +10321,7 @@ function _verificarConquistas(receita, eventos, ticket, anual, checklistOk) {
 }
 
 // ── NOTIFICAÇÃO IMEDIATA (usando valores já calculados, sem nova query) ───────
-function _verificarConquistasImediato(receita, eventos, ticket, anual, checklistOk) {
+function _verificarConquistasImediato(receita, eventos, ticket, anual) {
   var hoje = new Date();
   // Só verifica o mês atual — se o usuário está navegando em outro mês, não dispara
   var mesSelecionado = _metaMesAtual === hoje.getMonth() && _metaAnoAtual === hoje.getFullYear();
@@ -10430,7 +10332,6 @@ function _verificarConquistasImediato(receita, eventos, ticket, anual, checklist
   if (_metasConfig.eventos > 0 && eventos >= _metasConfig.eventos) conquistas.push('Eventos');
   if (_metasConfig.ticket  > 0 && ticket  >= _metasConfig.ticket)  conquistas.push('Ticket Médio');
   if (_metasConfig.anual   > 0 && anual   >= _metasConfig.anual)   conquistas.push('Anual');
-  if (checklistOk) conquistas.push('Checklist');
 
   if (conquistas.length === 0) return;
 
@@ -10485,25 +10386,29 @@ function _verificarMetasAoAbrir(forceShow) {
     var inicioAno = new Date(hoje.getFullYear(), 0, 1);
     var fimAno = new Date(hoje.getFullYear(), 11, 31, 23, 59, 59);
 
-    db.collection('eventos_campo').get().then(function(snap) {
+    Promise.all([
+      db.collection('eventos_campo').get(),
+      db.collection('notas').get()
+    ]).then(function(results) {
+      var snapCampo = results[0];
+      var snapNotas = results[1];
       var receita = 0;
       var eventos = 0;
       var receitaAnual = 0;
 
-      snap.forEach(function(doc) {
-        var d = doc.data();
-
+      function _contabilizarNotif(d) {
         var dataRef = _parseDataContrato(d);
         if (!dataRef) return;
         var valor = _extrairValor(d);
+        if (dataRef >= inicioMes && dataRef <= fimMes) { eventos++; receita += valor; }
+        if (dataRef >= inicioAno && dataRef <= fimAno) { receitaAnual += valor; }
+      }
 
-        if (dataRef >= inicioMes && dataRef <= fimMes) {
-          eventos++;
-          receita += valor;
-        }
-        if (dataRef >= inicioAno && dataRef <= fimAno) {
-          receitaAnual += valor;
-        }
+      snapCampo.forEach(function(doc) { _contabilizarNotif(doc.data()); });
+      snapNotas.forEach(function(doc) {
+        var d = doc.data();
+        if (d.no_painel) return;
+        _contabilizarNotif(d);
       });
 
       var ticket = eventos > 0 ? receita / eventos : 0;
@@ -10533,33 +10438,29 @@ function _verificarMetasAoAbrir(forceShow) {
         if (pct4 >= 50) progressoMetas.push({ label: 'Anual', pct: pct4, cor: '#E8A838', atual: 'R$ ' + formatBRL(receitaAnual), meta: 'R$ ' + formatBRL(metaAnual) });
       }
 
-      // Verificar checklist completo antes de mostrar notificação
-      _verificarChecklistParaNotif(inicioMes, fimMes, function(checklistOk) {
-        if (checklistOk) conquistas.push('Checklist');
-
-        if (conquistas.length > 0) {
-          if (forceShow) {
-            var chaveMes = 'adq_meta_notif_mes_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1);
-            var anteriorMes = parseInt(localStorage.getItem(chaveMes)) || 0;
-            if (conquistas.length > anteriorMes) {
-              localStorage.setItem(chaveMes, conquistas.length);
-              _mostrarNotificacaoMeta(conquistas, progressoMetas);
-            }
-          } else {
-            var chaveHoje = 'adq_meta_notif_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1) + '-' + hoje.getDate();
-            var anteriorHoje = parseInt(localStorage.getItem(chaveHoje)) || 0;
-            if (conquistas.length > anteriorHoje) {
-              localStorage.setItem(chaveHoje, conquistas.length);
-              _mostrarNotificacaoMeta(conquistas, progressoMetas);
-            }
+      if (conquistas.length > 0) {
+        if (forceShow) {
+          var chaveMes = 'adq_meta_notif_mes_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1);
+          var anteriorMes = parseInt(localStorage.getItem(chaveMes)) || 0;
+          if (conquistas.length > anteriorMes) {
+            localStorage.setItem(chaveMes, conquistas.length);
+            _mostrarNotificacaoMeta(conquistas, progressoMetas);
+          }
+        } else {
+          var chaveHoje = 'adq_meta_notif_' + hoje.getFullYear() + '-' + (hoje.getMonth() + 1) + '-' + hoje.getDate();
+          var anteriorHoje = parseInt(localStorage.getItem(chaveHoje)) || 0;
+          if (conquistas.length > anteriorHoje) {
+            localStorage.setItem(chaveHoje, conquistas.length);
+            _mostrarNotificacaoMeta(conquistas, progressoMetas);
           }
         }
-      });
+      }
     }).catch(function() {});
   }).catch(function() {});
 }
 
-function _verificarChecklistParaNotif(inicioMes, fimMes, callback) {
+/* _verificarChecklistParaNotif removida — meta checklist descontinuada */
+function _verificarChecklistParaNotif_UNUSED(inicioMes, fimMes, callback) {
   if (!db) { callback(false); return; }
   db.collection('eventos_campo').get().then(function(snap) {
     var total = 0;
@@ -11106,29 +11007,6 @@ function _renderizarConteudoModalMetas(modal) {
     '</div>';
   }
 
-  // Checklist
-  var ckTotal = v.checklistTotal || 0;
-  var ckOk    = v.checklistCompletos || 0;
-  var ckPct   = ckTotal > 0 ? (ckOk / ckTotal) * 100 : 0;
-  var ckAtingida = v.checklistOk;
-  var ckValorStr = ckTotal === 0 ? 'Sem eventos no mês' : (ckOk + ' / ' + ckTotal + ' eventos');
-  var ckBg    = ckAtingida ? 'linear-gradient(90deg,#25D366,#30e876)' : 'linear-gradient(90deg,#25D366,#30e876)';
-  var blocoChecklist =
-    '<div style="background:rgba(37,211,102,0.08);border:1px solid ' + (ckAtingida ? '#25D366' : '#2a2a2a') + ';border-radius:8px;padding:14px 16px;' + (ckAtingida ? 'box-shadow:0 0 12px #25D36622;' : '') + '">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
-        '<div style="display:flex;align-items:center;gap:8px">' +
-          '<span style="display:flex;align-items:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' +
-          '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#25D366">Checklist Painel</span>' +
-        '</div>' +
-        '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:' + (ckAtingida ? '#25D366' : '#555') + '">' + (ckTotal > 0 ? Math.round(ckPct) + '%' : '') + '</span>' +
-      '</div>' +
-      '<div style="position:relative;height:22px;background:#111;border-radius:5px;overflow:hidden' + (ckAtingida ? ';margin-bottom:8px' : '') + '">' +
-        '<div style="height:100%;border-radius:5px;width:' + (ckTotal > 0 ? ckPct.toFixed(1) : '0') + '%;background:' + ckBg + '"></div>' +
-        '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8)">' + ckValorStr + '</div>' +
-      '</div>' +
-      (ckAtingida ? '<div style="text-align:center;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;font-weight:700;color:#25D366;text-transform:uppercase;letter-spacing:0.1em;margin-top:6px">✓ Meta atingida!</div>' : '') +
-    '</div>';
-
   // Sequência
   var seq = v.sequencia || 0;
   var seqCor = seq >= 3 ? '#25D366' : seq >= 1 ? '#C8A94A' : '#555';
@@ -11147,7 +11025,7 @@ function _renderizarConteudoModalMetas(modal) {
 
   var corpo = modal.querySelector('#mv-corpo');
   if (corpo) {
-    corpo.innerHTML = metasCfg.map(_blocoMeta).join('') + blocoChecklist + blocoSeq;
+    corpo.innerHTML = metasCfg.map(_blocoMeta).join('') + blocoSeq;
   }
 }
 
