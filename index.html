@@ -516,27 +516,24 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
-      "data  whats"
-      "multidia multidia"
-      "datafim  datafim";
+      "data  datafim"
+      "whats whats";
     gap: 16px 16px;
     align-items: start;
   }
-  .dw-data     { grid-area: data; }
-  .dw-whats    { grid-area: whats; }
-  .dw-multidia { grid-area: multidia; padding-top: 2px; }
-  .dw-datafim  { grid-area: datafim; }
+  .dw-data    { grid-area: data; }
+  .dw-whats   { grid-area: whats; }
+  .dw-datafim { grid-area: datafim; }
 
   @media (max-width: 640px) {
     .data-whats-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "data  datafim"
+        "whats whats";
+      gap: 12px 12px;
     }
-    .dw-data     { order: 1; }
-    .dw-multidia { order: 2; margin-top: 7px; }
-    .dw-datafim  { order: 3; margin-top: 10px; }
-    .dw-whats    { order: 4; margin-top: 16px; }
   }
 
   @media (max-width: 640px) {
@@ -1537,26 +1534,13 @@ header {
           <label>WhatsApp do Cliente</label>
           <input type="tel" id="whatsapp_cliente" placeholder="Ex: (47) 99999-9999" oninput="validarFone(this)" maxlength="20" />
         </div>
-        <!-- Toggle multi-dia -->
-        <div class="dw-multidia">
-          <label class="include-toggle" onclick="event.stopPropagation();_toggleMultiDia(this.querySelector('input'))" style="opacity:0.65;cursor:pointer">
-            <input type="checkbox" id="chk_multidia" onchange="_toggleMultiDia(this)" />
-            <span style="font-size:0.7rem;letter-spacing:0.06em">Evento com mais de um dia</span>
-          </label>
-        </div>
-        <!-- Painel data_fim (oculto por padrão) -->
-        <div id="painel_data_fim" class="dw-datafim" style="display:none">
-          <div class="grid-2">
-            <div>
-              <label>Data de Término</label>
-              <input type="date" id="data_fim"
-                style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
-                onchange="_atualizarDuracaoEvento()" />
-            </div>
-            <div style="display:flex;align-items:flex-end;padding-bottom:2px">
-              <span id="label_duracao" style="font-size:0.8rem;color:var(--gold);font-weight:600;letter-spacing:0.04em"></span>
-            </div>
-          </div>
+        <!-- Data de Término (sempre visível) -->
+        <div id="painel_data_fim" class="dw-datafim">
+          <label>Data de Término</label>
+          <input type="date" id="data_fim"
+            style="width:100%;color-scheme:dark;accent-color:var(--gold);cursor:pointer"
+            onchange="_atualizarDuracaoEvento()" />
+          <span id="label_duracao" style="display:block;margin-top:4px;font-size:0.75rem;color:var(--gold);font-weight:600;letter-spacing:0.04em"></span>
         </div>
       </div>
     </div>
@@ -3062,15 +3046,14 @@ function salvarOrcamentoCompleto() {
     });
   }
 
-  const _multidiaChk = document.getElementById('chk_multidia');
-  const _dataFimEl   = document.getElementById('data_fim');
+  const _dataFimEl = document.getElementById('data_fim');
   const dados = Object.assign(base, {
     nome: nome,
     evento: document.getElementById('tipo_evento').value.trim(),
     local:  document.getElementById('local_evento').value.trim(),
     dataEvt: document.getElementById('data_evento').value,
-    multidia: !!(_multidiaChk && _multidiaChk.checked),
-    dataFim:  (_multidiaChk && _multidiaChk.checked && _dataFimEl) ? _dataFimEl.value : '',
+    multidia: !!(_dataFimEl && _dataFimEl.value),
+    dataFim:  (_dataFimEl && _dataFimEl.value) ? _dataFimEl.value : '',
     opcoes
   });
 
@@ -3269,11 +3252,8 @@ carregarOrcamentoEditavel._processar = function(d) {
       set('data_evento',  d.data_evento);
       set('whatsapp_cliente', d.whatsapp_cliente || '');
       set('qtd_pessoas', d.qtd_pessoas || '');
-      // Restaurar multi-dia e data de término
-      const _chkMultiLoad = document.getElementById('chk_multidia');
-      if (_chkMultiLoad) {
-        _chkMultiLoad.checked = !!(d.multidia);
-        _toggleMultiDia(_chkMultiLoad);
+      // Restaurar data de término (sempre visível)
+      {
         if (d.dataFim || d.data_fim) {
           set('data_fim', d.dataFim || d.data_fim);
           _atualizarDuracaoEvento();
@@ -3361,11 +3341,9 @@ function baixarDadosOrcamento() {
     }
   }
 
-  const _chkBaixar = document.getElementById('chk_multidia');
   const _elFimBaixar = document.getElementById('data_fim');
-  const _multidiaBaixar = !!(_chkBaixar && _chkBaixar.checked);
-  const _dataFimBaixar  = (_multidiaBaixar && _elFimBaixar) ? (_elFimBaixar.value || '') : '';
-  const dados = { nome, evento, local, dataEvt, multidia: _multidiaBaixar, dataFim: _dataFimBaixar, opcoes };
+  const _dataFimBaixar = (_elFimBaixar && _elFimBaixar.value) ? _elFimBaixar.value : '';
+  const dados = { nome, evento, local, dataEvt, multidia: !!_dataFimBaixar, dataFim: _dataFimBaixar, opcoes };
   const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -3527,10 +3505,9 @@ function gerarOrcamento() {
   const dataEvt    = document.getElementById('data_evento').value;
   const dataFmt    = new Date().toLocaleDateString('pt-BR');   // data de hoje (orçamento)
   const dataEvento = dataEvt ? formatarData(dataEvt) : dataFmt; // data do evento
-  const _multidiaChkOrc = document.getElementById('chk_multidia');
-  const _dataFimElOrc   = document.getElementById('data_fim');
-  const multidiaOrc     = !!(_multidiaChkOrc && _multidiaChkOrc.checked);
-  const dataFimOrc      = (multidiaOrc && _dataFimElOrc && _dataFimElOrc.value) ? formatarData(_dataFimElOrc.value) : '';
+  const _dataFimElOrc = document.getElementById('data_fim');
+  const dataFimOrc    = (_dataFimElOrc && _dataFimElOrc.value) ? formatarData(_dataFimElOrc.value) : '';
+  const multidiaOrc   = !!dataFimOrc;
 
   const incCliente   = document.getElementById('inc_cliente').checked;
   const incOpcoes    = document.getElementById('inc_opcoes').checked;
@@ -4043,8 +4020,8 @@ function _salvarRascunhoOrcamento() {
       tipo_evento:  (document.getElementById('tipo_evento')  || {}).value || '',
       local_evento: (document.getElementById('local_evento') || {}).value || '',
       data_evento:  (document.getElementById('data_evento')  || {}).value || '',
-      multidia:    !!(document.getElementById('chk_multidia') || {}).checked,
       data_fim:    (document.getElementById('data_fim') || {}).value || '',
+      multidia:    !!((document.getElementById('data_fim') || {}).value),
       // Checkboxes de inclusão
       inc_cliente:   !!(document.getElementById('inc_cliente')   || {}).checked,
       inc_op1:       !!(document.getElementById('inc_op1')       || {}).checked,
@@ -4136,11 +4113,9 @@ function _aplicarRascunhoOrcamento() {
     set('local_evento_maps', d.local_evento_maps || ''); _atualizarBtnMapsOrc();
     set('data_evento',  d.data_evento);
 
-    // Restaurar multi-dia
-    if (d.multidia) {
-      setChk('chk_multidia', true);
-      _toggleMultiDia(document.getElementById('chk_multidia'));
-      set('data_fim', d.data_fim || '');
+    // Restaurar data de término (sempre visível)
+    if (d.data_fim) {
+      set('data_fim', d.data_fim);
       _atualizarDuracaoEvento();
     }
 
@@ -4665,8 +4640,6 @@ function _toggleMultiDia(chk) {
   }
 }
 function _atualizarDuracaoEvento() {
-  var chk = document.getElementById('chk_multidia');
-  if (!chk || !chk.checked) return;
   var ini = document.getElementById('data_evento');
   var fim = document.getElementById('data_fim');
   var lbl = document.getElementById('label_duracao');
@@ -5957,10 +5930,9 @@ function coletarDadosOrcamento() {
     valorTotal = document.getElementById('det_valor') ? document.getElementById('det_valor').value : '';
   }
 
-  const _chkMultidia = document.getElementById('chk_multidia');
-  const _elDataFim   = document.getElementById('data_fim');
-  const _multidia    = !!(_chkMultidia && _chkMultidia.checked);
-  const _dataFim     = (_multidia && _elDataFim) ? (_elDataFim.value || '') : '';
+  const _elDataFim = document.getElementById('data_fim');
+  const _dataFim   = (_elDataFim && _elDataFim.value) ? _elDataFim.value : '';
+  const _multidia  = !!_dataFim;
 
   return Object.assign(base, {
     nome: nome,
