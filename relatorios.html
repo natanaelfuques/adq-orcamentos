@@ -1274,6 +1274,7 @@ header {
 .pgto-status-badge.pendente { color: #aaa; border-color: var(--border2); background: transparent; }
 .pgto-status-badge.alerta { color: #e05c5c; border-color: rgba(224,92,92,0.45); background: rgba(224,92,92,0.08); }
 .pgto-status-badge.naovence { color: #aaa; border-color: var(--border2); background: transparent; }
+.km-badge { font-size:0.58rem;font-weight:800;background:rgba(139,92,246,0.12);color:#9B5CE5;border:1px solid rgba(139,92,246,0.3);border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle;letter-spacing:0.06em;display:inline-block;white-space:nowrap; }
 .pgto-input-pago {
   background: var(--darker);
   border: 1px solid var(--border2);
@@ -1838,6 +1839,12 @@ Regime: <span class="config-field-editable" data-config="empresa" data-field="re
 </div>
 </div>
 <div class="kpi-grid" id="kpi-cont"></div>
+<div class="oc-filtros" style="margin-top:16px">
+  <span style="font-size:0.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-right:4px">Filtrar:</span>
+  <button class="oc-filtro-btn active" id="cont-btn-todos" onclick="_contFiltrarEmitente('todos')">Todos</button>
+  <button class="oc-filtro-btn" id="cont-btn-nf" onclick="_contFiltrarEmitente('nf')">Apenas NF</button>
+  <button class="oc-filtro-btn" id="cont-btn-km" onclick="_contFiltrarEmitente('km')">Apenas <span class="km-badge" style="pointer-events:none">KM</span></button>
+</div>
 <p class="sec-title">Extrato de receitas — contratos ativos no período</p>
 <div class="table-card table-scroll">
 <table>
@@ -2575,6 +2582,12 @@ function totalAjustes(ev) {
 }
 /* Valor final considerando ajustes (adicionais + descontos) */
 function valorEvFinal(ev) { return Math.max(0, valorEv(ev) + totalAjustes(ev)); }
+
+/* Badge KM reutilizável — retorna HTML ou '' */
+function _kmBadge(ev) {
+  const id = ev && ev.emitente && (ev.emitente.id || ev.emitente);
+  return id === 'karielen' ? '<span class="km-badge">KM</span>' : '';
+}
 
 /* Verifica se uma parcela específica tem alerta ativo */
 function temAlertaParcela(ev, parcelaIdx) {
@@ -3470,10 +3483,7 @@ function buildPgtoCard(ev) {
   const cardClass = status === 'alerta' ? ' pgto-card-alerta' : status === 'quitado' ? ' pgto-card-quitado' : '';
 
   const nomeExib = nomeCli(ev) !== '—' ? nomeCli(ev) : tipoEv(ev);
-  const _emitId = ev.emitente && (ev.emitente.id || ev.emitente);
-  const kmBadge = _emitId === 'karielen'
-    ? '<span style="font-size:0.58rem;font-weight:800;background:rgba(139,92,246,0.12);color:#9B5CE5;border:1px solid rgba(139,92,246,0.3);border-radius:3px;padding:1px 5px;margin-left:5px;vertical-align:middle;letter-spacing:0.08em">KM</span>'
-    : '';
+  const kmBadge = _kmBadge(ev);
   const pgtoLabel = getPgtoLabel(ev);
   const isQuitado = restante <= 0 || status === 'quitado';
   const valPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
@@ -4089,6 +4099,11 @@ function renderFinanceiro() {
     .reduce((s,e) => s + getValorEvento(e), 0);
   const qtdMesConf = todosMes.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e))).length;
 
+  const confKm = confirmados.filter(e => { const id = e.emitente && (e.emitente.id || e.emitente); return id === 'karielen'; });
+  const confNf = confirmados.filter(e => { const id = e.emitente && (e.emitente.id || e.emitente); return id !== 'karielen'; });
+  const recKmFin = confKm.reduce((s,e) => s + getValorEvento(e), 0);
+  const recNfFin = confNf.reduce((s,e) => s + getValorEvento(e), 0);
+
   document.getElementById('kpi-fin').innerHTML = `
     <div class="kpi-card gold">
       <div class="kpi-label">Receita confirmada</div>
@@ -4109,6 +4124,16 @@ function renderFinanceiro() {
       <div class="kpi-label">Ticket médio</div>
       <div class="kpi-value">${frsShort(ticket)}</div>
       <div class="kpi-sub">Eventos confirmados/concluídos</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Receita NF (confirmada)</div>
+      <div class="kpi-value">${frsShort(recNfFin)}</div>
+      <div class="kpi-sub">${confNf.length} evento(s)</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Receita <span class="km-badge" style="font-size:0.65rem">KM</span> (confirmada)</div>
+      <div class="kpi-value">${frsShort(recKmFin)}</div>
+      <div class="kpi-sub">${confKm.length} evento(s)</div>
     </div>
   `;
 
@@ -4523,7 +4548,7 @@ function renderContratos() {
       statusBadge = '<span class="badge ' + st + '">' + st + '</span>';
     }
 
-    const nomeDisplay = cli + (tipo_ev && tipo_ev !== '—' && tipo_ev !== cli ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + tipo_ev + '</span>' : '');
+    const nomeDisplay = cli + _kmBadge(item) + (tipo_ev && tipo_ev !== '—' && tipo_ev !== cli ? '<br><span style="font-size:0.72rem;color:var(--muted)">' + tipo_ev + '</span>' : '');
 
     return '<tr>' +
       '<td>' + tipoBadge + '</td>' +
@@ -4552,6 +4577,10 @@ function renderEventos() {
   const evAlerta = todos.filter(e => getStatusPgto(e) === 'alerta');
   const totalRecebido = todos.reduce((s,e) => s + getTotalPagoAuto(e), 0);
   const totalRestante = Math.max(0, recTotal - totalRecebido);
+  const evKm = todos.filter(e => { const id = e.emitente && (e.emitente.id || e.emitente); return id === 'karielen'; });
+  const evNf = todos.filter(e => { const id = e.emitente && (e.emitente.id || e.emitente); return id !== 'karielen'; });
+  const recKm = evKm.reduce((s,e) => s + valorEv(e), 0);
+  const recNf = evNf.reduce((s,e) => s + valorEv(e), 0);
 
   document.getElementById('kpi-ev').innerHTML = `
     <div class="kpi-card">
@@ -4573,6 +4602,16 @@ function renderEventos() {
       <div class="kpi-label">Monitoramento</div>
       <div class="kpi-value">${evAlerta.length}</div>
       <div class="kpi-sub">Pendência sinalizada</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Eventos NF</div>
+      <div class="kpi-value">${evNf.length}</div>
+      <div class="kpi-sub">${frsShort(recNf)}</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Eventos <span class="km-badge" style="font-size:0.65rem">KM</span></div>
+      <div class="kpi-value">${evKm.length}</div>
+      <div class="kpi-sub">${frsShort(recKm)}</div>
     </div>
   `;
 
@@ -4601,7 +4640,7 @@ function renderEventos() {
       ? '<span class="badge-origem evento-rapido">Evento rápido</span>'
       : '<span class="badge-origem contrato">Contrato</span>';
     return `<tr>
-      <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${colName}" style="max-width:220px">${nomeExib}</td>
+      <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${colName}" style="max-width:220px">${nomeExib}${_kmBadge(e)}</td>
       <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${colName}">${dataEv(e)}</td>
       <td class="row-field-editable" data-field="ev_local" data-docid="${id}" data-col="${colName}">${localEv(e)}</td>
       <td class="r" style="${valorStyle}">${valorTxt}</td>
@@ -4858,14 +4897,30 @@ function renderSazonalidade() {
 // ══════════════════════════════════════════
 // TAB 5 – CONTABILIDADE
 // ══════════════════════════════════════════
+let _contFiltroEmitente = 'todos';
+function _contFiltrarEmitente(v) {
+  _contFiltroEmitente = v;
+  ['todos','nf','km'].forEach(function(x) {
+    const btn = document.getElementById('cont-btn-' + x);
+    if (btn) btn.className = 'oc-filtro-btn' + (x === v ? ' active' : '');
+  });
+  renderContabilidade();
+}
+
 function renderContabilidade() {
   // Contratos + notas, sem duplicatas — filtra pela data DO EVENTO
   const todos = todoEventosFiltradosContabilidade();
   const ativos = todos.filter(e => !e.removido_manualmente);
-  const confirmados = ativos.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
+  // Aplicar filtro de emitente (NF / KM / Todos)
+  const ativosVisiveis = _contFiltroEmitente === 'todos' ? ativos : ativos.filter(function(e) {
+    const id = e.emitente && (e.emitente.id || e.emitente);
+    return _contFiltroEmitente === 'km' ? id === 'karielen' : id !== 'karielen';
+  });
+  const confirmados = ativosVisiveis.filter(e => ['confirmado','concluido'].includes(getStatusContrato(e)));
 
   const recBruta = confirmados.reduce((s,e) => s + getValorEvento(e), 0);
-  const recPotencial = ativos.reduce((s,e) => s + getValorEvento(e), 0);
+  const recPotencial = ativosVisiveis.reduce((s,e) => s + getValorEvento(e), 0);
+  const ativosNaoConf = ativosVisiveis.filter(e => !['confirmado','concluido'].includes(getStatusContrato(e)));
 
   // Label período
   const ini = _dataIni ? _dataIni.toLocaleDateString('pt-BR') : 'Início';
@@ -4894,7 +4949,7 @@ function renderContabilidade() {
     <div class="kpi-card blue">
       <div class="kpi-label">Receita potencial (todos ativos)</div>
       <div class="kpi-value">${frsShort(recPotencial)}</div>
-      <div class="kpi-sub">${ativos.length} eventos</div>
+      <div class="kpi-sub">${ativosVisiveis.length} eventos</div>
     </div>
     <div class="kpi-card purple">
       <div class="kpi-label">Ticket médio</div>
@@ -4902,16 +4957,16 @@ function renderContabilidade() {
     </div>
     <div class="kpi-card orange">
       <div class="kpi-label">A receber</div>
-      <div class="kpi-value">${ativos.filter(e => !['confirmado','concluido'].includes(getStatusContrato(e))).length}</div>
-      <div class="kpi-sub">${frsShort(ativos.filter(e => !['confirmado','concluido'].includes(getStatusContrato(e))).reduce((s,e)=>s+getValorEvento(e),0))}</div>
+      <div class="kpi-value">${ativosNaoConf.length}</div>
+      <div class="kpi-sub">${frsShort(ativosNaoConf.reduce((s,e)=>s+getValorEvento(e),0))}</div>
     </div>
   `;
 
   // Tabela extrato — contratos + notas
   const tbody = document.getElementById('tbody-cont');
-  if (!ativos.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum evento no período.</td></tr>'; }
+  if (!ativosVisiveis.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum evento no período.</td></tr>'; }
   else {
-    tbody.innerHTML = ativos.map(e => {
+    tbody.innerHTML = ativosVisiveis.map(e => {
       const d = tsToDate(e.criadoEm);
       const comp = d ? (MESES[d.getMonth()] + '/' + d.getFullYear()) : '—';
       const st = getStatusContrato(e);
@@ -4933,7 +4988,7 @@ function renderContabilidade() {
       const pgtoStatusClass = pgtoStatus === 'alerta' ? 'alerta' : pgtoStatus;
       return `<tr>
         <td>${comp}</td>
-        <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${col}" style="max-width:200px">${cli}</td>
+        <td class="row-field-editable" data-field="${fieldNome}" data-docid="${id}" data-col="${col}" style="max-width:200px">${cli}${_kmBadge(e)}</td>
         <td><span style="${tipoStyle}">${tipoTxt}</span></td>
         <td class="row-field-editable" data-field="ev_data" data-docid="${id}" data-col="${col}">${dataEv(e)}</td>
         <td>${pgto}</td>
@@ -4946,7 +5001,7 @@ function renderContabilidade() {
 
   // Tabela mensal — agrupa por mês do evento (ev_data), fallback criadoEm
   const mensal = {};
-  ativos.forEach(e => {
+  ativosVisiveis.forEach(e => {
     const evStr = e.ev_data || e.data_evento || e.dataEvt || '';
     let d = null;
     if (evStr) {
