@@ -3293,9 +3293,24 @@ function renderPagamentos() {
     return;
   }
 
+  // Helper: evento rápido com data passada e sem pagamento → vai ao topo junto dos monitorados
+  function _isNotaAtrasada(ev) {
+    if (ev._origem !== 'nota') return false;
+    const st = getStatusPgto(ev);
+    if (st === 'quitado' || st === 'alerta') return false; // já tratado
+    if (getTotalPagoAuto(ev) > 0.05) return false;
+    const s = ev.ev_data || ev.data_evento || ev.dataEvt || '';
+    if (!s) return false;
+    const vp = s.split('-');
+    if (vp.length !== 3) return false;
+    const evDate = new Date(parseInt(vp[0]), parseInt(vp[1]) - 1, parseInt(vp[2]));
+    const h = new Date(); h.setHours(0,0,0,0);
+    return evDate < h;
+  }
+
   // Separar em: com alerta (monitoramento) e normais
-  const comAlerta = lista.filter(function(ev) { return getStatusPgto(ev) === 'alerta'; });
-  const semAlerta = lista.filter(function(ev) { return getStatusPgto(ev) !== 'alerta'; });
+  const comAlerta = lista.filter(function(ev) { return getStatusPgto(ev) === 'alerta' || _isNotaAtrasada(ev); });
+  const semAlerta = lista.filter(function(ev) { return getStatusPgto(ev) !== 'alerta' && !_isNotaAtrasada(ev); });
 
   // Ordenar por data do evento (mais próxima primeiro); sem data vai para o final
   function _dataEvNum(ev) {
