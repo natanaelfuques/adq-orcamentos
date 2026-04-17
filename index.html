@@ -8857,32 +8857,35 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
       return { id: doc.id, name: doc.name, link: link, public_id: publicId };
     }
 
-    // Link não veio no createDocument — busca o documento pelo id para obter os links frescos
+    // Link não veio no createDocument — aguarda 3s e tenta createLinkToSignature com cada assinatura
     if (doc.id) {
-      console.log('[AdQ] Link não veio no createDocument, buscando documento pelo id:', doc.id);
-      var fetchQuery = 'query { document(id: "' + doc.id + '") { id signatures { public_id link { short_link } } } }';
-      var fetchFD = new FormData();
-      fetchFD.append('operations', JSON.stringify({ query: fetchQuery, variables: {} }));
-      fetchFD.append('map', '{}');
-      return fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'X-Autentique-Token': token },
-        body: fetchFD
-      })
-      .then(function(r2) { return r2.json(); })
-      .then(function(d2) {
-        console.log('[AdQ] document query response:', JSON.stringify(d2));
-        var fetchedDoc = d2.data && d2.data.document;
-        var fetchedSig = (fetchedDoc && fetchedDoc.signatures && fetchedDoc.signatures[0]) || {};
-        var fetchedLink = (fetchedSig.link && fetchedSig.link.short_link) ? fetchedSig.link.short_link : '';
-        var fetchedPid  = fetchedSig.public_id || publicId;
-        if (!fetchedLink) console.warn('[AdQ] document query também não retornou link');
-        return { id: doc.id, name: doc.name, link: fetchedLink, public_id: fetchedPid };
-      })
-      .catch(function(err) {
-        console.warn('[AdQ] Erro ao buscar documento:', err);
-        return { id: doc.id, name: doc.name, link: '', public_id: publicId };
-      });
+      console.log('[AdQ] Link não veio no createDocument, aguardando 3s e tentando createLinkToSignature...');
+      var allSigs = doc.signatures || [];
+      return new Promise(function(resolve) { setTimeout(resolve, 3000); })
+        .then(function() {
+          // Tenta cada assinatura em sequência até obter um link
+          var tryNext = function(idx) {
+            var s = allSigs[idx];
+            if (!s || !s.public_id) {
+              console.warn('[AdQ] Nenhuma assinatura retornou link');
+              return { id: doc.id, name: doc.name, link: '', public_id: publicId };
+            }
+            var lq = 'mutation { createLinkToSignature(public_id: "' + s.public_id + '") { short_link } }';
+            var lfd = new FormData();
+            lfd.append('operations', JSON.stringify({ query: lq, variables: {} }));
+            lfd.append('map', '{}');
+            return fetch(ENDPOINT, { method: 'POST', headers: { 'X-Autentique-Token': token }, body: lfd })
+              .then(function(r) { return r.json(); })
+              .then(function(d) {
+                console.log('[AdQ] createLinkToSignature [' + idx + ']:', JSON.stringify(d));
+                var sl = d.data && d.data.createLinkToSignature && d.data.createLinkToSignature.short_link;
+                if (sl) return { id: doc.id, name: doc.name, link: sl, public_id: s.public_id };
+                return tryNext(idx + 1);
+              })
+              .catch(function() { return tryNext(idx + 1); });
+          };
+          return tryNext(0);
+        });
     }
 
     // Sem id
