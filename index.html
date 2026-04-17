@@ -8866,7 +8866,7 @@ function _enviarDocumentoAutentique(nomeDoc, emailSignatario, nomeSignatario, ht
       linkFormData.append('map', '{}');
       return fetch(ENDPOINT, {
         method: 'POST',
-        headers: { 'X-Autentique-Token': AUTENTIQUE_TOKEN },
+        headers: { 'X-Autentique-Token': token },
         body: linkFormData
       })
       .then(function(r2) { return r2.json(); })
