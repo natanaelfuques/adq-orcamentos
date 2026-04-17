@@ -5222,37 +5222,56 @@ function _csvStatus(e) {
   return { quitado: 'Quitado', parcial: 'Parcial', pendente: 'Pendente', alerta: 'Monitorar', naovence: 'Pendente' }[st] || 'Pendente';
 }
 
+/* Converte "DD/MM/YYYY" → Date (para o Excel reconhecer como data) */
+function _xlsxDate(str) {
+  if (!str || str === '—') return '';
+  const p = str.split('/');
+  if (p.length !== 3) return str;
+  return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+}
+
+/* Converte timestamp Firestore → Date */
+function _xlsxTs(ts) {
+  const d = tsToDate(ts);
+  return d || '';
+}
+
 function _xlsxBuildRow(e) {
   return [
-    formatDateBR(e.criadoEm),
-    dataEv(e),
+    _xlsxTs(e.criadoEm),          // Date nativo → filtro de data no Excel
+    _xlsxDate(dataEv(e)),         // Date nativo
     nomeCli(e),
     _csvTipoEv(e),
     e.ev_local || e.local_evento || e.local || '',
     _csvPgto(e),
     _csvStatus(e),
     e._origem === 'nota' ? 'Evento rápido' : 'Contrato',
-    frs(getValorEvento(e))
+    getValorEvento(e)             // número nativo → filtro numérico no Excel
   ];
 }
 
-const _XLSX_HEADER = ['Criado em','Data Evento','Cliente','Tipo Evento','Local','Pagamento','Status Pagamento','Origem','Valor'];
+const _XLSX_HEADER = ['Criado em','Data Evento','Cliente','Tipo Evento','Local','Pagamento','Status Pagamento','Origem','Valor (R$)'];
 const _XLSX_COL_WIDTHS = [14, 14, 32, 28, 24, 16, 18, 14, 14];
+const _XLSX_DATE_COLS = [0, 1]; // índices das colunas de data
+const _XLSX_NUM_COLS  = [8];    // índice da coluna de valor
 
-function _downloadXLSX(rows, nome) {
-  const ws = XLSX.utils.aoa_to_sheet([_XLSX_HEADER, ...rows]);
-  // AutoFilter na linha de cabeçalho
-  ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r:0, c:0 }, e: { r:0, c: _XLSX_HEADER.length - 1 } }) };
-  // Largura das colunas
-  ws['!cols'] = _XLSX_COL_WIDTHS.map(w => ({ wch: w }));
-  // Estilo do cabeçalho (negrito) — SheetJS básico
-  _XLSX_HEADER.forEach(function(_, ci) {
-    const addr = XLSX.utils.encode_cell({ r: 0, c: ci });
-    if (!ws[addr]) return;
-    ws[addr].s = { font: { bold: true } };
+function _downloadXLSX(rows, nome, sheetName) {
+  const ws = XLSX.utils.aoa_to_sheet([_XLSX_HEADER, ...rows], { cellDates: true });
+  // Formatar datas como DD/MM/YYYY e valor como moeda
+  rows.forEach(function(row, ri) {
+    _XLSX_DATE_COLS.forEach(function(ci) {
+      const addr = XLSX.utils.encode_cell({ r: ri + 1, c: ci });
+      if (ws[addr] && ws[addr].t === 'd') ws[addr].z = 'DD/MM/YYYY';
+    });
+    _XLSX_NUM_COLS.forEach(function(ci) {
+      const addr = XLSX.utils.encode_cell({ r: ri + 1, c: ci });
+      if (ws[addr]) ws[addr].z = '#,##0.00';
+    });
   });
+  ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r:0, c:0 }, e: { r:0, c: _XLSX_HEADER.length - 1 } }) };
+  ws['!cols'] = _XLSX_COL_WIDTHS.map(w => ({ wch: w }));
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
+  XLSX.utils.book_append_sheet(wb, ws, sheetName || 'Relatório');
   XLSX.writeFile(wb, nome + '_' + new Date().toISOString().slice(0,10) + '.xlsx');
 }
 
@@ -5281,10 +5300,19 @@ function exportarContabilidade() {
     const isNota = c._origem === 'nota';
     const tipoRegistro = isNota ? 'Evento rápido' : 'Contrato';
     const pgto = isNota ? 'À vista' : _csvPgto(c);
-    return [formatDateBR(c.criadoEm), dataEv(c), comp, nomeCli(c), _csvTipoEv(c), tipoRegistro, pgto,
-      _csvStatus(c), frs(getValorEvento(c))];
+    return [_xlsxTs(c.criadoEm), _xlsxDate(dataEv(c)), comp, nomeCli(c), _csvTipoEv(c), tipoRegistro, pgto,
+      _csvStatus(c), getValorEvento(c)];
   });
-  const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+  const ws = XLSX.utils.aoa_to_sheet([header, ...rows], { cellDates: true });
+  // Formatar datas e valores
+  rows.forEach(function(row, ri) {
+    [0,1].forEach(function(ci) {
+      const addr = XLSX.utils.encode_cell({ r: ri+1, c: ci });
+      if (ws[addr] && ws[addr].t === 'd') ws[addr].z = 'DD/MM/YYYY';
+    });
+    const addrV = XLSX.utils.encode_cell({ r: ri+1, c: 8 });
+    if (ws[addrV]) ws[addrV].z = '#,##0.00';
+  });
   ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r:0, c:0 }, e: { r:0, c: header.length - 1 } }) };
   ws['!cols'] = colWidths.map(w => ({ wch: w }));
   const wb = XLSX.utils.book_new();
