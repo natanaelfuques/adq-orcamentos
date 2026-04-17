@@ -6642,9 +6642,9 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
       ? '<span style="display:inline-block;margin-left:7px;padding:1px 5px;border-radius:3px;background:rgba(180,80,255,0.15);border:1px solid rgba(180,80,255,0.45);font-size:0.6rem;font-weight:800;color:#c87aff;letter-spacing:0.1em;vertical-align:middle;line-height:1.4">KM</span>'
       : '';
     card += '<div class="salvo-card-top">';
-    card += '<div><div class="salvo-card-nome">' + nomeEsc + _kmBadge + '</div>';
+    card += '<div><div class="salvo-card-nome">' + nomeEsc + '</div>';
     card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div></div>';
-    card += '<div class="salvo-card-valor">' + escHtml(valor) + '</div>';
+    card += '<div style="text-align:right">' + '<div class="salvo-card-valor">' + escHtml(valor) + '</div>' + _kmBadge + '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo' + (doc.link_assinatura ? ' primary' : '') + '" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">' + (doc.link_assinatura ? 'Link' : 'Autentique') + '</button>';
