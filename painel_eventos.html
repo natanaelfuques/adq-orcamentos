@@ -528,6 +528,13 @@ header {
   color: var(--border);
   margin: 0 4px;
 }
+.card-local-nome {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.card-local-nome:hover { color: #4A90C8; }
+.card-local-nome.tem-maps { color: #bbb; }
+.card-local-nome.tem-maps:hover { color: #4A90C8; }
 
 .card-resp {
   font-size: 0.72rem;
@@ -1696,6 +1703,17 @@ function renderBoard() {
       });
     });
 
+    body.querySelectorAll('[data-action="maps-painel"]').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        if (_editorModeAtivo) return; // editor mode trata o clique normalmente
+        e.stopPropagation();
+        e.preventDefault();
+        var evid = el.getAttribute('data-evid');
+        var mapsUrl = el.getAttribute('data-maps') || '';
+        _abrirModalMapsEv(evid, mapsUrl, el);
+      });
+    });
+
     body.querySelectorAll('.btn-add-item').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -1917,13 +1935,9 @@ function buildCard(ev, past, col) {
             return '<button class="btn-wa-painel' + (temFone ? ' tem-fone' : '') + '" data-wa-fone="' + esc(wFone) + '" data-evid="' + esc(ev.id) + '" data-contrato-id="' + esc(ev.contrato_id || '') + '" data-nota-id="' + esc(ev.nota_id || '') + '" title="WhatsApp">' + waSvg + '</button>';
           })() +
           '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg> ' +
-          (ev.ev_maps
-            ? '<a href="' + esc(ev.ev_maps) + '" target="_blank" rel="noopener" class="card-field-editable card-local-link" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#bbb;text-decoration:none;cursor:pointer" title="Abrir no Maps">' + esc(ev.ev_local || '') +
-                (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
-              '</a>'
-            : '<span class="card-field-editable" data-field="ev_local" data-evid="' + esc(ev.id) + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') +
-                (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
-              '</span>') +
+          '<span class="card-local-nome card-field-editable' + (ev.ev_maps ? ' tem-maps' : '') + '" data-action="maps-painel" data-field="ev_local" data-evid="' + esc(ev.id) + '" data-maps="' + esc(ev.ev_maps || '') + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (ev.ev_maps ? 'Abrir no Maps' : 'Colar link do Maps') + '">' + esc(ev.ev_local || '') +
+            (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
+          '</span>' +
           (ev.contrato_id || ev.id ? (function() {
             var temPermResp = !_admPermRespEmailsAtuais || !_admPermRespEmailsAtuais.length || (auth && auth.currentUser && _admPermRespEmailsAtuais.indexOf(auth.currentUser.email) >= 0);
             return temPermResp
@@ -3745,6 +3759,69 @@ function _salvarVeiculo(evId, veiculoId) {
 }
 
 // Cache de eventos: populado diretamente no onSnapshot do iniciarBoard()
+
+// ── Modal Maps (painel) ───────────────────────────────────────────────────────
+function _abrirModalMapsEv(evid, mapsAtual, elRef) {
+  var old = document.getElementById('adq-maps-modal-ev');
+  if (old) { old.remove(); return; }
+
+  var modal = document.createElement('div');
+  modal.id = 'adq-maps-modal-ev';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  var sF  = "font-family:'Barlow',sans-serif;";
+  var sBC = "font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:4px;padding:9px 16px;border:none;";
+
+  modal.innerHTML =
+    '<div style="background:#1e1e1e;border:1px solid #333;border-top:2px solid #4A90C8;border-radius:8px;padding:22px 20px;width:100%;max-width:400px;box-sizing:border-box">' +
+      '<div style="' + sF + 'font-size:0.72rem;font-weight:700;color:#4A90C8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px">Google Maps — Local do Evento</div>' +
+      '<label style="display:block;font-size:0.68rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;' + sF + '">Link do Maps</label>' +
+      '<input id="adq-maps-input-ev" type="url" autocomplete="off" value="' + esc(mapsAtual) + '" placeholder="https://maps.app.goo.gl/..."' +
+        ' style="width:100%;background:#111;border:1px solid #444;color:#eee;' + sF + 'font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s"' +
+        ' onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'"' +
+        ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarMapsEv(\'' + evid + '\',false);}">' +
+      '<div style="display:flex;gap:8px">' +
+        '<button onclick="_salvarMapsEv(\'' + evid + '\',true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">Abrir Maps</button>' +
+        '<button onclick="_salvarMapsEv(\'' + evid + '\',false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
+        '<button onclick="document.getElementById(\'adq-maps-modal-ev\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+      '</div>' +
+    '</div>';
+
+  modal._elRef = elRef;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+
+  var inp = document.getElementById('adq-maps-input-ev');
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function _salvarMapsEv(evid, abrirMaps) {
+  var inp = document.getElementById('adq-maps-input-ev');
+  if (!inp) return;
+  var link = inp.value.trim();
+
+  if (!link) {
+    inp.style.borderColor = '#e55';
+    setTimeout(function() { inp.style.borderColor = '#444'; }, 1000);
+    return;
+  }
+
+  if (db) {
+    db.collection('eventos_campo').doc(evid).update({ ev_maps: link }).catch(function(){});
+  }
+
+  var modal = document.getElementById('adq-maps-modal-ev');
+  var elRef = modal ? modal._elRef : null;
+  if (elRef) {
+    elRef.setAttribute('data-maps', link);
+    elRef.setAttribute('title', 'Abrir no Maps');
+    elRef.classList.add('tem-maps');
+  }
+
+  if (modal) modal.remove();
+  if (abrirMaps) window.open(link, '_blank');
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 </script>
 </body>
