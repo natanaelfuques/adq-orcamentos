@@ -2986,6 +2986,8 @@ function pgtoEditorResetar(docId) {
 
 function filtroPgto(filtro) {
   _pgtoFiltro = filtro;
+  const busca = document.getElementById('pgto-busca');
+  if (busca) busca.value = '';
   renderPagamentos();
 }
 
