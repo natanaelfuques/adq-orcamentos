@@ -1275,6 +1275,7 @@ header {
 .pgto-status-badge.alerta { color: #e05c5c; border-color: rgba(224,92,92,0.45); background: rgba(224,92,92,0.08); }
 .pgto-status-badge.naovence { color: #aaa; border-color: var(--border2); background: transparent; }
 .km-badge { font-size:0.58rem;font-weight:800;background:rgba(139,92,246,0.12);color:#9B5CE5;border:1px solid rgba(139,92,246,0.3);border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle;letter-spacing:0.06em;display:inline-block;white-space:nowrap; }
+.nf-badge { font-size:0.58rem;font-weight:800;background:rgba(245,166,35,0.12);color:#F5A623;border:1px solid rgba(245,166,35,0.35);border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle;letter-spacing:0.06em;display:inline-block;white-space:nowrap; }
 .pgto-input-pago {
   background: var(--darker);
   border: 1px solid var(--border2);
@@ -1627,8 +1628,8 @@ header {
     <input id="data-fim" onchange="aplicarCustom()" type="date"/>
   </div>
   <span style="margin-left:auto;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-    <span style="font-size:0.58rem;font-weight:800;background:rgba(245,166,35,0.12);color:#F5A623;border:1px solid rgba(245,166,35,0.35);border-radius:3px;padding:1px 6px;letter-spacing:0.08em;white-space:nowrap">NF</span>
-    <button class="export-btn" onclick="exportarCSV()">
+    <span class="nf-badge" style="margin-left:0">NF</span>
+    <button class="export-btn" onclick="exportarCSV()" style="border-color:#F5A623;color:#F5A623">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar CSV
     </button>
     <span style="font-size:0.58rem;font-weight:800;background:rgba(139,92,246,0.12);color:#9B5CE5;border:1px solid rgba(139,92,246,0.3);border-radius:3px;padding:1px 6px;letter-spacing:0.08em;white-space:nowrap">KM</span>
@@ -1851,7 +1852,7 @@ Regime: <span class="config-field-editable" data-config="empresa" data-field="re
 <div class="oc-filtros" style="margin-top:16px">
   <span style="font-size:0.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-right:4px">Filtrar:</span>
   <button class="oc-filtro-btn active" id="cont-btn-todos" onclick="_contFiltrarEmitente('todos')">Todos</button>
-  <button class="oc-filtro-btn" id="cont-btn-nf" onclick="_contFiltrarEmitente('nf')">Apenas NF</button>
+  <button class="oc-filtro-btn" id="cont-btn-nf" onclick="_contFiltrarEmitente('nf')">Apenas <span class="nf-badge" style="pointer-events:none">NF</span></button>
   <button class="oc-filtro-btn" id="cont-btn-km" onclick="_contFiltrarEmitente('km')">Apenas <span class="km-badge" style="pointer-events:none">KM</span></button>
 </div>
 <p class="sec-title">Extrato de receitas — contratos ativos no período</p>
@@ -1887,8 +1888,8 @@ Regime: <span class="config-field-editable" data-config="empresa" data-field="re
 </table>
 </div>
 <div style="text-align:right;margin-top:8px;display:flex;align-items:center;justify-content:flex-end;gap:7px">
-  <span style="font-size:0.58rem;font-weight:800;background:rgba(245,166,35,0.12);color:#F5A623;border:1px solid rgba(245,166,35,0.35);border-radius:3px;padding:1px 6px;letter-spacing:0.08em;white-space:nowrap">NF</span>
-  <button class="export-btn" onclick="exportarContabilidade()" style="border-color:var(--green);color:var(--green)">
+  <span class="nf-badge" style="margin-left:0">NF</span>
+  <button class="export-btn" onclick="exportarContabilidade()" style="border-color:#F5A623;color:#F5A623">
     ⬇ Exportar relatório contábil (CSV)
   </button>
 </div>
@@ -2597,6 +2598,12 @@ function valorEvFinal(ev) { return Math.max(0, valorEv(ev) + totalAjustes(ev)); 
 function _kmBadge(ev) {
   const id = ev && ev.emitente && (ev.emitente.id || ev.emitente);
   return id === 'karielen' ? '<span class="km-badge">KM</span>' : '';
+}
+
+/* Badge NF reutilizável — retorna HTML ou '' */
+function _nfBadge(ev) {
+  const id = ev && ev.emitente && (ev.emitente.id || ev.emitente);
+  return id !== 'karielen' ? '<span class="nf-badge">NF</span>' : '';
 }
 
 /* Aging report — dias em atraso desde a data do evento (apenas se não quitado) */
@@ -4181,22 +4188,22 @@ function renderFinanceiro() {
       <div class="kpi-sub">Eventos confirmados/concluídos</div>
     </div>
     <div class="kpi-card gold">
-      <div class="kpi-label">Receita NF (confirmada)</div>
+      <div class="kpi-label">Receita <span class="nf-badge">NF</span> (confirmada)</div>
       <div class="kpi-value">${frsShort(recNfFin)}</div>
       <div class="kpi-sub">${confNf.length} evento(s)</div>
     </div>
     <div class="kpi-card purple">
-      <div class="kpi-label">Receita <span class="km-badge" style="font-size:0.65rem">KM</span> (confirmada)</div>
+      <div class="kpi-label">Receita <span class="km-badge">KM</span> (confirmada)</div>
       <div class="kpi-value">${frsShort(recKmFin)}</div>
       <div class="kpi-sub">${confKm.length} evento(s)</div>
     </div>
     <div class="kpi-card red">
-      <div class="kpi-label">Imposto estimado NF (7%)</div>
+      <div class="kpi-label">Imposto estimado <span class="nf-badge">NF</span> (7%)</div>
       <div class="kpi-value">${frsShort(impostoNF)}</div>
-      <div class="kpi-sub">Sobre ${frsShort(recebidoNF)} recebido NF</div>
+      <div class="kpi-sub">Sobre ${frsShort(recebidoNF)} recebido</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(139,92,246,0.25);background:rgba(139,92,246,0.04)">
-      <div class="kpi-label">Imposto <span class="km-badge" style="font-size:0.65rem">KM</span></div>
+      <div class="kpi-label">Imposto <span class="km-badge">KM</span></div>
       <div class="kpi-value" style="color:#9B5CE5;font-size:1.3rem">Isento</div>
       <div class="kpi-sub">MEI — sem IRPJ/CSLL s/ faturamento</div>
     </div>
@@ -4669,12 +4676,12 @@ function renderEventos() {
       <div class="kpi-sub">Pendência sinalizada</div>
     </div>
     <div class="kpi-card gold">
-      <div class="kpi-label">Eventos NF</div>
+      <div class="kpi-label">Eventos <span class="nf-badge">NF</span></div>
       <div class="kpi-value">${evNf.length}</div>
       <div class="kpi-sub">${frsShort(recNf)}</div>
     </div>
     <div class="kpi-card purple">
-      <div class="kpi-label">Eventos <span class="km-badge" style="font-size:0.65rem">KM</span></div>
+      <div class="kpi-label">Eventos <span class="km-badge">KM</span></div>
       <div class="kpi-value">${evKm.length}</div>
       <div class="kpi-sub">${frsShort(recKm)}</div>
     </div>
@@ -5108,12 +5115,12 @@ function renderContabilidade() {
       <div class="kpi-sub">${frsShort(ativosNaoConf.reduce((s,e)=>s+getValorEvento(e),0))}</div>
     </div>
     <div class="kpi-card red">
-      <div class="kpi-label">Imposto estimado NF (7%)</div>
+      <div class="kpi-label">Imposto estimado <span class="nf-badge">NF</span> (7%)</div>
       <div class="kpi-value">${frsShort(_impostoContNF)}</div>
-      <div class="kpi-sub">Sobre ${frsShort(_recebidoContNF)} recebido NF</div>
+      <div class="kpi-sub">Sobre ${frsShort(_recebidoContNF)} recebido</div>
     </div>
     <div class="kpi-card" style="border-color:rgba(139,92,246,0.25);background:rgba(139,92,246,0.04)">
-      <div class="kpi-label">Imposto <span class="km-badge" style="font-size:0.65rem">KM</span></div>
+      <div class="kpi-label">Imposto <span class="km-badge">KM</span></div>
       <div class="kpi-value" style="color:#9B5CE5;font-size:1.3rem">Isento</div>
       <div class="kpi-sub">MEI — isento de IRPJ/CSLL</div>
     </div>
