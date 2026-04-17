@@ -2170,6 +2170,124 @@
     .agenda-right-panel { width: 100%; }
     .agenda-cal-grid { grid-template-rows: repeat(6, 1fr); }
   }
+  /* ── Pills de eventos (eventos_campo) no calendário ── */
+  .agenda-ev-pill {
+    font-size: 0.55rem; font-weight: 700; font-family: 'Barlow Condensed', sans-serif;
+    border-radius: 9px; padding: 1px 5px; margin-bottom: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer; display: block; transition: filter 0.15s;
+    border: 1px dashed rgba(255,255,255,0.18);
+    background: transparent; color: #555;
+  }
+  .agenda-ev-pill:hover { filter: brightness(1.6); }
+  .agenda-ev-pill.tem-material {
+    border-style: solid; border-color: rgba(37,211,102,0.4);
+    background: rgba(37,211,102,0.08); color: var(--green);
+  }
+  /* ── Card flutuante do evento ── */
+  .agenda-ev-card-overlay {
+    position: fixed; inset: 0; z-index: 1100;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.55); padding: 12px;
+  }
+  .agenda-ev-card {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 8px; width: 340px; max-width: 95vw; max-height: 82vh;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .agenda-ev-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px; border-bottom: 1px solid var(--border2); flex-shrink: 0;
+    gap: 8px;
+  }
+  .agenda-ev-card-body {
+    padding: 12px 14px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .agev-data-badge {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem;
+    font-weight: 700; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.06em;
+  }
+  .agev-cliente {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 1rem;
+    font-weight: 800; color: var(--text); letter-spacing: 0.03em;
+  }
+  .agev-evnome {
+    font-family: 'Barlow', sans-serif; font-size: 0.75rem;
+    color: var(--muted); margin-top: 1px;
+  }
+  .agev-horarios {
+    font-size: 0.78rem; color: var(--text); font-weight: 600;
+  }
+  .agev-horarios .agev-sep { color: var(--muted); margin: 0 3px; font-weight: 400; }
+  .agev-local {
+    font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 5px;
+  }
+  .agev-local-link { color: var(--muted); text-decoration: none; }
+  .agev-local-link:hover { color: var(--text); text-decoration: underline; }
+  .agev-wa-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 3px 6px; border-radius: 3px; background: transparent;
+    border: 1px solid var(--border2); color: var(--muted); cursor: pointer;
+    transition: border-color 0.15s, color 0.15s; text-decoration: none; flex-shrink: 0;
+  }
+  .agev-wa-btn:hover { border-color: #25D366 !important; color: #25D366 !important; }
+  .agev-resp { font-size: 0.72rem; color: var(--muted); }
+  .agev-resp span { color: var(--text); }
+  .agev-section-title {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.62rem;
+    font-weight: 800; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 6px;
+  }
+  .agev-itens { border-top: 1px solid var(--border2); padding-top: 8px; }
+  .agev-item {
+    display: flex; align-items: center; gap: 7px; padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.78rem; color: var(--text);
+  }
+  .agev-item:last-child { border-bottom: none; }
+  .agev-item.done .agev-item-text { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
+  .agev-item-check {
+    width: 15px; height: 15px; min-width: 15px; border: 1.5px solid var(--border2);
+    border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .agev-item-check.checked {
+    background: #25D366; border-color: #25D366;
+  }
+  .agev-item-check.checked::after {
+    content: ''; width: 8px; height: 4px;
+    border-left: 2px solid #111; border-bottom: 2px solid #111;
+    transform: rotate(-45deg) translateY(-1px); display: block;
+  }
+  .agev-item-extra { font-size: 0.85rem; font-weight: 700; color: #4A90C8; flex-shrink: 0; }
+  .agev-material { border-top: 1px solid var(--border2); padding-top: 8px; }
+  .agev-material-badge {
+    font-size: 0.58rem; font-weight: 700; padding: 1px 7px; border-radius: 9px;
+    background: rgba(255,255,255,0.05); color: #555; border: 1px dashed #333;
+    font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.08em;
+  }
+  .agev-material-badge.reservado {
+    background: rgba(37,211,102,0.12); color: var(--green); border-color: rgba(37,211,102,0.3);
+    border-style: solid;
+  }
+  .agev-material-placeholder {
+    font-size: 0.72rem; color: #444; font-style: italic; margin-top: 5px;
+  }
+  /* Eventos na lista do dia (painel direito) */
+  .agev-lista-card {
+    padding: 8px 14px; border-bottom: 1px solid var(--border2);
+    display: flex; flex-direction: column; gap: 3px; cursor: pointer; transition: background 0.12s;
+  }
+  .agev-lista-card:hover { background: rgba(255,255,255,0.03); }
+  .agev-lista-card-tipo {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.55rem;
+    font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .agev-lista-card-nome {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem;
+    font-weight: 800; color: var(--text);
+  }
+  .agev-lista-card-sub { font-size: 0.65rem; color: var(--muted); }
   /* Conflict dot on kit cards */
   .kit-conflict-dot {
     width: 7px; height: 7px; background: var(--red); border-radius: 50%;
@@ -3615,6 +3733,9 @@ function fecharTodosModais() {
   // Agenda usa classe própria (agenda-modal-overlay), não modal-overlay
   var agenda = document.getElementById('agenda-modal-overlay');
   if (agenda) agenda.style.display = 'none';
+  // Card de evento (overlay fixo sobre tudo)
+  var evCard = document.getElementById('agenda-ev-overlay');
+  if (evCard) evCard.remove();
 }
 
 function setView(view) {
@@ -5098,6 +5219,7 @@ renderKitSearchResults = function() {
    ═══════════════════════════════════════════════════════════ */
 
 var _reservas = {};
+var _eventosAgenda = {}; // eventos_campo que estão no painel (etapa definida)
 var _agEditandoId = null;
 var _agMes = new Date().getMonth();
 var _agAno = new Date().getFullYear();
@@ -5132,8 +5254,9 @@ function _preencherDatasHoje() {
   document.getElementById('ag-data-fim').value = iso;
 }
 
-// ── Carregar reservas do Firestore ────────────────────────
+// ── Carregar reservas e eventos do Firestore ─────────────
 function iniciarAgenda() {
+  // Listener 1: reservas manuais de kits
   db.collection('reservas').orderBy('dataInicio').onSnapshot(function(snap) {
     _reservas = {};
     snap.forEach(function(doc) {
@@ -5143,7 +5266,20 @@ function iniciarAgenda() {
     _renderAgendaListaDia(_agDiaSelecionado);
     _atualizarBadgeAgenda();
     _atualizarConflitosNosKits();
-  }, function(err) { console.warn('Agenda snapshot error:', err); });
+  }, function(err) { console.warn('Agenda reservas error:', err); });
+
+  // Listener 2: eventos do painel (eventos_campo com etapa definida e data)
+  db.collection('eventos_campo').onSnapshot(function(snap) {
+    _eventosAgenda = {};
+    snap.forEach(function(doc) {
+      var d = doc.data();
+      if (d.etapa && d.ev_data) {
+        _eventosAgenda[doc.id] = Object.assign({id: doc.id}, d);
+      }
+    });
+    _renderAgendaCalendar();
+    _renderAgendaListaDia(_agDiaSelecionado);
+  }, function(err) { console.warn('Agenda eventos error:', err); });
 }
 
 // ── Badge no botão ────────────────────────────────────────
@@ -5233,27 +5369,50 @@ function _renderAgendaCalendar() {
     var isHoje = ds === hojeStr;
     var isSel  = ds === _agDiaSelecionado;
 
+    // Eventos do painel neste dia
+    var evDia = Object.values(_eventosAgenda).filter(function(ev) {
+      var ini = ev.ev_data || null;
+      var fim = ev.ev_data_fim || ini;
+      return ini && ds >= ini && ds <= fim;
+    }).sort(function(a,b) { return (a.ev_data||'') < (b.ev_data||'') ? -1 : 1; });
+
+    var MAX_EV = 2;
+    var pills = evDia.slice(0, MAX_EV).map(function(ev) {
+      var temMaterial = !!ev.material_reservado;
+      var cor = _corBadgeEvento(ev);
+      var estilo = temMaterial
+        ? 'color:var(--green);border-color:rgba(37,211,102,0.4);background:rgba(37,211,102,0.08);border-style:solid'
+        : 'color:' + cor + ';border-color:' + cor + '44';
+      var label = esc((ev.cli_nome || ev.ev_nome || 'Evento').substring(0,14));
+      return '<div class="agenda-ev-pill" style="' + estilo + '"' +
+        ' onclick="event.stopPropagation();_abrirCardEvento(\'' + ev.id + '\')"' +
+        ' title="' + esc(ev.cli_nome||ev.ev_nome||'') + '">' + label + '</div>';
+    }).join('');
+
+    // Reservas de kit neste dia
     var resDia = Object.values(_reservas).filter(function(r) {
       var ini = r.dataInicio ? r.dataInicio.slice(0,10) : null;
       var fim = r.dataFim   ? r.dataFim.slice(0,10)    : ini;
       return ini && ds >= ini && ds <= fim;
     }).sort(function(a,b) { return new Date(a.dataInicio) - new Date(b.dataInicio); });
 
-    var MAX = 3;
-    var bars = resDia.slice(0, MAX).map(function(r) {
+    var MAX_RES = 1;
+    var bars = resDia.slice(0, MAX_RES).map(function(r) {
       var st  = _statusReserva(r);
       var cor = st === 'conflito' ? '#e05c5c' : st === 'ativo' ? '#25D366' : st === 'passado' ? '#555' : '#F5A623';
       return '<div class="agenda-cal-ev-bar" style="background:' + cor + '22;color:' + cor + ';border-left:2px solid ' + cor + '"' +
         ' onclick="event.stopPropagation();editarReserva(\'' + r.id + '\')" title="' + esc(r.nome||'') + '">' +
         esc(r.nome || 'Sem nome') + '</div>';
     }).join('');
-    if (resDia.length > MAX) bars += '<div class="agenda-cal-more">+' + (resDia.length - MAX) + ' mais</div>';
+
+    var extra = (evDia.length > MAX_EV ? evDia.length - MAX_EV : 0) + (resDia.length > MAX_RES ? resDia.length - MAX_RES : 0);
+    if (extra > 0) bars += '<div class="agenda-cal-more">+' + extra + ' mais</div>';
 
     var cls = 'agenda-cal-cell' + (cell.outroMes?' outro-mes':'') + (isHoje?' hoje-cell':'') + (isSel?' sel-cell':'');
     var numCls = 'agenda-cal-day-num' + (isHoje?' hoje-num':'');
     var click = cell.outroMes ? '' : ' onclick="_clicarDia(\'' + ds + '\')"';
     return '<div class="' + cls + '"' + click + '>' +
-      '<div class="' + numCls + '">' + d.getDate() + '</div>' + bars + '</div>';
+      '<div class="' + numCls + '">' + d.getDate() + '</div>' + pills + bars + '</div>';
   }).join('');
 }
 
@@ -5282,57 +5441,95 @@ function _renderAgendaListaDia(dateStr) {
   var header  = document.getElementById('agenda-dia-lista-header');
   if (!lista) return;
 
-  var arr = Object.values(_reservas).sort(function(a,b) {
-    return new Date(a.dataInicio) - new Date(b.dataInicio);
-  });
-
   if (dateStr) {
-    arr = arr.filter(function(r) {
-      var ini = r.dataInicio ? r.dataInicio.slice(0,10) : null;
-      var fim = r.dataFim   ? r.dataFim.slice(0,10)    : ini;
-      return ini && dateStr >= ini && dateStr <= fim;
-    });
     if (header) {
       var d = new Date(dateStr + 'T12:00:00');
       header.textContent = d.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'});
       header.style.textTransform = 'capitalize';
     }
   } else {
-    if (header) { header.textContent = 'Todas as reservas'; header.style.textTransform = ''; }
+    if (header) { header.textContent = 'Todos'; header.style.textTransform = ''; }
   }
 
-  if (arr.length === 0) {
-    lista.innerHTML = '<div class="agenda-empty-dia">' + (dateStr ? 'Nenhuma reserva neste dia' : 'Nenhuma reserva') + '</div>';
+  // Eventos do painel para este dia
+  var evArr = Object.values(_eventosAgenda).filter(function(ev) {
+    if (!dateStr) return true;
+    var ini = ev.ev_data || null;
+    var fim = ev.ev_data_fim || ini;
+    return ini && dateStr >= ini && dateStr <= fim;
+  }).sort(function(a,b) { return (a.ev_data||'') < (b.ev_data||'') ? -1 : 1; });
+
+  // Reservas de kit para este dia
+  var resArr = Object.values(_reservas).filter(function(r) {
+    if (!dateStr) return true;
+    var ini = r.dataInicio ? r.dataInicio.slice(0,10) : null;
+    var fim = r.dataFim   ? r.dataFim.slice(0,10)    : ini;
+    return ini && dateStr >= ini && dateStr <= fim;
+  }).sort(function(a,b) { return new Date(a.dataInicio) - new Date(b.dataInicio); });
+
+  if (evArr.length === 0 && resArr.length === 0) {
+    lista.innerHTML = '<div class="agenda-empty-dia">' + (dateStr ? 'Nenhum evento neste dia' : 'Nenhum evento') + '</div>';
     return;
   }
 
-  lista.innerHTML = arr.map(function(r) {
-    var st = _statusReserva(r);
-    var kits = r.kits || [];
-    var conflicts = _detectarConflito(r.id, kits, r.dataInicio, r.dataFim);
-    var conflictKitIds = conflicts.map(function(c) { return c.kitId; });
-    var stLabel = {ativo:'Em Andamento', futuro:'Futuro', passado:'Encerrado', conflito:'⚠ Conflito'}[st] || st;
-    var cardCls = 'agenda-dia-card' + (st==='conflito'?' conflict-card':st==='ativo'?' ativo-card':'');
-    var kitsHtml = kits.length === 0 ? '' :
-      '<div class="agenda-dia-card-kits">' + kits.map(function(kid) {
-        var kit = _kits[kid]; var nome = kit ? (kit.nome||kid) : kid;
-        var isC = conflictKitIds.indexOf(kid) !== -1;
-        return '<span class="agenda-kit-chip' + (isC?' conflict-chip':'') + '">' + (isC?'⚠ ':'') + esc(nome) + '</span>';
-      }).join('') + '</div>';
-    return '<div class="' + cardCls + '" onclick="editarReserva(\'' + r.id + '\')">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px">' +
-        '<div class="agenda-dia-card-nome">' + esc(r.nome||'Sem nome') + '</div>' +
-        '<span class="agenda-card-status status-' + st + '">' + stLabel + '</span>' +
-      '</div>' +
-      '<div class="agenda-dia-card-info">' + _fmtDt(r.dataInicio) + ' → ' + _fmtDt(r.dataFim) + '</div>' +
-      kitsHtml +
-      (r.obs ? '<div style="font-size:0.62rem;color:#555;font-style:italic">' + esc(r.obs) + '</div>' : '') +
-      '<div class="agenda-dia-card-actions" onclick="event.stopPropagation()">' +
-        '<button class="agenda-action-btn" onclick="editarReserva(\'' + r.id + '\')">Editar</button>' +
-        '<button class="agenda-action-btn del" onclick="excluirReserva(\'' + r.id + '\')">Excluir</button>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+  var html = '';
+
+  // Bloco: eventos do painel
+  if (evArr.length > 0) {
+    html += evArr.map(function(ev) {
+      var temMaterial = !!ev.material_reservado;
+      var cor = _corBadgeEvento(ev);
+      var dataFmt = ev.ev_data ? fmtData(ev.ev_data) : '';
+      return '<div class="agev-lista-card" onclick="_abrirCardEvento(\'' + ev.id + '\')">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px">' +
+          '<div style="display:flex;align-items:center;gap:6px">' +
+            '<span class="agev-lista-card-tipo" style="color:' + cor + '">' + (dataFmt||'') + '</span>' +
+          '</div>' +
+          '<span class="agev-material-badge' + (temMaterial?' reservado':'') + '">' +
+            (temMaterial ? '● Reservado' : '○ Sem material') + '</span>' +
+        '</div>' +
+        '<div class="agev-lista-card-nome">' + esc(ev.cli_nome || ev.ev_nome || 'Evento') + '</div>' +
+        (ev.cli_nome && ev.ev_nome ? '<div class="agev-lista-card-sub">' + esc(ev.ev_nome) + '</div>' : '') +
+        (ev.ev_local ? '<div class="agev-lista-card-sub">' + esc(ev.ev_local) + '</div>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  // Bloco: reservas de kit
+  if (resArr.length > 0) {
+    if (evArr.length > 0) {
+      html += '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.6rem;font-weight:800;color:#333;text-transform:uppercase;letter-spacing:0.1em;padding:5px 14px;border-top:1px solid var(--border2)">Reservas de Kit</div>';
+    }
+    html += resArr.map(function(r) {
+      var st = _statusReserva(r);
+      var kits = r.kits || [];
+      var conflicts = _detectarConflito(r.id, kits, r.dataInicio, r.dataFim);
+      var conflictKitIds = conflicts.map(function(c) { return c.kitId; });
+      var stLabel = {ativo:'Em Andamento', futuro:'Futuro', passado:'Encerrado', conflito:'⚠ Conflito'}[st] || st;
+      var cardCls = 'agenda-dia-card' + (st==='conflito'?' conflict-card':st==='ativo'?' ativo-card':'');
+      var kitsHtml = kits.length === 0 ? '' :
+        '<div class="agenda-dia-card-kits">' + kits.map(function(kid) {
+          var kit = _kits[kid]; var nome = kit ? (kit.nome||kid) : kid;
+          var isC = conflictKitIds.indexOf(kid) !== -1;
+          return '<span class="agenda-kit-chip' + (isC?' conflict-chip':'') + '">' + (isC?'⚠ ':'') + esc(nome) + '</span>';
+        }).join('') + '</div>';
+      return '<div class="' + cardCls + '" onclick="editarReserva(\'' + r.id + '\')">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px">' +
+          '<div class="agenda-dia-card-nome">' + esc(r.nome||'Sem nome') + '</div>' +
+          '<span class="agenda-card-status status-' + st + '">' + stLabel + '</span>' +
+        '</div>' +
+        '<div class="agenda-dia-card-info">' + _fmtDt(r.dataInicio) + ' → ' + _fmtDt(r.dataFim) + '</div>' +
+        kitsHtml +
+        (r.obs ? '<div style="font-size:0.62rem;color:#555;font-style:italic">' + esc(r.obs) + '</div>' : '') +
+        '<div class="agenda-dia-card-actions" onclick="event.stopPropagation()">' +
+          '<button class="agenda-action-btn" onclick="editarReserva(\'' + r.id + '\')">Editar</button>' +
+          '<button class="agenda-action-btn del" onclick="excluirReserva(\'' + r.id + '\')">Excluir</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  lista.innerHTML = html;
 }
 
 // ── Render checklist de kits no form ─────────────────────
@@ -5414,6 +5611,135 @@ function cancelarEdicaoAgenda() {
 function excluirReserva(id) {
   if (!confirm('Excluir esta reserva?')) return;
   db.collection('reservas').doc(id).delete().then(function() { toast('Reserva excluída'); });
+}
+
+// ── Cor do badge por proximidade (igual painel_eventos) ──
+function _corBadgeEvento(ev) {
+  if (!ev.ev_data) return '#888';
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var evData = new Date(ev.ev_data + 'T00:00:00');
+  var diffDias = Math.ceil((evData - hoje) / 86400000);
+  if (diffDias < 0)  return '#555';    // passado
+  if (diffDias <= 1) return '#e05c5c'; // urgente (hoje/amanhã)
+  if (diffDias <= 7) return '#4A90D9'; // próximo (1 semana)
+  return '#aaa';                        // futuro distante
+}
+
+// ── Abrir card flutuante do evento ────────────────────────
+function _abrirCardEvento(id) {
+  var ev = _eventosAgenda[id];
+  if (!ev) return;
+  _fecharCardEvento();
+
+  var cor = _corBadgeEvento(ev);
+  var dataFmt    = ev.ev_data     ? fmtData(ev.ev_data)     : '—';
+  var dataFimFmt = ev.ev_data_fim ? fmtData(ev.ev_data_fim) : '';
+
+  // Horários
+  var horariosArr = [];
+  if (ev.ev_montagem)    horariosArr.push('Mont. '  + ev.ev_montagem);
+  if (ev.ev_inicio)      horariosArr.push('Iníc. '  + ev.ev_inicio);
+  if (ev.ev_fim)         horariosArr.push('Fim '    + ev.ev_fim);
+  if (ev.ev_desmontagem) horariosArr.push('Desm. '  + ev.ev_desmontagem);
+  var horariosHtml = horariosArr.length
+    ? '<div class="agev-horarios">' + horariosArr.join(' <span class="agev-sep">•</span> ') + '</div>'
+    : '';
+
+  // Local + WhatsApp
+  var localHtml = '';
+  if (ev.ev_local) {
+    var localInner = ev.ev_maps
+      ? '<a href="' + esc(ev.ev_maps) + '" target="_blank" class="agev-local-link">' + esc(ev.ev_local) + '</a>'
+      : '<span>' + esc(ev.ev_local) + '</span>';
+    localHtml = '<div class="agev-local">' +
+      '<svg width="9" height="11" viewBox="0 0 10 13" fill="none"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>' +
+      localInner + '</div>';
+  }
+  var waHtml = '';
+  if (ev.cli_fone) {
+    var fone = ev.cli_fone.replace(/\D/g,'');
+    waHtml = '<a href="https://wa.me/55' + fone + '" target="_blank" class="agev-wa-btn" title="WhatsApp" onclick="event.stopPropagation()">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>' +
+    '</a>';
+  }
+
+  // Itens / serviços
+  var servicos = ev.servicos || [];
+  var itensOk  = ev.itens_ok  || {};
+  var itensRem = ev.itens_removidos || {};
+  var extras   = ev.itens_extras || [];
+  var itensHtml = '';
+  if (servicos.length > 0 || extras.length > 0) {
+    var itemsStr = servicos.map(function(s, idx) {
+      if (itensRem[idx]) return '';
+      var done = !!itensOk[idx];
+      var txt  = typeof s === 'object' ? (s.descricao || s.item || s.texto || '') : String(s);
+      return '<div class="agev-item' + (done ? ' done' : '') + '">' +
+        '<div class="agev-item-check' + (done ? ' checked' : '') + '"></div>' +
+        '<span class="agev-item-text">' + esc(txt) + '</span>' +
+      '</div>';
+    }).join('');
+    itemsStr += extras.map(function(ex) {
+      var txt = typeof ex === 'object' ? (ex.texto || ex.item || '') : String(ex);
+      return '<div class="agev-item">' +
+        '<div class="agev-item-check"></div>' +
+        '<span class="agev-item-text">' + esc(txt) + '</span>' +
+        '<span class="agev-item-extra">+</span>' +
+      '</div>';
+    }).join('');
+    itensHtml = '<div class="agev-itens">' +
+      '<div class="agev-section-title">Itens / Serviços</div>' + itemsStr + '</div>';
+  }
+
+  // Material (indicador)
+  var temMaterial = !!ev.material_reservado;
+  var materialHtml = '<div class="agev-material">' +
+    '<div class="agev-section-title" style="display:flex;align-items:center;gap:7px">' +
+      'Material / Equipamentos' +
+      '<span class="agev-material-badge' + (temMaterial ? ' reservado' : '') + '">' +
+        (temMaterial ? '● Reservado' : '○ Sem material separado') +
+      '</span>' +
+    '</div>' +
+    '<div class="agev-material-placeholder">Vinculação de equipamentos disponível em breve</div>' +
+  '</div>';
+
+  // Badge de data final
+  var datasBadge = '<span class="agev-data-badge" style="background:' + cor + '22;color:' + cor + '">' + dataFmt + '</span>';
+  if (dataFimFmt && dataFimFmt !== dataFmt) {
+    datasBadge += ' <span style="color:var(--muted);font-size:0.7rem">→</span> <span class="agev-data-badge" style="background:' + cor + '22;color:' + cor + '">' + dataFimFmt + '</span>';
+  }
+
+  var overlay = document.createElement('div');
+  overlay.id = 'agenda-ev-overlay';
+  overlay.className = 'agenda-ev-card-overlay';
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) _fecharCardEvento(); });
+
+  overlay.innerHTML =
+    '<div class="agenda-ev-card">' +
+      '<div style="height:3px;background:' + cor + ';border-radius:8px 8px 0 0;flex-shrink:0"></div>' +
+      '<div class="agenda-ev-card-header">' +
+        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' + datasBadge + '</div>' +
+        '<button onclick="_fecharCardEvento()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:2px 6px;line-height:1;flex-shrink:0">✕</button>' +
+      '</div>' +
+      '<div class="agenda-ev-card-body">' +
+        '<div>' +
+          '<div class="agev-cliente">' + esc(ev.cli_nome || ev.ev_nome || '—') + '</div>' +
+          (ev.cli_nome && ev.ev_nome ? '<div class="agev-evnome">' + esc(ev.ev_nome) + '</div>' : '') +
+        '</div>' +
+        horariosHtml +
+        ((waHtml || localHtml) ? '<div style="display:flex;align-items:center;gap:7px">' + waHtml + localHtml + '</div>' : '') +
+        (ev.ev_resp ? '<div class="agev-resp">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '') +
+        itensHtml +
+        materialHtml +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+}
+
+function _fecharCardEvento() {
+  var el = document.getElementById('agenda-ev-overlay');
+  if (el) el.remove();
 }
 
 // ── Marcar kits com conflito ──────────────────────────────
@@ -6606,339 +6932,4 @@ function renderVeiculos() {
     }
 
     // Tags de status
-    var statusTag = itens.length === 0
-      ? '<span class="veiculo-tag vazio">Vazio</span>'
-      : (pctCarga >= 80 ? '<span class="veiculo-tag ok">Carregado</span>' : '<span class="veiculo-tag parcial">Parcial</span>');
-
-    // Lista resumida de itens (top 4)
-    var itensHtml = '';
-    if (itens.length > 0) {
-      itens.slice(0, 4).forEach(function(it) {
-        itensHtml += '<div class="veiculo-item-row">' +
-          '<span class="veiculo-item-nome">' + esc(it.nome || it.id || '?') + '</span>' +
-          '<span class="veiculo-item-tipo">' + (it.tipo === 'kit' ? 'kit' : it.tipo === 'acessorio' ? 'ac.' : 'eq.') + '</span>' +
-        '</div>';
-      });
-      if (itens.length > 4) {
-        itensHtml += '<div style="font-size:0.58rem;color:#555;padding:2px 6px">+ ' + (itens.length - 4) + ' mais</div>';
-      }
-    }
-
-    html += '<div class="veiculo-card" id="vcard-' + esc(v.id) + '"' +
-      ' ondragover="veiculoFolderOver(event,\'' + esc(v.id) + '\')"' +
-      ' ondragleave="veiculoFolderLeave(event,\'' + esc(v.id) + '\')"' +
-      ' ondrop="veiculoFolderDrop(event,\'' + esc(v.id) + '\')"' +
-      ' onclick="abrirModalVeiculo(\'' + esc(v.id) + '\')"' +
-      ' draggable="true"' +
-      ' ondragstart="veiculoCardDragStart(event,\'' + esc(v.id) + '\')"' +
-      '>' +
-      '<div class="veiculo-top-bar"></div>' +
-      '<div class="veiculo-body">' +
-        '<div class="veiculo-header-row">' +
-          '<div class="veiculo-icon">' + _getVeiculoIcon(v.tipo) + '</div>' +
-          '<div class="veiculo-info">' +
-            '<div class="veiculo-nome">' + esc(v.nome || 'Veículo') + '</div>' +
-            '<div class="veiculo-placa">' + (v.placa ? esc(v.placa) : 'Sem placa') + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="veiculo-carga-bar">' +
-          '<div class="veiculo-carga-track"><div class="veiculo-carga-fill" style="width:' + pctCarga + '%;background:' + barColor + '"></div></div>' +
-          '<span class="veiculo-carga-label">' + totalItens + '/' + capacidade + ' un.</span>' +
-        '</div>' +
-        (itensHtml ? '<div class="veiculo-itens-list">' + itensHtml + '</div>' : '') +
-        '<div class="veiculo-drop-hint">Arraste kits, equipamentos ou acessórios aqui</div>' +
-        '<div class="veiculo-tags">' + statusTag + evLink + '</div>' +
-      '</div>' +
-    '</div>';
-  });
-
-  // Botão novo veículo
-  html += '<div class="veiculo-novo-card" onclick="abrirModalNovoVeiculo()">' +
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-    'Novo veículo' +
-  '</div>';
-
-  grid.innerHTML = html;
-
-  // Restaura colapso
-  if (!_veiculosSecaoAberta) {
-    grid.style.maxHeight = '0';
-    grid.style.opacity = '0';
-  }
-}
-
-function _getVeiculoIcon(tipo) {
-  var svgs = {
-    van:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
-    truck:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="3" width="13" height="13" rx="2"/><polygon points="14 7 21 7 23 13 23 16 14 16 14 7"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/></svg>',
-    car:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>',
-    trailer:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="18" height="11" rx="2"/><line x1="20" y1="11" x2="23" y2="11"/><circle cx="6" cy="20" r="2"/><circle cx="16" cy="20" r="2"/></svg>'
-  };
-  return svgs[tipo] || svgs['van'];
-}
-
-// ── Drag do veículo para evento ──
-var _draggingVeiculoId = null;
-
-function veiculoCardDragStart(ev, veiculoId) {
-  _draggingVeiculoId = veiculoId;
-  ev.dataTransfer.setData('text/plain', veiculoId);
-  ev.dataTransfer.setData('tipo', 'veiculo');
-  ev.dataTransfer.effectAllowed = 'copy';
-}
-
-// ── Drag: item → veículo ──
-function veiculoFolderOver(ev, veiculoId) {
-  if (!_draggingEqId && !_draggingParaVeiculo) return;
-  ev.preventDefault();
-  ev.dataTransfer.dropEffect = 'copy';
-  var el = document.getElementById('vcard-' + veiculoId);
-  if (el) el.classList.add('drag-over-veiculo');
-}
-function veiculoFolderLeave(ev, veiculoId) {
-  var el = document.getElementById('vcard-' + veiculoId);
-  if (el) el.classList.remove('drag-over-veiculo');
-}
-function veiculoFolderDrop(ev, veiculoId) {
-  ev.preventDefault();
-  ev.stopPropagation();
-  var el = document.getElementById('vcard-' + veiculoId);
-  if (el) el.classList.remove('drag-over-veiculo');
-
-  var itemId = ev.dataTransfer.getData('text/plain') || _draggingEqId;
-  var tipo = ev.dataTransfer.getData('tipo') || (_draggingEqId ? 'eq' : null);
-  if (!itemId || !tipo) return;
-
-  var nomeItem = _getNomeItem(itemId, tipo);
-  var veiculo = _veiculos[veiculoId];
-  if (!veiculo) return;
-
-  var itens = Array.isArray(veiculo.itens) ? veiculo.itens.slice() : [];
-  var existente = itens.find(function(it) { return it.id === itemId; });
-  if (existente) { existente.qtd = (existente.qtd || 1) + 1; }
-  else { itens.push({ id: itemId, nome: nomeItem, tipo: tipo, qtd: 1 }); }
-
-  db.collection('veiculos').doc(veiculoId).update({
-    itens: itens,
-    _atualizado: Date.now()
-  }).then(function() {
-    toast(nomeItem + ' adicionado ao ' + (veiculo.nome || 'veículo') + '!');
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
-}
-
-function _getNomeItem(id, tipo) {
-  if (tipo === 'kit') { var k = _kits[id]; return k ? (k.nome || 'Kit') : id; }
-  if (tipo === 'eq') { var e = _equipamentos[id]; return e ? (e.nome || 'Equip.') : id; }
-  if (tipo === 'acessorio') { var a = _acessorios[id]; return a ? (a.nome || 'Ac.') : id; }
-  return id;
-}
-
-// ── Patch: kit cards ficam arrastáveis para veículos ──
-var _renderKitsOrig = renderKits;
-renderKits = function() {
-  _renderKitsOrig();
-  var grid = document.getElementById('kits-grid');
-  if (!grid) return;
-  var kitCards = grid.querySelectorAll('.kit-folder');
-  kitCards.forEach(function(card) {
-    var id = card.id ? card.id.replace('kit-card-', '') : null;
-    if (!id) return;
-    card.setAttribute('draggable', 'true');
-    card.addEventListener('dragstart', function(ev) {
-      _draggingParaVeiculo = { tipo: 'kit', id: id };
-      ev.dataTransfer.setData('text/plain', id);
-      ev.dataTransfer.setData('tipo', 'kit');
-      ev.dataTransfer.effectAllowed = 'copy';
-    });
-    card.addEventListener('dragend', function() {
-      _draggingParaVeiculo = null;
-    });
-    // Também pode soltar em eventos
-    card.addEventListener('dragover', function() {});
-  });
-};
-
-// ── Patch: acessório cards arrastáveis para veículos ──
-var _renderAcessoriosOrig = renderAcessorios;
-renderAcessorios = function() {
-  _renderAcessoriosOrig();
-  var grid = document.getElementById('acessorios-grid');
-  if (!grid) return;
-  grid.querySelectorAll('.ac-card').forEach(function(card) {
-    var onclick = card.getAttribute('onclick') || '';
-    var match = onclick.match(/abrirDetalheAcessorio\('([^']+)'\)/);
-    if (!match) { match = onclick.match(/'([^']+)'/); }
-    if (!match) return;
-    var id = match[1];
-    card.setAttribute('draggable', 'true');
-    card.addEventListener('dragstart', function(ev) {
-      _draggingParaVeiculo = { tipo: 'acessorio', id: id };
-      ev.dataTransfer.setData('text/plain', id);
-      ev.dataTransfer.setData('tipo', 'acessorio');
-      ev.dataTransfer.effectAllowed = 'copy';
-    });
-    card.addEventListener('dragend', function() { _draggingParaVeiculo = null; });
-  });
-};
-
-// ── Modal de veículo (abrir / novo / editar) ──
-function abrirModalNovoVeiculo() {
-  _veiculoEditandoId = null;
-  _veiculoItensAtual = [];
-  _abrirModalFormVeiculo({});
-}
-
-function abrirModalVeiculo(veiculoId) {
-  var v = _veiculos[veiculoId];
-  if (!v) return;
-  _veiculoEditandoId = veiculoId;
-  _veiculoItensAtual = Array.isArray(v.itens) ? v.itens.slice() : [];
-  _abrirModalFormVeiculo(v);
-}
-
-function _abrirModalFormVeiculo(v) {
-  fecharTodosModais();
-  var isEdit = !!_veiculoEditandoId;
-
-  var overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'modal-veiculo';
-
-  // Evento vinculado
-  var evLinkHtml = '';
-  if (isEdit && v.evento_id && _eventosAndamento[v.evento_id]) {
-    var ev2 = _eventosAndamento[v.evento_id];
-    evLinkHtml = '<div class="vm-evento-link">' +
-      '<div>' +
-        '<div class="vm-evento-nome">📌 ' + esc(ev2.ev_nome || ev2.nome || '') + '</div>' +
-        (ev2.ev_data ? '<div class="vm-evento-data">' + _fmtEvData(ev2.ev_data) + '</div>' : '') +
-      '</div>' +
-      '<button class="vm-desvincular-btn" onclick="_desvincularEventoVeiculo(\'' + _veiculoEditandoId + '\')">Desvincular</button>' +
-    '</div>';
-  }
-
-  overlay.innerHTML =
-    '<div class="veiculo-modal-box">' +
-      '<div class="modal-header">' +
-        '<div class="modal-title" style="display:flex;align-items:center;gap:8px">' +
-          _getVeiculoIcon(v.tipo) +
-          (isEdit ? 'Editar Veículo' : 'Novo Veículo') +
-        '</div>' +
-        '<button class="btn-modal-close" onclick="fecharTodosModais()">×</button>' +
-      '</div>' +
-      '<div class="modal-body">' +
-
-        '<div class="vm-section">' +
-          '<div class="vm-title">Informações</div>' +
-          '<div class="form-grid" style="margin-bottom:10px">' +
-            '<div class="form-group"><label class="form-label">Nome *</label><input class="form-input" id="vf-nome" value="' + esc(v.nome || '') + '" placeholder="Ex: Fiorino Branca" /></div>' +
-            '<div class="form-group"><label class="form-label">Placa</label><input class="form-input" id="vf-placa" value="' + esc(v.placa || '') + '" placeholder="ABC-1234" /></div>' +
-          '</div>' +
-          '<div class="form-grid" style="margin-bottom:10px">' +
-            '<div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="vf-tipo">' +
-              ['van','truck','car','trailer'].map(function(t) { return '<option value="' + t + '"' + (v.tipo === t ? ' selected' : '') + '>' + {van:'Van',truck:'Caminhão',car:'Carro',trailer:'Trailer'}[t] + '</option>'; }).join('') +
-            '</select></div>' +
-            '<div class="form-group"><label class="form-label">Capacidade (un.)</label><input class="form-input" id="vf-capacidade" type="number" min="1" value="' + (v.capacidade || 20) + '" /></div>' +
-          '</div>' +
-          (evLinkHtml ? evLinkHtml : '') +
-          (isEdit && !v.evento_id && Object.keys(_eventosAndamento).length > 0 ? _buildEventoSelectHtml(_veiculoEditandoId, v.evento_id || '') : '') +
-        '</div>' +
-
-        '<div class="vm-section">' +
-          '<div class="vm-title">Carga do veículo</div>' +
-          '<div style="font-size:0.65rem;color:#555;margin-bottom:8px">Arraste kits, equipamentos ou acessórios para cá, ou use a busca abaixo.</div>' +
-          '<div id="vm-slot-grid" class="vm-slot-grid"' +
-            ' ondragover="vmSlotGridOver(event)"' +
-            ' ondragleave="vmSlotGridLeave(event)"' +
-            ' ondrop="vmSlotGridDrop(event)"' +
-          '>' +
-            (_veiculoItensAtual.length === 0 ? '<div class="vm-drop-hint-text">Arraste equipamentos, kits ou acessórios aqui</div>' : _buildVmSlotsHtml()) +
-          '</div>' +
-        '</div>' +
-
-        '<div class="vm-section">' +
-          '<div class="vm-title">Adicionar item</div>' +
-          '<input class="vm-search-input" id="vm-search" placeholder="Buscar kit, equipamento ou acessório..." oninput="_renderVmSearch()" />' +
-          '<div class="vm-search-results" id="vm-search-results"></div>' +
-        '</div>' +
-
-      '</div>' +
-      '<div class="modal-footer" style="gap:8px">' +
-        (isEdit ? '<button class="btn-modal-cancel" style="color:var(--red);border-color:rgba(224,92,92,0.3)" onclick="_confirmarExcluirVeiculo(\'' + _veiculoEditandoId + '\')">Excluir</button>' : '') +
-        '<button class="btn-modal-cancel" onclick="fecharTodosModais()">Cancelar</button>' +
-        '<button class="btn-modal-save" onclick="_salvarVeiculo()">Salvar</button>' +
-      '</div>' +
-    '</div>';
-
-  overlay.addEventListener('click', function(ev) { if (ev.target === overlay) fecharTodosModais(); });
-  document.body.appendChild(overlay);
-  setTimeout(function() { _renderVmSearch(); document.getElementById('vf-nome').focus(); }, 60);
-}
-
-function _buildEventoSelectHtml(veiculoId, eventoIdAtual) {
-  var eventos = Object.values(_eventosAndamento);
-  if (!eventos.length) return '';
-  var options = '<option value="">— Sem evento vinculado —</option>' +
-    eventos.map(function(ev) {
-      return '<option value="' + ev.id + '"' + (ev.id === eventoIdAtual ? ' selected' : '') + '>' + esc(ev.ev_nome || ev.nome || ev.id) + '</option>';
-    }).join('');
-  return '<div class="form-group" style="margin-top:8px"><label class="form-label">Vincular a evento</label><select class="form-select" id="vf-evento-id">' + options + '</select></div>';
-}
-
-function _desvincularEventoVeiculo(veiculoId) {
-  db.collection('veiculos').doc(veiculoId).update({ evento_id: '' }).then(function() {
-    toast('Evento desvinculado.');
-    fecharTodosModais();
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
-}
-
-function _buildVmSlotsHtml() {
-  if (!_veiculoItensAtual.length) return '<div class="vm-drop-hint-text">Arraste equipamentos, kits ou acessórios aqui</div>';
-  return _veiculoItensAtual.map(function(it, idx) {
-    var tipo = it.tipo || 'eq';
-    return '<div class="vm-slot">' +
-      '<div class="vm-slot-icon">' + (tipo === 'kit' ?
-        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' :
-        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
-      ) + '</div>' +
-      '<div style="flex:1;min-width:0">' +
-        '<div class="vm-slot-nome">' + esc(it.nome || it.id || '?') + '</div>' +
-        '<div class="vm-slot-sub">qtd: ' + (it.qtd || 1) + ' · ' + tipo + '</div>' +
-      '</div>' +
-      '<button class="vm-slot-rm" onclick="_vmRemoverItem(' + idx + ')">×</button>' +
-    '</div>';
-  }).join('');
-}
-
-function _vmRemoverItem(idx) {
-  _veiculoItensAtual.splice(idx, 1);
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.innerHTML = _buildVmSlotsHtml() || '<div class="vm-drop-hint-text">Arraste equipamentos, kits ou acessórios aqui</div>';
-}
-
-// Drag → slot grid do modal
-function vmSlotGridOver(ev) {
-  if (!_draggingEqId && !_draggingParaVeiculo) return;
-  ev.preventDefault();
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.classList.add('drag-over');
-}
-function vmSlotGridLeave(ev) {
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.classList.remove('drag-over');
-}
-function vmSlotGridDrop(ev) {
-  ev.preventDefault();
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.classList.remove('drag-over');
-
-  var itemId = ev.dataTransfer.getData('text/plain') || _draggingEqId;
-  var tipo = ev.dataTransfer.getData('tipo') || (_draggingEqId ? 'eq' : null);
-  if (!itemId || !tipo) return;
-
-  var nome = _getNomeItem(itemId, tipo);
-  var existente = _veiculoItensAtual.find(function(it) { return it.id === itemId; });
-  if (existente) { existente.qtd = (existente.qtd || 1) + 1; }
-  else { _veiculoItensAtual.push({ id: itemId, nome: nome, tipo: tipo, qtd: 1 }); }
-
-  if (grid) grid.innerHTML = _build
+    var status
