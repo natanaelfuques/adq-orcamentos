@@ -154,8 +154,8 @@ header {
 }
 .periodo-custom input:focus { border-color: var(--green); }
 
+.export-btns-wrap { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
 .export-btn {
-  margin-left: auto;
   background: transparent;
   border: 1px solid var(--border2);
   color: var(--muted);
@@ -168,6 +168,7 @@ header {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 .export-btn:hover { border-color: var(--green); color: var(--green); }
 
@@ -647,7 +648,8 @@ header {
   .pbtn { font-size: 0.68rem; padding: 4px 9px; white-space: nowrap; flex-shrink: 0; }
   .periodo-custom { width: 100%; }
   .periodo-custom input { flex: 1; width: auto; }
-  .export-btn { width: 100%; margin-left: 0; text-align: center; }
+  .export-btns-wrap { margin-left: 0; width: 100%; }
+  .export-btn { flex: 1; text-align: center; font-size: 0.68rem; padding: 5px 8px; }
 
   .tab-btn { padding: 9px 13px; font-size: 0.72rem; }
 
@@ -1627,12 +1629,12 @@ header {
     <span style="color:var(--muted)">até</span>
     <input id="data-fim" onchange="aplicarCustom()" type="date"/>
   </div>
-  <span style="margin-left:auto;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+  <span class="export-btns-wrap">
     <button class="export-btn" onclick="exportarCSV()" style="border-color:#F5A623;color:#F5A623">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar CSV
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>NF · Exportar CSV
     </button>
     <button class="export-btn" onclick="exportarCSV_KM()" style="border-color:#9B5CE5;color:#9B5CE5">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar CSV
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>KM · Exportar CSV
     </button>
   </span>
 </div>
