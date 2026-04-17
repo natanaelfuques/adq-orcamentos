@@ -5244,16 +5244,15 @@ function _xlsxBuildRow(e) {
     _csvTipoEv(e),
     e.ev_local || e.local_evento || e.local || '',
     _csvPgto(e),
-    _csvStatus(e),
     e._origem === 'nota' ? 'Evento rápido' : 'Contrato',
     getValorEvento(e)             // número nativo → filtro numérico no Excel
   ];
 }
 
-const _XLSX_HEADER = ['Criado em','Data Evento','Cliente','Tipo Evento','Local','Pagamento','Status Pagamento','Origem','Valor (R$)'];
-const _XLSX_COL_WIDTHS = [14, 14, 32, 28, 24, 16, 18, 14, 14];
+const _XLSX_HEADER = ['Criado em','Data Evento','Cliente','Tipo Evento','Local','Pagamento','Origem','Valor (R$)'];
+const _XLSX_COL_WIDTHS = [14, 14, 32, 28, 24, 16, 14, 14];
 const _XLSX_DATE_COLS = [0, 1]; // índices das colunas de data
-const _XLSX_NUM_COLS  = [8];    // índice da coluna de valor
+const _XLSX_NUM_COLS  = [7];    // índice da coluna de valor
 
 function _downloadXLSX(rows, nome, sheetName) {
   const ws = XLSX.utils.aoa_to_sheet([_XLSX_HEADER, ...rows], { cellDates: true });
@@ -5279,7 +5278,8 @@ function exportarXLSX(tipo) {
   const isKm = tipo === 'km';
   const todos = todoEventosFiltrados().filter(function(e) {
     const id = e.emitente && (e.emitente.id || e.emitente);
-    return isKm ? id === 'karielen' : id !== 'karielen';
+    const tipoOk = isKm ? id === 'karielen' : id !== 'karielen';
+    return tipoOk && getStatusPgto(e) === 'quitado'; // apenas quitados
   });
   _downloadXLSX(todos.map(_xlsxBuildRow), isKm ? 'relatorio_eventos_KM' : 'relatorio_eventos_NF');
 }
@@ -5289,9 +5289,9 @@ function exportarContabilidade() {
     const id = e.emitente && (e.emitente.id || e.emitente);
     return id !== 'karielen'; // apenas NF
   });
-  const header = ['Criado em','Data Evento','Competência','Cliente','Tipo Evento','Tipo Registro','Forma Pgto','Status Pagamento','Valor'];
-  const colWidths = [14, 14, 12, 32, 28, 14, 16, 18, 14];
-  const rows = cons.map(c => {
+  const header = ['Criado em','Data Evento','Competência','Cliente','Tipo Evento','Tipo Registro','Forma Pgto','Valor (R$)'];
+  const colWidths = [14, 14, 12, 32, 28, 14, 16, 14];
+  const rows = cons.filter(c => getStatusPgto(Object.assign({}, c, { _origem: c._origem || 'contrato' })) === 'quitado').map(c => {
     const evStr = c.ev_data || c.data_evento || c.dataEvt || '';
     let d = null;
     if (evStr) { const p = evStr.split('-'); if (p.length === 3) d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2])); }
@@ -5301,7 +5301,7 @@ function exportarContabilidade() {
     const tipoRegistro = isNota ? 'Evento rápido' : 'Contrato';
     const pgto = isNota ? 'À vista' : _csvPgto(c);
     return [_xlsxTs(c.criadoEm), _xlsxDate(dataEv(c)), comp, nomeCli(c), _csvTipoEv(c), tipoRegistro, pgto,
-      _csvStatus(c), getValorEvento(c)];
+      getValorEvento(c)];
   });
   const ws = XLSX.utils.aoa_to_sheet([header, ...rows], { cellDates: true });
   // Formatar datas e valores
@@ -5310,7 +5310,7 @@ function exportarContabilidade() {
       const addr = XLSX.utils.encode_cell({ r: ri+1, c: ci });
       if (ws[addr] && ws[addr].t === 'd') ws[addr].z = 'DD/MM/YYYY';
     });
-    const addrV = XLSX.utils.encode_cell({ r: ri+1, c: 8 });
+    const addrV = XLSX.utils.encode_cell({ r: ri+1, c: 7 });
     if (ws[addrV]) ws[addrV].z = '#,##0.00';
   });
   ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r:0, c:0 }, e: { r:0, c: header.length - 1 } }) };
