@@ -3401,6 +3401,10 @@ function buildPgtoCard(ev) {
   const cardClass = status === 'alerta' ? ' pgto-card-alerta' : status === 'quitado' ? ' pgto-card-quitado' : '';
 
   const nomeExib = nomeCli(ev) !== '—' ? nomeCli(ev) : tipoEv(ev);
+  const _emitId = ev.emitente && (ev.emitente.id || ev.emitente);
+  const kmBadge = _emitId === 'karielen'
+    ? '<span style="font-size:0.58rem;font-weight:800;background:rgba(139,92,246,0.12);color:#9B5CE5;border:1px solid rgba(139,92,246,0.3);border-radius:3px;padding:1px 5px;margin-left:5px;vertical-align:middle;letter-spacing:0.08em">KM</span>'
+    : '';
   const pgtoLabel = getPgtoLabel(ev);
   const isQuitado = restante <= 0 || status === 'quitado';
   const valPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
@@ -3412,7 +3416,7 @@ function buildPgtoCard(ev) {
     // Cabeçalho: nome + badge
     '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
       '<div class="pgto-card-info">' +
-        '<div class="pgto-card-nome">' + nomeExib + '</div>' +
+        '<div class="pgto-card-nome">' + nomeExib + kmBadge + '</div>' +
         '<div class="pgto-card-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
       '<span class="pgto-status-badge ' + badgeClass + '">' + badgeTxt + '</span>' +
