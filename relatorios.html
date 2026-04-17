@@ -5226,14 +5226,13 @@ function exportarCSV() {
     const id = e.emitente && (e.emitente.id || e.emitente);
     return id !== 'karielen'; // apenas NF
   });
-  const header = ['Data Evento','Cliente','Tipo Evento','Local','Valor','Pagamento','Status Pagamento','Origem','Criado em'];
+  const header = ['Criado em','Data Evento','Cliente','Tipo Evento','Local','Pagamento','Status Pagamento','Origem','Valor'];
   const rows = todos.map(e => [
-    dataEv(e), nomeCli(e), _csvTipoEv(e),
+    formatDateBR(e.criadoEm), dataEv(e), nomeCli(e), _csvTipoEv(e),
     e.ev_local || e.local_evento || e.local || '',
-    getValorEvento(e).toFixed(2).replace('.', ','),
     _csvPgto(e), _csvStatus(e),
     e._origem === 'nota' ? 'Evento rápido' : 'Contrato',
-    formatDateBR(e.criadoEm)
+    frs(getValorEvento(e))
   ]);
   downloadCSV([header, ...rows], 'relatorio_eventos_NF');
 }
@@ -5243,14 +5242,13 @@ function exportarCSV_KM() {
     const id = e.emitente && (e.emitente.id || e.emitente);
     return id === 'karielen'; // apenas KM
   });
-  const header = ['Data Evento','Cliente','Tipo Evento','Local','Valor','Pagamento','Status Pagamento','Origem','Criado em'];
+  const header = ['Criado em','Data Evento','Cliente','Tipo Evento','Local','Pagamento','Status Pagamento','Origem','Valor'];
   const rows = todos.map(e => [
-    dataEv(e), nomeCli(e), _csvTipoEv(e),
+    formatDateBR(e.criadoEm), dataEv(e), nomeCli(e), _csvTipoEv(e),
     e.ev_local || e.local_evento || e.local || '',
-    getValorEvento(e).toFixed(2).replace('.', ','),
     _csvPgto(e), _csvStatus(e),
     e._origem === 'nota' ? 'Evento rápido' : 'Contrato',
-    formatDateBR(e.criadoEm)
+    frs(getValorEvento(e))
   ]);
   downloadCSV([header, ...rows], 'relatorio_eventos_KM');
 }
@@ -5260,7 +5258,7 @@ function exportarContabilidade() {
     const id = e.emitente && (e.emitente.id || e.emitente);
     return id !== 'karielen'; // apenas NF
   });
-  const header = ['Data Evento','Competência','Cliente','Tipo Evento','Tipo Registro','Forma Pgto','Valor Contrato','Status Pagamento'];
+  const header = ['Criado em','Data Evento','Competência','Cliente','Tipo Evento','Tipo Registro','Forma Pgto','Status Pagamento','Valor'];
   const rows = cons.map(c => {
     const evStr = c.ev_data || c.data_evento || c.dataEvt || '';
     let d = null;
@@ -5270,8 +5268,8 @@ function exportarContabilidade() {
     const isNota = c._origem === 'nota';
     const tipoRegistro = isNota ? 'Evento rápido' : 'Contrato';
     const pgto = isNota ? 'À vista' : _csvPgto(c);
-    return [dataEv(c), comp, nomeCli(c), _csvTipoEv(c), tipoRegistro, pgto,
-      getValorEvento(c).toFixed(2).replace('.', ','), _csvStatus(c)];
+    return [formatDateBR(c.criadoEm), dataEv(c), comp, nomeCli(c), _csvTipoEv(c), tipoRegistro, pgto,
+      _csvStatus(c), frs(getValorEvento(c))];
   });
   downloadCSV([header, ...rows], 'relatorio_contabil');
 }
