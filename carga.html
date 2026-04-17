@@ -273,8 +273,8 @@
   margin-bottom: 8px;
 }
 .veiculo-kits-slots {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 5px;
 }
 .veiculo-kit-slot {
@@ -1045,7 +1045,7 @@ function iniciarListeners() {
     renderKits();
   }));
 
-  _unsubs.push(db.collection('equipamentos').onSnapshot(function(snap) {
+  _unsubs.push(db.collection('estoque').onSnapshot(function(snap) {
     _equipamentos = {};
     snap.forEach(function(d) { _equipamentos[d.id] = Object.assign({id:d.id}, d.data()); });
     renderEquipamentos();
@@ -1803,6 +1803,4 @@ document.addEventListener('keydown', function(e) {
     fecharCargaDetail();
   }
 });
-</script>
-</body>
-</html>
+</script
