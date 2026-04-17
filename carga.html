@@ -1626,9 +1626,8 @@ function dragLeaveVeiculoSlot(event, veiculoId) {
 function dropNoVeiculo(event, veiculoId) {
   event.preventDefault();
   if (_dragTipo !== 'kit' || !_dragId) return;
-  if (!_eventoSel) { toast('Selecione um evento primeiro!', true); return; }
 
-  if (!_cargaAtual) _cargaAtual = { evento_id: _eventoSel.id, kits_veiculo: {} };
+  if (!_cargaAtual) _cargaAtual = { kits_veiculo: {} };
   if (!_cargaAtual.kits_veiculo[veiculoId]) _cargaAtual.kits_veiculo[veiculoId] = [];
 
   var arr = _cargaAtual.kits_veiculo[veiculoId];
@@ -2082,4 +2081,4 @@ document.addEventListener('keydown', function(e) {
 
 </script>
 </body>
-</html>
+</html>                                                                                                       
