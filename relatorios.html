@@ -2037,7 +2037,15 @@ function _verificarPronto() {
       requestAnimationFrame(function() {
         var slider = document.getElementById('tab-slider');
         if (slider) slider.scrollLeft = 0;
-        setPeriodo('mes');
+        // Verifica se veio com ?ref= para abrir diretamente na busca de pagamentos
+        var _urlRef = new URLSearchParams(window.location.search).get('ref');
+        if (_urlRef) {
+          var _buscaInp = document.getElementById('pgto-busca');
+          if (_buscaInp) _buscaInp.value = _urlRef.toLowerCase();
+          trocarTab('pagamentos');
+        } else {
+          setPeriodo('mes');
+        }
       });
     });
   } else {
@@ -3411,7 +3419,8 @@ function renderPagamentos() {
   const lista = todosBase.filter(function(ev) {
     if (busca) {
       const nome = (nomeCli(ev) + ' ' + tipoEv(ev)).toLowerCase();
-      if (!nome.includes(busca)) return false;
+      const evRef = (ev.id || '').substring(0, 8).toLowerCase();
+      if (!nome.includes(busca) && !evRef.includes(busca)) return false;
     }
     const st = getStatusPgto(ev);
     if (_pgtoFiltro === '30dias') {
