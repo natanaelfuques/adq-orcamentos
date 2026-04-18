@@ -875,6 +875,7 @@ header {
 .pgto-chip-toggle:hover { opacity: 0.75; transform: scale(0.96); }
 .pgto-chip-vista-pendente { border-color: rgba(224,92,92,0.45); color: #e05c5c; background: rgba(224,92,92,0.07); }
 .pgto-chip-vista-pago { border-color: rgba(37,211,102,0.35); color: #25D366; background: rgba(37,211,102,0.06); }
+.chip-label-short { display: none; }
 /* Ajustes (adicionais e descontos) */
 .pgto-ajustes-sec {
   margin-top: 14px;
@@ -1642,6 +1643,8 @@ header {
   .pgto-custom-btn-auto { flex: 1 1 calc(50% - 4px); justify-content: center; margin-left: 0 !important; white-space: nowrap; }
   .dist-restante { display: none; }
   .ajuste-chip-label { display: none; }
+  .chip-label-full { display: none; }
+  .chip-label-short { display: inline; }
   .pgto-custom-btn-save { margin-left: 0; width: 100%; justify-content: center; padding: 10px 14px; }
   /* Ajustes: botao Adicionar quebra para linha propria */
   .pgto-ajuste-form > div { flex-wrap: wrap; }
@@ -3929,9 +3932,9 @@ function buildPgtoCardBody(ev, docId) {
 
   if (isNota) {
     if (isPago) {
-      chips = '<span class="pgto-chip auto pgto-chip-toggle pgto-chip-vista-pago" title="Clique para desfazer pagamento" onclick="togglePagamentoVista(event,\'' + docId + '\')">✓ Pagamento à vista · ' + frs(avulso) + '</span>';
+      chips = '<span class="pgto-chip auto pgto-chip-toggle pgto-chip-vista-pago" title="Clique para desfazer pagamento" onclick="togglePagamentoVista(event,\'' + docId + '\')"><span class="chip-label-full">✓ Pagamento à vista</span><span class="chip-label-short">✓ À vista</span> · ' + frs(avulso) + '</span>';
     } else {
-      chips = '<span class="pgto-chip pgto-chip-toggle pgto-chip-vista-pendente" title="Clique para confirmar recebimento" onclick="togglePagamentoVista(event,\'' + docId + '\')">⚠ Pagamento à vista</span>';
+      chips = '<span class="pgto-chip pgto-chip-toggle pgto-chip-vista-pendente" title="Clique para confirmar recebimento" onclick="togglePagamentoVista(event,\'' + docId + '\')"><span class="chip-label-full">⚠ Pagamento à vista</span><span class="chip-label-short">⚠ À vista</span></span>';
     }
   } else {
     const isCustomTipo = (ev.pgto_tipo || ev.pgto_tipo_pagamento || '') === 'custom';
