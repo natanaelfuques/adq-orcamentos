@@ -4146,7 +4146,7 @@ function buildPgtoModalHTML(ev) {
         const mostrarChip = a.mostrar_chip !== false; // default true
         const toggleChipBtn = !isDesc
           ? '<button onclick="toggleAjusteMostrarChip(\'' + docId + '\',' + i + ')" title="' + (mostrarChip ? 'Clique para ocultar do card (só muda o total)' : 'Clique para exibir como parcela no card') + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:2px 7px;border-radius:4px;cursor:pointer;transition:all 0.15s;white-space:nowrap;' + (mostrarChip ? 'background:rgba(37,211,102,0.12);border:1px solid rgba(37,211,102,0.4);color:#25D366' : 'background:transparent;border:1px solid var(--border2);color:var(--muted)') + '">' +
-              (mostrarChip ? '⬛ No card' : '▭ Só total') +
+              (mostrarChip ? '▪ No card' : '▭ Só total') +
             '</button>'
           : '';
         return '<div class="pgto-ajuste-row">' +
