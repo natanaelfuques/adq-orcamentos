@@ -5597,6 +5597,15 @@ var _iniciarEstoqueOrigKit = iniciarEstoque;
 iniciarEstoque = function() {
   _iniciarEstoqueOrigKit();
   iniciarKits();
+  iniciarEventosAndamento();
+  // Posicionar seção de eventos antes dos kits
+  setTimeout(function() {
+    var sec = document.getElementById('eventos-andamento-section');
+    var kitsSection = document.getElementById('kits-section');
+    if (sec && kitsSection && kitsSection.parentNode) {
+      kitsSection.parentNode.insertBefore(sec, kitsSection);
+    }
+  }, 200);
 };
 
 // ── Seções colapsáveis do modal de kit ──
