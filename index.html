@@ -6579,7 +6579,12 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
       var fimFmt = doc.ev_data_fim.split('-').reverse().join('/');
       dataFmt = dataFmt + ' – ' + fimFmt;
     }
-    var valor   = doc.val_total ? 'R$ ' + formatBRL(parseBRL(doc.val_total)) : '';
+    var _valBase = parseBRL(doc.val_total) || 0;
+    var _valAjust = doc.val_total_ajustado ? parseBRL(doc.val_total_ajustado) : null;
+    var _temAjuste = _valAjust !== null && Math.abs(_valAjust - _valBase) > 0.01;
+    var valor = _temAjuste
+      ? 'R$ ' + formatBRL(_valAjust) + '<span style="color:#25D366;font-size:0.65em;margin-left:3px;vertical-align:super;line-height:1" title="Valor ajustado via Relatórios">✦</span>'
+      : (doc.val_total ? 'R$ ' + formatBRL(_valBase) : '');
     var aprovado = doc.aprovado ? true : false;
     var id = doc.id;
     var ref = id.substring(0, 8).toUpperCase();
@@ -6615,7 +6620,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<div class="salvo-card-top">';
     card += '<div><div class="salvo-card-nome">' + nomeEsc + '</div>';
     card += '<div class="salvo-card-meta">' + (evento ? escHtml(evento) + ' - ' : '') + dataFmt + '</div></div>';
-    card += '<div style="text-align:right">' + '<div class="salvo-card-valor">' + escHtml(valor) + '</div>' + _kmBadge + '</div>';
+    card += '<div style="text-align:right">' + '<div class="salvo-card-valor">' + (_temAjuste ? valor : escHtml(valor)) + '</div>' + _kmBadge + '</div>';
     card += '</div>';
     card += '<div class="salvo-card-actions">';
     card += '<button class="btn-salvo' + (doc.link_assinatura ? ' primary' : '') + '" data-action="link-contrato" data-id="' + id + '" data-link="' + escHtml(doc.link_assinatura || '') + '">' + (doc.link_assinatura ? 'Link' : 'Autentique') + '</button>';

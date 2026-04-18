@@ -3042,6 +3042,19 @@ function toggleAjusteMostrarChip(docId, ajusteIdx) {
     .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
 }
 
+/* Sincroniza val_total_ajustado no Firestore quando ajustes mudam */
+function _syncValTotalAjustado(docId, col, ajustesArr) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const base = valorEv(ev);
+  const soma = ajustesArr.reduce(function(s, a) { return s + (parseFloat(a.valor) || 0); }, 0);
+  const novoTotal = Math.max(0, base + soma);
+  const upd = Math.abs(novoTotal - base) > 0.01
+    ? { val_total_ajustado: novoTotal.toFixed(2) }
+    : { val_total_ajustado: firebase.firestore.FieldValue.delete() };
+  db.collection(col).doc(docId).update(upd).catch(function() {});
+}
+
 function adicionarAjuste(docId) {
   const ev = _pgtoEventoById(docId);
   if (!ev || !db) return;
@@ -3060,6 +3073,7 @@ function adicionarAjuste(docId) {
   db.collection(col).doc(docId).update({ pgto_ajustes: ajustes })
     .then(function() {
       _pgtoUpdateLocal(docId, { pgto_ajustes: ajustes });
+      _syncValTotalAjustado(docId, col, ajustes);
       _editorToast((valor > 0 ? 'Adicional' : 'Desconto') + ' registrado');
       // Fecha e reabre o modal com dados atualizados
       fecharPgtoModal();
@@ -3076,6 +3090,7 @@ function removerAjuste(docId, idx) {
   db.collection(col).doc(docId).update({ pgto_ajustes: ajustes })
     .then(function() {
       _pgtoUpdateLocal(docId, { pgto_ajustes: ajustes });
+      _syncValTotalAjustado(docId, col, ajustes);
       _editorToast('Ajuste removido');
       fecharPgtoModal();
       setTimeout(function() { abrirPgtoModal(docId); }, 100);
