@@ -3620,8 +3620,8 @@ function buildPgtoCard(ev) {
   const kmBadge = _kmBadge(ev);
   const pgtoLabel = getPgtoLabel(ev);
   const isQuitado = restante <= 0 || status === 'quitado';
-  const valPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
-  const valPagoCor = pago <= 0 ? 'var(--muted)' : isQuitado ? 'var(--green)' : '#F5A623';
+  const valPago = frs(pago) + ' recebido';
+  const valPagoCor = pago <= 0 ? 'var(--muted)' : (isQuitado ? 'var(--green)' : '#F5A623');
   const valResta = isQuitado ? '✓ Quitado' : 'Falta ' + frs(restante);
   const valRestaCor = isQuitado ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
 
@@ -3629,7 +3629,7 @@ function buildPgtoCard(ev) {
     // Cabeçalho: nome + badge
     '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
       '<div class="pgto-card-info">' +
-        '<div class="pgto-card-nome">' + nomeExib + kmBadge + '</div>' +
+        '<div class="pgto-card-nome">' + nomeExib + kmBadge + '<span style="margin-left:8px;font-size:0.78rem;font-weight:700;color:#25D366;letter-spacing:0.02em;white-space:nowrap">' + frs(total) + '</span></div>' +
         '<div class="pgto-card-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
       '<span class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer;' + _glowAtrasoStyle(ev) + '" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
@@ -4135,8 +4135,8 @@ function _pgtoRefreshCardDOM(docId) {
   const badgeTxt = status === 'quitado' ? '✓ Quitado' : status === 'alerta' ? '⚠ Monitorar' : status === 'parcial' ? 'Parcial' : 'Pendente';
   const fillColor = status === 'quitado' ? '#25D366' : status === 'alerta' ? '#e05c5c' : status === 'parcial' ? '#F5A623' : '#555';
   const isQuitado = restante <= 0 || status === 'quitado';
-  const valPago = pago > 0 ? frs(pago) + ' recebido' : 'Nenhum recebimento';
-  const valPagoCor = pago <= 0 ? 'var(--muted)' : isQuitado ? 'var(--green)' : '#F5A623';
+  const valPago = frs(pago) + ' recebido';
+  const valPagoCor = pago <= 0 ? 'var(--muted)' : (isQuitado ? 'var(--green)' : '#F5A623');
   const valResta = isQuitado ? '✓ Quitado' : 'Falta ' + frs(restante);
   const valRestaCor = isQuitado ? 'var(--green)' : (status === 'alerta' ? '#e05c5c' : 'var(--muted)');
 
