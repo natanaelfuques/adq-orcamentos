@@ -3791,10 +3791,15 @@ function buildPgtoCard(ev) {
     // Cabeçalho: nome + badge
     '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
       '<div class="pgto-card-info">' +
-        '<div class="pgto-card-nome"><span class="pgto-card-nome-txt">' + nomeExib + kmBadge + '</span><span class="pgto-card-nome-val">' + frs(total) + '</span></div>' +
+        '<div class="pgto-card-nome">' +
+          '<span class="pgto-card-nome-txt">' + nomeExib + kmBadge + '</span>' +
+          '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">' +
+            '<span class="pgto-card-nome-val">' + frs(total) + '</span>' +
+            '<span class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer;' + _glowAtrasoStyle(ev) + '" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
+          '</div>' +
+        '</div>' +
         '<div class="pgto-card-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
-      '<span class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer;' + _glowAtrasoStyle(ev) + '" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
     '</div>' +
     // Barra de progresso (sempre visível)
     '<div class="pgto-card-progress"><div class="pgto-progress-bar"><div class="pgto-progress-fill" style="width:' + pct.toFixed(1) + '%;background:' + fillColor + '"></div></div></div>' +
