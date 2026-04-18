@@ -6396,8 +6396,10 @@ function substituirContratoNaNuvem() {
     dados.aprovado        = original.aprovado        || false;
     dados.autentique_id   = original.autentique_id   || '';
     dados.link_assinatura = original.link_assinatura || '';
-    dados.local_evento_maps  = original.local_evento_maps  || '';
+    dados.local_evento_maps   = original.local_evento_maps   || '';
     dados.calendar_adicionado = original.calendar_adicionado || false;
+    dados.montagem            = original.montagem            || '';
+    dados.desmontagem         = original.desmontagem         || '';
     dados.atualizadoEm    = firebase.firestore.FieldValue.serverTimestamp();
     if (_userAtualC) dados.atualizadoPor = _userAtualC.email;
     return db.collection('contratos').doc(_contratoCarregadoId).set(dados);
