@@ -6390,13 +6390,15 @@ function substituirContratoNaNuvem() {
     var original = snap.exists ? snap.data() : {};
     var dados = coletarDadosContrato();
     // Preservar campos operacionais que não vêm do formulário
-    dados.criadoEm      = original.criadoEm      || firebase.firestore.FieldValue.serverTimestamp();
-    dados.criador       = original.criador       || '';
+    dados.criadoEm        = original.criadoEm        || firebase.firestore.FieldValue.serverTimestamp();
+    dados.criador         = original.criador         || '';
     dados.status_contrato = original.status_contrato || 'pendente';
-    dados.aprovado      = original.aprovado      || false;
-    dados.autentique_id = original.autentique_id || '';
+    dados.aprovado        = original.aprovado        || false;
+    dados.autentique_id   = original.autentique_id   || '';
     dados.link_assinatura = original.link_assinatura || '';
-    dados.atualizadoEm  = firebase.firestore.FieldValue.serverTimestamp();
+    dados.local_evento_maps  = original.local_evento_maps  || '';
+    dados.calendar_adicionado = original.calendar_adicionado || false;
+    dados.atualizadoEm    = firebase.firestore.FieldValue.serverTimestamp();
     if (_userAtualC) dados.atualizadoPor = _userAtualC.email;
     return db.collection('contratos').doc(_contratoCarregadoId).set(dados);
   }).then(function() {
