@@ -5010,11 +5010,12 @@ function renderKits() {
     var svgEdit = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
     var svgChevron = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
-    html += '<div class="kit-slot-panel kit-folder" id="kit-card-' + esc(kit.id) + '"' +
+    html += '<div class="kit-slot-panel kit-folder" id="kit-card-' + esc(kit.id) + '" draggable="true"' +
       (borderStyle ? ' style="' + borderStyle + '"' : '') +
       ' ondragover="kitFolderOver(event,\'' + esc(kit.id) + '\')"' +
       ' ondragleave="kitFolderLeave(event,\'' + esc(kit.id) + '\')"' +
-      ' ondrop="kitFolderDrop(event,\'' + esc(kit.id) + '\')">' +
+      ' ondrop="kitFolderDrop(event,\'' + esc(kit.id) + '\')"' +
+      ' ondragstart="_kitDragStart(event,\'' + esc(kit.id) + '\')" ondragend="_kitDragEnd()">' +
       '<div class="kit-slot-panel-header">' +
         '<div class="kit-slot-panel-title" onclick="abrirModalEditarKit(\'' + esc(kit.id) + '\')">' +
           svgChevron + esc(kit.nome || 'Kit') +
@@ -6049,6 +6050,121 @@ function _corBadgeEvento(ev) {
 }
 
 // ── Abrir card flutuante do evento ────────────────────────
+
+// ── Carga Builder: monta "kit" temporário para um evento da agenda ──
+function _abrirCargaBuilder(evId) {
+  var ev = _eventosStagingCarga[evId] || _eventosAgenda[evId];
+  if (!ev) return;
+  fecharTodosModais();
+
+  var itensAtuais = (ev._carga_itens) ? ev._carga_itens.slice() : [];
+
+  function salvarEFechar() {
+    if (_eventosStagingCarga[evId]) {
+      _eventosStagingCarga[evId]._carga_itens = itensAtuais;
+    }
+    renderEventosAndamento();
+    var overlay = document.getElementById('modal-carga-builder');
+    if (overlay) overlay.remove();
+  }
+
+  function buildOverlay() {
+    var existing = document.getElementById('modal-carga-builder');
+    if (existing) existing.remove();
+
+    // Agrupar equipamentos por categoria
+    var cats = {};
+    Object.values(_equipamentos).forEach(function(eq) {
+      var cat = eq.categoria || 'Geral';
+      if (!cats[cat]) cats[cat] = [];
+      cats[cat].push(eq);
+    });
+
+    var eqHtml = '';
+    Object.keys(cats).sort().forEach(function(cat) {
+      eqHtml += '<div class="cb-cat-label">' + esc(cat) + '</div>';
+      cats[cat].forEach(function(eq) {
+        var jaAdded = itensAtuais.find(function(it) { return it.eqId === eq.id; });
+        var qtd = jaAdded ? jaAdded.qtd : 0;
+        eqHtml +=
+          '<div class="cb-item' + (qtd > 0 ? ' cb-item-active' : '') + '" id="cb-item-' + esc(eq.id) + '">' +
+            '<div class="cb-item-nome">' + esc(eq.nome || '—') + '</div>' +
+            '<div class="cb-item-ctrl">' +
+              (qtd > 0
+                ? '<button class="cb-btn cb-btn-minus" onclick="_cbAjustarQtd(\'' + evId + '\',\'' + eq.id + '\',-1)">−</button>' +
+                  '<span class="cb-item-qtd">' + qtd + '</span>' +
+                  '<button class="cb-btn cb-btn-plus" onclick="_cbAjustarQtd(\'' + evId + '\',\'' + eq.id + '\',1)">+</button>'
+                : '<button class="cb-btn cb-btn-add" onclick="_cbAjustarQtd(\'' + evId + '\',\'' + eq.id + '\',1)">+</button>'
+              ) +
+            '</div>' +
+          '</div>';
+      });
+    });
+
+    var nomeEv = esc(ev.ev_nome || ev.cli_nome || ev.nome || 'Evento');
+    var totalItens = itensAtuais.reduce(function(s, it) { return s + (it.qtd || 1); }, 0);
+
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'modal-carga-builder';
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) salvarEFechar(); });
+
+    overlay.innerHTML =
+      '<div class="veiculo-modal-box" style="max-width:460px;display:flex;flex-direction:column;max-height:85vh">' +
+        '<div class="modal-header">' +
+          '<div class="modal-title" style="display:flex;align-items:center;gap:8px">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A90D9" stroke-width="2.5" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 5-5 5V8z"/></svg>' +
+            'Montar carga — ' + nomeEv +
+          '</div>' +
+          '<button onclick="salvarEFechar()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:2px 8px">✕</button>' +
+        '</div>' +
+        '<div class="cb-summary">' +
+          '<span id="cb-total-label">' + totalItens + ' item(s) selecionado(s)</span>' +
+          '<span class="cb-hint">Arraste o card do evento para um evento em andamento</span>' +
+        '</div>' +
+        '<div style="overflow-y:auto;flex:1;padding:8px 16px 16px">' +
+          '<div id="cb-eq-list">' + eqHtml + '</div>' +
+        '</div>' +
+        '<div class="modal-footer" style="display:flex;gap:8px;justify-content:flex-end">' +
+          '<button class="btn-secondary" onclick="salvarEFechar()">Fechar</button>' +
+          '<button class="btn-primary" onclick="salvarEFechar()">Confirmar carga</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+  }
+
+  // Expor as funções no escopo global para os onclick inline
+  window._cbEvId = evId;
+  window._cbItensAtuais = itensAtuais;
+  window.salvarEFechar = salvarEFechar;
+
+  buildOverlay();
+}
+
+function _cbAjustarQtd(evId, eqId, delta) {
+  var ev = _eventosStagingCarga[evId] || _eventosAgenda[evId];
+  if (!ev) return;
+  if (!ev._carga_itens) ev._carga_itens = [];
+  var itens = ev._carga_itens;
+  var idx = itens.findIndex(function(it) { return it.eqId === eqId; });
+  if (idx >= 0) {
+    itens[idx].qtd = (itens[idx].qtd || 1) + delta;
+    if (itens[idx].qtd <= 0) itens.splice(idx, 1);
+  } else if (delta > 0) {
+    var eq = _equipamentos[eqId];
+    itens.push({ eqId: eqId, nome: eq ? eq.nome : eqId, qtd: 1 });
+  }
+  if (_eventosStagingCarga[evId]) {
+    _eventosStagingCarga[evId]._carga_itens = itens;
+  }
+  // Re-render o overlay
+  var overlay = document.getElementById('modal-carga-builder');
+  if (overlay) overlay.remove();
+  _abrirCargaBuilder(evId);
+}
+
+
 function _abrirCardEvento(id) {
   var ev = _eventosAgenda[id];
   if (!ev) return;
@@ -6346,12 +6462,12 @@ function _atualizarConflitosNosKits() {
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 4px 0 4px;
   scrollbar-width: none;
 }
 .ev-andamento-scroll::-webkit-scrollbar { display: none; }
 .ev-card-staging::before { background: #4A90D9; }
-.ev-card-staging:hover { border-color: rgba(74,144,217,0.8); box-shadow: 0 4px 16px rgba(74,144,217,0.12); }
+.ev-card-staging:hover { border-color: rgba(74,144,217,0.8); box-shadow: 0 4px 16px rgba(74,144,217,0.12); transform: none; cursor: default; }
 .ev-card-staging-badge {
   font-size: 0.54rem;
   font-family: 'Barlow Condensed', sans-serif;
@@ -6385,6 +6501,88 @@ function _atualizarConflitosNosKits() {
 }
 .agev-montar-carga-btn:hover { background: rgba(74,144,217,0.16); border-color: rgba(74,144,217,0.7); }
 .agev-montar-carga-btn.ativa { background: rgba(74,144,217,0.14); border-style: solid; border-color: rgba(74,144,217,0.5); color: #4A90D9; }
+
+/* ── Carga Builder Modal ── */
+.cb-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px 2px;
+  font-size: 0.65rem;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 4px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cb-hint {
+  font-size: 0.58rem;
+  color: rgba(74,144,217,0.7);
+  font-style: italic;
+}
+.cb-cat-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+  padding: 10px 0 4px;
+}
+.cb-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  margin-bottom: 4px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cb-item-active {
+  border-color: rgba(74,144,217,0.4);
+  background: rgba(74,144,217,0.05);
+}
+.cb-item-nome {
+  font-size: 0.75rem;
+  color: var(--text);
+  flex: 1;
+}
+.cb-item-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cb-item-qtd {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #4A90D9;
+  min-width: 20px;
+  text-align: center;
+}
+.cb-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  background: none;
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cb-btn-add { border-color: rgba(74,144,217,0.35); color: #4A90D9; }
+.cb-btn-add:hover { background: rgba(74,144,217,0.15); border-color: rgba(74,144,217,0.6); }
+.cb-btn-plus { border-color: rgba(74,144,217,0.35); color: #4A90D9; }
+.cb-btn-plus:hover { background: rgba(74,144,217,0.15); }
+.cb-btn-minus { border-color: rgba(255,80,80,0.3); color: rgba(255,80,80,0.8); }
+.cb-btn-minus:hover { background: rgba(255,80,80,0.1); }
+
 .ev-card {
   flex-shrink: 0;
   background: var(--dark);
@@ -6787,13 +6985,15 @@ function renderEventosAndamento() {
     var dataStr = ev.ev_data ? _fmtEvData(ev.ev_data) : '';
 
     return '<div class="ev-card' + (isStaging ? ' ev-card-staging' : '') + '" id="ev-card-' + ev.id + '"' +
+      (isStaging ? ' draggable="true" ondragstart="_stagingDragStart(event,\'' + ev.id + '\')" ondragend="_stagingDragEnd(event,\'' + ev.id + '\')"' : '') +
       (isStaging ? ' style="border-color:rgba(74,144,217,0.5)"' : '') +
       ' ondragover="evCardOver(event,\'' + ev.id + '\')"' +
       ' ondragleave="evCardLeave(event,\'' + ev.id + '\')"' +
       ' ondrop="evCardDrop(event,\'' + ev.id + '\')"' +
-      ' onclick="' + (isStaging ? 'void(0)' : 'abrirVincularEstoqueEvento(\'' + ev.id + '\')') + '">' +
+      ' onclick="' + (isStaging ? '_abrirCargaBuilder(\'' + ev.id + '\')' : 'abrirVincularEstoqueEvento(\'' + ev.id + '\')') + '">' +
       (isStaging ? '<div class="ev-card-staging-badge">Preparando carga</div>' : '') +
       '<div class="ev-card-nome">' + esc(ev.ev_nome || ev.cli_nome || ev.nome || 'Evento') + '</div>' +
+      (isStaging && ev._carga_itens && ev._carga_itens.length > 0 ? '<div class="ev-card-data" style="color:#4A90D9">' + ev._carga_itens.reduce(function(s,it){return s+(it.qtd||1);},0) + ' item(s) na carga</div>' : '') +
       (dataStr ? '<div class="ev-card-data">' + dataStr + '</div>' : '') +
       (chipsHtml ? '<div class="ev-card-itens">' + chipsHtml + '</div>' : '') +
       (isStaging
@@ -6874,6 +7074,39 @@ function evCardDrop(ev, evId) {
     toast('Adicionado ao evento!');
   }).catch(function(e) { toast('Erro: ' + e.message, true); });
 }
+
+
+var _draggingKitId = null;
+var _draggingStagingId = null;
+
+function _kitDragStart(ev, kitId) {
+  _draggingKitId = kitId;
+  ev.dataTransfer.setData('text/plain', kitId);
+  ev.dataTransfer.setData('tipo', 'kit');
+  ev.dataTransfer.effectAllowed = 'copy';
+  var el = document.getElementById('kit-card-' + kitId);
+  if (el) setTimeout(function() { el.style.opacity = '0.5'; }, 0);
+}
+function _kitDragEnd() {
+  if (_draggingKitId) {
+    var el = document.getElementById('kit-card-' + _draggingKitId);
+    if (el) el.style.opacity = '';
+  }
+  _draggingKitId = null;
+  document.querySelectorAll('.ev-card.drag-target-ev').forEach(function(el) { el.classList.remove('drag-target-ev'); });
+}
+
+function _stagingDragStart(ev, evId) {
+  _draggingStagingId = evId;
+  ev.dataTransfer.setData('text/plain', evId);
+  ev.dataTransfer.setData('tipo', 'staging');
+  ev.dataTransfer.effectAllowed = 'link';
+}
+function _stagingDragEnd(ev, evId) {
+  _draggingStagingId = null;
+  document.querySelectorAll('.ev-card.drag-target-ev').forEach(function(el) { el.classList.remove('drag-target-ev'); });
+}
+
 
 // ── Modal: vincular itens de estoque a um evento ──
 function abrirVincularEstoqueEvento(evId) {
