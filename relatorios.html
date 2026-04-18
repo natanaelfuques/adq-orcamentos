@@ -4071,7 +4071,7 @@ function buildPgtoModalHTML(ev) {
         '</div>' +
         '<div class="pgto-modal-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
-      '<span class="pgto-status-badge ' + badgeClass + '">' + badgeTxt + '</span>' +
+      '<span id="pgto-modal-badge-' + docId + '" class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
       '<button class="pgto-modal-close" onclick="fecharPgtoModal()">✕</button>' +
     '</div>';
 
@@ -4293,9 +4293,13 @@ function _pgtoRefreshCardDOM(docId) {
   // Atualiza borda do card
   card.className = 'pgto-card' + (status === 'alerta' ? ' pgto-card-alerta' : status === 'quitado' ? ' pgto-card-quitado' : '');
 
-  // Atualiza badge de status no header
+  // Atualiza badge de status no header do card
   const badge = card.querySelector('.pgto-status-badge');
   if (badge) { badge.className = 'pgto-status-badge ' + badgeClass; badge.textContent = badgeTxt; badge.style.cssText = 'cursor:pointer;' + _glowAtrasoStyle(ev); }
+
+  // Atualiza badge de status no header do modal (se aberto)
+  const modalBadge = document.getElementById('pgto-modal-badge-' + docId);
+  if (modalBadge) { modalBadge.className = 'pgto-status-badge ' + badgeClass; modalBadge.textContent = badgeTxt; }
 
   // Atualiza barra de progresso
   const fill = card.querySelector('.pgto-progress-fill');
