@@ -4235,7 +4235,7 @@ function buildPgtoModalHTML(ev) {
         return '<div class="pgto-ajuste-row">' +
           '<div class="pgto-ajuste-desc">' + esc(a.descricao || '—') + '</div>' +
           '<div style="display:flex;align-items:center;gap:8px">' +
-            '<span style="color:' + cor + ';font-weight:700;font-family:\'Barlow Condensed\',sans-serif">' + sinal + ' ' + frs(Math.abs(a.valor)) + '</span>' +
+            '<span style="color:' + cor + ';font-weight:700;font-family:\'Barlow Condensed\',sans-serif;font-size:0.8rem">' + sinal + ' ' + frs(Math.abs(a.valor)) + '</span>' +
             toggleChipBtn +
             '<button class="pgto-custom-btn-pago' + (a.pago ? ' pago' : '') + '" onclick="toggleAjustePago(event,\'' + docId + '\',' + i + ')" title="' + (a.pago ? 'Pago' : 'Pendente') + '">' +
               (a.pago
