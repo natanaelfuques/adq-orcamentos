@@ -2075,8 +2075,32 @@ function carregarDados() {
   });
 }
 
+/* Migração silenciosa: garante val_total_ajustado correto para eventos com ajustes */
+let _migracaoAjusteFeita = false;
+function _migrarValTotalAjustado() {
+  if (_migracaoAjusteFeita || !db) return;
+  _migracaoAjusteFeita = true;
+  const todos = [
+    ..._contratos.map(function(c) { return { ev: c, col: 'contratos' }; }),
+    ..._notas.map(function(n) { return { ev: n, col: 'notas' }; })
+  ];
+  todos.forEach(function(item) {
+    const ev = item.ev;
+    const ajustes = ev.pgto_ajustes;
+    if (!ajustes || !ajustes.length) return;
+    const base = valorEv(ev);
+    const soma = ajustes.reduce(function(s, a) { return s + (parseFloat(a.valor) || 0); }, 0);
+    const novoTotal = Math.max(0, base + soma);
+    if (Math.abs(novoTotal - base) <= 0.01) return; // sem diferença real
+    const atual = parseFloat(ev.val_total_ajustado) || 0;
+    if (Math.abs(atual - novoTotal) < 0.01) return; // já está correto
+    db.collection(item.col).doc(ev.id).update({ val_total_ajustado: novoTotal.toFixed(2) }).catch(function() {});
+  });
+}
+
 function _verificarPronto() {
   if (!_contratosCarregados || !_orcamentosCarregados || !_notasCarregadas || !_etapasCarregadas) return;
+  _migrarValTotalAjustado();
   const loading = document.getElementById('screen-loading');
   const app = document.getElementById('screen-app');
   if (loading && loading.style.display !== 'none') {
