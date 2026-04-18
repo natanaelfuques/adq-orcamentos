@@ -3283,7 +3283,7 @@ function buildCustomParcelasEditorHTML(ev) {
         'Adicionar entrada' +
       '</button>' +
       (restanteParcelar > 0.01
-        ? '<button class="pgto-custom-btn-auto" onclick="distribuirAutomatico(\'' + docId + '\',\'' + total.toFixed(2) + '\')" style="margin-left:6px">' +
+        ? '<button class="pgto-custom-btn-auto" id="pgto-btn-dist-' + docId + '" onclick="abrirInputNParcelas(\'' + docId + '\',\'' + total.toFixed(2) + '\',this)" style="margin-left:6px">' +
             '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' +
             'Distribuir restante (' + frs(restanteParcelar) + ')' +
           '</button>'
@@ -3334,8 +3334,37 @@ function removerParcelaCustom(docId, idx) {
   _atualizarParcelasCustomLocal(docId, arr);
 }
 
-/* Distribui o restante em parcelas mensais até a data do evento (sem perguntar) */
-function distribuirAutomatico(docId, totalStr) {
+/* Mostra popover inline perguntando em quantas parcelas distribuir */
+function abrirInputNParcelas(docId, totalStr, btnEl) {
+  // Remove popover existente
+  var old = document.getElementById('pgto-dist-popover-' + docId);
+  if (old) { old.remove(); return; }
+
+  var pop = document.createElement('div');
+  pop.id = 'pgto-dist-popover-' + docId;
+  pop.style.cssText = 'position:absolute;z-index:999;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;display:flex;gap:8px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,0.5);margin-top:6px';
+  pop.innerHTML =
+    '<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;color:var(--muted);white-space:nowrap">Em quantas parcelas?</span>' +
+    '<input id="pgto-dist-n-' + docId + '" type="number" min="1" max="60" value="1" style="width:54px;background:var(--darker);border:1px solid var(--border2);color:var(--text);border-radius:4px;padding:4px 8px;font-size:0.85rem;font-family:\'Barlow\',sans-serif;outline:none;color-scheme:dark" onkeydown="if(event.key===\'Enter\')_confirmarDistribuir(\'' + docId + '\',\'' + totalStr + '\')">' +
+    '<button onclick="_confirmarDistribuir(\'' + docId + '\',\'' + totalStr + '\')" style="background:var(--green);border:none;color:#111;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;border-radius:4px;padding:5px 12px;cursor:pointer;white-space:nowrap">OK</button>' +
+    '<button onclick="document.getElementById(\'pgto-dist-popover-' + docId + '\').remove()" style="background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:4px;padding:4px 8px;cursor:pointer;font-size:0.8rem">✕</button>';
+
+  btnEl.parentNode.style.position = 'relative';
+  btnEl.parentNode.appendChild(pop);
+  var inp = document.getElementById('pgto-dist-n-' + docId);
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function _confirmarDistribuir(docId, totalStr) {
+  var inp = document.getElementById('pgto-dist-n-' + docId);
+  var n = inp ? Math.max(1, Math.min(60, parseInt(inp.value) || 1)) : 1;
+  var pop = document.getElementById('pgto-dist-popover-' + docId);
+  if (pop) pop.remove();
+  distribuirAutomatico(docId, totalStr, n);
+}
+
+/* Distribui o restante em n parcelas mensais */
+function distribuirAutomatico(docId, totalStr, nOverride) {
   const total = parseFloat(totalStr) || 0;
   const ev = _pgtoEventoById(docId);
   if (!ev) return;
@@ -3350,26 +3379,22 @@ function distribuirAutomatico(docId, totalStr) {
   const restante = parseFloat(Math.max(0, total - somaAtual).toFixed(2));
   if (restante < 0.01) return;
 
-  // Data do evento
+  // Data do evento para calcular datas de vencimento
   const evDataStr = ev.ev_data || ev.data_evento || ev.dataEvt || '';
-  let n = 1;
+  let n = nOverride || 1;
   const datas = [];
 
-  if (evDataStr) {
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+  if (evDataStr && !nOverride) {
+    // Comportamento legado: calcula n automaticamente pela data do evento
     const p = evDataStr.split('-');
     const evDate = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
     evDate.setHours(0,0,0,0);
-    // Limite: 5 dias antes do evento
     const limDate = new Date(evDate);
     limDate.setDate(limDate.getDate() - 5);
-    const hoje = new Date();
-    hoje.setHours(0,0,0,0);
-
-    // 1 parcela por mês restante (arredondado, usando o limite de 5 dias antes), mínimo 1
     const diffDias = Math.ceil((limDate - hoje) / (1000 * 60 * 60 * 24));
     n = Math.max(1, Math.round(Math.max(diffDias, 0) / 30));
-
-    // Datas: +1 mês, +2 meses... última = 5 dias antes do evento
     for (var i = 1; i <= n; i++) {
       if (i === n) {
         datas.push(limDate.toISOString().slice(0, 10));
@@ -3378,6 +3403,13 @@ function distribuirAutomatico(docId, totalStr) {
         d.setMonth(d.getMonth() + i);
         datas.push(d.toISOString().slice(0, 10));
       }
+    }
+  } else {
+    // n definido pelo usuário — datas mensais a partir de hoje
+    for (var i = 0; i < n; i++) {
+      const d = new Date(hoje);
+      d.setMonth(d.getMonth() + i + 1);
+      datas.push(d.toISOString().slice(0, 10));
     }
   }
 
