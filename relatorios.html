@@ -1585,10 +1585,35 @@ header {
 }
 .pgto-custom-btn-save:hover { opacity: 0.85; }
 @media (max-width: 600px) {
-  .pgto-custom-cols-header { grid-template-columns: 1fr 1fr 28px; }
-  .pgto-custom-row { grid-template-columns: 1fr 1fr 28px; }
-  .pgto-custom-inp-venc { display: none; }
-  .pgto-custom-cols-header span:nth-child(3) { display: none; }
+  /* ── Editor de entradas: layout card por linha ── */
+  .pgto-custom-cols-header { display: none; }
+  .pgto-custom-editor { padding: 12px 10px; }
+  .pgto-custom-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .pgto-custom-header > span { margin-left: 0 !important; }
+  .pgto-custom-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+  /* Linha 1: [✓ pago] [descrição — flex] [✕ del] */
+  .pgto-custom-btn-drag { display: none; }
+  .pgto-custom-btn-pago  { order: 1; flex: 0 0 26px; }
+  .pgto-custom-inp-label { order: 2; flex: 1 1 0; min-width: 60px; }
+  .pgto-custom-btn-del   { order: 3; flex: 0 0 26px; }
+  /* Linha 2: [valor ~50%] [vencimento ~50%] */
+  .pgto-custom-inp-val  { order: 4; flex: 1 1 calc(50% - 22px); min-width: 80px; }
+  .pgto-custom-inp-venc { order: 5; flex: 1 1 calc(50% - 22px); min-width: 80px; display: block !important; }
+  /* Botões de ação */
+  .pgto-custom-actions { flex-wrap: wrap; gap: 8px; }
+  .pgto-custom-btn-add  { flex: 1 1 calc(50% - 4px); justify-content: center; }
+  .pgto-custom-btn-auto { flex: 1 1 calc(50% - 4px); justify-content: center; margin-left: 0 !important; }
+  .pgto-custom-btn-save { margin-left: 0; width: 100%; justify-content: center; padding: 10px 14px; }
   .periodo-bar { padding: 8px 12px; gap: 6px; }
 }
 </style>
@@ -5936,29 +5961,4 @@ document.addEventListener('click', function(e) {
     }).then(function() {
       _editorToast('Evento rápido excluído!');
       renderTudo();
-    }).catch(function(err) { _editorToast('Erro: ' + err.message, true); });
-  } else {
-    // contrato — marca removido_manualmente (soft delete, mantém histórico)
-    db.collection('contratos').doc(docId).delete()
-      .then(function() {
-        _editorToast('Contrato excluído!');
-        renderTudo();
-      })
-      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
-  }
-});
-
-function _editorToast(msg, isError) {
-  var existing = document.getElementById('editor-toast');
-  if (existing) existing.remove();
-  var toast = document.createElement('div');
-  toast.id = 'editor-toast';
-  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:' + (isError ? '#2a0a0a' : '#0a1a0a') + ';border:1px solid ' + (isError ? '#e55' : '#25D366') + ';color:' + (isError ? '#e55' : '#25D366') + ';padding:8px 18px;border-radius:20px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;z-index:1200;box-shadow:0 4px 12px rgba(0,0,0,0.4);white-space:nowrap';
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-  setTimeout(function() { if (toast.parentNode) toast.remove(); }, 2500);
-}
-
-</script>
-</body>
-</html>
+    }).catch(function(err) { _editorToast('
