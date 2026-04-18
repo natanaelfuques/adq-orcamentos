@@ -7377,7 +7377,7 @@ function abrirModalLinkAssinatura(id, btnEl) {
       '<div style="display:flex;gap:8px">' +
         '<button onclick="_salvarLinkAssinatura(\'' + id + '\',true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#111">Abrir</button>' +
         '<button onclick="_salvarLinkAssinatura(\'' + id + '\',false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
-        '<button onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+        '<button onclick="document.getElementById(\'adq-link-ass-modal\').remove()" style="' + sBC + 'width:44px;height:44px;background:transparent;border:1px solid #333;color:#666;font-size:1.5rem;padding:0;display:flex;align-items:center;justify-content:center;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
     '</div>';
 
@@ -8088,7 +8088,7 @@ function _abrirModalWpp(id, foneAtual, tipo, btnEl, extraId) {
       '<div style="display:flex;gap:8px">' +
         '<button id="adq-wpp-abrir-btn" onclick="_wppAbrirOuColar(\'' + id + '\',\'' + tipo + '\',\'' + (extraId||'') + '\')" style="' + sBC + 'flex:1;background:#25D366;color:#111">' + (foneAtual ? 'Abrir WhatsApp' : 'Colar Número') + '</button>' +
         '<button onclick="_salvarWpp(\'' + id + '\',\'' + tipo + '\',false,\'' + (extraId||'') + '\')" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#25D366\';this.style.color=\'#25D366\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
-        '<button onclick="document.getElementById(\'adq-wpp-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+        '<button onclick="document.getElementById(\'adq-wpp-modal\').remove()" style="' + sBC + 'width:44px;height:44px;background:transparent;border:1px solid #333;color:#666;font-size:1.5rem;padding:0;display:flex;align-items:center;justify-content:center;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
     '</div>';
 
@@ -8194,7 +8194,7 @@ function _abrirModalMaps(id, mapsAtual, btnEl) {
       '<div style="display:flex;gap:8px">' +
         '<button id="adq-maps-abrir-btn" onclick="_mapsAbrirOuColar(\'' + id + '\')" style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">' + (mapsAtual ? 'Abrir Maps' : 'Colar Link') + '</button>' +
         '<button onclick="_salvarMaps(\'' + id + '\',false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
-        '<button onclick="document.getElementById(\'adq-maps-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+        '<button onclick="document.getElementById(\'adq-maps-modal\').remove()" style="' + sBC + 'width:44px;height:44px;background:transparent;border:1px solid #333;color:#666;font-size:1.5rem;padding:0;display:flex;align-items:center;justify-content:center;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
     '</div>';
 
@@ -8280,7 +8280,7 @@ function _abrirModalMapsEvCard(evId, mapsAtual, contratoId, notaId, btnEl) {
       '<div style="display:flex;gap:8px">' +
         '<button onclick="_salvarMapsEvCard(true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">Abrir Maps</button>' +
         '<button onclick="_salvarMapsEvCard(false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
-        '<button onclick="document.getElementById(\'adq-maps-ev-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+        '<button onclick="document.getElementById(\'adq-maps-ev-modal\').remove()" style="' + sBC + 'width:44px;height:44px;background:transparent;border:1px solid #333;color:#666;font-size:1.5rem;padding:0;display:flex;align-items:center;justify-content:center;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
     '</div>';
   modal._evId = evId;
@@ -8331,7 +8331,7 @@ function _abrirModalMapsNotaCard(notaId, mapsAtual, btnEl) {
       '<div style="display:flex;gap:8px">' +
         '<button onclick="_salvarMapsNotaCard(true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">Abrir Maps</button>' +
         '<button onclick="_salvarMapsNotaCard(false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
-        '<button onclick="document.getElementById(\'adq-maps-nota-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
+        '<button onclick="document.getElementById(\'adq-maps-nota-modal\').remove()" style="' + sBC + 'width:44px;height:44px;background:transparent;border:1px solid #333;color:#666;font-size:1.5rem;padding:0;display:flex;align-items:center;justify-content:center;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
     '</div>';
   modal._notaId = notaId;
