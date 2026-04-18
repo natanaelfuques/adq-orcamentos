@@ -8163,9 +8163,10 @@ function _abrirModalMaps(id, mapsAtual, btnEl) {
       '<input id="adq-maps-input" type="url" autocomplete="off" value="' + escHtml(mapsAtual) + '" placeholder="https://maps.app.goo.gl/..."' +
         ' style="width:100%;background:#111;border:1px solid #444;color:#eee;' + sF + 'font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s"' +
         ' onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'"' +
+        ' oninput="_atualizarBtnMapsModal()"' +
         ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarMaps(\'' + id + '\',false);}">' +
       '<div style="display:flex;gap:8px">' +
-        '<button onclick="_salvarMaps(\'' + id + '\',true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">Abrir Maps</button>' +
+        '<button id="adq-maps-abrir-btn" onclick="_mapsAbrirOuColar(\'' + id + '\')" style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">' + (mapsAtual ? 'Abrir Maps' : 'Colar Link') + '</button>' +
         '<button onclick="_salvarMaps(\'' + id + '\',false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
         '<button onclick="document.getElementById(\'adq-maps-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
@@ -8177,6 +8178,31 @@ function _abrirModalMaps(id, mapsAtual, btnEl) {
 
   var inp = document.getElementById('adq-maps-input');
   if (inp) { inp.focus(); inp.select(); }
+}
+
+function _atualizarBtnMapsModal() {
+  var inp = document.getElementById('adq-maps-input');
+  var btn = document.getElementById('adq-maps-abrir-btn');
+  if (\!inp || \!btn) return;
+  btn.textContent = inp.value.trim() ? 'Abrir Maps' : 'Colar Link';
+}
+
+function _mapsAbrirOuColar(id) {
+  var inp = document.getElementById('adq-maps-input');
+  if (\!inp) return;
+  if (\!inp.value.trim()) {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(function(text) {
+        inp.value = text.trim();
+        _atualizarBtnMapsModal();
+        inp.focus();
+      }).catch(function() { inp.focus(); });
+    } else {
+      inp.focus();
+    }
+  } else {
+    _salvarMaps(id, true);
+  }
 }
 
 function _salvarMaps(id, abrirMaps) {
