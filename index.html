@@ -8131,8 +8131,21 @@ function _salvarWpp(id, tipo, abrirWpp, extraId) {
   var fone = inp.value.trim();
   var numero = fone.replace(/\D/g, '');
   if (!numero) {
-    inp.style.borderColor = '#e55';
-    setTimeout(function() { inp.style.borderColor = '#444'; }, 1000);
+    if (abrirWpp) {
+      inp.style.borderColor = '#e55';
+      setTimeout(function() { inp.style.borderColor = '#444'; }, 1000);
+      return;
+    }
+    if (db) {
+      if (tipo==='nota') db.collection('notas').doc(id).update({contato:''}).catch(function(){});
+      else if (tipo==='orc') db.collection('orcamentos').doc(id).update({whatsapp_cliente:''}).catch(function(){});
+      else if (tipo==='contrato') db.collection('contratos').doc(id).update({cli_fone:''}).catch(function(){});
+      else if (tipo==='ev'){var cEv=extraId?{contato:''}:{cli_fone:''};db.collection('eventos_campo').doc(id).update(cEv).catch(function(){});}
+    }
+    var m0=document.getElementById('adq-wpp-modal');
+    var b0=m0?m0._btnEl:null;
+    if (b0){b0.setAttribute('data-fone','');b0.classList.remove('tem-fone');b0.style.color='';b0.style.borderColor='';}
+    if (m0) m0.remove();
     return;
   }
 
@@ -8235,8 +8248,16 @@ function _salvarMaps(id, abrirMaps) {
   var link = inp.value.trim();
 
   if (!link) {
-    inp.style.borderColor = '#e55';
-    setTimeout(function() { inp.style.borderColor = '#444'; }, 1000);
+    if (abrirMaps) {
+      inp.style.borderColor = '#e55';
+      setTimeout(function() { inp.style.borderColor = '#444'; }, 1000);
+      return;
+    }
+    if (db) db.collection('contratos').doc(id).update({ local_evento_maps: '' }).catch(function(){});
+    var m0=document.getElementById('adq-maps-modal');
+    var b0=m0?m0._btnEl:null;
+    if (b0){b0.setAttribute('data-maps','');b0.setAttribute('title','Colar link do Maps');b0.classList.remove('tem-maps');}
+    if (m0) m0.remove();
     return;
   }
 
