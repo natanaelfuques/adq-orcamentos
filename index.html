@@ -8083,9 +8083,10 @@ function _abrirModalWpp(id, foneAtual, tipo, btnEl, extraId) {
       '<input id="adq-wpp-input" type="tel" autocomplete="off" value="' + escHtml(foneAtual) + '" placeholder="(47) 99999-9999"' +
         ' style="width:100%;background:#111;border:1px solid #444;color:#eee;' + sF + 'font-size:0.9rem;padding:10px 12px;border-radius:4px;outline:none;box-sizing:border-box;margin-bottom:14px;transition:border-color 0.2s"' +
         ' onfocus="this.style.borderColor=\'#25D366\'" onblur="this.style.borderColor=\'#444\'"' +
+        ' oninput="_atualizarBtnWppModal()"' +
         ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarWpp(\'' + id + '\',\'' + tipo + '\',false,\'' + (extraId||'') + '\');}">' +
       '<div style="display:flex;gap:8px">' +
-        '<button onclick="_salvarWpp(\'' + id + '\',\'' + tipo + '\',true,\'' + (extraId||'') + '\')"  style="' + sBC + 'flex:1;background:#25D366;color:#111">Abrir WhatsApp</button>' +
+        '<button id="adq-wpp-abrir-btn" onclick="_wppAbrirOuColar(\'' + id + '\',\'' + tipo + '\',\'' + (extraId||'') + '\')" style="' + sBC + 'flex:1;background:#25D366;color:#111">' + (foneAtual ? 'Abrir WhatsApp' : 'Colar Número') + '</button>' +
         '<button onclick="_salvarWpp(\'' + id + '\',\'' + tipo + '\',false,\'' + (extraId||'') + '\')" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#25D366\';this.style.color=\'#25D366\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
         '<button onclick="document.getElementById(\'adq-wpp-modal\').remove()" style="' + sBC + 'width:42px;background:transparent;border:1px solid #333;color:#666;font-size:1.2rem;padding:0;display:flex;align-items:center;justify-content:center" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
@@ -8098,6 +8099,31 @@ function _abrirModalWpp(id, foneAtual, tipo, btnEl, extraId) {
 
   var inp = document.getElementById('adq-wpp-input');
   if (inp) { inp.focus(); inp.select(); }
+}
+
+function _atualizarBtnWppModal() {
+  var inp = document.getElementById('adq-wpp-input');
+  var btn = document.getElementById('adq-wpp-abrir-btn');
+  if (\!inp || \!btn) return;
+  btn.textContent = inp.value.trim() ? 'Abrir WhatsApp' : 'Colar Número';
+}
+
+function _wppAbrirOuColar(id, tipo, extraId) {
+  var inp = document.getElementById('adq-wpp-input');
+  if (\!inp) return;
+  if (\!inp.value.trim()) {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(function(text) {
+        inp.value = text.trim();
+        _atualizarBtnWppModal();
+        inp.focus();
+      }).catch(function() { inp.focus(); });
+    } else {
+      inp.focus();
+    }
+  } else {
+    _salvarWpp(id, tipo, true, extraId);
+  }
 }
 
 function _salvarWpp(id, tipo, abrirWpp, extraId) {
