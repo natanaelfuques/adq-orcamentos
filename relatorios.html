@@ -847,8 +847,8 @@ header {
 .pgto-card-badge { flex-shrink: 0; }
 .pgto-card-progress { padding: 0 16px 10px; }
 .pgto-chips {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 5px;
   padding: 0 16px 12px;
 }
@@ -858,11 +858,15 @@ header {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 2px 7px;
+  padding: 3px 6px;
   border-radius: 4px;
   border: 1px solid;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   line-height: 1.6;
+  text-align: center;
+  min-width: 0;
 }
 .pgto-chip.auto { border-color: rgba(37,211,102,0.35); color: #25D366; background: rgba(37,211,102,0.06); }
 .pgto-chip.futuro { border-color: var(--border2); color: var(--muted); background: transparent; }
