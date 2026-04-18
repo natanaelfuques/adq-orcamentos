@@ -6471,7 +6471,7 @@ function iniciarListenerContratos() {
       }
       btn.className = clickable ? ('salvo-status' + (statusClass ? ' ' + statusClass : '')) : ('salvo-status status-readonly' + (statusClass ? ' ' + statusClass : ''));
       btn.textContent = statusLabel;
-      if (clickable) { btn.style.cssText = statusClass === 'cancelado' ? 'cursor:pointer' : 'cursor:pointer;background:transparent'; btn.setAttribute('data-action', 'toggle-aprovado-contrato'); } else { btn.style.cssText = ''; }
+      if (clickable) { btn.style.cssText = (statusClass === 'cancelado' || statusClass === 'concluido') ? 'cursor:pointer' : 'cursor:pointer;background:transparent'; btn.setAttribute('data-action', 'toggle-aprovado-contrato'); } else { btn.style.cssText = ''; }
       btn.setAttribute('data-etapa', etapa);
       // Atualizar botão Painel do mesmo card
       var painelBtnRT = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('[data-action="enviar-painel"][data-id="' + id + '"]');
@@ -6653,7 +6653,8 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
       + '</button>';
 
     if (statusClickable) {
-      card += '<button class="salvo-status' + statusClass + '" data-action="toggle-aprovado-contrato" data-id="' + id + '" data-status="' + _statusCon + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '" style="cursor:pointer;background:transparent">' + statusLabel + '</button>';
+      var _btnStyleCon = (statusClass === ' concluido' || statusClass === ' cancelado') ? 'cursor:pointer' : 'cursor:pointer;background:transparent';
+      card += '<button class="salvo-status' + statusClass + '" data-action="toggle-aprovado-contrato" data-id="' + id + '" data-status="' + _statusCon + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '" style="' + _btnStyleCon + '">' + statusLabel + '</button>';
     } else {
       card += '<span class="salvo-status status-readonly' + statusClass + '" data-id="' + id + '" data-status="' + _statusCon + '" data-aprovado="' + aprovado + '" data-etapa="' + (etapa || '') + '">' + statusLabel + '</span>';
     }
