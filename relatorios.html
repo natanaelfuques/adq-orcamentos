@@ -3206,7 +3206,7 @@ function buildPgtoCalcHTML(total, pago, restante, pct, statusPgto) {
 /* Retorna o HTML do editor inteligente de parcelas para pgto_tipo === 'custom' */
 function buildCustomParcelasEditorHTML(ev) {
   const docId = ev.id;
-  const total = valorEv(ev);
+  const total = valorEvFinal(ev);
   const parcelas = (ev.pgto_parcelas_custom && ev.pgto_parcelas_custom.length > 0)
     ? ev.pgto_parcelas_custom
     : [];
