@@ -3282,12 +3282,10 @@ function buildCustomParcelasEditorHTML(ev) {
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
         'Adicionar entrada' +
       '</button>' +
-      (restanteParcelar > 0.01
-        ? '<button class="pgto-custom-btn-auto" id="pgto-btn-dist-' + docId + '" onclick="abrirInputNParcelas(\'' + docId + '\',\'' + total.toFixed(2) + '\',this)" style="margin-left:6px">' +
-            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' +
-            'Distribuir restante (' + frs(restanteParcelar) + ')' +
-          '</button>'
-        : '') +
+      '<button class="pgto-custom-btn-auto" id="pgto-btn-dist-' + docId + '" onclick="abrirInputNParcelas(\'' + docId + '\',\'' + total.toFixed(2) + '\',this)" style="margin-left:6px">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>' +
+        'Distribuir restante' +
+      '</button>' +
       '<button class="pgto-custom-btn-save" onclick="salvarParcelasCustom(\'' + docId + '\')">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>' +
         'Salvar entradas' +
