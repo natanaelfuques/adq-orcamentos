@@ -6580,11 +6580,11 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
       dataFmt = dataFmt + ' – ' + fimFmt;
     }
     var _valBase = parseBRL(doc.val_total) || 0;
-    var _valAjust = doc.val_total_ajustado ? parseBRL(doc.val_total_ajustado) : null;
-    var _temAjuste = _valAjust !== null && Math.abs(_valAjust - _valBase) > 0.01;
+    var _valAjust = (doc.val_total_ajustado !== undefined && doc.val_total_ajustado !== null) ? parseFloat(doc.val_total_ajustado) : null;
+    var _temAjuste = _valAjust !== null && !isNaN(_valAjust) && Math.abs(_valAjust - _valBase) > 0.01;
     var valor = _temAjuste
       ? 'R$ ' + formatBRL(_valAjust) + '<span style="color:#25D366;font-size:0.65em;margin-left:3px;vertical-align:super;line-height:1" title="Valor ajustado via Relatórios">✦</span>'
-      : (doc.val_total ? 'R$ ' + formatBRL(_valBase) : '');
+      : (doc.val_total ? escHtml('R$ ' + formatBRL(_valBase)) : '');
     var aprovado = doc.aprovado ? true : false;
     var id = doc.id;
     var ref = id.substring(0, 8).toUpperCase();

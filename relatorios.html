@@ -2093,8 +2093,10 @@ function _migrarValTotalAjustado() {
     const novoTotal = Math.max(0, base + soma);
     if (Math.abs(novoTotal - base) <= 0.01) return; // sem diferença real
     const atual = parseFloat(ev.val_total_ajustado) || 0;
-    if (Math.abs(atual - novoTotal) < 0.01) return; // já está correto
-    db.collection(item.col).doc(ev.id).update({ val_total_ajustado: novoTotal.toFixed(2) }).catch(function() {});
+    // Reprocessa se for string (formato antigo com toFixed) ou valor incorreto
+    const eString = typeof ev.val_total_ajustado === 'string';
+    if (!eString && Math.abs(atual - novoTotal) < 0.01) return; // já está correto como número
+    db.collection(item.col).doc(ev.id).update({ val_total_ajustado: novoTotal }).catch(function() {});
   });
 }
 
@@ -3074,7 +3076,7 @@ function _syncValTotalAjustado(docId, col, ajustesArr) {
   const soma = ajustesArr.reduce(function(s, a) { return s + (parseFloat(a.valor) || 0); }, 0);
   const novoTotal = Math.max(0, base + soma);
   const upd = Math.abs(novoTotal - base) > 0.01
-    ? { val_total_ajustado: novoTotal.toFixed(2) }
+    ? { val_total_ajustado: novoTotal }
     : { val_total_ajustado: firebase.firestore.FieldValue.delete() };
   db.collection(col).doc(docId).update(upd).catch(function() {});
 }
