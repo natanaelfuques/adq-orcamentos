@@ -7156,6 +7156,7 @@ function gerarLinkCalendar(id) {
 
     // ── Montar descrição ──
     var lines = [];
+    lines.push(evento);
     if (resp)     lines.push('Responsável: ' + resp);
     if (montagem) lines.push('Montagem: ' + montagem);
     if (inicio)   lines.push('Início: ' + inicio + (fim ? ' | Término: ' + fim : ''));
@@ -7172,7 +7173,7 @@ function gerarLinkCalendar(id) {
       if (pgtoTexto) lines.push(pgtoTexto);
     }
 
-    var title   = encodeURIComponent(evento + ' — ' + nome);
+    var title   = encodeURIComponent(nome + ' - ' + evento);
     var details = encodeURIComponent(lines.join('\n'));
     var loc     = encodeURIComponent(local);
 
