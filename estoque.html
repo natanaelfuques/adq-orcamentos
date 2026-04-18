@@ -6114,16 +6114,17 @@ function _abrirCardEvento(id) {
       '<div class="agev-section-title">Itens / Serviços</div>' + itemsStr + '</div>';
   }
 
-  // Material (indicador)
-  var temMaterial = !!ev.material_reservado;
+  // Material (indicador) — botão para montar carga no banner de andamento
+  var jaStagiada = \!\!_eventosStagingCarga[id];
   var materialHtml = '<div class="agev-material">' +
     '<div class="agev-section-title" style="display:flex;align-items:center;gap:7px">' +
-      'Material / Equipamentos' +
-      '<span class="agev-material-badge' + (temMaterial ? ' reservado' : '') + '">' +
-        (temMaterial ? '● Reservado' : '○ Sem material separado') +
-      '</span>' +
+      'Carga / Equipamentos' +
     '</div>' +
-    '<div class="agev-material-placeholder">Vinculação de equipamentos disponível em breve</div>' +
+    '<button class="agev-montar-carga-btn' + (jaStagiada ? ' ativa' : '') + '" onclick="event.stopPropagation();_ativarMontaCarga(\'' + id + '\')">' +
+      (jaStagiada
+        ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><polyline points="20 6 9 17 4 12"/></svg>Em preparação'
+        : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 5-5 5V8z"/></svg>Montar carga') +
+    '</button>' +
   '</div>';
 
   // Badge de data final
@@ -6163,6 +6164,31 @@ function _abrirCardEvento(id) {
 function _fecharCardEvento() {
   var el = document.getElementById('agenda-ev-overlay');
   if (el) el.remove();
+}
+
+function _ativarMontaCarga(evId) {
+  var ev = _eventosAgenda[evId];
+  if (\!ev) return;
+  // Pina ou despina o evento
+  if (_eventosStagingCarga[evId]) {
+    delete _eventosStagingCarga[evId];
+  } else {
+    _eventosStagingCarga[evId] = ev;
+  }
+  renderEventosAndamento();
+  _fecharCardEvento();
+  // Scroll suave para a seção de eventos em andamento
+  setTimeout(function() {
+    var sec = document.getElementById('eventos-andamento-section');
+    if (sec && sec.style.display \!== 'none') {
+      sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 120);
+}
+
+function _removerStagingCarga(evId) {
+  delete _eventosStagingCarga[evId];
+  renderEventosAndamento();
 }
 
 // ── Marcar kits com conflito ──────────────────────────────
@@ -6324,6 +6350,41 @@ function _atualizarConflitosNosKits() {
   scrollbar-width: none;
 }
 .ev-andamento-scroll::-webkit-scrollbar { display: none; }
+.ev-card-staging::before { background: #4A90D9; }
+.ev-card-staging:hover { border-color: rgba(74,144,217,0.8); box-shadow: 0 4px 16px rgba(74,144,217,0.12); }
+.ev-card-staging-badge {
+  font-size: 0.54rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4A90D9;
+  margin-bottom: 4px;
+}
+.ev-staging-remove-btn { border-color: rgba(255,80,80,0.35); color: rgba(255,80,80,0.7); }
+.ev-staging-remove-btn:hover { background: rgba(255,80,80,0.08); border-color: rgba(255,80,80,0.6); }
+.agev-montar-carga-btn {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 14px;
+  background: rgba(74,144,217,0.08);
+  border: 1px dashed rgba(74,144,217,0.4);
+  border-radius: 7px;
+  color: rgba(74,144,217,0.9);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.agev-montar-carga-btn:hover { background: rgba(74,144,217,0.16); border-color: rgba(74,144,217,0.7); }
+.agev-montar-carga-btn.ativa { background: rgba(74,144,217,0.14); border-style: solid; border-color: rgba(74,144,217,0.5); color: #4A90D9; }
 .ev-card {
   flex-shrink: 0;
   background: var(--dark);
@@ -6643,6 +6704,7 @@ function _atualizarConflitosNosKits() {
 // ═══════════════════════════════════════════════════════════════
 
 var _eventosAndamento = {};     // id → doc do painel
+var _eventosStagingCarga = {};  // eventos pinados da agenda para montar carga
 var _reservasEventos = {};      // estoque_id → [{evento, qtd, status}]
 
 // ── Iniciar listener de eventos em andamento ──
@@ -6700,20 +6762,51 @@ function renderEventosAndamento() {
   var count = document.getElementById('ev-andamento-count');
   if (!sec || !scroll) return;
 
-  var eventos = Object.values(_eventosAndamento);
-  if (eventos.length === 0) {
+  var eventosAndamento = Object.values(_eventosAndamento);
+  var eventosStaging = Object.values(_eventosStagingCarga).filter(function(ev) {
+    return \!_eventosAndamento[ev.id]; // evitar duplicata se evento entrou em andamento real
+  });
+  var todos = eventosAndamento.concat(eventosStaging);
+
+  if (todos.length === 0) {
     sec.style.display = 'none';
     return;
   }
 
   sec.style.display = 'block';
-  if (count) count.textContent = eventos.length + ' ativo' + (eventos.length > 1 ? 's' : '');
+  if (count) count.textContent = todos.length + ' ativo' + (todos.length > 1 ? 's' : '');
 
-  scroll.innerHTML = eventos.map(function(ev) {
+  scroll.innerHTML = todos.map(function(ev) {
+    var isStaging = \!_eventosAndamento[ev.id] && \!\!_eventosStagingCarga[ev.id];
     var servicos = ev.servicos || [];
     var chipsHtml = servicos.slice(0, 4).map(function(s) {
       return '<span class="ev-item-chip">' + esc(typeof s === 'string' ? s : (s.nome || s)) + '</span>';
     }).join('');
+    if (servicos.length > 4) chipsHtml += '<span class="ev-item-chip">+' + (servicos.length - 4) + '</span>';
+
+    var dataStr = ev.ev_data ? _fmtEvData(ev.ev_data) : '';
+
+    return '<div class="ev-card' + (isStaging ? ' ev-card-staging' : '') + '" id="ev-card-' + ev.id + '"' +
+      (isStaging ? ' style="border-color:rgba(74,144,217,0.5)"' : '') +
+      ' ondragover="evCardOver(event,\'' + ev.id + '\')"' +
+      ' ondragleave="evCardLeave(event,\'' + ev.id + '\')"' +
+      ' ondrop="evCardDrop(event,\'' + ev.id + '\')"' +
+      ' onclick="' + (isStaging ? 'void(0)' : 'abrirVincularEstoqueEvento(\'' + ev.id + '\')') + '">' +
+      (isStaging ? '<div class="ev-card-staging-badge">Preparando carga</div>' : '') +
+      '<div class="ev-card-nome">' + esc(ev.ev_nome || ev.cli_nome || ev.nome || 'Evento') + '</div>' +
+      (dataStr ? '<div class="ev-card-data">' + dataStr + '</div>' : '') +
+      (chipsHtml ? '<div class="ev-card-itens">' + chipsHtml + '</div>' : '') +
+      (isStaging
+        ? '<button class="ev-vincular-btn ev-staging-remove-btn" onclick="event.stopPropagation();_removerStagingCarga(\'' + ev.id + '\')">' +
+            '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+            'Remover' +
+          '</button>'
+        : '<button class="ev-vincular-btn" onclick="event.stopPropagation();abrirVincularEstoqueEvento(\'' + ev.id + '\')">' +
+            '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+            'Vincular itens' +
+          '</button>') +
+    '</div>';
+  }).join('');
     if (servicos.length > 4) chipsHtml += '<span class="ev-item-chip">+' + (servicos.length - 4) + '</span>';
 
     var dataStr = ev.ev_data ? _fmtEvData(ev.ev_data) : '';
