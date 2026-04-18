@@ -3879,7 +3879,7 @@ function buildPgtoModalHTML(ev) {
       '<div class="pgto-modal-header-info">' +
         '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">' +
           '<div class="pgto-modal-nome">' + nomeExib + '</div>' +
-          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1.15rem;font-weight:800;color:var(--blue);letter-spacing:0.04em;white-space:nowrap">' + frs(total) + '</div>' +
+          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1.15rem;font-weight:800;color:#25D366;letter-spacing:0.04em;white-space:nowrap">' + frs(total) + '</div>' +
         '</div>' +
         '<div class="pgto-modal-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
@@ -3892,7 +3892,7 @@ function buildPgtoModalHTML(ev) {
     '<div style="margin-bottom:16px">' +
       '<div class="pgto-progress-bar" style="height:7px"><div class="pgto-progress-fill" style="width:' + pct.toFixed(1) + '%;background:' + fillColor + '"></div></div>' +
       '<div style="display:flex;justify-content:space-between;margin-top:5px;font-size:0.72rem;color:var(--muted)">' +
-        '<span style="color:' + (pago > 0 ? 'var(--green)' : 'var(--muted)') + ';font-weight:700">' + frs(pago) + ' recebido</span>' +
+        '<span style="color:' + (pago <= 0 ? 'var(--muted)' : (restante <= 0 ? 'var(--green)' : '#F5A623')) + ';font-weight:700">' + frs(pago) + ' recebido</span>' +
         '<span>' + pct.toFixed(0) + '%</span>' +
         '<span>' + (restante > 0 ? 'Falta ' + frs(restante) : '✓ Quitado') + '</span>' +
       '</div>' +
