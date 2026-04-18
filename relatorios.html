@@ -1430,7 +1430,7 @@ header {
 }
 .pgto-custom-cols-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr 28px;
+  grid-template-columns: 2fr 1fr 1.2fr 28px 28px;
   gap: 6px;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 0.65rem;
@@ -1443,11 +1443,24 @@ header {
 }
 .pgto-custom-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr 28px;
+  grid-template-columns: 2fr 1fr 1.2fr 28px 28px;
   gap: 6px;
   margin-bottom: 6px;
   align-items: center;
 }
+.pgto-custom-btn-pago {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  border-radius: 4px;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.pgto-custom-btn-pago:hover { border-color: #25D366; color: #25D366; }
+.pgto-custom-btn-pago.pago { border-color: rgba(37,211,102,0.5); color: #25D366; background: rgba(37,211,102,0.08); }
 .pgto-custom-inp-label,
 .pgto-custom-inp-val,
 .pgto-custom-inp-venc {
@@ -2546,7 +2559,7 @@ function getParcelas(ev) {
     // Se tiver parcelas personalizadas salvas, usa elas
     if (ev.pgto_parcelas_custom && ev.pgto_parcelas_custom.length > 0) {
       return ev.pgto_parcelas_custom.map(function(p, i) {
-        return { label: p.label || ('Entrada ' + (i + 1)), valor: parseFloat(p.valor) || 0, vencimento: p.vencimento || '', idx: i };
+        return { label: p.label || ('Entrada ' + (i + 1)), valor: parseFloat(p.valor) || 0, vencimento: p.vencimento || '', pago: !!p.pago, idx: i };
       });
     }
     // Fallback: exibe como uma única parcela
@@ -2692,7 +2705,9 @@ function getTotalPagoAuto(ev) {
   if (ev._origem === 'nota') return pagoAjustes;
   const parcelas = getParcelas(ev);
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const isCustom = (ev.pgto_tipo || ev.pgto_tipo_pagamento || '') === 'custom';
   const pagoParc = parcelas.reduce(function(s, p) {
+    if (isCustom) return s + (p.pago ? p.valor : 0);
     return s + (isParcelaPagaAuto(p, ev, hoje) ? p.valor : 0);
   }, 0);
   return pagoParc + pagoAjustes;
@@ -3177,10 +3192,16 @@ function buildCustomParcelasEditorHTML(ev) {
   const soma = parcelas.reduce(function(s, p) { return s + (parseFloat(p.valor) || 0); }, 0);
   const restanteParcelar = Math.max(0, total - soma);
   const inputRows = parcelas.map(function(p, i) {
+    var isPago = !!p.pago;
     return '<div class="pgto-custom-row" id="pgto-custom-row-' + docId + '-' + i + '">' +
       '<input class="pgto-custom-inp-label" type="text" placeholder="Descrição" value="' + (p.label || '').replace(/"/g, '&quot;') + '" id="pgto-clabel-' + docId + '-' + i + '">' +
       '<input class="pgto-custom-inp-val" type="text" placeholder="R$ 0,00" value="' + (parseFloat(p.valor) || 0).toFixed(2).replace('.', ',') + '" id="pgto-cval-' + docId + '-' + i + '">' +
       '<input class="pgto-custom-inp-venc" type="date" value="' + (p.vencimento || '') + '" id="pgto-cvenc-' + docId + '-' + i + '">' +
+      '<button class="pgto-custom-btn-pago' + (isPago ? ' pago' : '') + '" id="pgto-cpago-' + docId + '-' + i + '" data-pago="' + (isPago ? 'true' : 'false') + '" onclick="toggleCustomEditorPago(\'' + docId + '\',' + i + ')" title="' + (isPago ? 'Pago — clique para desmarcar' : 'Pendente — clique para marcar como pago') + '">' +
+        (isPago
+          ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+          : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg>') +
+      '</button>' +
       '<button class="pgto-custom-btn-del" onclick="removerParcelaCustom(\'' + docId + '\',' + i + ')" title="Remover">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
       '</button>' +
@@ -3193,7 +3214,7 @@ function buildCustomParcelasEditorHTML(ev) {
       '<span style="margin-left:auto;font-size:0.72rem;color:var(--muted)">Total: ' + frs(total) + ' · Distribuído: <span id="pgto-custom-soma-' + docId + '" style="color:' + (Math.abs(soma - total) < 0.05 ? '#25D366' : '#F5A623') + '">' + frs(soma) + '</span></span>' +
     '</div>' +
     '<div class="pgto-custom-cols-header">' +
-      '<span>Descrição</span><span>Valor (R$)</span><span>Vencimento</span><span></span>' +
+      '<span>Descrição</span><span>Valor (R$)</span><span>Vencimento</span><span style="text-align:center">Pago</span><span></span>' +
     '</div>' +
     '<div id="pgto-custom-rows-' + docId + '">' + inputRows + '</div>' +
     '<div class="pgto-custom-actions">' +
@@ -3223,7 +3244,7 @@ function adicionarParcelaCustom(docId, totalStr) {
   const arr = (ev.pgto_parcelas_custom || []).slice();
   const soma = arr.reduce(function(s, p) { return s + (parseFloat(p.valor) || 0); }, 0);
   const restante = Math.max(0, total - soma);
-  arr.push({ label: 'Entrada ' + (arr.length + 1), valor: restante > 0 ? restante : 0, vencimento: '' });
+  arr.push({ label: 'Entrada ' + (arr.length + 1), valor: restante > 0 ? restante : 0, vencimento: '', pago: false });
   // Save optimistically to local + re-render the editor
   _atualizarParcelasCustomLocal(docId, arr);
 }
@@ -3294,7 +3315,9 @@ function distribuirAutomatico(docId, totalStr) {
     const label = (document.getElementById('pgto-clabel-' + docId + '-' + i) || {}).value || ('Entrada ' + (i + 1));
     const valRaw = (document.getElementById('pgto-cval-' + docId + '-' + i) || {}).value || '0';
     const venc = (document.getElementById('pgto-cvenc-' + docId + '-' + i) || {}).value || '';
-    arrAtual.push({ label: label, valor: parseBRL(valRaw), vencimento: venc });
+    const pagoEl = document.getElementById('pgto-cpago-' + docId + '-' + i);
+    const pago = pagoEl ? pagoEl.getAttribute('data-pago') === 'true' : false;
+    arrAtual.push({ label: label, valor: parseBRL(valRaw), vencimento: venc, pago: pago });
   });
 
   // Adiciona as novas parcelas
@@ -3304,7 +3327,8 @@ function distribuirAutomatico(docId, totalStr) {
     arrAtual.push({
       label: 'Parcela ' + (baseIdx + j + 1),
       valor: valor,
-      vencimento: datas[j] || ''
+      vencimento: datas[j] || '',
+      pago: false
     });
   }
 
@@ -3352,7 +3376,9 @@ function salvarParcelasCustom(docId) {
     const valRaw = (document.getElementById('pgto-cval-' + docId + '-' + i) || {}).value || '0';
     const venc = (document.getElementById('pgto-cvenc-' + docId + '-' + i) || {}).value || '';
     const val = parseBRL(valRaw);
-    arr.push({ label: label, valor: val, vencimento: venc });
+    const pagoEl = document.getElementById('pgto-cpago-' + docId + '-' + i);
+    const pago = pagoEl ? pagoEl.getAttribute('data-pago') === 'true' : false;
+    arr.push({ label: label, valor: val, vencimento: venc, pago: pago });
   });
   const col = ev._origem === 'nota' ? 'notas' : 'contratos';
   db.collection(col).doc(docId).update({ pgto_parcelas_custom: arr })
@@ -3377,6 +3403,34 @@ function salvarParcelasCustom(docId) {
       }
     })
     .catch(function(e) { _editorToast('Erro: ' + e.message, true); });
+}
+
+/* Toggle pago/não pago de uma entrada custom diretamente no chip do card */
+function toggleCustomEntradaPago(e, docId, idx) {
+  if (e) e.stopPropagation();
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const arr = (ev.pgto_parcelas_custom || []).slice();
+  if (!arr[idx]) return;
+  arr[idx] = Object.assign({}, arr[idx], { pago: !arr[idx].pago });
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  db.collection(col).doc(docId).update({ pgto_parcelas_custom: arr })
+    .then(function() {
+      _pgtoUpdateLocal(docId, { pgto_parcelas_custom: arr });
+      _pgtoDirty[docId] = true;
+      _pgtoRefreshCardDOM(docId);
+    })
+    .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+}
+
+/* Toggle pago/não pago de uma entrada no EDITOR (atualiza local + re-renderiza, sem salvar no Firestore) */
+function toggleCustomEditorPago(docId, idx) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev) return;
+  const arr = (ev.pgto_parcelas_custom || []).slice();
+  if (!arr[idx]) return;
+  arr[idx] = Object.assign({}, arr[idx], { pago: !arr[idx].pago });
+  _atualizarParcelasCustomLocal(docId, arr);
 }
 
 function renderPagamentos() {
@@ -3614,7 +3668,14 @@ function buildPgtoCardBody(ev, docId) {
       chips = '<span class="pgto-chip pgto-chip-toggle pgto-chip-vista-pendente" title="Clique para confirmar recebimento" onclick="togglePagamentoVista(event,\'' + docId + '\')">⚠ Pagamento à vista</span>';
     }
   } else {
+    const isCustomTipo = (ev.pgto_tipo || ev.pgto_tipo_pagamento || '') === 'custom';
     chips = parcelas.map(function(p) {
+      if (isCustomTipo) {
+        if (p.pago) {
+          return '<span class="pgto-chip auto pgto-chip-toggle" title="' + p.label + ' · Clique para marcar como não recebido" onclick="toggleCustomEntradaPago(event,\'' + docId + '\',' + p.idx + ')">✓ ' + p.label + '</span>';
+        }
+        return '<span class="pgto-chip futuro pgto-chip-toggle" title="' + p.label + ' · Clique para confirmar recebimento" onclick="toggleCustomEntradaPago(event,\'' + docId + '\',' + p.idx + ')">' + p.label + '</span>';
+      }
       if (temAlertaParcela(ev, p.idx)) {
         return '<span class="pgto-chip alerta pgto-chip-toggle" title="Clique para marcar como resolvido" onclick="toggleAlertaChip(event,\'' + docId + '\',' + p.idx + ')">⚠ ' + p.label + '</span>';
       }
