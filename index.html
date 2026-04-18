@@ -6384,21 +6384,30 @@ function substituirContratoNaNuvem() {
   if (!_contratoCarregadoId) { alert('Nenhum contrato carregado para substituir.'); return; }
   var btn = document.getElementById('btn-substituir-contrato');
   if (btn) { btn.textContent = 'Salvando...'; btn.disabled = true; }
-  var dados = coletarDadosContrato();
-  dados.atualizadoEm = firebase.firestore.FieldValue.serverTimestamp();
   var _userAtualC = window._currentUser || firebase.auth().currentUser;
-  if (_userAtualC) dados.atualizadoPor = _userAtualC.email;
-  db.collection('contratos').doc(_contratoCarregadoId).set(dados)
-    .then(function() {
-      if (btn) { btn.textContent = 'Substituído!'; }
-      setTimeout(function() {
-        if (btn) { btn.textContent = 'Salvar contrato (substituir)'; btn.disabled = false; }
-      }, 2000);
-    })
-    .catch(function(e) {
-      alert('Erro ao substituir: ' + e.message);
+  // Busca o doc original para preservar metadados operacionais (criadoEm, criador, status, etc.)
+  db.collection('contratos').doc(_contratoCarregadoId).get().then(function(snap) {
+    var original = snap.exists ? snap.data() : {};
+    var dados = coletarDadosContrato();
+    // Preservar campos operacionais que não vêm do formulário
+    dados.criadoEm      = original.criadoEm      || firebase.firestore.FieldValue.serverTimestamp();
+    dados.criador       = original.criador       || '';
+    dados.status_contrato = original.status_contrato || 'pendente';
+    dados.aprovado      = original.aprovado      || false;
+    dados.autentique_id = original.autentique_id || '';
+    dados.link_assinatura = original.link_assinatura || '';
+    dados.atualizadoEm  = firebase.firestore.FieldValue.serverTimestamp();
+    if (_userAtualC) dados.atualizadoPor = _userAtualC.email;
+    return db.collection('contratos').doc(_contratoCarregadoId).set(dados);
+  }).then(function() {
+    if (btn) { btn.textContent = 'Substituído!'; }
+    setTimeout(function() {
       if (btn) { btn.textContent = 'Salvar contrato (substituir)'; btn.disabled = false; }
-    });
+    }, 2000);
+  }).catch(function(e) {
+    alert('Erro ao substituir: ' + e.message);
+    if (btn) { btn.textContent = 'Salvar contrato (substituir)'; btn.disabled = false; }
+  });
 }
 
 function iniciarListenerContratos() {
