@@ -6291,8 +6291,8 @@ function _ativarMontaCarga(evId) {
   } else {
     _eventosStagingCarga[evId] = ev;
   }
-  renderEventosAndamento();
   _fecharCardEvento();
+  renderEventosAndamento();
   // Scroll suave para a seção de eventos em andamento
   setTimeout(function() {
     var sec = document.getElementById('eventos-andamento-section');
@@ -7028,7 +7028,7 @@ function _fmtEvData(d) {
 var _draggingParaEvento = null; // {tipo: 'kit'|'eq', id}
 
 function evCardOver(ev, evId) {
-  if (!_draggingParaEvento && !_draggingEqId) return;
+  if (!_draggingParaEvento && !_draggingEqId && !_draggingKitId && !_draggingStagingId) return;
   ev.preventDefault();
   var el = document.getElementById('ev-card-' + evId);
   if (el) el.classList.add('drag-target-ev');
@@ -7043,8 +7043,8 @@ function evCardDrop(ev, evId) {
   var el = document.getElementById('ev-card-' + evId);
   if (el) el.classList.remove('drag-target-ev');
 
-  var itemId = ev.dataTransfer.getData('text/plain') || _draggingEqId;
-  var tipo = ev.dataTransfer.getData('tipo') || (_draggingEqId ? 'eq' : null);
+  var itemId = ev.dataTransfer.getData('text/plain') || _draggingEqId || _draggingKitId || _draggingStagingId;
+  var tipo = ev.dataTransfer.getData('tipo') || (_draggingKitId ? 'kit' : _draggingEqId ? 'eq' : _draggingStagingId ? 'staging' : null);
   if (!itemId || !tipo) return;
 
   // Vincular item ao evento na coleção reservas_evento
