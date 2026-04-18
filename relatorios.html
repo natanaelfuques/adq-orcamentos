@@ -1065,6 +1065,26 @@ header {
   flex: 1;
   -webkit-overflow-scrolling: touch;
 }
+.pgto-modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.pgto-modal-fechar-btn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pgto-modal-fechar-btn:hover { border-color: var(--text); color: var(--text); }
 .pgto-progress-bar {
   background: var(--border);
   border-radius: 4px;
@@ -4343,6 +4363,9 @@ function buildPgtoModalHTML(ev) {
   return '<div class="pgto-modal-box" onclick="event.stopPropagation()">' +
     headerHTML +
     '<div class="pgto-modal-body">' + bodyHTML + '</div>' +
+    '<div class="pgto-modal-footer">' +
+      '<button class="pgto-modal-fechar-btn" onclick="fecharPgtoModal()">Fechar</button>' +
+    '</div>' +
   '</div>';
 }
 
