@@ -1603,17 +1603,20 @@ header {
   }
   /* Linha 1: [✓ pago] [descrição — flex] [✕ del] */
   .pgto-custom-btn-drag { display: none; }
-  .pgto-custom-btn-pago  { order: 1; flex: 0 0 26px; }
-  .pgto-custom-inp-label { order: 2; flex: 1 1 0; min-width: 60px; }
+  .pgto-custom-inp-label { order: 1; flex: 1 1 0; min-width: 60px; }
+  .pgto-custom-btn-pago  { order: 2; flex: 0 0 26px; }
   .pgto-custom-btn-del   { order: 3; flex: 0 0 26px; }
-  /* Linha 2: [valor ~50%] [vencimento ~50%] */
-  .pgto-custom-inp-val  { order: 4; flex: 1 1 calc(50% - 22px); min-width: 80px; }
-  .pgto-custom-inp-venc { order: 5; flex: 1 1 calc(50% - 22px); min-width: 80px; display: block !important; }
+  /* Linha 2: [data esq] [valor dir] */
+  .pgto-custom-inp-venc { order: 4; flex: 1 1 calc(55% - 22px); min-width: 90px; display: block !important; }
+  .pgto-custom-inp-val  { order: 5; flex: 1 1 calc(45% - 22px); min-width: 70px; }
   /* Botões de ação */
   .pgto-custom-actions { flex-wrap: wrap; gap: 8px; }
   .pgto-custom-btn-add  { flex: 1 1 calc(50% - 4px); justify-content: center; }
   .pgto-custom-btn-auto { flex: 1 1 calc(50% - 4px); justify-content: center; margin-left: 0 !important; }
   .pgto-custom-btn-save { margin-left: 0; width: 100%; justify-content: center; padding: 10px 14px; }
+  /* Ajustes: botao Adicionar quebra para linha propria */
+  .pgto-ajuste-form > div { flex-wrap: wrap; }
+  .pgto-ajuste-form .pgto-btn-salvar { flex: 1 1 100%; white-space: normal !important; padding: 8px 14px; }
   .periodo-bar { padding: 8px 12px; gap: 6px; }
 }
 </style>
