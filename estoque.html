@@ -6807,24 +6807,6 @@ function renderEventosAndamento() {
           '</button>') +
     '</div>';
   }).join('');
-    if (servicos.length > 4) chipsHtml += '<span class="ev-item-chip">+' + (servicos.length - 4) + '</span>';
-
-    var dataStr = ev.ev_data ? _fmtEvData(ev.ev_data) : '';
-
-    return '<div class="ev-card" id="ev-card-' + ev.id + '"' +
-      ' ondragover="evCardOver(event,\'' + ev.id + '\')"' +
-      ' ondragleave="evCardLeave(event,\'' + ev.id + '\')"' +
-      ' ondrop="evCardDrop(event,\'' + ev.id + '\')"' +
-      ' onclick="abrirVincularEstoqueEvento(\'' + ev.id + '\')">' +
-      '<div class="ev-card-nome">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
-      (dataStr ? '<div class="ev-card-data">' + dataStr + '</div>' : '') +
-      (chipsHtml ? '<div class="ev-card-itens">' + chipsHtml + '</div>' : '') +
-      '<button class="ev-vincular-btn" onclick="event.stopPropagation();abrirVincularEstoqueEvento(\'' + ev.id + '\')">' +
-        '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
-        'Vincular itens' +
-      '</button>' +
-    '</div>';
-  }).join('');
 
   // Coloca a seção antes dos kits
   var kitsSection = document.getElementById('kits-section');
