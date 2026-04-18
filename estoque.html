@@ -2138,6 +2138,11 @@
   }
   .kit-slot-panel:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
   .kit-slot-panel.drag-over-kit { border-color: var(--amber); background: rgba(245,166,35,0.06); }
+.kit-temp-panel { border-color: rgba(74,144,217,0.45); }
+.kit-temp-panel::before { content: "CARGA"; position: absolute; top: 3px; right: 8px; font-size: 0.45rem; font-family: "Barlow Condensed", sans-serif; font-weight: 800; letter-spacing: 0.1em; color: #4A90D9; opacity: 0.7; }
+.kit-temp-panel .kit-slot-panel-title { color: #4A90D9 \!important; }
+.kit-temp-panel:hover { border-color: rgba(74,144,217,0.7); box-shadow: 0 6px 24px rgba(74,144,217,0.15); }
+.kit-temp-panel.drag-over-kit { border-color: #4A90D9; background: rgba(74,144,217,0.07); }
   .kit-slot-panel-header {
     display: flex;
     align-items: center;
@@ -5083,6 +5088,20 @@ function kitFolderDrop(ev, kitId) {
   if (el) el.classList.remove('drag-over-kit');
   if (!_draggingEqId) return;
 
+  if (kitId.indexOf('temp_') === 0) {
+    var tKit = _kitsTemp[kitId];
+    if (!tKit) return;
+    var tItens = Array.isArray(tKit.itens) ? tKit.itens : [];
+    var tExist = tItens.find(function(it) { return it.equipId === _draggingEqId; });
+    if (tExist) { tExist.qtd = (tExist.qtd || 1) + 1; }
+    else { tItens.push({ equipId: _draggingEqId, qtd: 1 }); }
+    tKit.itens = tItens;
+    _draggingEqId = null;
+    renderKits();
+    toast('Item adicionado ao kit de carga!');
+    return;
+  }
+
   var kit = _kits[kitId];
   if (!kit) return;
   var itens = Array.isArray(kit.itens) ? kit.itens.slice() : [];
@@ -6052,6 +6071,23 @@ function _corBadgeEvento(ev) {
 // ── Abrir card flutuante do evento ────────────────────────
 
 // ── Carga Builder: monta "kit" temporário para um evento da agenda ──
+function _transformarEmKit(evId) {
+  var ev = _eventosStagingCarga[evId];
+  if (!ev) return;
+  var tempId = 'temp_' + evId;
+  if (!_kitsTemp[tempId]) {
+    var dataFmt = ev.ev_data ? _fmtEvData(ev.ev_data) : '';
+    var nomeKit = (ev.cli_nome || ev.ev_nome || 'Evento') + (dataFmt ? ' · ' + dataFmt : '');
+    _kitsTemp[tempId] = { id: tempId, nome: nomeKit, itens: [], evId: evId };
+  }
+  if (!_kitsSecaoAberta) toggleSecaoKits();
+  renderKits();
+  setTimeout(function() {
+    var el = document.getElementById('kit-card-' + tempId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 80);
+}
+
 function _abrirCargaBuilder(evId) {
   var ev = _eventosStagingCarga[evId] || _eventosAgenda[evId];
   if (!ev) return;
@@ -6300,6 +6336,11 @@ function _ativarMontaCarga(evId) {
       sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, 120);
+}
+
+function _removerKitTemp(kitId) {
+  delete _kitsTemp[kitId];
+  renderKits();
 }
 
 function _removerStagingCarga(evId) {
@@ -7046,6 +7087,40 @@ function evCardDrop(ev, evId) {
   var itemId = ev.dataTransfer.getData('text/plain') || _draggingEqId || _draggingKitId || _draggingStagingId;
   var tipo = ev.dataTransfer.getData('tipo') || (_draggingKitId ? 'kit' : _draggingEqId ? 'eq' : _draggingStagingId ? 'staging' : null);
   if (!itemId || !tipo) return;
+  // Kit temporário de carga
+  if (tipo === 'kit' && typeof itemId === 'string' && itemId.indexOf('temp_') === 0) {
+    var tKit = _kitsTemp[itemId];
+    if (!tKit || !tKit.itens || !tKit.itens.length) { toast('Kit vazio!', true); return; }
+    var ev2b = _eventosAndamento[evId];
+    var novosItens = tKit.itens.map(function(it) {
+      var eq = _equipamentos[it.equipId] || {};
+      return { estoque_id: it.equipId, nome: eq.nome || it.equipId, tipo: 'eq', qtd: it.qtd || 1 };
+    });
+    db.collection('reservas_evento').doc(evId).get().then(function(snap) {
+      var dados = snap.exists ? snap.data() : {};
+      var itensSalvos = Array.isArray(dados.itens) ? dados.itens.slice() : [];
+      novosItens.forEach(function(ni) {
+        var ex = itensSalvos.find(function(it) { return it.estoque_id === ni.estoque_id; });
+        if (ex) { ex.qtd = (ex.qtd || 1) + ni.qtd; } else { itensSalvos.push(ni); }
+      });
+      return db.collection('reservas_evento').doc(evId).set({
+        evento_id: evId,
+        ev_nome: ev2b ? (ev2b.ev_nome || ev2b.nome || '') : '',
+        ev_data: ev2b ? (ev2b.ev_data || '') : '',
+        itens: itensSalvos, status: 'reservado',
+        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }).then(function() {
+      toast('Carga vinculada ao evento!');
+      delete _kitsTemp[itemId]; renderKits(); _draggingKitId = null;
+    }).catch(function(e) { toast('Erro: ' + e.message, true); });
+    return;
+  }
+  if (tipo === 'staging') {
+    var stEv = _eventosStagingCarga[itemId];
+    toast('Carga de ' + (stEv ? (stEv.ev_nome || stEv.cli_nome || 'Evento') : itemId) + ' associada!');
+    _draggingStagingId = null; return;
+  }
 
   // Vincular item ao evento na coleção reservas_evento
   var nomeItem = '';
