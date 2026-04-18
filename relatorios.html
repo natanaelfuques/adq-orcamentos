@@ -3023,6 +3023,25 @@ function toggleAjustePago(e, docId, ajusteIdx) {
     .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
 }
 
+/* Toggle se o ajuste aparece como chip no card ou só afeta o total */
+function toggleAjusteMostrarChip(docId, ajusteIdx) {
+  const ev = _pgtoEventoById(docId);
+  if (!ev || !db) return;
+  const ajustes = getAjustes(ev).slice();
+  if (!ajustes[ajusteIdx]) return;
+  ajustes[ajusteIdx] = Object.assign({}, ajustes[ajusteIdx], { mostrar_chip: ajustes[ajusteIdx].mostrar_chip === false ? true : false });
+  const col = ev._origem === 'nota' ? 'notas' : 'contratos';
+  db.collection(col).doc(docId).update({ pgto_ajustes: ajustes })
+    .then(function() {
+      _pgtoUpdateLocal(docId, { pgto_ajustes: ajustes });
+      _pgtoDirty[docId] = true;
+      _pgtoRefreshCardDOM(docId);
+      fecharPgtoModal();
+      setTimeout(function() { abrirPgtoModal(docId); }, 100);
+    })
+    .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+}
+
 function adicionarAjuste(docId) {
   const ev = _pgtoEventoById(docId);
   if (!ev || !db) return;
@@ -3036,7 +3055,7 @@ function adicionarAjuste(docId) {
   if (!valorBruto || valorBruto <= 0) { _editorToast('Informe um valor válido', true); return; }
   const valor = tipoEl.value === 'desconto' ? -valorBruto : valorBruto;
   const ajustes = getAjustes(ev).slice();
-  ajustes.push({ descricao: descricao, valor: valor, pago: false });
+  ajustes.push({ descricao: descricao, valor: valor, pago: false, mostrar_chip: true });
   const col = ev._origem === 'nota' ? 'notas' : 'contratos';
   db.collection(col).doc(docId).update({ pgto_ajustes: ajustes })
     .then(function() {
@@ -3800,7 +3819,7 @@ function buildPgtoCardBody(ev, docId) {
 
   const ajustes = getAjustes(ev);
   const chipsAjustes = ajustes
-    .filter(function(a) { return a.valor > 0; })
+    .filter(function(a) { return a.valor > 0 && a.mostrar_chip !== false; })
     .map(function(a, i) {
       const label = (a.descricao || 'Adicional').slice(0, 22);
       if (a.pago) {
@@ -4093,9 +4112,17 @@ function buildPgtoModalHTML(ev) {
         const isDesc = a.valor < 0;
         const cor = isDesc ? '#e05c5c' : '#25D366';
         const sinal = isDesc ? '−' : '+';
+        // Apenas adicionais (positivos) têm o toggle de chip
+        const mostrarChip = a.mostrar_chip !== false; // default true
+        const toggleChipBtn = !isDesc
+          ? '<button onclick="toggleAjusteMostrarChip(\'' + docId + '\',' + i + ')" title="' + (mostrarChip ? 'Clique para ocultar do card (só muda o total)' : 'Clique para exibir como parcela no card') + '" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;padding:2px 7px;border-radius:4px;cursor:pointer;transition:all 0.15s;white-space:nowrap;' + (mostrarChip ? 'background:rgba(37,211,102,0.12);border:1px solid rgba(37,211,102,0.4);color:#25D366' : 'background:transparent;border:1px solid var(--border2);color:var(--muted)') + '">' +
+              (mostrarChip ? '⬛ No card' : '▭ Só total') +
+            '</button>'
+          : '';
         return '<div class="pgto-ajuste-row">' +
           '<div class="pgto-ajuste-desc">' + esc(a.descricao || '—') + '</div>' +
           '<div style="display:flex;align-items:center;gap:8px">' +
+            toggleChipBtn +
             '<span style="color:' + cor + ';font-weight:700;font-family:\'Barlow Condensed\',sans-serif">' + sinal + ' ' + frs(Math.abs(a.valor)) + '</span>' +
             '<button class="pgto-ajuste-del" onclick="removerAjuste(\'' + docId + '\',' + i + ')" title="Remover">×</button>' +
           '</div>' +
