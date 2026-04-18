@@ -3237,16 +3237,31 @@ function buildCustomParcelasEditorHTML(ev) {
   '</div>';
 }
 
+/* Lê as linhas atualmente visíveis no editor (DOM), preservando edições não salvas */
+function _lerLinhasEditorDOM(docId) {
+  const rows = document.querySelectorAll('[id^="pgto-custom-row-' + docId + '-"]');
+  const arr = [];
+  rows.forEach(function(row, i) {
+    const label = (document.getElementById('pgto-clabel-' + docId + '-' + i) || {}).value || ('Entrada ' + (i + 1));
+    const valRaw = (document.getElementById('pgto-cval-' + docId + '-' + i) || {}).value || '0';
+    const venc = (document.getElementById('pgto-cvenc-' + docId + '-' + i) || {}).value || '';
+    const pagoEl = document.getElementById('pgto-cpago-' + docId + '-' + i);
+    const pago = pagoEl ? pagoEl.getAttribute('data-pago') === 'true' : false;
+    arr.push({ label: label, valor: parseBRL(valRaw), vencimento: venc, pago: pago });
+  });
+  return arr;
+}
+
 /* Adiciona uma nova linha no editor custom */
 function adicionarParcelaCustom(docId, totalStr) {
   const total = parseFloat(totalStr) || 0;
   const ev = _pgtoEventoById(docId);
   if (!ev) return;
-  const arr = (ev.pgto_parcelas_custom || []).slice();
+  // Lê linhas atuais do DOM (preserva entradas pré-preenchidas ainda não salvas)
+  const arr = _lerLinhasEditorDOM(docId);
   const soma = arr.reduce(function(s, p) { return s + (parseFloat(p.valor) || 0); }, 0);
   const restante = Math.max(0, total - soma);
   arr.push({ label: 'Entrada ' + (arr.length + 1), valor: restante > 0 ? restante : 0, vencimento: '', pago: false });
-  // Save optimistically to local + re-render the editor
   _atualizarParcelasCustomLocal(docId, arr);
 }
 
@@ -3254,7 +3269,8 @@ function adicionarParcelaCustom(docId, totalStr) {
 function removerParcelaCustom(docId, idx) {
   const ev = _pgtoEventoById(docId);
   if (!ev) return;
-  const arr = (ev.pgto_parcelas_custom || []).slice();
+  // Lê linhas atuais do DOM (preserva entradas pré-preenchidas ainda não salvas)
+  const arr = _lerLinhasEditorDOM(docId);
   arr.splice(idx, 1);
   _atualizarParcelasCustomLocal(docId, arr);
 }
@@ -3351,14 +3367,15 @@ function distribuirAutomatico(docId, totalStr) {
 function _atualizarParcelasCustomLocal(docId, arr) {
   const arrMain = _contratos.findIndex(function(x) { return x.id === docId; });
   const arrNota = _notas.findIndex(function(x) { return x.id === docId; });
-  if (arrMain >= 0) _contratos[arrMain].pgto_parcelas_custom = arr;
-  if (arrNota >= 0) _notas[arrNota].pgto_parcelas_custom = arr;
-  // Re-render the editor block only
+  if (arrMain >= 0) { _contratos[arrMain].pgto_parcelas_custom = arr; _contratos[arrMain].pgto_tipo = 'custom'; }
+  if (arrNota >= 0) { _notas[arrNota].pgto_parcelas_custom = arr; _notas[arrNota].pgto_tipo = 'custom'; }
+  // Re-render the editor block usando o arr atualizado (evita ler ev desatualizado)
   const ev2 = _pgtoEventoById(docId);
   if (!ev2) return;
+  const evAtualizado = Object.assign({}, ev2, { pgto_parcelas_custom: arr, pgto_tipo: 'custom' });
   const edEl = document.getElementById('pgto-custom-editor-' + docId);
   if (edEl) {
-    const newHtml = buildCustomParcelasEditorHTML(ev2);
+    const newHtml = buildCustomParcelasEditorHTML(evAtualizado);
     const tmp = document.createElement('div');
     tmp.innerHTML = newHtml;
     edEl.parentNode.replaceChild(tmp.firstChild, edEl);
