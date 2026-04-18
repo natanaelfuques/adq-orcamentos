@@ -1,5 +1,5 @@
 # Memória do Projeto — Áudio de Qualidade
-*Atualizado: 2026-04-17*
+*Atualizado: 2026-04-18 (sessão 4)*
 
 ---
 
@@ -116,22 +116,73 @@ const valRestaCor = isQuitado ? 'var(--green)' : (status === 'alerta' ? '#e05c5c
 
 ## Estado Atual da UI (relatorios.html)
 
+### Badges de emitente
+- **`.km-badge`** — roxo `#9B5CE5`, fundo `rgba(139,92,246,0.12)` — eventos da Karielen Moreira (MEI)
+- **`.nf-badge`** — âmbar `#F5A623`, fundo `rgba(245,166,35,0.12)` — eventos NF (todos os outros)
+- Helper `_kmBadge(ev)` retorna HTML do badge KM ou `''`
+- Helper `_nfBadge(ev)` retorna HTML do badge NF ou `''`
+- Badges aparecem em: cards de pagamento, tabelas de Eventos/Contratos/Contabilidade, KPI labels, botões de exportar
+
+### Aging report (glow no badge de status)
+- `_diasEmAtraso(ev)` — dias desde a data do evento (apenas se não quitado)
+- `_glowAtrasoStyle(ev)` — retorna `box-shadow` baseado em dias:
+  - 1–7 dias → azul `rgba(74,144,200,0.65)`
+  - 8–30 dias → âmbar `rgba(245,166,35,0.75)`
+  - 30+ dias → vermelho `rgba(224,92,92,0.85)`
+- Aplicado no badge do `buildPgtoCard` e atualizado em `_pgtoRefreshCardDOM`
+
+### Reconhecimento de receita
+- `_eventoRealizado(e)` — retorna `true` se: status confirmado/concluído OU data do evento já passou (não cancelado)
+- Usado em `renderContabilidade` para `confirmados` e na tabela mensal
+- Financeiro continua usando `['confirmado','concluido']` para "Receita confirmada"
+
+### Imposto estimado
+- **NF:** 7% sobre `getTotalPagoAuto` somado de todos os eventos NF → KPI "Imposto estimado NF (7%)"
+- **KM:** MEI — isento, exibido como KPI "Isento" roxo
+- Aparece nas abas Financeiro e Contabilidade
+
 ### Aba Pagamentos
-- **Filtros:** Removidos. Apenas cards KPI clicáveis + busca por cliente
-- **KPI cards (filtram a lista ao clicar):**
-  - Total a faturar (neutro) → filtro `todos` — padrão inicial
-  - Total recebido (verde) → filtro `quitados`
-  - A receber (azul) → filtro `pendentes`
-  - Parcial (âmbar) → filtro `parcial`
-  - Monitoramento (vermelho) → filtro `monitoramento`
+- **Filtros:** Apenas cards KPI clicáveis + busca por cliente (ao clicar KPI limpa o campo de busca)
+- **KPI "Total a faturar":** mostra valor apenas de eventos confirmados/concluídos (não todas as propostas)
 - **Cards de evento:** cor do valor recebido = âmbar se parcial, verde se quitado, cinza se zero
-- **Modal:** valor total em destaque ao lado do nome; sem calculadora; parcelas clicáveis com toggle
-- **Distribuir restante:** auto-calcula parcelas mensais; última = data evento − 5 dias; não pergunta número
+- **Badge de status clicável:** menu flutuante Auto/Quitado/Parcial/Pendente/Monitorar → salva `pgto_status_override` no Firestore
+- **Glow aging** no badge conforme dias em atraso
+- **Eventos em monitoramento sempre visíveis** independente do filtro de período selecionado
+- **Período padrão:** "Este mês"
 
 ### Aba Eventos
-- **KPIs:** Total de eventos | Quitados (+ valor recebido) | A receber (valor + counts) | Monitoramento
-- **Badge de status:** usa status de pagamento (Quitado/Parcial/Pendente/Monitorar), não mais contrato
-- **Tabela:** badge `.pgto-status-badge` com mesmas cores da aba Pagamentos
+- **KPIs adicionais:** Eventos NF (badge âmbar) | Eventos KM (badge roxo) com receita
+- **Badge de status:** usa `getStatusPgto` com `.pgto-status-badge`
+
+### Aba Financeiro
+- **KPIs:** Receita confirmada | Receita do mês | Em negociação | Ticket médio | Receita NF | Receita KM | Imposto NF (7%) | Imposto KM (isento)
+
+### Aba Sazonalidade
+- **Insights acionáveis** no elemento `#saz-insights`:
+  - Alta temporada (meses acima da média)
+  - Baixa temporada (meses abaixo da média) com sugestão de prospecção
+  - Meses sem eventos com sugestão de campanhas
+  - Alerta para próximo mês fraco
+  - Resumo: média mensal, meses ativos, pico histórico
+
+### Aba Contabilidade
+- **Filtro NF/KM** nos botões acima do extrato → `_contFiltroEmitente` ('todos'|'nf'|'km')
+- **Receita reconhecida** = `_eventoRealizado(e)` (data passada ou confirmado)
+- **KPIs:** Receita reconhecida | Potencial | Ticket médio | Pendentes futuros | Imposto NF (7%) | Imposto KM (isento)
+- **Tabela extrato:** badge KM nas linhas de eventos da Karielen
+
+### Exportar (XLSX com AutoFilter)
+- Biblioteca: SheetJS via CDN `cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js`
+- Botão **NF · Exportar** (âmbar) → `exportarXLSX('nf')` → `relatorio_eventos_NF_YYYY-MM-DD.xlsx`
+- Botão **KM · Exportar** (roxo) → `exportarXLSX('km')` → `relatorio_eventos_KM_YYYY-MM-DD.xlsx`
+- Botão **Exportar relatório contábil (Excel)** → `exportarContabilidade()` → `relatorio_contabil_YYYY-MM-DD.xlsx`
+- **Apenas eventos quitados** são incluídos no export
+- **AutoFilter** ativo em todas as colunas — filtros nativos do Excel funcionam
+- Datas gravadas como tipo `Date` nativo (filtros de calendário no Excel)
+- Valores gravados como número nativo (filtros numéricos no Excel)
+- Formato de exibição: datas `DD/MM/YYYY`, valores `#,##0.00`
+- Colunas: Criado em | Data Evento | Cliente | Tipo Evento | Local | Pagamento | Origem | Valor (R$)
+- Helpers CSV: `_csvTipoEv(e)` (evita repetir nome do cliente), `_csvPgto(e)` (substitui `—` por "Personalizado"), `_csvStatus(e)` (status de pagamento)
 
 ### index.html
 - Botão "Abrir Estoque" adicionado na aba Orçamentos (estilo azul)
@@ -210,6 +261,8 @@ index.html → coletarDadosContrato() → Firebase: _contratos
 | 2026-04 | Eventos passados iam para o final da coluna "Eventos" no painel | `renderBoard()` agora renderiza `passados` no topo com label "Realizados" |
 | 2026-04 | Eventos rápidos não contavam nas metas | `_calcularProgressoMetas` e `_verificarMetasAoAbrir` agora consultam `notas` + `eventos_campo` |
 | 2026-04 | Meta "Checklist Painel" aparecia no cabeçalho e admin sem utilidade | Removida por completo (HTML, JS, modal) |
+| 2026-04 | Editor de entradas mobile — colunas truncadas, valor ilegível | Layout card flex 2 linhas: linha 1 = pago+descrição+del, linha 2 = valor+vencimento |
+| 2026-04 | `\!` em código JS gerado via heredoc | Bash escapa `!` para `\!` mesmo com `<< 'PYEOF'` — sempre verificar e corrigir com `sed -i 's/\\!/!/g'` |
 
 ---
 
@@ -238,4 +291,71 @@ index.html → coletarDadosContrato() → Firebase: _contratos
 - Sempre fazer push ao GitHub após cada alteração
 - **Base para edição:** usar os arquivos de `/sessions/trusting-cool-shannon/git-push/` OU `/sessions/trusting-cool-shannon/mnt/AdQ/` — ambos são confiáveis, pois Natanael sempre sobe as alterações que faz localmente
 - **Durante uma sessão de edição:** sempre usar a versão mais recente do arquivo — se já editei o arquivo na sessão atual, a versão em memória já está atualizada; não usar cópia antiga
-- Push: copiar par
+- Push: copiar para `/sessions/trusting-cool-shannon/git-push/` → commit → push com PAT
+
+### ⚠️ Checklist obrigatório ANTES de qualquer push
+
+Sempre executar os seguintes comandos de verificação antes de `git commit`:
+
+```bash
+# 1. Contagem de linhas — comparar com o original clonado do git
+wc -l arquivo.html
+
+# 2. Final do arquivo — confirmar que </script></body></html> está presente
+tail -6 arquivo.html
+
+# 3. Tags fechadas — checar contagem de fechamentos essenciais
+grep -c "</html>" arquivo.html
+grep -c "</body>" arquivo.html
+grep -c "</script>" arquivo.html
+
+# 4. Verificar \! escapado pelo bash — quebra JS silenciosamente
+grep -n "\\!" arquivo.html | grep -v "important\|css\|style"
+# Se encontrar, corrigir com:
+sed -i 's/\\!/!/g' arquivo.html
+
+# 5. Verificar a área alterada com sed -n 'LINHA_INICIO,LINHA_FIMp'
+sed -n '1587,1622p' arquivo.html
+
+# 6. Só então: git add → git commit → git push
+```
+
+---
+
+## ⚠️ Problema Conhecido — Truncamento de Arquivo ao Copiar entre Paths
+
+**Problema descoberto em 2026-04-18 (sessão 3):**
+
+Ao copiar um arquivo HTML grande entre paths diferentes da sessão (`cp /tmp/adq/arquivo.html /sessions/.../outputs/arquivo.html`) e depois usar a ferramenta `Edit` do Cowork, o final do arquivo pode ser truncado silenciosamente. O `wc -l` pode mostrar diferença de apenas 1 linha, mas o arquivo fica partido no meio de uma linha — quebrando JS e fechamentos HTML.
+
+**Causa:** A ferramenta `Edit` opera no path de outputs. Se o arquivo for copiado de volta ao `/tmp/adq` depois da edição, o arquivo truncado vai pro git sem aviso.
+
+**Sintoma identificado:** `git diff` mostra `\ No newline at end of file` e código JS faltando ao final.
+
+**Solução correta para editar arquivos:**
+
+1. Clonar o repo no `/tmp/adq` com `git clone`
+2. **NÃO usar a ferramenta `Edit` do Cowork** em arquivos grandes — usar Python com `str.replace()` direto no `/tmp/adq`:
+
+```bash
+cat > /tmp/patch.py << 'PYEOF'
+with open('/tmp/adq/arquivo.html', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+old = """...(trecho exato a substituir)..."""
+new = """...(novo conteúdo)..."""
+
+assert old in content, "ERRO: trecho não encontrado!"
+content = content.replace(old, new, 1)
+
+with open('/tmp/adq/arquivo.html', 'w', encoding='utf-8') as f:
+    f.write(content)
+print("OK")
+PYEOF
+python3 /tmp/patch.py
+```
+
+3. **Atenção com heredoc e `!`:** o bash escapa `!` para `\!` em qualquer contexto — não só `!important`. Isso quebra código JS silenciosamente (ex: `if (\!inp)` é syntax error). Sempre rodar o passo 4 do checklist acima após qualquer patch via heredoc.
+
+4. Rodar o checklist de verificação (seção acima) antes do push
+5. Só então fazer `git add → commit → push`
