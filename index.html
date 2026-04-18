@@ -6898,10 +6898,15 @@ function setFiltroEv(f) {
   renderNotas();
 }
 
+function _norm(str) {
+  if (!str) return '';
+  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 function filtrarSalvos() {
-  var termo = (document.getElementById('busca-orc-input') ? document.getElementById('busca-orc-input').value.toLowerCase() : '');
+  var termo = _norm(document.getElementById('busca-orc-input') ? document.getElementById('busca-orc-input').value : '');
   var filtrados = _todosOrcamentos.filter(function(doc) {
-    var nome = (doc.nome_cliente || doc.nome || '').toLowerCase();
+    var nome = _norm(doc.nome_cliente || doc.nome || '');
     var dataEvt = (doc.data_evento || doc.dataEvt || '').split('-').reverse().join('/');
     var ref = (doc.id || '').substring(0, 8).toLowerCase();
     var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0 || ref.indexOf(termo.replace('#','').trim()) >= 0;
@@ -6915,9 +6920,9 @@ function filtrarSalvos() {
 }
 
 function filtrarContratos() {
-  var termo = (document.getElementById('busca-con-input') ? document.getElementById('busca-con-input').value.toLowerCase() : '');
+  var termo = _norm(document.getElementById('busca-con-input') ? document.getElementById('busca-con-input').value : '');
   var filtrados = _todosContratos.filter(function(doc) {
-    var nome = (doc.cli_nome || '').toLowerCase();
+    var nome = _norm(doc.cli_nome || '');
     var dataEvt = (doc.ev_data || '').split('-').reverse().join('/'); // dd/mm/aaaa
     var ref = (doc.id || '').substring(0, 8).toLowerCase();
     var matchTexto = !termo || nome.indexOf(termo) >= 0 || dataEvt.indexOf(termo) >= 0 || ref.indexOf(termo.replace('#','').trim()) >= 0;
@@ -7691,7 +7696,7 @@ function renderNotas() {
   });
 
   // Cards de contratos no painel (vêm de eventos_campo sem nota_id) — design idêntico ao painel
-  var termoEv = (document.getElementById('busca-ev-input') ? document.getElementById('busca-ev-input').value.toLowerCase().trim() : '');
+  var termoEv = _norm(document.getElementById('busca-ev-input') ? document.getElementById('busca-ev-input').value.trim() : '');
   var eventosFiltrados = (_todosEventosCampo || []).filter(function(ev) {
     var matchFiltro;
     if (_filtroEv === 'todos') {
@@ -8204,7 +8209,7 @@ function _abrirModalMaps(id, mapsAtual, btnEl) {
         ' oninput="_atualizarBtnMapsModal()"' +
         ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarMaps(\'' + id + '\',false);}">' +
       '<div style="display:flex;gap:8px">' +
-        '<button id="adq-maps-abrir-btn" onclick="_mapsAbrirOuColar(\'' + id + '\')" style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">' + (mapsAtual ? 'Abrir Maps' : 'Colar Link') + '</button>' +
+        '<button id="adq-maps-abrir-btn" onclick="_mapsAbrirOuColar(\'' + id + '\')" style="' + sBC + 'flex:1;background:#4A90C8;color:#111">' + (mapsAtual ? 'Abrir Maps' : 'Colar Link') + '</button>' +
         '<button onclick="_salvarMaps(\'' + id + '\',false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
         '<button onclick="document.getElementById(\'adq-maps-modal\').remove()" style="' + sBC + 'width:38px;height:38px;background:transparent;border:1px solid #333;color:#666;font-size:1.5rem;padding:0;display:flex;align-items:center;justify-content:center;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
@@ -8297,7 +8302,7 @@ function _abrirModalMapsEvCard(evId, mapsAtual, contratoId, notaId, btnEl) {
         ' onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'"' +
         ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarMapsEvCard(false);}">' +
       '<div style="display:flex;gap:8px">' +
-        '<button onclick="_salvarMapsEvCard(true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">Abrir Maps</button>' +
+        '<button onclick="_salvarMapsEvCard(true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#111">Abrir Maps</button>' +
         '<button onclick="_salvarMapsEvCard(false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
         '<button onclick="document.getElementById(\'adq-maps-ev-modal\').remove()" style="' + sBC + 'width:38px;height:38px;background:transparent;border:1px solid #333;color:#666;font-size:1.5rem;padding:0;display:flex;align-items:center;justify-content:center;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
@@ -8348,7 +8353,7 @@ function _abrirModalMapsNotaCard(notaId, mapsAtual, btnEl) {
         ' onfocus="this.style.borderColor=\'#4A90C8\'" onblur="this.style.borderColor=\'#444\'"' +
         ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();_salvarMapsNotaCard(false);}">' +
       '<div style="display:flex;gap:8px">' +
-        '<button onclick="_salvarMapsNotaCard(true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#fff">Abrir Maps</button>' +
+        '<button onclick="_salvarMapsNotaCard(true)"  style="' + sBC + 'flex:1;background:#4A90C8;color:#111">Abrir Maps</button>' +
         '<button onclick="_salvarMapsNotaCard(false)" style="' + sBC + 'background:transparent;border:1px solid #444;color:#aaa" onmouseover="this.style.borderColor=\'#4A90C8\';this.style.color=\'#4A90C8\'" onmouseout="this.style.borderColor=\'#444\';this.style.color=\'#aaa\'">OK</button>' +
         '<button onclick="document.getElementById(\'adq-maps-nota-modal\').remove()" style="' + sBC + 'width:38px;height:38px;background:transparent;border:1px solid #333;color:#666;font-size:1.5rem;padding:0;display:flex;align-items:center;justify-content:center;line-height:1" onmouseover="this.style.borderColor=\'#e55\';this.style.color=\'#e55\'" onmouseout="this.style.borderColor=\'#333\';this.style.color=\'#666\'">×</button>' +
       '</div>' +
