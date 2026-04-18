@@ -1113,8 +1113,8 @@
     .form-grid { grid-template-columns: 1fr; }
     .form-grid-3 { grid-template-columns: 1fr 1fr; }
     .btn-hd { padding: 0 7px; font-size: 0.65rem; height: 24px; }
-    .equip-section-title { padding: 0 12px 8px; margin: 0 0 8px; }
-    .kits-section { padding: 0 12px 16px; }
+    .equip-section-title { padding: 0 0 8px; margin: 0 12px 8px; }
+    .kits-section { padding: 0 12px 0; }
     .kit-folder-eq-row { max-height: none; }
     .kit-folder-body { padding: 12px 14px 14px; }
     .kit-folder-preview { grid-template-columns: repeat(4, 1fr); height: 44px; }
@@ -1251,13 +1251,13 @@
 
   /* ── KITS SECTION ── */
   .kits-section {
-    padding: 0 24px 20px;
+    padding: 0 24px 0;
   }
   .kits-section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border2);
   }
@@ -1570,8 +1570,8 @@
 
   /* equipamentos section label */
   .equip-section-title {
-    padding: 0 24px 8px;
-    margin-bottom: 10px;
+    padding: 0 0 8px;
+    margin: 0 24px 10px;
     border-bottom: 1px solid var(--border2);
     display: flex;
     align-items: center;
@@ -1784,7 +1784,7 @@
   }
 
   @media (max-width: 600px) {
-    .kits-section { padding: 0 12px 16px; }
+    .kits-section { padding: 0 12px 0; }
     .kit-folder { width: 100%; }
     .kit-novo-card { width: 100%; height: 90px; }
     .kit-mov-transitions { grid-template-columns: 1fr; }
@@ -2298,6 +2298,31 @@
     0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)}
   }
 
+  /* ── LOG GRUPOS (Admin Histórico) ── */
+  .log-grupo { border-bottom: 1px solid var(--border); }
+  .log-grupo:last-child { border-bottom: none; }
+  .log-grupo-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 22px; cursor: pointer; user-select: none;
+    transition: background 0.15s;
+  }
+  .log-grupo-header:hover { background: rgba(255,255,255,0.03); }
+  .log-grupo-titulo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem; font-weight: 700;
+    color: #4A90D9; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .log-grupo-direita { display: flex; align-items: center; gap: 10px; }
+  .log-grupo-count {
+    font-size: 0.68rem; font-weight: 700;
+    color: #555; background: rgba(255,255,255,0.05);
+    padding: 1px 7px; border-radius: 10px;
+  }
+  .log-grupo-chevron { color: #555; font-size: 0.6rem; transition: transform 0.2s; display: inline-block; }
+  .log-grupo.aberto .log-grupo-chevron { transform: rotate(180deg); }
+  .log-grupo-body { display: none; }
+  .log-grupo.aberto .log-grupo-body { display: block; }
+
   /* ── KIT SLOT PANELS ── */
   .kit-slot-panel {
     background: var(--surface);
@@ -2459,7 +2484,6 @@
   }
 
 </style>
-</head>
 <body>
 
 <!-- Firebase SDKs -->
@@ -2513,6 +2537,7 @@
       <button id="btn-instalar" onclick="instalarApp()" class="btn-hd" title="Instalar app" style="display:none;align-items:center;gap:5px;border-color:var(--gold);color:var(--gold)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Instalar</button>
       <button class="btn-hd" onclick="abrirModalCategorias()" title="Gerenciar categorias" style="display:flex;align-items:center;gap:5px;border-color:rgba(74,144,217,0.5);color:var(--gold)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Categorias</button>
       <button class="btn-hd" onclick="abrirAgenda()" title="Agenda de eventos" id="btn-agenda" style="display:flex;align-items:center;gap:5px;border-color:rgba(245,166,35,0.5);color:#F5A623"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda<span id="agenda-badge" style="display:none;background:#F5A623;color:#111;border-radius:9px;padding:0 5px;font-size:0.55rem;font-weight:800;line-height:15px">0</span></button>
+      <button id="btn-admin-estoque" onclick="abrirPainelAdminEstoque()" title="Painel do Administrador" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:0;width:26px;height:26px;box-sizing:border-box;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button class="btn-hd danger" onclick="sair()" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
     </div>
   </header>
@@ -2602,10 +2627,7 @@
         Kits
         <svg id="kits-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;margin-left:4px"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <button class="btn-novo-kit" onclick="event.stopPropagation();abrirModalNovoKit()">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Novo kit
-      </button>
+
     </div>
     <div class="kits-grid" id="kits-grid" style="transition:max-height 0.3s ease,opacity 0.3s ease;overflow:hidden">
       <!-- renderizado por JS -->
@@ -2632,11 +2654,9 @@
 
   <!-- TAB PANEL: Equipamentos -->
   <div id="tab-panel-equipamentos">
-    <!-- GRID VIEW -->
     <div class="equip-grid" id="equip-grid">
       <div class="loading-state">Carregando estoque...</div>
     </div>
-    <!-- LIST VIEW -->
     <div class="equip-list" id="equip-list"></div>
   </div>
 
@@ -2727,6 +2747,10 @@ auth.onAuthStateChanged(function(user) {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'block';
     document.getElementById('user-name').textContent = user.email.split('@')[0];
+    var btnAdmin = document.getElementById('btn-admin-estoque');
+    if (btnAdmin) {
+      btnAdmin.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'flex' : 'none';
+    }
     iniciarEstoque();
   } else {
     document.getElementById('login-screen').style.display = 'flex';
@@ -2758,7 +2782,433 @@ function sair() {
   auth.signOut();
 }
 
-// ── Firebase Realtime ──
+// ══════════════════════════════════════════════════════════════════════════════
+// PAINEL DO ADMINISTRADOR — ESTOQUE
+// ══════════════════════════════════════════════════════════════════════════════
+
+var _admEstVeicB64 = null;
+
+function abrirPainelAdminEstoque() {
+  var existing = document.getElementById('modal-admin-estoque');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'modal-admin-estoque';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.addEventListener('wheel', function(e) { e.preventDefault(); }, { passive: false });
+  modal.addEventListener('touchmove', function(e) {
+    var el = e.target;
+    while (el && el !== modal) {
+      var style = window.getComputedStyle(el);
+      var oy = style.overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight) return;
+      el = el.parentElement;
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  modal.innerHTML = '\
+    <div style="background:#1a1a1a;border:1px solid #4A90D9;border-radius:10px;width:100%;max-width:500px;box-sizing:border-box;overflow:hidden">\
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0 22px">\
+        <span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.85rem;font-weight:800;color:#4A90D9;text-transform:uppercase;letter-spacing:0.14em">⚙ Painel do Administrador</span>\
+        <button onclick="document.body.style.overflow=\'\';document.getElementById(\'modal-admin-estoque\').remove()" style="background:transparent;border:1px solid #333;color:#666;border-radius:4px;width:30px;height:30px;cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0">×</button>\
+      </div>\
+      <div style="position:relative;padding:14px 22px 0 22px;margin-top:14px">\
+        <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1">\
+          <button id="adm-est-tab-veic" onclick="_admEstAba(0)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #4A90D9;color:#4A90D9;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Veículos</button>\
+          <button id="adm-est-tab-hist" onclick="_admEstAba(1)" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\
+        </div>\
+        <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:#2a2a2a;z-index:0"></div>\
+      </div>\
+      <div id="adm-est-slider" style="display:block;overflow:hidden;height:60vh">\
+        <div id="adm-est-panel-veic" style="padding:20px 22px 22px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain">\
+          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#4A90D9;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Veículos cadastrados</div>\
+            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Estes veículos aparecem no seletor de cada card de evento.</div>\
+            <div id="adm-est-veic-lista" style="margin-bottom:4px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
+          </div>\
+          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px">\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#4A90D9;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Adicionar veículo</div>\
+            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Carregue uma imagem (fundo preto ou branco) — ela será recortada e otimizada automaticamente.</div>\
+            <div id="adm-est-veic-dropzone" onclick="document.getElementById(\'adm-est-veic-file\').click()" style="border:2px dashed #2a2a2a;border-radius:6px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:12px">\
+              <svg width="28" height="20" viewBox="0 0 36 24" fill="none" stroke="#444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="8" width="34" height="13" rx="3"/><path d="M4 8V7a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="21" r="2.5"/><circle cx="27" cy="21" r="2.5"/></svg>\
+              <div style="font-size:0.7rem;color:#444;margin-top:8px">Clique para selecionar imagem</div>\
+              <div style="font-size:0.62rem;color:#333;margin-top:3px">PNG, JPG — fundo preto ou branco</div>\
+            </div>\
+            <input id="adm-est-veic-file" type="file" accept="image/*" style="display:none" onchange="_admEstVeicPreview(this)" />\
+            <div id="adm-est-veic-preview-area" style="display:none;margin-bottom:12px">\
+              <div style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Preview (fundo removido)</div>\
+              <div style="background:#0e0e0e;border:1px solid #222;border-radius:5px;padding:10px;display:flex;align-items:center;justify-content:center;min-height:60px">\
+                <img id="adm-est-veic-preview-img" style="max-height:50px;max-width:180px" />\
+              </div>\
+            </div>\
+            <div style="display:flex;gap:8px;align-items:center">\
+              <input id="adm-est-veic-nome" type="text" placeholder="Nome do veículo (ex: Sprinter)" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.78rem;padding:8px 10px;outline:none;box-sizing:border-box" />\
+              <button onclick="_admEstVeicAdicionar()" style="background:#4A90D9;color:#fff;border:none;border-radius:4px;padding:8px 16px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;white-space:nowrap;flex-shrink:0">Salvar</button>\
+            </div>\
+            <div id="adm-est-veic-status" style="margin-top:8px;font-size:0.68rem;min-height:16px"></div>\
+          </div>\
+        </div>\
+        <div id="adm-est-panel-hist" style="padding:0;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
+          <div id="adm-est-hist-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
+        </div>\
+      </div>\
+    </div>';
+
+  modal.addEventListener('click', function(e) { if (e.target === modal) { document.body.style.overflow = ''; modal.remove(); } });
+  document.body.style.overflow = 'hidden';
+  document.body.appendChild(modal);
+
+  setTimeout(function() { _admEstVeicCarregar(); }, 0);
+}
+
+function _admEstAba(idx) {
+  var keys = ['veic', 'hist'];
+  keys.forEach(function(k, i) {
+    var tab = document.getElementById('adm-est-tab-' + k);
+    var panel = document.getElementById('adm-est-panel-' + k);
+    if (tab) { tab.style.borderBottomColor = i === idx ? '#4A90D9' : 'transparent'; tab.style.color = i === idx ? '#4A90D9' : '#555'; }
+    if (panel) panel.style.display = i === idx ? '' : 'none';
+  });
+  if (idx === 0) { _admEstVeicCarregar(); }
+  if (idx === 1) { _admEstHistCarregar(); }
+}
+
+// ── Admin Estoque: Veículos ──
+
+function _admEstVeicCarregar() {
+  var lista = document.getElementById('adm-est-veic-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div style="font-size:0.75rem;color:#555">Carregando...</div>';
+  db.collection('configuracoes').doc('veiculos').get()
+    .then(function(doc) {
+      var veics = (doc.exists && doc.data().lista) ? doc.data().lista : [];
+      _admEstVeicRenderLista(lista, veics);
+    })
+    .catch(function() { lista.innerHTML = '<div style="font-size:0.73rem;color:#e05c5c">Erro ao carregar.</div>'; });
+}
+
+function _admEstVeicRenderLista(lista, veics) {
+  if (!veics.length) {
+    lista.innerHTML = '<div style="font-size:0.73rem;color:#555;padding:6px 0">Nenhum veículo cadastrado.</div>';
+    return;
+  }
+  lista.innerHTML = veics.map(function(v, i) {
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #1a1a1a;flex-wrap:wrap" id="adm-est-veic-row-' + i + '">' +
+      '<div style="background:#0e0e0e;border:1px solid #1e1e1e;border-radius:4px;padding:4px 8px;display:flex;align-items:center;justify-content:center;width:80px;height:36px;flex-shrink:0">' +
+        '<img src="' + v.img + '" style="max-height:28px;max-width:72px;object-fit:contain">' +
+      '</div>' +
+      '<span id="adm-est-veic-nome-label-' + i + '" onclick="_admEstVeicEditarNome(' + i + ')" title="Clique para editar" style="flex:1;min-width:80px;font-size:0.78rem;color:#ccc;font-weight:600;cursor:text;border-bottom:1px dashed transparent;transition:border-color 0.15s;padding-bottom:1px" onmouseover="this.style.borderBottomColor=\'#444\'" onmouseout="this.style.borderBottomColor=\'transparent\'">' + _esc(v.nome) + '</span>' +
+      '<div style="display:flex;gap:5px;flex-shrink:0;margin-left:auto">' +
+        '<button onclick="_admEstVeicEditar(' + i + ')" style="background:none;border:1px solid rgba(180,180,180,0.25);color:#aaa;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s;white-space:nowrap" onmouseover="this.style.background=\'rgba(255,255,255,0.07)\'" onmouseout="this.style.background=\'none\'">Editar</button>' +
+        '<button onclick="_admEstVeicDuplicar(' + i + ')" style="background:none;border:1px solid rgba(74,144,217,0.3);color:#4A90D9;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s;white-space:nowrap" onmouseover="this.style.background=\'rgba(74,144,217,0.1)\'" onmouseout="this.style.background=\'none\'">Duplicar</button>' +
+        '<button onclick="_admEstVeicRemover(' + i + ')" style="background:none;border:1px solid rgba(224,92,92,0.3);color:#e05c5c;border-radius:4px;padding:4px 10px;font-size:0.68rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.06em;transition:background 0.15s;white-space:nowrap" onmouseover="this.style.background=\'rgba(224,92,92,0.12)\'" onmouseout="this.style.background=\'none\'">Remover</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function _esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function _admEstVeicEditar(idx) {
+  db.collection('configuracoes').doc('veiculos').get().then(function(doc) {
+    var veics = (doc.exists && doc.data().lista) ? doc.data().lista : [];
+    var v = veics[idx];
+    if (!v) return;
+    var saved = v.ajuste || { x: 0, y: 0, scale: 1 };
+    var cur = { x: saved.x, y: saved.y, scale: saved.scale };
+
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+    overlay.innerHTML =
+      '<div style="background:#1a1a1a;border:1px solid #3a3a3a;border-radius:10px;width:100%;max-width:340px;padding:22px;box-sizing:border-box">' +
+        '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.82rem;font-weight:800;color:#4A90D9;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px">Ajustar imagem</div>' +
+        '<div style="font-size:0.65rem;color:#555;margin-bottom:18px">' + _esc(v.nome) + '</div>' +
+        '<div style="display:flex;justify-content:center;margin-bottom:20px">' +
+          '<div style="position:relative;width:120px;height:36px;background:#0d0d0d;border:1px dashed #444;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center">' +
+            '<img id="adm-est-veic-edit-preview" src="' + v.img + '" style="position:absolute;height:' + (22 * cur.scale) + 'px;width:auto;transform:translate(' + cur.x + 'px,' + cur.y + 'px);transition:none;user-select:none;pointer-events:none">' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:16px">' +
+          '<button id="adm-est-veic-mv-up" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center">▲</button>' +
+          '<div style="display:flex;gap:4px">' +
+            '<button id="adm-est-veic-mv-left" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center">◀</button>' +
+            '<div style="width:36px;height:30px;background:#111;border:1px solid #222;border-radius:4px;display:flex;align-items:center;justify-content:center"><svg width="14" height="10" viewBox="0 0 36 24" fill="none" stroke="#444" stroke-width="1.8" stroke-linecap="round"><rect x="1" y="7" width="34" height="13" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="20" r="2.5"/><circle cx="27" cy="20" r="2.5"/></svg></div>' +
+            '<button id="adm-est-veic-mv-right" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center">▶</button>' +
+          '</div>' +
+          '<button id="adm-est-veic-mv-down" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center">▼</button>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:22px">' +
+          '<button id="adm-est-veic-scale-down" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center">−</button>' +
+          '<span style="font-size:0.7rem;color:#666;min-width:60px;text-align:center" id="adm-est-veic-scale-label">Tamanho: ' + Math.round(cur.scale * 100) + '%</span>' +
+          '<button id="adm-est-veic-scale-up" style="background:#222;border:1px solid #333;color:#ccc;border-radius:4px;width:36px;height:30px;cursor:pointer;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center">+</button>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px">' +
+          '<button id="adm-est-veic-edit-reset" style="flex:1;background:none;border:1px solid #333;color:#666;border-radius:4px;padding:8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer">↺ Desfazer</button>' +
+          '<button id="adm-est-veic-edit-ok" style="flex:1;background:#4A90D9;border:none;color:#fff;border-radius:4px;padding:8px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer">✓ OK</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+
+    var preview = document.getElementById('adm-est-veic-edit-preview');
+    var scaleLabel = document.getElementById('adm-est-veic-scale-label');
+    var STEP_PX = 1, STEP_SCALE = 0.05;
+
+    function applyPreview() {
+      preview.style.height = (22 * cur.scale) + 'px';
+      preview.style.transform = 'translate(' + cur.x + 'px,' + cur.y + 'px)';
+      scaleLabel.textContent = 'Tamanho: ' + Math.round(cur.scale * 100) + '%';
+    }
+
+    function makeRepeater(fn) {
+      var timer = null, interval = null;
+      function start(e) { e.preventDefault(); fn(); timer = setTimeout(function() { interval = setInterval(fn, 80); }, 350); }
+      function stop() { clearTimeout(timer); clearInterval(interval); }
+      return { start: start, stop: stop };
+    }
+
+    var actions = {
+      'adm-est-veic-mv-up':      function() { cur.y -= STEP_PX; applyPreview(); },
+      'adm-est-veic-mv-down':    function() { cur.y += STEP_PX; applyPreview(); },
+      'adm-est-veic-mv-left':    function() { cur.x -= STEP_PX; applyPreview(); },
+      'adm-est-veic-mv-right':   function() { cur.x += STEP_PX; applyPreview(); },
+      'adm-est-veic-scale-up':   function() { cur.scale = Math.round((cur.scale + STEP_SCALE) * 100) / 100; applyPreview(); },
+      'adm-est-veic-scale-down': function() { cur.scale = Math.max(0.1, Math.round((cur.scale - STEP_SCALE) * 100) / 100); applyPreview(); }
+    };
+    Object.keys(actions).forEach(function(id) {
+      var btn = document.getElementById(id);
+      if (!btn) return;
+      var r = makeRepeater(actions[id]);
+      btn.addEventListener('mousedown', r.start);
+      btn.addEventListener('touchstart', r.start, { passive: false });
+      document.addEventListener('mouseup', r.stop);
+      document.addEventListener('touchend', r.stop);
+    });
+
+    document.getElementById('adm-est-veic-edit-reset').addEventListener('click', function() {
+      cur = { x: 0, y: 0, scale: 1 }; applyPreview();
+    });
+    document.getElementById('adm-est-veic-edit-ok').addEventListener('click', function() {
+      db.collection('configuracoes').doc('veiculos').get().then(function(doc2) {
+        var veics2 = (doc2.exists && doc2.data().lista) ? doc2.data().lista : [];
+        if (veics2[idx]) veics2[idx].ajuste = { x: cur.x, y: cur.y, scale: cur.scale };
+        return db.collection('configuracoes').doc('veiculos').set({ lista: veics2 }).then(function() { return veics2; });
+      }).then(function() {
+        overlay.remove();
+        _admEstVeicCarregar();
+      }).catch(function(e) { alert('Erro ao salvar: ' + e.message); });
+    });
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  });
+}
+
+function _admEstVeicEditarNome(idx) {
+  var label = document.getElementById('adm-est-veic-nome-label-' + idx);
+  if (!label || label.querySelector('input')) return;
+  var nomeAtual = label.textContent.trim();
+  label.innerHTML = '';
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = nomeAtual;
+  input.style.cssText = 'flex:1;width:100%;background:#0e0e0e;border:1px solid #4A90D9;border-radius:3px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.78rem;font-weight:600;padding:3px 6px;outline:none;box-sizing:border-box';
+  label.appendChild(input);
+  input.focus(); input.select();
+  function salvar() {
+    var novo = input.value.trim();
+    if (!novo) { _admEstVeicCarregar(); return; }
+    db.collection('configuracoes').doc('veiculos').get()
+      .then(function(doc) {
+        var veics = (doc.exists && doc.data().lista) ? doc.data().lista : [];
+        if (veics[idx]) veics[idx].nome = novo;
+        return db.collection('configuracoes').doc('veiculos').set({ lista: veics });
+      }).then(function() { _admEstVeicCarregar(); }).catch(function() { _admEstVeicCarregar(); });
+  }
+  input.addEventListener('blur', salvar);
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') _admEstVeicCarregar();
+  });
+}
+
+function _admEstVeicDuplicar(idx) {
+  db.collection('configuracoes').doc('veiculos').get()
+    .then(function(doc) {
+      var veics = (doc.exists && doc.data().lista) ? doc.data().lista : [];
+      var orig = veics[idx];
+      var copia = { id: orig.id + '_copia_' + Date.now(), nome: orig.nome + ' (cópia)', img: orig.img };
+      veics.splice(idx + 1, 0, copia);
+      return db.collection('configuracoes').doc('veiculos').set({ lista: veics });
+    }).then(function() { _admEstVeicCarregar(); })
+    .catch(function(e) { alert('Erro ao duplicar: ' + e.message); });
+}
+
+function _admEstVeicRemover(idx) {
+  if (!confirm('Remover este veículo?')) return;
+  db.collection('configuracoes').doc('veiculos').get()
+    .then(function(doc) {
+      var veics = (doc.exists && doc.data().lista) ? doc.data().lista : [];
+      veics.splice(idx, 1);
+      return db.collection('configuracoes').doc('veiculos').set({ lista: veics });
+    }).then(function() { _admEstVeicCarregar(); })
+    .catch(function(e) { alert('Erro ao remover: ' + e.message); });
+}
+
+function _admEstVeicPreview(inputEl) {
+  var file = inputEl.files[0];
+  if (!file) return;
+  var status = document.getElementById('adm-est-veic-status');
+  status.style.color = '#888';
+  status.textContent = 'Processando imagem...';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      var px = ctx.getImageData(0, 0, 1, 1).data;
+      var bgDark = (px[0] + px[1] + px[2]) < 120;
+      var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var d = imgData.data;
+      for (var i = 0; i < d.length; i += 4) {
+        var r = d[i], g = d[i+1], b = d[i+2];
+        var brightness = r + g + b;
+        if (bgDark ? brightness < 90 : brightness > 660) {
+          d[i+3] = 0;
+        } else if (bgDark ? brightness < 150 : brightness > 600) {
+          d[i+3] = Math.round(bgDark ? (brightness - 90) / 60 * 255 : (660 - brightness) / 60 * 255);
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+      var bounds = _admEstVeicBBox(ctx, canvas.width, canvas.height);
+      var outW = Math.min(240, bounds.w);
+      var outH = Math.round(outW * bounds.h / bounds.w);
+      var out = document.createElement('canvas');
+      out.width = outW; out.height = outH;
+      out.getContext('2d').drawImage(canvas, bounds.x, bounds.y, bounds.w, bounds.h, 0, 0, outW, outH);
+      _admEstVeicB64 = out.toDataURL('image/png');
+      var prevArea = document.getElementById('adm-est-veic-preview-area');
+      var prevImg = document.getElementById('adm-est-veic-preview-img');
+      prevImg.src = _admEstVeicB64;
+      prevArea.style.display = 'block';
+      status.style.color = '#4AC87A';
+      status.textContent = 'Imagem processada. Defina um nome e salve.';
+      var nomeInput = document.getElementById('adm-est-veic-nome');
+      if (!nomeInput.value) {
+        var fn = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+        nomeInput.value = fn.substring(0, 30);
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function _admEstVeicBBox(ctx, w, h) {
+  var d = ctx.getImageData(0, 0, w, h).data;
+  var minX = w, maxX = 0, minY = h, maxY = 0;
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4 + 3] > 20) {
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < minX) return { x: 0, y: 0, w: w, h: h };
+  var pad = 4;
+  return { x: Math.max(0, minX-pad), y: Math.max(0, minY-pad), w: Math.min(w-1, maxX+pad) - Math.max(0, minX-pad), h: Math.min(h-1, maxY+pad) - Math.max(0, minY-pad) };
+}
+
+function _admEstVeicAdicionar() {
+  var nome = (document.getElementById('adm-est-veic-nome').value || '').trim();
+  var status = document.getElementById('adm-est-veic-status');
+  if (!nome) { status.style.color = '#e05c5c'; status.textContent = 'Informe o nome do veículo.'; return; }
+  if (!_admEstVeicB64) { status.style.color = '#e05c5c'; status.textContent = 'Carregue uma imagem primeiro.'; return; }
+  status.style.color = '#888'; status.textContent = 'Salvando...';
+  var id = nome.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') + '_' + Date.now();
+  db.collection('configuracoes').doc('veiculos').get()
+    .then(function(doc) {
+      var veics = (doc.exists && doc.data().lista) ? doc.data().lista : [];
+      veics.push({ id: id, nome: nome, img: _admEstVeicB64 });
+      return db.collection('configuracoes').doc('veiculos').set({ lista: veics });
+    }).then(function() {
+      status.style.color = '#4AC87A';
+      status.textContent = 'Veículo "' + nome + '" salvo com sucesso!';
+      document.getElementById('adm-est-veic-nome').value = '';
+      document.getElementById('adm-est-veic-file').value = '';
+      document.getElementById('adm-est-veic-preview-area').style.display = 'none';
+      _admEstVeicB64 = null;
+      _admEstVeicCarregar();
+    }).catch(function(e) { status.style.color = '#e05c5c'; status.textContent = 'Erro: ' + e.message; });
+}
+
+// ── Admin Estoque: Histórico de Movimentações ──
+
+function _admEstHistCarregar() {
+  var lista = document.getElementById('adm-est-hist-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div>';
+  db.collection('historico_movimentacoes')
+    .orderBy('criadoEm', 'desc')
+    .limit(100)
+    .get()
+    .then(function(snap) {
+      if (snap.empty) {
+        lista.innerHTML = '<div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Nenhuma movimentação registrada.</div>';
+        return;
+      }
+      // Agrupar por data
+      var grupos = {};
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        var data = d.criadoEm && d.criadoEm.toDate ? d.criadoEm.toDate() : new Date();
+        var chave = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+        if (!grupos[chave]) grupos[chave] = [];
+        grupos[chave].push({ id: doc.id, data: data, ...d });
+      });
+      var html = '';
+      Object.keys(grupos).forEach(function(chave) {
+        html += '<div class="log-grupo aberto">' +
+          '<div class="log-grupo-header" onclick="this.parentElement.classList.toggle(\'aberto\')">' +
+            '<span class="log-grupo-titulo">' + chave + '</span>' +
+            '<div class="log-grupo-direita">' +
+              '<span class="log-grupo-count">' + grupos[chave].length + '</span>' +
+              '<span class="log-grupo-chevron">▼</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="log-grupo-body">';
+        grupos[chave].forEach(function(mov) {
+          var hora = mov.data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          var tipoColor = mov.tipo === 'saida' ? '#e05c5c' : mov.tipo === 'entrada' ? '#4AC87A' : '#4A90D9';
+          var tipoLabel = mov.tipo === 'saida' ? '↑ Saída' : mov.tipo === 'entrada' ? '↓ Entrada' : mov.tipo || 'Movimentação';
+          html += '<div style="padding:10px 22px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:flex-start;gap:10px">' +
+            '<div style="font-size:0.62rem;font-weight:700;color:' + tipoColor + ';background:rgba(0,0,0,0.3);border:1px solid ' + tipoColor + ';border-radius:3px;padding:2px 6px;white-space:nowrap;flex-shrink:0;margin-top:2px">' + tipoLabel + '</div>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div style="font-size:0.78rem;font-weight:700;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + _esc(mov.item || mov.nome || '—') + '</div>' +
+              '<div style="font-size:0.68rem;color:#666;margin-top:2px">' +
+                (mov.quantidade ? 'Qtd: <span style="color:#aaa;font-weight:600">' + mov.quantidade + '</span>' : '') +
+                (mov.usuario ? ' &nbsp;·&nbsp; ' + _esc(mov.usuario) : '') +
+                (mov.obs ? ' &nbsp;·&nbsp; ' + _esc(mov.obs) : '') +
+              '</div>' +
+            '</div>' +
+            '<div style="font-size:0.65rem;color:#555;flex-shrink:0;margin-top:2px">' + hora + '</div>' +
+          '</div>';
+        });
+        html += '</div></div>';
+      });
+      lista.innerHTML = html;
+    })
+    .catch(function(e) {
+      // Caso a coleção não exista ainda, mostra mensagem amigável
+      lista.innerHTML = '<div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Nenhuma movimentação registrada ainda.<br><span style="font-size:0.7rem;color:#444;margin-top:6px;display:block">As movimentações serão exibidas aqui conforme forem registradas.</span></div>';
+    });
+}
 function iniciarEstoque() {
   db.collection('estoque').onSnapshot(function(snap) {
     _equipamentos = {};
@@ -4732,7 +5182,7 @@ function renderKits() {
     });
     var borderStyle = temZero ? 'border-color:var(--red)' : (temWarn ? 'border-color:var(--amber)' : '');
 
-    // Build 9 slots (3×3)
+    // 9 slots 3×3
     var slots = '';
     for (var s = 0; s < 9; s++) {
       if (s < itens.length) {
@@ -4753,7 +5203,6 @@ function renderKits() {
       }
     }
 
-    // Ícone edit SVG
     var svgEdit = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
     var svgChevron = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
@@ -5303,6 +5752,15 @@ var _iniciarEstoqueOrigKit = iniciarEstoque;
 iniciarEstoque = function() {
   _iniciarEstoqueOrigKit();
   iniciarKits();
+  iniciarEventosAndamento();
+  // Posicionar seção de eventos antes dos kits
+  setTimeout(function() {
+    var sec = document.getElementById('eventos-andamento-section');
+    var kitsSection = document.getElementById('kits-section');
+    if (sec && kitsSection && kitsSection.parentNode) {
+      kitsSection.parentNode.insertBefore(sec, kitsSection);
+    }
+  }, 200);
 };
 
 // ── Seções colapsáveis do modal de kit ──
@@ -6009,9 +6467,8 @@ function _atualizarConflitosNosKits() {
   </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     MÓDULO: EVENTOS EM ANDAMENTO + VEÍCULOS
+     MÓDULO: EVENTOS EM ANDAMENTO
      Seção superior: eventos ativos do painel de eventos
-     Seção de veículos: kits especiais para montar cargas
 ════════════════════════════════════════════════════════════════ -->
 <style>
 /* ══════════════════════════════════
@@ -6155,253 +6612,6 @@ function _atualizarConflitosNosKits() {
   border-color: #F5A623;
   color: #F5A623;
   background: rgba(245,166,35,0.06);
-}
-
-/* ══════════════════════════════════
-   VEÍCULOS
-══════════════════════════════════ */
-.veiculos-section {
-  padding: 0 12px 8px;
-  margin-top: 4px;
-}
-.veiculos-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 9px 0 8px;
-  border-bottom: 1px solid var(--border2);
-  margin-bottom: 10px;
-  cursor: pointer;
-  user-select: none;
-}
-.veiculos-section-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--muted);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.veiculo-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-  transition: max-height 0.3s ease, opacity 0.3s ease;
-  overflow: hidden;
-}
-
-/* Veiculo card - visual de "baú/carga" */
-.veiculo-card {
-  background: var(--dark);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  transition: border-color 0.18s, box-shadow 0.18s, transform 0.15s;
-  cursor: pointer;
-  position: relative;
-}
-.veiculo-card:hover {
-  border-color: rgba(74,144,217,0.45);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.4);
-  transform: translateY(-2px);
-}
-.veiculo-card.drag-over-veiculo {
-  border-color: var(--gold) !important;
-  box-shadow: 0 0 0 2px rgba(74,144,217,0.4), 0 8px 24px rgba(74,144,217,0.2) !important;
-  background: rgba(74,144,217,0.04) !important;
-}
-
-/* Topo estilo "capô" */
-.veiculo-top-bar {
-  height: 4px;
-  background: linear-gradient(90deg, var(--gold), rgba(74,144,217,0.4));
-}
-.veiculo-body {
-  padding: 12px 12px 10px;
-}
-.veiculo-header-row {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 8px;
-}
-.veiculo-icon {
-  width: 36px; height: 36px;
-  background: var(--gold-dim);
-  border: 1px solid rgba(74,144,217,0.2);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gold);
-  flex-shrink: 0;
-}
-.veiculo-info { flex: 1; min-width: 0; }
-.veiculo-nome {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.veiculo-placa {
-  font-size: 0.6rem;
-  color: var(--muted);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-/* Barra de carga (inventário estilo jogo) */
-.veiculo-carga-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-.veiculo-carga-track {
-  flex: 1;
-  height: 5px;
-  background: var(--border2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.veiculo-carga-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.4s ease;
-  background: linear-gradient(90deg, var(--gold), #5BA8E8);
-}
-.veiculo-carga-label {
-  font-size: 0.58rem;
-  color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-}
-
-/* Itens dentro do veículo */
-.veiculo-itens-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
-  max-height: 120px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #333 transparent;
-}
-.veiculo-item-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 3px 6px;
-  background: var(--surface2);
-  border-radius: 4px;
-  gap: 6px;
-}
-.veiculo-item-nome {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text);
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.veiculo-item-tipo {
-  font-size: 0.55rem;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-.veiculo-item-rm {
-  width: 14px; height: 14px;
-  background: none;
-  border: none;
-  color: #555;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 3px;
-  padding: 0;
-  transition: color 0.15s, background 0.15s;
-  flex-shrink: 0;
-}
-.veiculo-item-rm:hover { color: var(--red); background: rgba(224,92,92,0.1); }
-
-.veiculo-drop-hint {
-  border: 1px dashed #333;
-  border-radius: 6px;
-  padding: 8px;
-  text-align: center;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #444;
-  transition: border-color 0.15s, color 0.15s;
-  margin-bottom: 8px;
-}
-.veiculo-card.drag-over-veiculo .veiculo-drop-hint {
-  border-color: var(--gold);
-  color: var(--gold);
-  background: var(--gold-dim);
-}
-
-/* Tags do veículo */
-.veiculo-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-.veiculo-tag {
-  font-size: 0.58rem;
-  border-radius: 3px;
-  padding: 1px 6px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  border: 1px solid;
-  white-space: nowrap;
-}
-.veiculo-tag.ok { background: rgba(37,211,102,0.1); border-color: rgba(37,211,102,0.3); color: #25D366; }
-.veiculo-tag.parcial { background: rgba(91,168,232,0.1); border-color: rgba(91,168,232,0.3); color: #5BA8E8; }
-.veiculo-tag.vazio { background: rgba(255,255,255,0.04); border-color: #333; color: #555; }
-.veiculo-tag.evento-link { background: rgba(245,166,35,0.1); border-color: rgba(245,166,35,0.3); color: #F5A623; }
-
-/* Novo veículo card */
-.veiculo-novo-card {
-  background: transparent;
-  border: 1px dashed #2a2a2a;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 130px;
-  cursor: pointer;
-  transition: border-color 0.18s, color 0.18s, background 0.18s;
-  color: #444;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.veiculo-novo-card:hover {
-  border-color: var(--gold);
-  color: var(--gold);
-  background: var(--gold-dim);
 }
 
 /* ══════════════════════════════════
@@ -6621,26 +6831,6 @@ function _atualizarConflitosNosKits() {
   </div>
 </div>
 
-<!-- HTML: Veículos (inserido antes dos kits via JS) -->
-<div id="veiculos-section-wrapper" style="display:none">
-  <div class="veiculos-section">
-    <div class="veiculos-section-header" onclick="toggleSecaoVeiculos()">
-      <div class="veiculos-section-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Veículos
-        <svg id="veiculos-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="transition:transform 0.2s;margin-left:4px"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <button class="btn-novo-kit" onclick="event.stopPropagation();abrirModalNovoVeiculo()">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Novo veículo
-      </button>
-    </div>
-    <div class="veiculo-grid" id="veiculo-grid" style="overflow:hidden;transition:max-height 0.3s ease,opacity 0.3s ease">
-      <!-- renderizado por JS -->
-    </div>
-  </div>
-</div>
-
 <script>
 // ═══════════════════════════════════════════════════════════════
 // MÓDULO EVENTOS EM ANDAMENTO
@@ -6650,7 +6840,6 @@ function _atualizarConflitosNosKits() {
 
 var _eventosAndamento = {};     // id → doc do painel
 var _reservasEventos = {};      // estoque_id → [{evento, qtd, status}]
-var _veiculosSecaoAberta = true;
 
 // ── Iniciar listener de eventos em andamento ──
 function iniciarEventosAndamento() {
@@ -6757,7 +6946,7 @@ function _fmtEvData(d) {
 }
 
 // ── Drag de kits/equips sobre card de evento ──
-var _draggingParaEvento = null; // {tipo: 'kit'|'eq'|'veiculo', id}
+var _draggingParaEvento = null; // {tipo: 'kit'|'eq', id}
 
 function evCardOver(ev, evId) {
   if (!_draggingParaEvento && !_draggingEqId) return;
@@ -7011,571 +7200,6 @@ function _aplicarBadgesReservas() {
     });
   });
 }
-
-// ══════════════════════════════════════════════════════════════════
-// MÓDULO VEÍCULOS
-// Coleção Firestore: 'veiculos'
-// Documento: { nome, placa, tipo, descricao, capacidade, itens: [{id, nome, tipo, qtd}], evento_id, _atualizado }
-// ══════════════════════════════════════════════════════════════════
-
-var _veiculos = {};              // id → doc
-var _veiculoEditandoId = null;
-var _veiculoItensAtual = [];     // [{id, nome, tipo, qtd}]
-var _draggingParaVeiculo = null; // {tipo, id, nome}
-
-// ── Iniciar listener ──
-function iniciarVeiculos() {
-  db.collection('veiculos').onSnapshot(function(snap) {
-    _veiculos = {};
-    snap.forEach(function(doc) {
-      _veiculos[doc.id] = Object.assign({ id: doc.id }, doc.data());
-    });
-    renderVeiculos();
-    _mostrarSecaoVeiculos();
-  }, function(err) {
-    console.warn('[Veículos]', err.message);
-  });
-}
-
-function _mostrarSecaoVeiculos() {
-  var wrapper = document.getElementById('veiculos-section-wrapper');
-  if (wrapper) wrapper.style.display = 'block';
-  // Insere antes da seção de kits
-  var kitsSection = document.getElementById('kits-section');
-  if (kitsSection && wrapper && wrapper.parentNode !== kitsSection.parentNode) {
-    kitsSection.parentNode.insertBefore(wrapper, kitsSection);
-  }
-}
-
-// ── Toggle colapso ──
-function toggleSecaoVeiculos() {
-  _veiculosSecaoAberta = !_veiculosSecaoAberta;
-  var grid = document.getElementById('veiculo-grid');
-  var icon = document.getElementById('veiculos-toggle-icon');
-  if (grid) {
-    if (_veiculosSecaoAberta) {
-      grid.style.maxHeight = '2000px';
-      grid.style.opacity = '1';
-    } else {
-      grid.style.maxHeight = '0';
-      grid.style.opacity = '0';
-    }
-  }
-  if (icon) icon.style.transform = _veiculosSecaoAberta ? '' : 'rotate(-90deg)';
-}
-
-// ── Render grid de veículos ──
-function renderVeiculos() {
-  var grid = document.getElementById('veiculo-grid');
-  if (!grid) return;
-
-  var veiculosArr = Object.values(_veiculos);
-  // Ordena por _ordem ou nome
-  veiculosArr.sort(function(a, b) {
-    if ((a._ordem || 0) !== (b._ordem || 0)) return (a._ordem || 0) - (b._ordem || 0);
-    return (a.nome || '').localeCompare(b.nome || '');
-  });
-
-  var html = '';
-
-  veiculosArr.forEach(function(v) {
-    var itens = Array.isArray(v.itens) ? v.itens : [];
-    var totalItens = itens.reduce(function(s, it) { return s + (it.qtd || 1); }, 0);
-    var capacidade = v.capacidade || 20;
-    var pctCarga = Math.min(100, Math.round((totalItens / capacidade) * 100));
-    var barColor = pctCarga === 0 ? '#333' : pctCarga < 50 ? 'var(--gold)' : pctCarga < 85 ? '#5BA8E8' : 'var(--red)';
-
-    // Evento vinculado
-    var evLink = '';
-    if (v.evento_id && _eventosAndamento[v.evento_id]) {
-      var evNome = _eventosAndamento[v.evento_id].ev_nome || _eventosAndamento[v.evento_id].nome || '';
-      evLink = '<span class="veiculo-tag evento-link" title="' + esc(evNome) + '">📌 ' + esc(evNome.substring(0, 16)) + '</span>';
-    }
-
-    // Tags de status
-    var statusTag = itens.length === 0
-      ? '<span class="veiculo-tag vazio">Vazio</span>'
-      : (pctCarga >= 80 ? '<span class="veiculo-tag ok">Carregado</span>' : '<span class="veiculo-tag parcial">Parcial</span>');
-
-    // Lista resumida de itens (top 4)
-    var itensHtml = '';
-    if (itens.length > 0) {
-      itens.slice(0, 4).forEach(function(it) {
-        itensHtml += '<div class="veiculo-item-row">' +
-          '<span class="veiculo-item-nome">' + esc(it.nome || it.id || '?') + '</span>' +
-          '<span class="veiculo-item-tipo">' + (it.tipo === 'kit' ? 'kit' : it.tipo === 'acessorio' ? 'ac.' : 'eq.') + '</span>' +
-        '</div>';
-      });
-      if (itens.length > 4) {
-        itensHtml += '<div style="font-size:0.58rem;color:#555;padding:2px 6px">+ ' + (itens.length - 4) + ' mais</div>';
-      }
-    }
-
-    html += '<div class="veiculo-card" id="vcard-' + esc(v.id) + '"' +
-      ' ondragover="veiculoFolderOver(event,\'' + esc(v.id) + '\')"' +
-      ' ondragleave="veiculoFolderLeave(event,\'' + esc(v.id) + '\')"' +
-      ' ondrop="veiculoFolderDrop(event,\'' + esc(v.id) + '\')"' +
-      ' onclick="abrirModalVeiculo(\'' + esc(v.id) + '\')"' +
-      ' draggable="true"' +
-      ' ondragstart="veiculoCardDragStart(event,\'' + esc(v.id) + '\')"' +
-      '>' +
-      '<div class="veiculo-top-bar"></div>' +
-      '<div class="veiculo-body">' +
-        '<div class="veiculo-header-row">' +
-          '<div class="veiculo-icon">' + _getVeiculoIcon(v.tipo) + '</div>' +
-          '<div class="veiculo-info">' +
-            '<div class="veiculo-nome">' + esc(v.nome || 'Veículo') + '</div>' +
-            '<div class="veiculo-placa">' + (v.placa ? esc(v.placa) : 'Sem placa') + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="veiculo-carga-bar">' +
-          '<div class="veiculo-carga-track"><div class="veiculo-carga-fill" style="width:' + pctCarga + '%;background:' + barColor + '"></div></div>' +
-          '<span class="veiculo-carga-label">' + totalItens + '/' + capacidade + ' un.</span>' +
-        '</div>' +
-        (itensHtml ? '<div class="veiculo-itens-list">' + itensHtml + '</div>' : '') +
-        '<div class="veiculo-drop-hint">Arraste kits, equipamentos ou acessórios aqui</div>' +
-        '<div class="veiculo-tags">' + statusTag + evLink + '</div>' +
-      '</div>' +
-    '</div>';
-  });
-
-  // Botão novo veículo
-  html += '<div class="veiculo-novo-card" onclick="abrirModalNovoVeiculo()">' +
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-    'Novo veículo' +
-  '</div>';
-
-  grid.innerHTML = html;
-
-  // Restaura colapso
-  if (!_veiculosSecaoAberta) {
-    grid.style.maxHeight = '0';
-    grid.style.opacity = '0';
-  }
-}
-
-function _getVeiculoIcon(tipo) {
-  var svgs = {
-    van:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
-    truck:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="3" width="13" height="13" rx="2"/><polygon points="14 7 21 7 23 13 23 16 14 16 14 7"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/></svg>',
-    car:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>',
-    trailer:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="18" height="11" rx="2"/><line x1="20" y1="11" x2="23" y2="11"/><circle cx="6" cy="20" r="2"/><circle cx="16" cy="20" r="2"/></svg>'
-  };
-  return svgs[tipo] || svgs['van'];
-}
-
-// ── Drag do veículo para evento ──
-var _draggingVeiculoId = null;
-
-function veiculoCardDragStart(ev, veiculoId) {
-  _draggingVeiculoId = veiculoId;
-  ev.dataTransfer.setData('text/plain', veiculoId);
-  ev.dataTransfer.setData('tipo', 'veiculo');
-  ev.dataTransfer.effectAllowed = 'copy';
-}
-
-// ── Drag: item → veículo ──
-function veiculoFolderOver(ev, veiculoId) {
-  if (!_draggingEqId && !_draggingParaVeiculo) return;
-  ev.preventDefault();
-  ev.dataTransfer.dropEffect = 'copy';
-  var el = document.getElementById('vcard-' + veiculoId);
-  if (el) el.classList.add('drag-over-veiculo');
-}
-function veiculoFolderLeave(ev, veiculoId) {
-  var el = document.getElementById('vcard-' + veiculoId);
-  if (el) el.classList.remove('drag-over-veiculo');
-}
-function veiculoFolderDrop(ev, veiculoId) {
-  ev.preventDefault();
-  ev.stopPropagation();
-  var el = document.getElementById('vcard-' + veiculoId);
-  if (el) el.classList.remove('drag-over-veiculo');
-
-  var itemId = ev.dataTransfer.getData('text/plain') || _draggingEqId;
-  var tipo = ev.dataTransfer.getData('tipo') || (_draggingEqId ? 'eq' : null);
-  if (!itemId || !tipo) return;
-
-  var nomeItem = _getNomeItem(itemId, tipo);
-  var veiculo = _veiculos[veiculoId];
-  if (!veiculo) return;
-
-  var itens = Array.isArray(veiculo.itens) ? veiculo.itens.slice() : [];
-  var existente = itens.find(function(it) { return it.id === itemId; });
-  if (existente) { existente.qtd = (existente.qtd || 1) + 1; }
-  else { itens.push({ id: itemId, nome: nomeItem, tipo: tipo, qtd: 1 }); }
-
-  db.collection('veiculos').doc(veiculoId).update({
-    itens: itens,
-    _atualizado: Date.now()
-  }).then(function() {
-    toast(nomeItem + ' adicionado ao ' + (veiculo.nome || 'veículo') + '!');
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
-}
-
-function _getNomeItem(id, tipo) {
-  if (tipo === 'kit') { var k = _kits[id]; return k ? (k.nome || 'Kit') : id; }
-  if (tipo === 'eq') { var e = _equipamentos[id]; return e ? (e.nome || 'Equip.') : id; }
-  if (tipo === 'acessorio') { var a = _acessorios[id]; return a ? (a.nome || 'Ac.') : id; }
-  return id;
-}
-
-// ── Patch: kit cards ficam arrastáveis para veículos ──
-var _renderKitsOrig = renderKits;
-renderKits = function() {
-  _renderKitsOrig();
-  var grid = document.getElementById('kits-grid');
-  if (!grid) return;
-  var kitCards = grid.querySelectorAll('.kit-folder');
-  kitCards.forEach(function(card) {
-    var id = card.id ? card.id.replace('kit-card-', '') : null;
-    if (!id) return;
-    card.setAttribute('draggable', 'true');
-    card.addEventListener('dragstart', function(ev) {
-      _draggingParaVeiculo = { tipo: 'kit', id: id };
-      ev.dataTransfer.setData('text/plain', id);
-      ev.dataTransfer.setData('tipo', 'kit');
-      ev.dataTransfer.effectAllowed = 'copy';
-    });
-    card.addEventListener('dragend', function() {
-      _draggingParaVeiculo = null;
-    });
-    // Também pode soltar em eventos
-    card.addEventListener('dragover', function() {});
-  });
-};
-
-// ── Patch: acessório cards arrastáveis para veículos ──
-var _renderAcessoriosOrig = renderAcessorios;
-renderAcessorios = function() {
-  _renderAcessoriosOrig();
-  var grid = document.getElementById('acessorios-grid');
-  if (!grid) return;
-  grid.querySelectorAll('.ac-card').forEach(function(card) {
-    var onclick = card.getAttribute('onclick') || '';
-    var match = onclick.match(/abrirDetalheAcessorio\('([^']+)'\)/);
-    if (!match) { match = onclick.match(/'([^']+)'/); }
-    if (!match) return;
-    var id = match[1];
-    card.setAttribute('draggable', 'true');
-    card.addEventListener('dragstart', function(ev) {
-      _draggingParaVeiculo = { tipo: 'acessorio', id: id };
-      ev.dataTransfer.setData('text/plain', id);
-      ev.dataTransfer.setData('tipo', 'acessorio');
-      ev.dataTransfer.effectAllowed = 'copy';
-    });
-    card.addEventListener('dragend', function() { _draggingParaVeiculo = null; });
-  });
-};
-
-// ── Modal de veículo (abrir / novo / editar) ──
-function abrirModalNovoVeiculo() {
-  _veiculoEditandoId = null;
-  _veiculoItensAtual = [];
-  _abrirModalFormVeiculo({});
-}
-
-function abrirModalVeiculo(veiculoId) {
-  var v = _veiculos[veiculoId];
-  if (!v) return;
-  _veiculoEditandoId = veiculoId;
-  _veiculoItensAtual = Array.isArray(v.itens) ? v.itens.slice() : [];
-  _abrirModalFormVeiculo(v);
-}
-
-function _abrirModalFormVeiculo(v) {
-  fecharTodosModais();
-  var isEdit = !!_veiculoEditandoId;
-
-  var overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = 'modal-veiculo';
-
-  // Evento vinculado
-  var evLinkHtml = '';
-  if (isEdit && v.evento_id && _eventosAndamento[v.evento_id]) {
-    var ev2 = _eventosAndamento[v.evento_id];
-    evLinkHtml = '<div class="vm-evento-link">' +
-      '<div>' +
-        '<div class="vm-evento-nome">📌 ' + esc(ev2.ev_nome || ev2.nome || '') + '</div>' +
-        (ev2.ev_data ? '<div class="vm-evento-data">' + _fmtEvData(ev2.ev_data) + '</div>' : '') +
-      '</div>' +
-      '<button class="vm-desvincular-btn" onclick="_desvincularEventoVeiculo(\'' + _veiculoEditandoId + '\')">Desvincular</button>' +
-    '</div>';
-  }
-
-  overlay.innerHTML =
-    '<div class="veiculo-modal-box">' +
-      '<div class="modal-header">' +
-        '<div class="modal-title" style="display:flex;align-items:center;gap:8px">' +
-          _getVeiculoIcon(v.tipo) +
-          (isEdit ? 'Editar Veículo' : 'Novo Veículo') +
-        '</div>' +
-        '<button class="btn-modal-close" onclick="fecharTodosModais()">×</button>' +
-      '</div>' +
-      '<div class="modal-body">' +
-
-        '<div class="vm-section">' +
-          '<div class="vm-title">Informações</div>' +
-          '<div class="form-grid" style="margin-bottom:10px">' +
-            '<div class="form-group"><label class="form-label">Nome *</label><input class="form-input" id="vf-nome" value="' + esc(v.nome || '') + '" placeholder="Ex: Fiorino Branca" /></div>' +
-            '<div class="form-group"><label class="form-label">Placa</label><input class="form-input" id="vf-placa" value="' + esc(v.placa || '') + '" placeholder="ABC-1234" /></div>' +
-          '</div>' +
-          '<div class="form-grid" style="margin-bottom:10px">' +
-            '<div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="vf-tipo">' +
-              ['van','truck','car','trailer'].map(function(t) { return '<option value="' + t + '"' + (v.tipo === t ? ' selected' : '') + '>' + {van:'Van',truck:'Caminhão',car:'Carro',trailer:'Trailer'}[t] + '</option>'; }).join('') +
-            '</select></div>' +
-            '<div class="form-group"><label class="form-label">Capacidade (un.)</label><input class="form-input" id="vf-capacidade" type="number" min="1" value="' + (v.capacidade || 20) + '" /></div>' +
-          '</div>' +
-          (evLinkHtml ? evLinkHtml : '') +
-          (isEdit && !v.evento_id && Object.keys(_eventosAndamento).length > 0 ? _buildEventoSelectHtml(_veiculoEditandoId, v.evento_id || '') : '') +
-        '</div>' +
-
-        '<div class="vm-section">' +
-          '<div class="vm-title">Carga do veículo</div>' +
-          '<div style="font-size:0.65rem;color:#555;margin-bottom:8px">Arraste kits, equipamentos ou acessórios para cá, ou use a busca abaixo.</div>' +
-          '<div id="vm-slot-grid" class="vm-slot-grid"' +
-            ' ondragover="vmSlotGridOver(event)"' +
-            ' ondragleave="vmSlotGridLeave(event)"' +
-            ' ondrop="vmSlotGridDrop(event)"' +
-          '>' +
-            (_veiculoItensAtual.length === 0 ? '<div class="vm-drop-hint-text">Arraste equipamentos, kits ou acessórios aqui</div>' : _buildVmSlotsHtml()) +
-          '</div>' +
-        '</div>' +
-
-        '<div class="vm-section">' +
-          '<div class="vm-title">Adicionar item</div>' +
-          '<input class="vm-search-input" id="vm-search" placeholder="Buscar kit, equipamento ou acessório..." oninput="_renderVmSearch()" />' +
-          '<div class="vm-search-results" id="vm-search-results"></div>' +
-        '</div>' +
-
-      '</div>' +
-      '<div class="modal-footer" style="gap:8px">' +
-        (isEdit ? '<button class="btn-modal-cancel" style="color:var(--red);border-color:rgba(224,92,92,0.3)" onclick="_confirmarExcluirVeiculo(\'' + _veiculoEditandoId + '\')">Excluir</button>' : '') +
-        '<button class="btn-modal-cancel" onclick="fecharTodosModais()">Cancelar</button>' +
-        '<button class="btn-modal-save" onclick="_salvarVeiculo()">Salvar</button>' +
-      '</div>' +
-    '</div>';
-
-  overlay.addEventListener('click', function(ev) { if (ev.target === overlay) fecharTodosModais(); });
-  document.body.appendChild(overlay);
-  setTimeout(function() { _renderVmSearch(); document.getElementById('vf-nome').focus(); }, 60);
-}
-
-function _buildEventoSelectHtml(veiculoId, eventoIdAtual) {
-  var eventos = Object.values(_eventosAndamento);
-  if (!eventos.length) return '';
-  var options = '<option value="">— Sem evento vinculado —</option>' +
-    eventos.map(function(ev) {
-      return '<option value="' + ev.id + '"' + (ev.id === eventoIdAtual ? ' selected' : '') + '>' + esc(ev.ev_nome || ev.nome || ev.id) + '</option>';
-    }).join('');
-  return '<div class="form-group" style="margin-top:8px"><label class="form-label">Vincular a evento</label><select class="form-select" id="vf-evento-id">' + options + '</select></div>';
-}
-
-function _desvincularEventoVeiculo(veiculoId) {
-  db.collection('veiculos').doc(veiculoId).update({ evento_id: '' }).then(function() {
-    toast('Evento desvinculado.');
-    fecharTodosModais();
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
-}
-
-function _buildVmSlotsHtml() {
-  if (!_veiculoItensAtual.length) return '<div class="vm-drop-hint-text">Arraste equipamentos, kits ou acessórios aqui</div>';
-  return _veiculoItensAtual.map(function(it, idx) {
-    var tipo = it.tipo || 'eq';
-    return '<div class="vm-slot">' +
-      '<div class="vm-slot-icon">' + (tipo === 'kit' ?
-        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' :
-        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
-      ) + '</div>' +
-      '<div style="flex:1;min-width:0">' +
-        '<div class="vm-slot-nome">' + esc(it.nome || it.id || '?') + '</div>' +
-        '<div class="vm-slot-sub">qtd: ' + (it.qtd || 1) + ' · ' + tipo + '</div>' +
-      '</div>' +
-      '<button class="vm-slot-rm" onclick="_vmRemoverItem(' + idx + ')">×</button>' +
-    '</div>';
-  }).join('');
-}
-
-function _vmRemoverItem(idx) {
-  _veiculoItensAtual.splice(idx, 1);
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.innerHTML = _buildVmSlotsHtml() || '<div class="vm-drop-hint-text">Arraste equipamentos, kits ou acessórios aqui</div>';
-}
-
-// Drag → slot grid do modal
-function vmSlotGridOver(ev) {
-  if (!_draggingEqId && !_draggingParaVeiculo) return;
-  ev.preventDefault();
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.classList.add('drag-over');
-}
-function vmSlotGridLeave(ev) {
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.classList.remove('drag-over');
-}
-function vmSlotGridDrop(ev) {
-  ev.preventDefault();
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.classList.remove('drag-over');
-
-  var itemId = ev.dataTransfer.getData('text/plain') || _draggingEqId;
-  var tipo = ev.dataTransfer.getData('tipo') || (_draggingEqId ? 'eq' : null);
-  if (!itemId || !tipo) return;
-
-  var nome = _getNomeItem(itemId, tipo);
-  var existente = _veiculoItensAtual.find(function(it) { return it.id === itemId; });
-  if (existente) { existente.qtd = (existente.qtd || 1) + 1; }
-  else { _veiculoItensAtual.push({ id: itemId, nome: nome, tipo: tipo, qtd: 1 }); }
-
-  if (grid) grid.innerHTML = _buildVmSlotsHtml();
-}
-
-function _renderVmSearch() {
-  var busca = (document.getElementById('vm-search') ? document.getElementById('vm-search').value : '').toLowerCase().trim();
-  var container = document.getElementById('vm-search-results');
-  if (!container) return;
-
-  var resultados = [];
-  Object.values(_kits).forEach(function(k) {
-    if (!busca || (k.nome || '').toLowerCase().includes(busca))
-      resultados.push({ id: k.id, nome: k.nome || 'Kit', tipo: 'kit' });
-  });
-  Object.values(_equipamentos).forEach(function(e) {
-    if (!busca || (e.nome || '').toLowerCase().includes(busca))
-      resultados.push({ id: e.id, nome: e.nome || 'Equip.', tipo: 'eq' });
-  });
-  Object.values(_acessorios).forEach(function(a) {
-    if (!busca || (a.nome || '').toLowerCase().includes(busca))
-      resultados.push({ id: a.id, nome: a.nome || 'Ac.', tipo: 'acessorio' });
-  });
-
-  resultados = resultados.slice(0, 20);
-  if (!resultados.length) {
-    container.innerHTML = '<div style="padding:8px;text-align:center;color:#444;font-size:0.72rem">Sem resultados</div>';
-    return;
-  }
-
-  container.innerHTML = resultados.map(function(r) {
-    var tipoLabel = r.tipo === 'kit' ? 'Kit' : r.tipo === 'eq' ? 'Equip.' : 'Acessório';
-    return '<div class="vm-search-item">' +
-      '<span class="vm-search-item-nome">' + esc(r.nome) + '</span>' +
-      '<span class="vm-search-item-tipo">' + tipoLabel + '</span>' +
-      '<button class="vm-add-btn" onclick="_vmAdicionarItem(\'' + r.id + '\',\'' + esc(r.nome) + '\',\'' + r.tipo + '\')" title="Adicionar">' +
-        '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-      '</button>' +
-    '</div>';
-  }).join('');
-}
-
-function _vmAdicionarItem(id, nome, tipo) {
-  var existente = _veiculoItensAtual.find(function(it) { return it.id === id; });
-  if (existente) { existente.qtd = (existente.qtd || 1) + 1; }
-  else { _veiculoItensAtual.push({ id: id, nome: nome, tipo: tipo, qtd: 1 }); }
-  var grid = document.getElementById('vm-slot-grid');
-  if (grid) grid.innerHTML = _buildVmSlotsHtml();
-  toast(nome + ' adicionado!');
-}
-
-function _salvarVeiculo() {
-  var nome = (document.getElementById('vf-nome') ? document.getElementById('vf-nome').value : '').trim();
-  if (!nome) { toast('Informe o nome do veículo.', true); return; }
-
-  var eventoIdEl = document.getElementById('vf-evento-id');
-  var dados = {
-    nome: nome,
-    placa: (document.getElementById('vf-placa') ? document.getElementById('vf-placa').value : '').trim().toUpperCase(),
-    tipo: (document.getElementById('vf-tipo') ? document.getElementById('vf-tipo').value : 'van'),
-    capacidade: parseInt(document.getElementById('vf-capacidade') ? document.getElementById('vf-capacidade').value : 20) || 20,
-    itens: _veiculoItensAtual,
-    evento_id: eventoIdEl ? eventoIdEl.value : (_veiculos[_veiculoEditandoId] ? (_veiculos[_veiculoEditandoId].evento_id || '') : ''),
-    _atualizado: Date.now()
-  };
-
-  var promise;
-  if (_veiculoEditandoId) {
-    promise = db.collection('veiculos').doc(_veiculoEditandoId).update(dados);
-  } else {
-    dados._criado = Date.now();
-    dados._ordem = Object.keys(_veiculos).length;
-    promise = db.collection('veiculos').add(dados);
-  }
-
-  promise.then(function() {
-    fecharTodosModais();
-    toast(_veiculoEditandoId ? 'Veículo atualizado!' : 'Veículo adicionado!');
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
-}
-
-function _confirmarExcluirVeiculo(veiculoId) {
-  var v = _veiculos[veiculoId];
-  if (!confirm('Excluir veículo "' + (v ? v.nome : '') + '"?')) return;
-  db.collection('veiculos').doc(veiculoId).delete().then(function() {
-    fecharTodosModais();
-    toast('Veículo excluído.');
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
-}
-
-// ── Drag de kits para veículos: patch no renderGrid de kits ──
-// Também faz eq cards arrastáveis para eventos e veículos
-var _renderGridOrigVeiculos = renderGrid;
-renderGrid = function(equips) {
-  _renderGridOrigVeiculos(equips);
-  setTimeout(function() {
-    var grid = document.getElementById('equip-grid');
-    if (!grid) return;
-    grid.querySelectorAll('.eq-card').forEach(function(card) {
-      var onclick = card.getAttribute('onclick') || '';
-      var match = onclick.match(/abrirDetalhe\('([^']+)'\)/);
-      if (!match) return;
-      var id = match[1];
-      // Sobrescreve o dragstart existente para incluir tipo
-      card.addEventListener('dragstart', function(ev) {
-        ev.dataTransfer.setData('tipo', 'eq');
-        ev.dataTransfer.setData('text/plain', id);
-      }, true);
-    });
-  }, 80);
-};
-
-// ── Inicialização: patch na função de iniciarEstoque ──
-var _iniciarEstoqueOrigVeiculos = iniciarEstoque;
-iniciarEstoque = function() {
-  _iniciarEstoqueOrigVeiculos();
-  iniciarVeiculos();
-  iniciarEventosAndamento();
-  // Posicionar seção de eventos antes dos kits
-  setTimeout(function() {
-    var sec = document.getElementById('eventos-andamento-section');
-    var kitsSection = document.getElementById('kits-section');
-    if (sec && kitsSection && kitsSection.parentNode) {
-      kitsSection.parentNode.insertBefore(sec, kitsSection);
-    }
-  }, 200);
-};
-
-// Estatística de veículos no stats bar
-var _renderStatsOrigV = renderStats;
-renderStats = function() {
-  _renderStatsOrigV();
-  // Injeta stat de veículos se não existir
-  var statsBar = document.querySelector('.stats-bar');
-  if (statsBar && !document.getElementById('stat-veiculos')) {
-    var sep = document.createElement('div');
-    sep.className = 'stat-sep';
-    var item = document.createElement('div');
-    item.className = 'stat-item';
-    item.id = 'stat-btn-veiculos';
-    item.title = 'Total de veículos';
-    item.style.cursor = 'default';
-    item.innerHTML = '<div class="stat-value" style="color:#F5A623" id="stat-veiculos">0</div><div class="stat-label">Veículos</div>';
-    statsBar.appendChild(sep);
-    statsBar.appendChild(item);
-  }
-  var statV = document.getElementById('stat-veiculos');
-  if (statV) statV.textContent = Object.keys(_veiculos).length;
-};
-
 </script>
 </body>
 </html>
