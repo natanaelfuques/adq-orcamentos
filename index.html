@@ -6240,6 +6240,13 @@ function switchSalvosTab(tab, animate) {
   var verificarBtn = document.getElementById('salvos-verificar-btn');
   if (verificarBtn) verificarBtn.style.display = (tab === 'contratos') ? '' : 'none';
   if (tab === 'contratos') { iniciarPollingAutentique(); } else { pararPollingAutentique(); }
+  // Limpar campo de busca ao trocar de aba
+  var _oI = document.getElementById('busca-orc-input');
+  var _cI = document.getElementById('busca-con-input');
+  var _eI = document.getElementById('busca-ev-input');
+  if (_oI && _oI.value) { _oI.value = ''; filtrarSalvos(); }
+  if (_cI && _cI.value) { _cI.value = ''; filtrarContratos(); }
+  if (_eI && _eI.value) { _eI.value = ''; renderNotas(); }
   atualizarContadorSalvos();
   atualizarAreaBusca();
 }
@@ -6840,6 +6847,13 @@ function toggleBuscaSalvos() {
     setFiltroEv('todos');
   }
   atualizarAreaBusca();
+  // Focar no campo ativo ao abrir
+  if (_buscaAberta) {
+    var _fInput = _salvosTab === 'orcamentos' ? document.getElementById('busca-orc-input')
+                : _salvosTab === 'notas'      ? document.getElementById('busca-ev-input')
+                : document.getElementById('busca-con-input');
+    if (_fInput) setTimeout(function() { _fInput.focus(); }, 50);
+  }
 }
 
 function atualizarAreaBusca() {
