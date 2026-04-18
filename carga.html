@@ -379,25 +379,25 @@ function toast(msg, isErr) {
 auth.onAuthStateChanged(function(user) {
   if (user) {
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('main-wrap').style.display    = 'block';
+    document.getElementById('app').style.display    = 'block';
     iniciarListeners();
   } else {
     document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('main-wrap').style.display    = 'none';
+    document.getElementById('app').style.display    = 'none';
   }
 });
 
 function doLogin() {
   var email = document.getElementById('login-email').value.trim();
-  var pass  = document.getElementById('login-pass').value;
+  var pass  = document.getElementById('login-senha').value;
   if (!email || !pass) return;
   auth.signInWithEmailAndPassword(email, pass)
     .catch(function(e) {
-      document.getElementById('login-error').textContent = 'Email ou senha inválidos.';
+      document.getElementById('login-erro').textContent = 'Email ou senha inválidos.';
     });
 }
 
-document.getElementById('login-pass').addEventListener('keydown', function(e) {
+document.getElementById('login-senha').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') doLogin();
 });
 
