@@ -8104,14 +8104,14 @@ function _abrirModalWpp(id, foneAtual, tipo, btnEl, extraId) {
 function _atualizarBtnWppModal() {
   var inp = document.getElementById('adq-wpp-input');
   var btn = document.getElementById('adq-wpp-abrir-btn');
-  if (\!inp || \!btn) return;
+  if (!inp || !btn) return;
   btn.textContent = inp.value.trim() ? 'Abrir WhatsApp' : 'Colar Número';
 }
 
 function _wppAbrirOuColar(id, tipo, extraId) {
   var inp = document.getElementById('adq-wpp-input');
-  if (\!inp) return;
-  if (\!inp.value.trim()) {
+  if (!inp) return;
+  if (!inp.value.trim()) {
     if (navigator.clipboard && navigator.clipboard.readText) {
       navigator.clipboard.readText().then(function(text) {
         inp.value = text.trim();
@@ -8209,14 +8209,14 @@ function _abrirModalMaps(id, mapsAtual, btnEl) {
 function _atualizarBtnMapsModal() {
   var inp = document.getElementById('adq-maps-input');
   var btn = document.getElementById('adq-maps-abrir-btn');
-  if (\!inp || \!btn) return;
+  if (!inp || !btn) return;
   btn.textContent = inp.value.trim() ? 'Abrir Maps' : 'Colar Link';
 }
 
 function _mapsAbrirOuColar(id) {
   var inp = document.getElementById('adq-maps-input');
-  if (\!inp) return;
-  if (\!inp.value.trim()) {
+  if (!inp) return;
+  if (!inp.value.trim()) {
     if (navigator.clipboard && navigator.clipboard.readText) {
       navigator.clipboard.readText().then(function(text) {
         inp.value = text.trim();
