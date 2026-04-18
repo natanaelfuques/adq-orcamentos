@@ -6115,7 +6115,7 @@ function _abrirCardEvento(id) {
   }
 
   // Material (indicador) — botão para montar carga no banner de andamento
-  var jaStagiada = \!\!_eventosStagingCarga[id];
+  var jaStagiada = !!_eventosStagingCarga[id];
   var materialHtml = '<div class="agev-material">' +
     '<div class="agev-section-title" style="display:flex;align-items:center;gap:7px">' +
       'Carga / Equipamentos' +
@@ -6168,7 +6168,7 @@ function _fecharCardEvento() {
 
 function _ativarMontaCarga(evId) {
   var ev = _eventosAgenda[evId];
-  if (\!ev) return;
+  if (!ev) return;
   // Pina ou despina o evento
   if (_eventosStagingCarga[evId]) {
     delete _eventosStagingCarga[evId];
@@ -6180,7 +6180,7 @@ function _ativarMontaCarga(evId) {
   // Scroll suave para a seção de eventos em andamento
   setTimeout(function() {
     var sec = document.getElementById('eventos-andamento-section');
-    if (sec && sec.style.display \!== 'none') {
+    if (sec && sec.style.display !== 'none') {
       sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, 120);
@@ -6764,7 +6764,7 @@ function renderEventosAndamento() {
 
   var eventosAndamento = Object.values(_eventosAndamento);
   var eventosStaging = Object.values(_eventosStagingCarga).filter(function(ev) {
-    return \!_eventosAndamento[ev.id]; // evitar duplicata se evento entrou em andamento real
+    return !_eventosAndamento[ev.id]; // evitar duplicata se evento entrou em andamento real
   });
   var todos = eventosAndamento.concat(eventosStaging);
 
@@ -6777,7 +6777,7 @@ function renderEventosAndamento() {
   if (count) count.textContent = todos.length + ' ativo' + (todos.length > 1 ? 's' : '');
 
   scroll.innerHTML = todos.map(function(ev) {
-    var isStaging = \!_eventosAndamento[ev.id] && \!\!_eventosStagingCarga[ev.id];
+    var isStaging = !_eventosAndamento[ev.id] && !!_eventosStagingCarga[ev.id];
     var servicos = ev.servicos || [];
     var chipsHtml = servicos.slice(0, 4).map(function(s) {
       return '<span class="ev-item-chip">' + esc(typeof s === 'string' ? s : (s.nome || s)) + '</span>';
