@@ -813,9 +813,26 @@ header {
 .pgto-card-nome {
   font-weight: 700;
   font-size: 0.88rem;
-  white-space: nowrap;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  min-width: 0;
+}
+.pgto-card-nome-txt {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.pgto-card-nome-val {
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-left: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #25D366;
+  letter-spacing: 0.02em;
 }
 .pgto-card-meta {
   font-size: 0.72rem;
@@ -3725,7 +3742,7 @@ function buildPgtoCard(ev) {
     // Cabeçalho: nome + badge
     '<div class="pgto-card-header" onclick="togglePgtoCard(\'' + docId + '\')">' +
       '<div class="pgto-card-info">' +
-        '<div class="pgto-card-nome">' + nomeExib + kmBadge + '<span style="margin-left:8px;font-size:0.78rem;font-weight:700;color:#25D366;letter-spacing:0.02em;white-space:nowrap">' + frs(total) + '</span></div>' +
+        '<div class="pgto-card-nome"><span class="pgto-card-nome-txt">' + nomeExib + kmBadge + '</span><span class="pgto-card-nome-val">' + frs(total) + '</span></div>' +
         '<div class="pgto-card-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
       '<span class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer;' + _glowAtrasoStyle(ev) + '" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
