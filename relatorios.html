@@ -1430,7 +1430,7 @@ header {
 }
 .pgto-custom-cols-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr 28px 28px;
+  grid-template-columns: 18px 2fr 1fr 1.2fr 28px 28px;
   gap: 6px;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 0.65rem;
@@ -1443,11 +1443,31 @@ header {
 }
 .pgto-custom-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr 28px 28px;
+  grid-template-columns: 18px 2fr 1fr 1.2fr 28px 28px;
   gap: 6px;
   margin-bottom: 6px;
   align-items: center;
+  transition: opacity 0.15s;
 }
+.pgto-custom-row.drag-over {
+  border-top: 2px solid #25D366;
+  margin-top: -2px;
+}
+.pgto-custom-row.dragging { opacity: 0.35; }
+.pgto-custom-btn-drag {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: grab;
+  width: 18px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  opacity: 0.45;
+  transition: opacity 0.15s;
+}
+.pgto-custom-btn-drag:hover { opacity: 1; color: var(--text); }
+.pgto-custom-btn-drag:active { cursor: grabbing; }
 .pgto-custom-btn-pago {
   background: transparent;
   border: 1px solid var(--border2);
@@ -3194,7 +3214,10 @@ function buildCustomParcelasEditorHTML(ev) {
   const restanteParcelar = Math.max(0, total - soma);
   const inputRows = parcelas.map(function(p, i) {
     var isPago = !!p.pago;
-    return '<div class="pgto-custom-row" id="pgto-custom-row-' + docId + '-' + i + '">' +
+    return '<div class="pgto-custom-row" id="pgto-custom-row-' + docId + '-' + i + '" draggable="true" ondragstart="pgtoCustomDragStart(event,\'' + docId + '\',' + i + ')" ondragover="pgtoCustomDragOver(event,\'' + docId + '\',' + i + ')" ondragleave="pgtoCustomDragLeave(event,\'' + docId + '\',' + i + ')" ondrop="pgtoCustomDrop(event,\'' + docId + '\',' + i + ')" ondragend="pgtoCustomDragEnd(\'' + docId + '\')">' +
+      '<div class="pgto-custom-btn-drag" title="Arrastar para reordenar">' +
+        '<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="3" cy="2" r="1.3"/><circle cx="7" cy="2" r="1.3"/><circle cx="3" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="3" cy="12" r="1.3"/><circle cx="7" cy="12" r="1.3"/></svg>' +
+      '</div>' +
       '<input class="pgto-custom-inp-label" type="text" placeholder="Descrição" value="' + (p.label || '').replace(/"/g, '&quot;') + '" id="pgto-clabel-' + docId + '-' + i + '">' +
       '<input class="pgto-custom-inp-val" type="text" placeholder="R$ 0,00" value="' + (parseFloat(p.valor) || 0).toFixed(2).replace('.', ',') + '" id="pgto-cval-' + docId + '-' + i + '">' +
       '<input class="pgto-custom-inp-venc" type="date" value="' + (p.vencimento || '') + '" id="pgto-cvenc-' + docId + '-' + i + '">' +
@@ -3215,7 +3238,7 @@ function buildCustomParcelasEditorHTML(ev) {
       '<span style="margin-left:auto;font-size:0.72rem;color:var(--muted)">Total: ' + frs(total) + ' · Distribuído: <span id="pgto-custom-soma-' + docId + '" style="color:' + (Math.abs(soma - total) < 0.05 ? '#25D366' : '#F5A623') + '">' + frs(soma) + '</span></span>' +
     '</div>' +
     '<div class="pgto-custom-cols-header">' +
-      '<span>Descrição</span><span>Valor (R$)</span><span>Vencimento</span><span style="text-align:center">Pago</span><span></span>' +
+      '<span></span><span>Descrição</span><span>Valor (R$)</span><span>Vencimento</span><span style="text-align:center">Pago</span><span></span>' +
     '</div>' +
     '<div id="pgto-custom-rows-' + docId + '">' + inputRows + '</div>' +
     '<div class="pgto-custom-actions">' +
@@ -3449,6 +3472,61 @@ function toggleCustomEditorPago(docId, idx) {
   if (!arr[idx]) return;
   arr[idx] = Object.assign({}, arr[idx], { pago: !arr[idx].pago });
   _atualizarParcelasCustomLocal(docId, arr);
+}
+
+// ── DRAG & DROP para reordenar entradas custom ──
+let _pgtoCustomDragIdx = null;
+let _pgtoCustomDragDocId = null;
+
+function pgtoCustomDragStart(e, docId, idx) {
+  _pgtoCustomDragIdx = idx;
+  _pgtoCustomDragDocId = docId;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(function() {
+    const row = document.getElementById('pgto-custom-row-' + docId + '-' + idx);
+    if (row) row.classList.add('dragging');
+  }, 0);
+}
+
+function pgtoCustomDragOver(e, docId, idx) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  if (_pgtoCustomDragDocId !== docId || _pgtoCustomDragIdx === idx) return;
+  // Remove drag-over de todas as rows deste editor
+  document.querySelectorAll('[id^="pgto-custom-row-' + docId + '-"]').forEach(function(r) { r.classList.remove('drag-over'); });
+  const row = document.getElementById('pgto-custom-row-' + docId + '-' + idx);
+  if (row) row.classList.add('drag-over');
+}
+
+function pgtoCustomDragLeave(e, docId, idx) {
+  const row = document.getElementById('pgto-custom-row-' + docId + '-' + idx);
+  if (row) row.classList.remove('drag-over');
+}
+
+function pgtoCustomDrop(e, docId, toIdx) {
+  e.preventDefault();
+  if (_pgtoCustomDragIdx === null || _pgtoCustomDragDocId !== docId) return;
+  const fromIdx = _pgtoCustomDragIdx;
+  // Limpa visuais
+  document.querySelectorAll('[id^="pgto-custom-row-' + docId + '-"]').forEach(function(r) {
+    r.classList.remove('drag-over', 'dragging');
+  });
+  if (fromIdx === toIdx) return;
+  // Lê do DOM e reordena
+  const arr = _lerLinhasEditorDOM(docId);
+  const moved = arr.splice(fromIdx, 1)[0];
+  arr.splice(toIdx, 0, moved);
+  _pgtoCustomDragIdx = null;
+  _pgtoCustomDragDocId = null;
+  _atualizarParcelasCustomLocal(docId, arr);
+}
+
+function pgtoCustomDragEnd(docId) {
+  _pgtoCustomDragIdx = null;
+  _pgtoCustomDragDocId = null;
+  document.querySelectorAll('[id^="pgto-custom-row-' + docId + '-"]').forEach(function(r) {
+    r.classList.remove('drag-over', 'dragging');
+  });
 }
 
 function renderPagamentos() {
