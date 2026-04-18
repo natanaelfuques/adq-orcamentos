@@ -3863,8 +3863,8 @@ function buildPgtoCard(ev) {
         '<div class="pgto-card-nome">' +
           '<span class="pgto-card-nome-txt">' + nomeExib + kmBadge + '</span>' +
           '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">' +
-            '<span class="pgto-card-nome-val">' + frs(total) + '</span>' +
             '<span class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer;' + _glowAtrasoStyle(ev) + '" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
+            '<span class="pgto-card-nome-val">' + frs(total) + '</span>' +
           '</div>' +
         '</div>' +
         '<div class="pgto-card-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
@@ -4139,13 +4139,13 @@ function buildPgtoModalHTML(ev) {
   const headerHTML =
     '<div class="pgto-modal-header">' +
       '<div class="pgto-modal-header-info">' +
-        '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">' +
           '<div class="pgto-modal-nome">' + nomeExib + '</div>' +
-          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1.15rem;font-weight:800;color:#25D366;letter-spacing:0.04em;white-space:nowrap">' + frs(total) + '</div>' +
-        '</div>' +
         '<div class="pgto-modal-meta">' + dataEv(ev) + (pgtoLabel && pgtoLabel !== '—' ? ' · ' + pgtoLabel : '') + '</div>' +
       '</div>' +
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">' +
       '<span id="pgto-modal-badge-' + docId + '" class="pgto-status-badge ' + badgeClass + '" style="cursor:pointer" title="Clique para alterar status" onclick="event.stopPropagation();_abrirMenuStatusPgto(event,\'' + docId + '\')">' + badgeTxt + '</span>' +
+          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:1.15rem;font-weight:800;color:#25D366;letter-spacing:0.04em;white-space:nowrap;text-align:right">' + frs(total) + '</div>' +
+      '</div>' +
       '<button class="pgto-modal-close" onclick="fecharPgtoModal()">✕</button>' +
     '</div>';
 
