@@ -19,1380 +19,526 @@
   --red:      #e05c5c;
   --amber:    #F5A623;
 }
-
-/* ── Layout principal ──────────────────────────────── */
-.app-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 0 80px;
-}
-
-/* ── Header ────────────────────────────────────────── */
 .app-header {
-  background: var(--dark);
-  border-bottom: 2px solid var(--gold);
-  padding: 12px 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  background: var(--dark); border-bottom: 2px solid var(--gold);
+  padding: 12px 20px; display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 100;
 }
 .header-back {
-  background: transparent;
-  border: 1.5px solid var(--border2);
-  border-radius: 6px;
-  color: var(--muted);
-  padding: 5px 10px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: border-color 0.2s, color 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  background: transparent; border: 1.5px solid var(--border2); border-radius: 6px;
+  color: var(--muted); padding: 5px 10px; cursor: pointer; font-size: 0.8rem;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; text-decoration: none; transition: border-color 0.2s, color 0.2s;
+  display: flex; align-items: center; gap: 5px;
 }
 .header-back:hover { border-color: var(--gold); color: var(--gold); }
 .header-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font-family: 'Barlow Condensed', sans-serif; font-size: 1.25rem; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold);
 }
-.header-subtitle {
-  font-size: 0.7rem;
-  color: var(--muted);
-  margin-left: auto;
-}
-
-/* ── Toast ─────────────────────────────────────────── */
+.app-container { max-width: 900px; margin: 0 auto; padding: 0 0 80px; }
 #toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
+  position: fixed; bottom: 24px; left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--gold);
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  z-index: 9999;
-  opacity: 0;
-  transition: opacity 0.25s, transform 0.25s;
-  pointer-events: none;
-  white-space: nowrap;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-left: 3px solid var(--gold); padding: 10px 18px; border-radius: 8px;
+  font-size: 0.85rem; z-index: 9999; opacity: 0;
+  transition: opacity 0.25s, transform 0.25s; pointer-events: none; white-space: nowrap;
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-#toast.err { border-left-color: var(--red); }
-
-/* ── Section wrapper ───────────────────────────────── */
-.section-wrap {
-  padding: 20px 16px 0;
-}
+#toast.err  { border-left-color: var(--red); }
+.section-wrap { padding: 20px 16px 0; }
 .section-label {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
 }
-.section-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.empty-state {
+  text-align: center; padding: 20px 16px; color: var(--muted); font-size: 0.8rem;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
 }
-
-/* ── Eventos strip ─────────────────────────────────── */
-.eventos-strip {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 4px 0 10px;
-  scrollbar-width: thin;
-}
+/* ── Eventos ─────────────────────────── */
+.eventos-strip { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 10px; scrollbar-width: thin; }
 .ev-chip {
-  flex-shrink: 0;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  min-width: 120px;
+  flex-shrink: 0; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s; min-width: 120px;
 }
 .ev-chip:hover { border-color: var(--gold); }
-.ev-chip.selected {
-  border-color: var(--gold);
-  background: var(--gold-dim);
-}
-.ev-chip-data {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--gold);
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-.ev-chip-nome {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
-}
-.ev-chip-local {
-  font-size: 0.68rem;
-  color: var(--muted);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
-}
-.ev-chip.hoje { border-color: var(--amber); }
-.ev-chip.hoje .ev-chip-data { color: var(--amber); }
+.ev-chip.selected { border-color: var(--gold); background: var(--gold-dim); }
 .ev-chip.urgente { border-color: var(--red); }
 .ev-chip.urgente .ev-chip-data { color: var(--red); }
-.ev-chip.sem-carga::after {
-  content: 'sem carga';
-  font-size: 0.58rem;
-  color: var(--muted);
-  background: rgba(136,136,136,0.1);
-  border-radius: 3px;
-  padding: 1px 5px;
-  margin-top: 4px;
-  display: block;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.ev-chip.semana { border-color: var(--amber); }
+.ev-chip.semana .ev-chip-data { color: var(--amber); }
+.ev-chip.veiculo-drop-over { border-color: var(--gold) !important; background: var(--gold-dim); transform: scale(1.04); }
+.ev-chip-data { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase; margin-bottom: 3px; }
+.ev-chip-nome { font-size: 0.82rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+.ev-chip-local { font-size: 0.68rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+.ev-chip-badge {
+  font-size: 0.55rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 800;
+  letter-spacing: 0.06em; text-transform: uppercase; border-radius: 3px;
+  padding: 1px 5px; margin-top: 4px; display: inline-block;
 }
-.ev-chip.com-carga::after {
-  content: 'carga OK';
-  font-size: 0.58rem;
-  color: var(--green);
-  background: rgba(37,211,102,0.1);
-  border-radius: 3px;
-  padding: 1px 5px;
-  margin-top: 4px;
-  display: block;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* ── Seleção ativa ─────────────────────────────────── */
+.ev-chip-badge.ok { background: rgba(37,211,102,0.1); color: var(--green); }
+.ev-chip-badge.sem { background: rgba(136,136,136,0.1); color: var(--muted); }
+/* ── Seleção ativa ───────────────────── */
 .selection-bar {
-  background: var(--gold-dim);
-  border: 1px solid var(--gold);
-  border-radius: 8px;
-  padding: 8px 14px;
-  margin: 12px 16px 0;
-  font-size: 0.8rem;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  background: var(--gold-dim); border: 1px solid var(--gold); border-radius: 8px;
+  padding: 8px 14px; margin: 12px 16px 0; font-size: 0.8rem; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
 }
 .selection-bar.hidden { display: none; }
-.sel-tag {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold);
+.sel-tag { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
+/* ── Conflito ────────────────────────── */
+.conflict-banner {
+  background: rgba(224,92,92,0.1); border: 1px solid rgba(224,92,92,0.3);
+  border-radius: 8px; padding: 10px 14px; margin: 8px 16px 0;
+  font-size: 0.8rem; color: var(--red); display: none;
 }
-
-/* ── Veículos ──────────────────────────────────────── */
-.veiculos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
+.conflict-banner.show { display: block; }
+/* ── Veículos ────────────────────────── */
+.veiculos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 .veiculo-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  transition: border-color 0.2s;
-  cursor: pointer;
+  background: var(--surface); border: 2px solid var(--border); border-radius: 12px;
+  overflow: hidden; transition: border-color 0.2s; cursor: grab;
 }
 .veiculo-card:hover { border-color: var(--border2); }
 .veiculo-card.selected { border-color: var(--gold); }
-.veiculo-card.drop-target {
-  border-color: var(--gold);
-  background: var(--gold-dim);
+.veiculo-card.drop-target { border-color: var(--gold); background: var(--gold-dim); }
+.veiculo-card.dragging { opacity: 0.45; cursor: grabbing; }
+.veiculo-img { width: 100%; height: 90px; object-fit: cover; background: var(--surface2); display: block; }
+.veiculo-img-ph { width: 100%; height: 90px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; }
+.veiculo-body { padding: 10px 12px 12px; }
+.veiculo-nome { font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); margin-bottom: 8px; }
+.veiculo-slots-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.vslot {
+  height: 36px; border: 1.5px dashed var(--border2); border-radius: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: border-color 0.15s, background 0.15s; cursor: pointer; overflow: hidden; padding: 2px;
 }
-.veiculo-img {
-  width: 100%;
-  height: 90px;
-  object-fit: cover;
-  background: var(--surface2);
-  display: block;
-}
-.veiculo-img-placeholder {
-  width: 100%;
-  height: 90px;
-  background: var(--surface2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-size: 2rem;
-}
-.veiculo-body {
-  padding: 10px 12px 12px;
-}
-.veiculo-nome {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-.veiculo-kits-slots {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
-}
-.veiculo-kit-slot {
-  width: 36px;
-  height: 36px;
-  border: 1.5px dashed var(--border2);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.55rem;
-  color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  transition: border-color 0.15s, background 0.15s;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-.veiculo-kit-slot.filled {
-  border-color: var(--gold);
-  border-style: solid;
-  background: var(--gold-dim);
-}
-.veiculo-kit-slot.filled:hover { background: rgba(74,144,217,0.2); }
-.veiculo-kit-slot-icon { font-size: 1rem; }
-.veiculo-kit-slot-label {
-  font-size: 0.45rem;
-  color: var(--gold);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-align: center;
-  line-height: 1.1;
-  padding: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 32px;
-}
-
-/* ── Kits ──────────────────────────────────────────── */
-.kits-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
-}
+.vslot.filled { border-style: solid; border-color: var(--gold); background: var(--gold-dim); }
+.vslot.drag-over { border-color: var(--gold); background: var(--gold-dim); }
+.vslot-label { font-size: 0.45rem; color: var(--gold); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.04em; text-align: center; line-height: 1.1; word-break: break-word; max-width: 100%; }
+/* ── Kits ────────────────────────────── */
+.kits-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
 .kit-card {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  cursor: grab;
-  transition: border-color 0.2s, transform 0.15s, box-shadow 0.15s;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 12px; cursor: grab; transition: border-color 0.2s, transform 0.15s, box-shadow 0.15s;
   user-select: none;
-  position: relative;
 }
 .kit-card:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(74,144,217,0.15); }
-.kit-card.dragging { opacity: 0.5; transform: scale(0.96); }
-.kit-card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.kit-card-icon {
-  width: 28px;
-  height: 28px;
-  background: var(--gold-dim);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gold);
-  flex-shrink: 0;
-}
-.kit-card-nome {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text);
-  line-height: 1.1;
-}
-.kit-card-count {
-  font-size: 0.65rem;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-.kit-slots-mini {
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  gap: 2px;
-}
-.kit-slot-mini {
-  height: 8px;
-  border-radius: 2px;
-  background: var(--border);
-  transition: background 0.15s;
-}
+.kit-card.dragging { opacity: 0.45; transform: scale(0.96); cursor: grabbing; }
+.kit-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.kit-card-icon { width: 26px; height: 26px; background: var(--gold-dim); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--gold); flex-shrink: 0; }
+.kit-card-nome { font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text); flex: 1; line-height: 1.1; }
+.kit-expand-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 2px 5px; border-radius: 4px; font-size: 0.65rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.15s; white-space: nowrap; }
+.kit-expand-btn:hover { color: var(--gold); }
+.kit-count { font-size: 0.65rem; color: var(--muted); margin-bottom: 6px; }
+.kit-slots-mini { display: grid; grid-template-columns: repeat(9,1fr); gap: 2px; margin-bottom: 4px; }
+.kit-slot-mini { height: 8px; border-radius: 2px; background: var(--border); }
 .kit-slot-mini.filled { background: var(--gold); }
-.kit-drag-hint {
-  font-size: 0.58rem;
-  color: var(--muted);
-  text-align: center;
-  margin-top: 7px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.kit-drag-hint { font-size: 0.58rem; color: var(--muted); text-align: center; margin-top: 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+/* ── Kit inline slots ────────────────── */
+.kit-inline-slots { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; margin: 8px 0 4px; }
+.kit-inline-slot {
+  background: var(--surface2); border: 1.5px dashed var(--border); border-radius: 6px;
+  min-height: 54px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; font-size: 0.55rem; color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  position: relative; padding: 5px 4px; text-align: center;
 }
-.kit-card-actions {
-  display: flex;
-  gap: 5px;
-  margin-top: 8px;
-}
-.kit-btn {
-  flex: 1;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  color: var(--muted);
-  padding: 4px 6px;
-  font-size: 0.65rem;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-.kit-btn:hover { border-color: var(--gold); color: var(--gold); }
-.kit-btn.primary { border-color: var(--gold); color: var(--gold); }
-
-/* ── Equipamentos ──────────────────────────────────── */
-.equips-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
-}
+.kit-inline-slot.drag-over { border-color: var(--gold); background: var(--gold-dim); }
+.kit-inline-slot.filled { border-style: solid; border-color: var(--gold); background: rgba(74,144,217,0.07); }
+.kit-inline-slot .snum { position: absolute; top: 2px; left: 4px; font-size: 0.45rem; color: var(--border2); }
+.kit-inline-slot .snome { font-size: 0.6rem; font-weight: 700; color: var(--text); line-height: 1.1; word-break: break-word; }
+.kit-inline-slot .srem { position: absolute; top: 2px; right: 2px; background: rgba(224,92,92,0.18); border: none; border-radius: 3px; color: var(--red); cursor: pointer; padding: 1px 3px; font-size: 0.5rem; line-height: 1; display: none; }
+.kit-inline-slot.filled:hover .srem { display: block; }
+.kit-save-btn { width: 100%; background: transparent; border: 1px solid var(--gold); border-radius: 6px; color: var(--gold); font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px; cursor: pointer; margin-bottom: 4px; transition: background 0.15s, color 0.15s; }
+.kit-save-btn:hover { background: var(--gold); color: #0d0d0d; }
+/* ── Equipamentos ────────────────────── */
+.equips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .equip-card {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  padding: 10px;
-  cursor: grab;
-  transition: border-color 0.2s, transform 0.15s;
-  user-select: none;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 10px; cursor: grab; transition: border-color 0.2s, transform 0.15s; user-select: none;
 }
 .equip-card:hover { border-color: var(--gold); transform: translateY(-1px); }
-.equip-card.dragging { opacity: 0.5; }
-.equip-card-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 5px;
-}
-.equip-card-icon {
-  width: 22px;
-  height: 22px;
-  background: var(--gold-dim);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gold);
-  font-size: 0.7rem;
-  flex-shrink: 0;
-}
-.equip-card-nome {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.2;
-}
-.equip-card-cat {
-  font-size: 0.6rem;
-  color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.equip-card-acess {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  margin-top: 5px;
-}
-.equip-acess-chip {
-  font-size: 0.55rem;
-  background: rgba(74,144,217,0.08);
-  border: 1px solid rgba(74,144,217,0.2);
-  color: var(--gold);
-  border-radius: 3px;
-  padding: 1px 4px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-/* ── Acessórios ────────────────────────────────────── */
-.acess-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 4px 0;
-}
-.acess-chip {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 0.75rem;
-  color: var(--text);
-  cursor: grab;
-  transition: border-color 0.15s;
-  user-select: none;
-}
+.equip-card.dragging { opacity: 0.45; cursor: grabbing; }
+.equip-card.acess-over { border-color: var(--green); background: rgba(37,211,102,0.05); }
+.equip-card-icon { width: 22px; height: 22px; background: var(--gold-dim); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; }
+.equip-card-nome { font-size: 0.78rem; font-weight: 600; color: var(--text); line-height: 1.2; }
+.equip-card-cat { font-size: 0.6rem; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.equip-acess-chips { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 5px; }
+.eac { font-size: 0.55rem; background: rgba(74,144,217,0.08); border: 1px solid rgba(74,144,217,0.2); color: var(--gold); border-radius: 3px; padding: 1px 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.04em; }
+.eac.added { background: rgba(37,211,102,0.08); border-color: rgba(37,211,102,0.25); color: var(--green); display: inline-flex; align-items: center; gap: 3px; }
+.eac-rem { background: none; border: none; color: var(--green); cursor: pointer; font-size: 0.6rem; line-height: 1; padding: 0; opacity: 0.7; }
+.eac-rem:hover { opacity: 1; }
+/* ── Acessórios ──────────────────────── */
+.acess-grid { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0; }
+.acess-chip { background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; color: var(--text); cursor: grab; transition: border-color 0.15s; user-select: none; }
 .acess-chip:hover { border-color: var(--gold); }
-.acess-chip.dragging { opacity: 0.4; }
-
-/* ── Modal: Editor de kit ──────────────────────────── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 500;
-  padding: 16px;
-}
-.modal-box {
-  background: var(--dark);
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  width: 100%;
-  max-width: 520px;
-  max-height: 85vh;
-  overflow-y: auto;
-  padding: 22px;
-  position: relative;
-}
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-.modal-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-.modal-close {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  transition: color 0.15s;
-}
-.modal-close:hover { color: var(--text); }
-
-/* ── Kit editor slots ──────────────────────────────── */
-.kit-editor-slots {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 12px 0;
-}
-.kit-editor-slot {
-  background: var(--surface2);
-  border: 1.5px dashed var(--border);
-  border-radius: 8px;
-  height: 70px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 0.6rem;
-  color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  position: relative;
-  padding: 6px;
-}
-.kit-editor-slot.drag-over {
-  border-color: var(--gold);
-  background: var(--gold-dim);
-}
-.kit-editor-slot.filled {
-  border-style: solid;
-  border-color: var(--gold);
-  background: rgba(74,144,217,0.07);
-  color: var(--text);
-}
-.kit-editor-slot.filled:hover { background: rgba(74,144,217,0.14); }
-.slot-item-nome {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.1;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  max-width: 100%;
-}
-.slot-remove-btn {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  background: rgba(224,92,92,0.2);
-  border: none;
-  border-radius: 3px;
-  color: var(--red);
-  cursor: pointer;
-  padding: 1px 3px;
-  font-size: 0.55rem;
-  line-height: 1;
-  display: none;
-}
-.kit-editor-slot.filled:hover .slot-remove-btn { display: block; }
-.slot-num {
-  position: absolute;
-  top: 3px;
-  left: 5px;
-  font-size: 0.5rem;
-  color: var(--border2);
-}
-
-/* ── Carga panel (dentro da seleção de veículo) ──── */
-.carga-panel {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  margin-top: 10px;
-}
-.carga-panel-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.carga-drop-zone {
-  min-height: 80px;
-  border: 2px dashed var(--border);
-  border-radius: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 10px;
-  align-items: flex-start;
-  align-content: flex-start;
-  transition: border-color 0.2s, background 0.2s;
-}
-.carga-drop-zone.drag-over {
-  border-color: var(--gold);
-  background: var(--gold-dim);
-}
-.carga-drop-zone-hint {
-  width: 100%;
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.72rem;
-  padding: 10px 0;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.carga-kit-item {
-  background: var(--surface);
-  border: 1.5px solid var(--gold);
-  border-radius: 7px;
-  padding: 6px 10px;
-  font-size: 0.75rem;
-  color: var(--gold);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.carga-kit-remove {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  cursor: pointer;
-  padding: 0;
-  font-size: 0.7rem;
-  line-height: 1;
-  transition: color 0.15s;
-}
-.carga-kit-remove:hover { color: var(--red); }
-.carga-confirm-btn {
-  width: 100%;
-  background: var(--gold);
-  border: none;
-  border-radius: 8px;
-  color: #0d0d0d;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 10px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  margin-top: 10px;
-}
-.carga-confirm-btn:hover { opacity: 0.85; }
-.carga-confirm-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-/* ── Status badges de carga ────────────────────────── */
-.carga-status {
-  font-size: 0.6rem;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border-radius: 4px;
-  padding: 2px 7px;
-}
-.carga-status.preparando { background: rgba(74,144,217,0.15); color: #4A90D9; }
-.carga-status.confirmado { background: rgba(37,211,102,0.12); color: var(--green); }
-.carga-status.saiu       { background: rgba(245,166,35,0.12); color: var(--amber); }
-.carga-status.voltou     { background: rgba(136,136,136,0.1); color: var(--muted); }
-
-/* ── Conflict warning ──────────────────────────────── */
-.conflict-banner {
-  background: rgba(224,92,92,0.1);
-  border: 1px solid rgba(224,92,92,0.3);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin: 8px 16px 0;
-  font-size: 0.8rem;
-  color: #e05c5c;
-  display: none;
-}
-.conflict-banner.show { display: block; }
-
-/* ── Empty state ───────────────────────────────────── */
-.empty-state {
-  text-align: center;
-  padding: 24px 16px;
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* ── Cargas existentes ─────────────────────────────── */
-.cargas-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.carga-card {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
+.acess-chip.dragging { opacity: 0.4; cursor: grabbing; }
+/* ── Cargas salvas ───────────────────── */
+.carga-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.2s; margin-bottom: 8px; }
 .carga-card:hover { border-color: var(--gold); }
-.carga-card-info { flex: 1; min-width: 0; }
-.carga-card-nome {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.carga-card-sub {
-  font-size: 0.68rem;
-  color: var(--muted);
-  margin-top: 2px;
-}
-
-/* ── Form inputs ───────────────────────────────────── */
-.form-input {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  padding: 8px 12px;
-  font-size: 0.85rem;
-  font-family: 'Barlow', sans-serif;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.form-input:focus { border-color: var(--gold); }
-.form-label {
-  display: block;
-  font-size: 0.68rem;
-  color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.form-group { margin-bottom: 12px; }
-
-/* ── Btn genérico ──────────────────────────────────── */
-.btn {
-  background: transparent;
-  border: 1.5px solid var(--gold);
-  border-radius: 7px;
-  color: var(--gold);
-  padding: 7px 16px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
+.carga-status { font-size: 0.6rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+.st-preparando { background: rgba(74,144,217,0.15); color: var(--gold); }
+.st-confirmado  { background: rgba(37,211,102,0.12); color: var(--green); }
+.st-saiu        { background: rgba(245,166,35,0.12); color: var(--amber); }
+.st-voltou      { background: rgba(136,136,136,0.1); color: var(--muted); }
+/* ── Modal ───────────────────────────── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 16px; }
+.modal-box { background: var(--dark); border: 1.5px solid var(--border); border-radius: 14px; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; padding: 22px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+.modal-close { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: color 0.15s; }
+.modal-close:hover { color: var(--text); }
+.btn { background: transparent; border: 1.5px solid var(--gold); border-radius: 7px; color: var(--gold); padding: 7px 16px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer; transition: background 0.2s, color 0.2s; }
 .btn:hover { background: var(--gold); color: #0d0d0d; }
 .btn.sm { padding: 4px 10px; font-size: 0.7rem; }
 .btn.danger { border-color: var(--red); color: var(--red); }
 .btn.danger:hover { background: var(--red); color: #fff; }
-
-/* ── Mobile ────────────────────────────────────────── */
-@media (max-width: 600px) {
-  .veiculos-grid { grid-template-columns: repeat(2, 1fr); }
-  .kits-grid { grid-template-columns: repeat(2, 1fr); }
-  .equips-grid { grid-template-columns: repeat(2, 1fr); }
-  .kit-editor-slots { grid-template-columns: repeat(3, 1fr); }
-  .modal-box { padding: 16px; }
+.form-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 8px 12px; font-size: 0.85rem; font-family: 'Barlow', sans-serif; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+.form-input:focus { border-color: var(--gold); }
+.form-label { display: block; font-size: 0.68rem; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; margin-top: 10px; }
+@media (max-width:600px) {
+  .veiculos-grid { grid-template-columns: repeat(2,1fr); }
+  .kits-grid { grid-template-columns: repeat(2,1fr); }
+  .equips-grid { grid-template-columns: repeat(2,1fr); }
 }
-
-/* ── Kit inline slots ──────────────────────────────── */
-.kit-inline-slots {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-  margin: 8px 0 6px;
-}
-.kit-inline-slot {
-  background: var(--surface2);
-  border: 1.5px dashed var(--border);
-  border-radius: 6px;
-  min-height: 54px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.55rem;
-  color: var(--muted);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  position: relative;
-  padding: 5px 4px;
-  text-align: center;
-}
-.kit-inline-slot.drag-over { border-color: var(--gold); background: var(--gold-dim); }
-.kit-inline-slot.filled { border-style: solid; border-color: var(--gold); background: rgba(74,144,217,0.07); }
-.kit-inline-slot .slot-num { position:absolute;top:2px;left:4px;font-size:0.45rem;color:var(--border2); }
-.kit-inline-slot .slot-nome { font-size:0.6rem;font-weight:700;color:var(--text);line-height:1.1;word-break:break-word; }
-.kit-inline-slot .slot-remove {
-  position:absolute;top:2px;right:2px;background:rgba(224,92,92,0.2);border:none;
-  border-radius:3px;color:var(--red);cursor:pointer;padding:1px 3px;font-size:0.5rem;
-  line-height:1;display:none;
-}
-.kit-inline-slot.filled:hover .slot-remove { display:block; }
-.kit-expand-btn {
-  background:transparent;border:none;color:var(--muted);cursor:pointer;
-  padding:2px 5px;border-radius:4px;font-size:0.65rem;font-family:'Barlow Condensed',sans-serif;
-  font-weight:700;letter-spacing:0.05em;text-transform:uppercase;transition:color 0.15s;
-}
-.kit-expand-btn:hover { color:var(--gold); }
-/* ── Equip como drop target para acessórios ─────────── */
-.equip-card.acess-drop-over { border-color: var(--gold); background: rgba(74,144,217,0.06); }
-/* ── Evento como drop target para veículo ──────────── */
-.ev-chip.veiculo-drop-over { border-color: var(--gold) !important; background: var(--gold-dim); transform: scale(1.03); }
-/* ── Veículo draggable ──────────────────────────────── */
-.veiculo-card[draggable="true"] { cursor: grab; }
-.veiculo-card.dragging { opacity: 0.5; }
 </style>
 </head>
 <body>
 
-<!-- ── Login ──────────────────────────────────────── -->
+<!-- Login -->
 <div class="login-screen" id="login-screen">
   <div class="login-box">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:4px">Carga ADQ</div>
     <div style="font-size:0.8rem;color:var(--muted);text-align:center;margin-bottom:8px">Montagem de carga para eventos</div>
-    <input class="form-input" type="email" id="login-email" placeholder="E-mail" autocomplete="username">
-    <input class="form-input" type="password" id="login-senha" placeholder="Senha" autocomplete="current-password">
-    <button onclick="fazerLogin()">Entrar</button>
-    <div id="login-erro" style="font-size:0.8rem;color:var(--red);text-align:center;display:none"></div>
+    <input class="form-input" type="email" id="login-email" placeholder="E-mail" autocomplete="username" style="margin-bottom:8px">
+    <input class="form-input" type="password" id="login-senha" placeholder="Senha" autocomplete="current-password" style="margin-bottom:8px">
+    <button onclick="fazerLogin()" style="background:transparent;border:1.5px solid var(--gold);border-radius:6px;color:var(--gold);padding:10px;font-size:0.9rem;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;width:100%;transition:background 0.2s,color 0.2s" onmouseover="this.style.background='var(--gold)';this.style.color='#0d0d0d'" onmouseout="this.style.background='transparent';this.style.color='var(--gold)'">Entrar</button>
+    <div id="login-erro" style="font-size:0.8rem;color:var(--red);text-align:center;margin-top:6px;display:none"></div>
   </div>
 </div>
 
-<!-- ── Toast ──────────────────────────────────────── -->
 <div id="toast"></div>
 
-<!-- ── App (oculto até login) ─────────────────────── -->
 <div id="app" style="display:none">
-
-  <!-- Header -->
   <header class="app-header">
     <a href="estoque.html" class="header-back">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       Estoque
     </a>
-    <div>
-      <div class="header-title">Montagem de Carga</div>
-    </div>
-    <div class="header-subtitle" id="header-info">Selecione um evento</div>
+    <div class="header-title">Montagem de Carga</div>
+    <div id="header-info" style="font-size:0.7rem;color:var(--muted);margin-left:auto">Selecione um evento</div>
   </header>
 
   <div class="app-container">
 
-    <!-- ── Eventos ──────────────────────────────────── -->
     <div class="section-wrap">
       <div class="section-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Eventos próximos
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Eventos — arraste o veículo para o evento desejado
       </div>
-      <div class="eventos-strip" id="eventos-strip">
-        <div class="empty-state">Carregando eventos...</div>
-      </div>
+      <div class="eventos-strip" id="eventos-strip"><div class="empty-state">Carregando...</div></div>
     </div>
 
-    <!-- Seleção ativa -->
     <div class="selection-bar hidden" id="selection-bar">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
       <span class="sel-tag">Evento:</span>
-      <span id="sel-evento-nome" style="flex:1">—</span>
-      <span class="sel-tag" id="sel-data-label">—</span>
+      <span id="sel-nome">—</span>
+      <span class="sel-tag" id="sel-data">—</span>
     </div>
 
-    <!-- Conflict banner -->
     <div class="conflict-banner" id="conflict-banner"></div>
 
-    <!-- ── Veículos ──────────────────────────────────── -->
     <div class="section-wrap">
       <div class="section-label">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Veículos
+        Veículos — arraste kits para os slots
       </div>
-      <div class="veiculos-grid" id="veiculos-grid">
-        <div class="empty-state">Carregando veículos...</div>
-      </div>
+      <div class="veiculos-grid" id="veiculos-grid"><div class="empty-state">Carregando...</div></div>
     </div>
 
-    <!-- ── Kits ──────────────────────────────────────── -->
     <div class="section-wrap">
       <div class="section-label">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        Kits disponíveis
-        <button class="btn sm" onclick="abrirModalNovoKit()" style="margin-left:auto">+ Novo kit</button>
+        Kits
+        <button class="btn sm" onclick="abrirNovoKit()" style="margin-left:auto">+ Novo kit</button>
       </div>
-      <div class="kits-grid" id="kits-grid">
-        <div class="empty-state">Nenhum kit cadastrado</div>
-      </div>
+      <div class="kits-grid" id="kits-grid"><div class="empty-state">Nenhum kit cadastrado</div></div>
     </div>
 
-    <!-- ── Equipamentos ──────────────────────────────── -->
     <div class="section-wrap">
       <div class="section-label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-        Equipamentos
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        Equipamentos — arraste para slots do kit
       </div>
-      <div class="equips-grid" id="equips-grid">
-        <div class="empty-state">Nenhum equipamento cadastrado</div>
-      </div>
+      <div class="equips-grid" id="equips-grid"><div class="empty-state">Nenhum equipamento</div></div>
     </div>
 
-    <!-- ── Acessórios ────────────────────────────────── -->
-    <div class="section-wrap" id="acess-section">
+    <div class="section-wrap">
       <div class="section-label">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-        Acessórios
+        Acessórios — arraste para equipamento
       </div>
-      <div class="acess-grid" id="acess-grid">
-        <div class="empty-state">Nenhum acessório cadastrado</div>
-      </div>
+      <div class="acess-grid" id="acess-grid"><div class="empty-state">Nenhum acessório</div></div>
     </div>
 
-    <!-- ── Cargas salvas ─────────────────────────────── -->
-    <div class="section-wrap" id="cargas-section">
-      <div class="section-label" style="margin-top:8px">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <div class="section-wrap">
+      <div class="section-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Cargas do evento selecionado
       </div>
-      <div id="cargas-list" class="cargas-list">
-        <div class="empty-state" id="cargas-empty">Selecione um evento para ver cargas</div>
-      </div>
+      <div id="cargas-list"><div class="empty-state" id="cargas-empty">Selecione um evento</div></div>
     </div>
 
-  </div><!-- /app-container -->
-</div><!-- /app -->
+  </div>
+</div>
 
-<!-- ── Modal: Editor de Kit ───────────────────────── -->
-<div class="modal-overlay" id="kit-editor-overlay" data-modal-static="1" style="display:none">
+<!-- Modal Kit -->
+<div class="modal-overlay" id="kit-modal" data-modal-static="1" style="display:none">
   <div class="modal-box">
     <div class="modal-header">
-      <div class="modal-title" id="kit-editor-title">Editar Kit</div>
-      <button class="modal-close" onclick="fecharKitEditor()">
+      <div class="modal-title" id="kit-modal-title">Novo Kit</div>
+      <button class="modal-close" onclick="fecharKitModal()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="form-group">
-      <label class="form-label">Nome do kit</label>
-      <input class="form-input" id="kit-editor-nome" placeholder="Ex.: Kit Palco Principal" maxlength="60">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Descrição (opcional)</label>
-      <input class="form-input" id="kit-editor-desc" placeholder="Observações..." maxlength="120">
-    </div>
-    <div class="section-label" style="margin-bottom:8px">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      9 slots de equipamento
-    </div>
-    <div class="kit-editor-slots" id="kit-editor-slots"></div>
-    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:14px">
-      Arraste equipamentos para os slots. Um kit dentro de outro ocupa 3 slots.
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn danger sm" id="kit-editor-delete-btn" onclick="deletarKitEditando()" style="display:none">Excluir</button>
-      <button class="btn" style="flex:1" onclick="salvarKitEditor()">Salvar kit</button>
+    <label class="form-label">Nome</label>
+    <input class="form-input" id="kit-modal-nome" placeholder="Ex.: Kit Palco Principal" maxlength="60">
+    <label class="form-label">Descrição (opcional)</label>
+    <input class="form-input" id="kit-modal-desc" placeholder="Observações..." maxlength="120">
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn danger sm" id="kit-modal-del" style="display:none" onclick="deletarKit()">Excluir</button>
+      <button class="btn" style="flex:1" onclick="salvarKitModal()">Salvar</button>
     </div>
   </div>
 </div>
 
-<!-- ── Modal: Detalhe de carga ─────────────────────── -->
-<div class="modal-overlay" id="carga-detail-overlay" data-modal-static="1" style="display:none">
+<!-- Modal Carga Detalhe -->
+<div class="modal-overlay" id="carga-modal" data-modal-static="1" style="display:none">
   <div class="modal-box">
     <div class="modal-header">
-      <div class="modal-title" id="carga-detail-title">Carga</div>
-      <button class="modal-close" onclick="fecharCargaDetail()">
+      <div class="modal-title" id="carga-modal-title">Carga</div>
+      <button class="modal-close" onclick="fecharCargaModal()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div id="carga-detail-body"></div>
+    <div id="carga-modal-body"></div>
   </div>
 </div>
 
-<!-- ── Firebase ───────────────────────────────────── -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="utils.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="utils.js"></script>
+  <script>
+// ═══════════════════════════════════════════════════
+// carga.html — Áudio de Qualidade
+// Sistema de montagem de carga para eventos
+// ═══════════════════════════════════════════════════
 
-<script>
-// ════════════════════════════════════════════════════
-// carga.html — Montagem de Carga | Áudio de Qualidade
-// ════════════════════════════════════════════════════
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db   = firebase.firestore();
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+var app = firebase.initializeApp(firebaseConfig);
+var auth = firebase.auth();
+var db   = firebase.firestore();
 
 // ── Estado global ────────────────────────────────────
-var _kits         = {};   // {id: {nome, descricao, itens: [{equipId,qtd,acessorios}]}}
-var _equipamentos = {};   // {id: {nome, categoria, subitens}}
-var _acessorios   = {};   // {id: {nome}}
-var _veiculos     = [];   // [{id, nome, img, ajuste}]
-var _eventos      = [];   // [{id, nome, ev_data, ev_local, etapa}]
-var _cargas       = {};   // {id: carga doc}
+var _kits        = {};
+var _equipamentos= {};
+var _acessorios  = {};
+var _veiculos    = {};
+var _eventos     = {};
+var _cargas      = {};
 
-var _eventoSel    = null; // evento selecionado {id, nome, ev_data}
-var _veiculoSel   = null; // veículo selecionado {id, nome}
-var _cargaAtual   = null; // carga em montagem (não salva) {kits:[{kit_id,kit_nome}]}
+var _kitExpandidos  = {};   // {kitId: true}
+var _kitSlotsEdit   = {};   // {kitId: [slot0..slot8]}
+var _equipAcessCarga= {};   // {equipId: [{id,nome}]}
+var _veiculoSlots   = {};   // {veiculoId: [null|{tipo,id,nome}]} 8 slots
 
-var _kitEditorId  = null; // ID do kit sendo editado (null = novo)
-var _kitEditorSlots = new Array(9).fill(null); // slots do kit editor
-var _kitExpandidos = {};   // {kitId: true} kits com slots expandidos
-var _kitSlotsEdit  = {};   // {kitId: [slot0..slot8]} edições em curso
-var _equipAcessCarga = {}; // {equipId: [{id,nome}]} acessórios adicionados nesta sessão
+var _dragTipo = null;       // 'kit'|'equip'|'acess'|'veiculo'
+var _dragId   = null;
 
-var _dragTipo     = null; // 'kit' | 'equip' | 'acess'
-var _dragId       = null; // ID do item sendo arrastado
-
-var _unsubs = [];
-
-// ── Listeners Firebase ───────────────────────────────
-function iniciarListeners() {
-  _unsubs.push(db.collection('kits').onSnapshot(function(snap) {
-    _kits = {};
-    snap.forEach(function(d) { _kits[d.id] = Object.assign({id:d.id}, d.data()); });
-    renderKits();
-  }));
-
-  _unsubs.push(db.collection('estoque').onSnapshot(function(snap) {
-    _equipamentos = {};
-    snap.forEach(function(d) { _equipamentos[d.id] = Object.assign({id:d.id}, d.data()); });
-    renderEquipamentos();
-    renderKits(); // re-renderiza pois slots podem ter mudado
-  }));
-
-  _unsubs.push(db.collection('acessorios').onSnapshot(function(snap) {
-    _acessorios = {};
-    snap.forEach(function(d) { _acessorios[d.id] = Object.assign({id:d.id}, d.data()); });
-    renderAcessorios();
-  }));
-
-  // Veículos de configuracoes/veiculos
-  _unsubs.push(db.collection('configuracoes').doc('veiculos').onSnapshot(function(doc) {
-    if (doc.exists) {
-      var data = doc.data();
-      _veiculos = Array.isArray(data.lista) ? data.lista : [];
-      // Fallback: adiciona IDs se não tiver
-      _veiculos = _veiculos.map(function(v,i) {
-        return Object.assign({id: v.id || ('veiculo_'+i)}, v);
-      });
-    } else {
-      _veiculos = [];
-    }
-    renderVeiculos();
-  }));
-
-  // Eventos dos próximos 90 dias
-  var hoje = new Date();
-  hoje.setHours(0,0,0,0);
-  var hojeStr = hoje.toISOString().split('T')[0];
-  var futuro = new Date(hoje);
-  futuro.setDate(futuro.getDate() + 90);
-  var futuroStr = futuro.toISOString().split('T')[0];
-
-  _unsubs.push(db.collection('eventos_campo')
-    .where('ev_data', '>=', hojeStr)
-    .where('ev_data', '<=', futuroStr)
-    .orderBy('ev_data', 'asc')
-    .onSnapshot(function(snap) {
-      _eventos = [];
-      snap.forEach(function(d) {
-        var ev = Object.assign({id:d.id}, d.data());
-        if (ev.etapa && ev.etapa !== 'cancelado') _eventos.push(ev);
-      });
-      renderEventos();
-    })
-  );
-
-  // Cargas
-  _unsubs.push(db.collection('cargas').onSnapshot(function(snap) {
-    _cargas = {};
-    snap.forEach(function(d) { _cargas[d.id] = Object.assign({id:d.id}, d.data()); });
-    renderEventos(); // atualiza badges
-    if (_eventoSel) renderCargasEvento();
-  }));
+// ── Toast ────────────────────────────────────────────
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'toast' + (isErr ? ' error' : '');
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function() { t.classList.remove('show'); }, 3200);
 }
 
 // ── Auth ─────────────────────────────────────────────
 auth.onAuthStateChanged(function(user) {
   if (user) {
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    document.getElementById('main-wrap').style.display    = 'block';
     iniciarListeners();
   } else {
     document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    _unsubs.forEach(function(u) { try{u();}catch(e){} });
-    _unsubs = [];
+    document.getElementById('main-wrap').style.display    = 'none';
   }
 });
 
-function fazerLogin() {
+function doLogin() {
   var email = document.getElementById('login-email').value.trim();
-  var senha = document.getElementById('login-senha').value;
-  var err   = document.getElementById('login-erro');
-  err.style.display = 'none';
-  auth.signInWithEmailAndPassword(email, senha)
+  var pass  = document.getElementById('login-pass').value;
+  if (!email || !pass) return;
+  auth.signInWithEmailAndPassword(email, pass)
     .catch(function(e) {
-      err.textContent = 'E-mail ou senha incorretos.';
-      err.style.display = 'block';
+      document.getElementById('login-error').textContent = 'Email ou senha inválidos.';
     });
 }
-document.getElementById('login-senha').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') fazerLogin();
+
+document.getElementById('login-pass').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
 });
 
-// ── Toast ─────────────────────────────────────────────
-var _toastTimer = null;
-function toast(msg, isErr) {
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show' + (isErr ? ' err' : '');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(function() { el.className = ''; }, 2800);
+// ── Logout ───────────────────────────────────────────
+function doLogout() {
+  auth.signOut();
 }
 
-// ════════════════════════════════════════════════════
-// RENDER: Eventos strip
-// ════════════════════════════════════════════════════
+// ── Listeners Firestore ──────────────────────────────
+function iniciarListeners() {
+  // Equipamentos (colecao 'estoque')
+  db.collection('estoque').onSnapshot(function(snap) {
+    _equipamentos = {};
+    snap.forEach(function(d) { _equipamentos[d.id] = Object.assign({ id: d.id }, d.data()); });
+    renderEquipamentos();
+    renderKits();
+  });
+
+  // Kits
+  db.collection('kits').onSnapshot(function(snap) {
+    _kits = {};
+    snap.forEach(function(d) { _kits[d.id] = Object.assign({ id: d.id }, d.data()); });
+    renderKits();
+  });
+
+  // Acessorios
+  db.collection('acessorios').onSnapshot(function(snap) {
+    _acessorios = {};
+    snap.forEach(function(d) { _acessorios[d.id] = Object.assign({ id: d.id }, d.data()); });
+    renderAcessorios();
+  });
+
+  // Veiculos
+  db.collection('configuracoes').doc('veiculos').onSnapshot(function(doc) {
+    _veiculos = {};
+    var data = doc.data() || {};
+    var lista = data.lista || data.veiculos || [];
+    if (Array.isArray(lista)) {
+      lista.forEach(function(v) {
+        var vid = v.id || v.nome;
+        _veiculos[vid] = Object.assign({ id: vid }, v);
+      });
+    } else {
+      Object.keys(lista).forEach(function(k) {
+        _veiculos[k] = Object.assign({ id: k }, lista[k]);
+      });
+    }
+    renderVeiculos();
+  });
+
+  // Eventos
+  db.collection('eventos_campo').orderBy('data').onSnapshot(function(snap) {
+    _eventos = {};
+    snap.forEach(function(d) { _eventos[d.id] = Object.assign({ id: d.id }, d.data()); });
+    renderEventos();
+  });
+
+  // Cargas
+  db.collection('cargas').orderBy('criadoEm', 'desc').onSnapshot(function(snap) {
+    _cargas = {};
+    snap.forEach(function(d) { _cargas[d.id] = Object.assign({ id: d.id }, d.data()); });
+    renderCargas();
+  });
+}
+
+// ── Render: Eventos Strip ────────────────────────────
 function renderEventos() {
   var strip = document.getElementById('eventos-strip');
-  if (!_eventos.length) {
-    strip.innerHTML = '<div class="empty-state" style="padding:12px 0">Nenhum evento nos próximos 90 dias</div>';
+  var list  = Object.values(_eventos);
+  if (!list.length) {
+    strip.innerHTML = '<span style="color:var(--muted);font-size:0.8rem">Nenhum evento cadastrado</span>';
     return;
   }
-  var hoje = new Date(); hoje.setHours(0,0,0,0);
-  var amanha = new Date(hoje); amanha.setDate(amanha.getDate()+1);
-  var semana = new Date(hoje); semana.setDate(semana.getDate()+7);
-
-  // Verifica quais eventos têm carga
-  var eventosComCarga = new Set();
-  Object.values(_cargas).forEach(function(c) {
-    if (c.evento_id) eventosComCarga.add(c.evento_id);
-  });
-
-  var html = _eventos.map(function(ev) {
-    var evDate = new Date(ev.ev_data + 'T00:00:00');
-    var sel = (_eventoSel && _eventoSel.id === ev.id) ? ' selected' : '';
-    var urgClass = '';
-    if (evDate <= amanha) urgClass = ' urgente';
-    else if (evDate <= semana) urgClass = ' hoje';
-    var cargaClass = eventosComCarga.has(ev.id) ? ' com-carga' : ' sem-carga';
-    var nome = ev.nome_cliente || ev.nome || 'Evento';
-    return '<div class="ev-chip' + sel + urgClass + cargaClass + '" id="evchip-' + ev.id + '"' +
-      ' onclick="selecionarEvento(\'' + ev.id + '\')"' +
-      ' ondragover="dragOverEvento(event,\'' + ev.id + '\')"' +
-      ' ondragleave="dragLeaveEvento(event,\'' + ev.id + '\')"' +
-      ' ondrop="dropVeiculoNoEvento(event,\'' + ev.id + '\')"' +
-      ' title="' + esc(nome) + '">' +
-      '<div class="ev-chip-data">' + fmtData(ev.ev_data) + '</div>' +
-      '<div class="ev-chip-nome">' + esc(nome) + '</div>' +
-      (ev.ev_local ? '<div class="ev-chip-local">' + esc(ev.ev_local) + '</div>' : '') +
-      '</div>';
+  strip.innerHTML = list.map(function(ev) {
+    return '<div class="ev-chip" id="evchip-' + ev.id + '"'
+      + ' ondragover="dragOverEvento(event,\'' + ev.id + '\')"'
+      + ' ondragleave="dragLeaveEvento(event,\'' + ev.id + '\')"'
+      + ' ondrop="dropVeiculoNoEvento(event,\'' + ev.id + '\')">'
+      + '<div class="ev-chip-nome">' + esc(ev.nome || ev.name || ev.id) + '</div>'
+      + '<div class="ev-chip-data">' + fmtData(ev.data || ev.date || '') + '</div>'
+      + '</div>';
   }).join('');
-  strip.innerHTML = html;
 }
 
-function selecionarEvento(id) {
-  var ev = _eventos.find(function(e) { return e.id === id; });
-  if (!ev) return;
-  _eventoSel = ev;
-  _cargaAtual = { evento_id: id, kits_veiculo: {} }; // {veiculo_id: [kit_ids]}
-  renderEventos();
-  // Atualiza selection bar
-  var bar = document.getElementById('selection-bar');
-  bar.classList.remove('hidden');
-  document.getElementById('sel-evento-nome').textContent = ev.nome_cliente || ev.nome || 'Evento';
-  document.getElementById('sel-data-label').textContent  = fmtData(ev.ev_data);
-  document.getElementById('header-info').textContent = (ev.nome_cliente || 'Evento') + ' · ' + fmtData(ev.ev_data);
-  renderVeiculos();
-  renderCargasEvento();
-}
-
-// ════════════════════════════════════════════════════
-// RENDER: Veículos
-// ════════════════════════════════════════════════════
+// ── Render: Veiculos ─────────────────────────────────
 function renderVeiculos() {
   var grid = document.getElementById('veiculos-grid');
-  if (!_veiculos.length) {
-    grid.innerHTML = '<div class="empty-state">Nenhum veículo cadastrado.<br>Adicione veículos em Painel de Eventos → Admin.</div>';
+  var list = Object.values(_veiculos);
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-state">Nenhum veículo cadastrado.</div>';
     return;
   }
-  var html = _veiculos.map(function(v) {
-    var sel = (_veiculoSel && _veiculoSel.id === v.id) ? ' selected' : '';
-    // Kits já atribuídos a este veículo para o evento selecionado
-    var kitsNesseVeiculo = _cargaAtual && _cargaAtual.kits_veiculo && _cargaAtual.kits_veiculo[v.id] || [];
-
+  grid.innerHTML = list.map(function(v) {
+    var vid = v.id;
+    var slots = _veiculoSlots[vid] || new Array(8).fill(null);
     var slotsHtml = '';
     for (var i = 0; i < 8; i++) {
-      if (kitsNesseVeiculo[i]) {
-        var k = _kits[kitsNesseVeiculo[i]];
-        var kNome = k ? k.nome : 'Kit';
-        slotsHtml += '<div class="veiculo-kit-slot filled" title="' + esc(kNome) + '" onclick="removerKitDeVeiculo(\'' + v.id + '\',\'' + kitsNesseVeiculo[i] + '\')">' +
-          '<div class="veiculo-kit-slot-label">' + esc(kNome.substring(0,6)) + '</div>' +
-          '</div>';
+      var s = slots[i];
+      if (s) {
+        slotsHtml += '<div class="veiculo-slot filled"'
+          + ' ondragover="dragOverVeiculoSlot(event,\'' + vid + '\',' + i + ')"'
+          + ' ondragleave="dragLeaveVeiculoSlot(event,\'' + vid + '\',' + i + ')"'
+          + ' ondrop="dropNoVeiculo(event,\'' + vid + '\',' + i + ')">'
+          + '<button class="slot-remove" onclick="event.stopPropagation();removerVeiculoSlot(\'' + vid + '\',' + i + ')">x</button>'
+          + '<div style="font-size:0.9rem">&#128193;</div>'
+          + '<div class="slot-nome">' + esc((s.nome||'').substring(0,10)) + '</div>'
+          + '</div>';
       } else {
-        slotsHtml += '<div class="veiculo-kit-slot" id="vslot-' + v.id + '-' + i + '" ondragover="dragOverVeiculoSlot(event,\'' + v.id + '\')" ondragleave="dragLeaveVeiculoSlot(event,\'' + v.id + '\')" ondrop="dropNoVeiculo(event,\'' + v.id + '\')">' +
-          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-          '</div>';
+        slotsHtml += '<div class="veiculo-slot"'
+          + ' ondragover="dragOverVeiculoSlot(event,\'' + vid + '\',' + i + ')"'
+          + ' ondragleave="dragLeaveVeiculoSlot(event,\'' + vid + '\',' + i + ')"'
+          + ' ondrop="dropNoVeiculo(event,\'' + vid + '\',' + i + ')">'
+          + '<span class="slot-num">' + (i+1) + '</span>'
+          + '</div>';
       }
     }
-
-    var imgHtml = v.img
-      ? '<img class="veiculo-img" src="' + v.img + '" alt="' + esc(v.nome) + '">' 
-      : '<div class="veiculo-img-placeholder">🚚</div>';
-
-    return '<div class="veiculo-card' + sel + '" id="vcard-' + v.id + '"' +
-      ' draggable="true"' +
-      ' ondragstart="dragStartVeiculo(\'' + v.id + '\')"' +
-      ' ondragend="dragEndVeiculo(\'' + v.id + '\')"' +
-      ' onclick="selecionarVeiculo(\'' + v.id + '\')"' +
-      ' ondragover="dragOverVeiculoSlot(event,\'' + v.id + '\')" ondragleave="dragLeaveVeiculoSlot(event,\'' + v.id + '\')" ondrop="dropNoVeiculo(event,\'' + v.id + '\')">' +
-      imgHtml +
-      '<div class="veiculo-body">' +
-      '<div class="veiculo-nome">' + esc(v.nome) + '</div>' +
-      '<div class="veiculo-kits-slots">' + slotsHtml + '</div>' +
-      (kitsNesseVeiculo.length && _eventoSel
-        ? '<button class="btn sm" style="width:100%;margin-top:8px" onclick="event.stopPropagation();confirmarCarga(\'' + v.id + '\')" >' +
-          (cargaJaSalva(v.id) ? '✓ Atualizar carga' : 'Confirmar carga') + '</button>'
-        : '') +
-      '</div></div>';
+    var usados = (slots).filter(function(s) { return s !== null; }).length;
+    return '<div class="veiculo-card" draggable="true" id="vcard-' + vid + '"'
+      + ' ondragstart="dragStartVeiculo(\'' + vid + '\')" ondragend="dragEndVeiculo(\'' + vid + '\')">'
+      + '<div class="veiculo-header">'
+      + '<div class="veiculo-icon">'
+      + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>'
+      + '</div>'
+      + '<div class="veiculo-nome">' + esc(v.nome || v.id) + '</div>'
+      + '<div class="veiculo-count">' + usados + '/8</div>'
+      + '</div>'
+      + '<div class="veiculo-slots-grid">' + slotsHtml + '</div>'
+      + '<div class="veiculo-drag-hint">Arraste veículo &#8594; Evento para confirmar</div>'
+      + '</div>';
   }).join('');
-  grid.innerHTML = html;
 }
 
-function selecionarVeiculo(id) {
-  var v = _veiculos.find(function(x) { return x.id === id; });
-  if (!v) return;
-  if (_veiculoSel && _veiculoSel.id === id) {
-    _veiculoSel = null;
-  } else {
-    _veiculoSel = v;
-  }
-  renderVeiculos();
-}
-
-function cargaJaSalva(veiculoId) {
-  if (!_eventoSel) return false;
-  return Object.values(_cargas).some(function(c) {
-    return c.evento_id === _eventoSel.id && c.veiculo_id === veiculoId;
-  });
-}
-
-// ════════════════════════════════════════════════════
-// RENDER: Kits
-// ════════════════════════════════════════════════════
+// ── Render: Kits ─────────────────────────────────────
 function renderKits() {
   var grid = document.getElementById('kits-grid');
   var list = Object.values(_kits);
   if (!list.length) {
-    grid.innerHTML = '<div class="empty-state">Nenhum kit cadastrado. Crie um kit acima.</div>';
+    grid.innerHTML = '<div class="empty-state">Nenhum kit cadastrado.</div>';
     return;
   }
   grid.innerHTML = list.map(function(k) { return _buildKitCard(k); }).join('');
-}
-
-function _buildKitCard(k) {
-  var expanded = !!_kitExpandidos[k.id];
-  var slots = _kitSlotsEdit[k.id] || _kitSlotsFromItens(k);
-  var usados = slots.filter(function(s) { return s !== null; }).length;
-  var countLabel = usados === 0 ? 'Vazio' : usados + ' equipamento' + (usados !== 1 ? 's' : '');
-  var kid = k.id;
-
-  var slotsHtml = '';
-  if (expanded) {
-    for (var i = 0; i < 9; i++) {
-      var s = slots[i];
-      var cls = 'kit-inline-slot' + (s ? ' filled' : '');
-      if (s) {
-        slotsHtml += '<div class="' + cls + '"'
-          + ' ondragover="dragOverKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
-          + ' ondragleave="dragLeaveKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
-          + ' ondrop="dropNoKitInlineSlot(event,\'' + kid + '\',' + i + ')">'
-          + '<span class="slot-num">' + (i+1) + '</span>'
-          + '<button class="slot-remove" onclick="event.stopPropagation();removerKitInlineSlot(\'' + kid + '\',' + i + ')">x</button>'
-          + '<div style="font-size:0.9rem">' + (s.tipo === 'kit' ? '&#128193;' : '&#128295;') + '</div>'
-          + '<div class="slot-nome">' + (s.nome ? s.nome.substring(0,12) : '') + '</div>'
-          + '</div>';
-      } else {
-        slotsHtml += '<div class="' + cls + '"'
-          + ' ondragover="dragOverKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
-          + ' ondragleave="dragLeaveKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
-          + ' ondrop="dropNoKitInlineSlot(event,\'' + kid + '\',' + i + ')">'
-          + '<span class="slot-num">' + (i+1) + '</span>'
-          + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
-          + '</div>';
-      }
-    }
-  } else {
-    for (var j = 0; j < 9; j++) {
-      slotsHtml += '<div class="kit-slot-mini' + (slots[j] ? ' filled' : '') + '"></div>';
-    }
-  }
-
-  return '<div class="kit-card" draggable="true" id="kcard-' + kid + '"'
-    + ' ondragstart="dragStartKit(\'' + kid + '\')" ondragend="dragEndKit(\'' + kid + '\')">'
-    + '<div class="kit-card-header">'
-    + '<div class="kit-card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>'
-    + '<div class="kit-card-nome">' + esc(k.nome) + '</div>'
-    + '<button class="kit-expand-btn" onclick="event.stopPropagation();toggleKitExpand(\'' + kid + '\')">'
-    + (expanded ? '&#9650; Fechar' : '&#9660; Slots')
-    + '</button>'
-    + '</div>'
-    + '<div class="kit-card-count">' + countLabel + '</div>'
-    + (expanded
-        ? '<div class="kit-inline-slots">' + slotsHtml + '</div>'
-          + '<div style="font-size:0.62rem;color:var(--muted);text-align:center;margin:2px 0 5px">Arraste equipamentos para os slots</div>'
-          + '<button class="kit-btn" style="width:100%;margin-bottom:4px" onclick="event.stopPropagation();salvarKitInline(\'' + kid + '\')">Salvar kit</button>'
-        : '<div class="kit-slots-mini">' + slotsHtml + '</div>')
-    + '<div class="kit-drag-hint" style="margin-top:4px">Arraste kit &#8594; Veiculo</div>'
-    + '</div>';
 }
 
 function _kitSlotsFromItens(k) {
@@ -1411,17 +557,287 @@ function _kitSlotsFromItens(k) {
   return slots;
 }
 
+function _buildKitCard(k) {
+  var expanded = !!_kitExpandidos[k.id];
+  var slots    = _kitSlotsEdit[k.id] || _kitSlotsFromItens(k);
+  var usados   = slots.filter(function(s) { return s !== null; }).length;
+  var label    = usados === 0 ? 'Vazio' : usados + ' item' + (usados !== 1 ? 'ns' : '');
+  var kid      = k.id;
+  var slotsHtml = '';
+
+  if (expanded) {
+    for (var i = 0; i < 9; i++) {
+      var s   = slots[i];
+      var cls = 'kit-inline-slot' + (s ? ' filled' : '');
+      if (s) {
+        slotsHtml += '<div class="' + cls + '"'
+          + ' ondragover="dragOverKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
+          + ' ondragleave="dragLeaveKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
+          + ' ondrop="dropNoKitInlineSlot(event,\'' + kid + '\',' + i + ')">'
+          + '<span class="slot-num">' + (i+1) + '</span>'
+          + '<button class="slot-remove" onclick="event.stopPropagation();removerKitInlineSlot(\'' + kid + '\',' + i + ')">x</button>'
+          + '<div style="font-size:0.85rem">' + (s.tipo === 'kit' ? '&#128193;' : '&#128295;') + '</div>'
+          + '<div class="slot-nome">' + esc((s.nome||'').substring(0,12)) + '</div>'
+          + '</div>';
+      } else {
+        slotsHtml += '<div class="' + cls + '"'
+          + ' ondragover="dragOverKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
+          + ' ondragleave="dragLeaveKitInlineSlot(event,\'' + kid + '\',' + i + ')"'
+          + ' ondrop="dropNoKitInlineSlot(event,\'' + kid + '\',' + i + ')">'
+          + '<span class="slot-num">' + (i+1) + '</span>'
+          + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+          + '</div>';
+      }
+    }
+  } else {
+    for (var j = 0; j < 9; j++) {
+      slotsHtml += '<div class="kit-slot-mini' + (slots[j] ? ' filled' : '') + '"></div>';
+    }
+  }
+
+  return '<div class="kit-card" draggable="true" id="kcard-' + kid + '"'
+    + ' ondragstart="dragStartKit(\'' + kid + '\')" ondragend="dragEndKit(\'' + kid + '\')">'
+    + '<div class="kit-card-header">'
+    + '<div class="kit-card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>'
+    + '<div class="kit-card-nome">' + esc(k.nome) + '</div>'
+    + '<button class="kit-expand-btn" onclick="event.stopPropagation();toggleKitExpand(\'' + kid + '\')">'
+    + (expanded ? '&#9650; Fechar' : '&#9660; Slots')
+    + '</button>'
+    + '</div>'
+    + '<div class="kit-card-count">' + label + '</div>'
+    + (expanded
+        ? '<div class="kit-inline-slots">' + slotsHtml + '</div>'
+          + '<div style="font-size:0.62rem;color:var(--muted);text-align:center;margin:2px 0 4px">Arraste equip. ou kit para os slots</div>'
+          + '<button class="kit-btn" style="width:100%;margin-bottom:4px" onclick="event.stopPropagation();salvarKitInline(\'' + kid + '\')">Salvar kit</button>'
+        : '<div class="kit-slots-mini">' + slotsHtml + '</div>')
+    + '<div class="kit-drag-hint">Arraste kit &#8594; Veículo</div>'
+    + '</div>';
+}
+
 function toggleKitExpand(kitId) {
   if (_kitExpandidos[kitId]) {
     delete _kitExpandidos[kitId];
     delete _kitSlotsEdit[kitId];
   } else {
     _kitExpandidos[kitId] = true;
-    _kitSlotsEdit[kitId] = _kitSlotsFromItens(_kits[kitId] || {});
+    _kitSlotsEdit[kitId]  = _kitSlotsFromItens(_kits[kitId] || {});
   }
   renderKits();
 }
 
+function salvarKitInline(kitId) {
+  var slots = _kitSlotsEdit[kitId];
+  if (!slots) return;
+  var itens = [];
+  for (var i = 0; i < 9; i++) {
+    var s = slots[i];
+    if (!s || s.tipo === 'kit-ext') continue;
+    if (s.tipo === 'equipamento') itens.push({ equipId: s.id, qtd: s.qtd || 1, acessorios: '', nome: s.nome });
+    else if (s.tipo === 'kit')    itens.push({ kitId: s.id, qtd: 1, nome: s.nome, _isKit: true });
+  }
+  db.collection('kits').doc(kitId).update({ itens: itens, _atualizado: Date.now() })
+    .then(function() {
+      toast('Kit salvo!');
+      delete _kitExpandidos[kitId];
+      delete _kitSlotsEdit[kitId];
+    })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+function removerKitInlineSlot(kitId, idx) {
+  if (!_kitSlotsEdit[kitId]) return;
+  var slot = _kitSlotsEdit[kitId][idx];
+  if (slot && slot.tipo === 'kit-ext') {
+    for (var i = idx; i >= 0; i--) {
+      if (_kitSlotsEdit[kitId][i] && _kitSlotsEdit[kitId][i].tipo === 'kit') {
+        for (var j = i; j < i + 3 && j < 9; j++) _kitSlotsEdit[kitId][j] = null;
+        break;
+      }
+    }
+  } else {
+    _kitSlotsEdit[kitId][idx] = null;
+  }
+  renderKits();
+}
+
+// ── Render: Equipamentos ─────────────────────────────
+function renderEquipamentos() {
+  var grid = document.getElementById('equip-grid');
+  var list = Object.values(_equipamentos);
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-state">Nenhum equipamento no estoque.</div>';
+    return;
+  }
+  grid.innerHTML = list.map(function(eq) {
+    var eid    = eq.id;
+    var acessAdicionados = _equipAcessCarga[eid] || [];
+    var aceHtml = acessAdicionados.map(function(a) {
+      return '<span class="eac added">'
+        + esc((a.nome||'').substring(0,14))
+        + '<button class="eac-rem" onclick="event.stopPropagation();removerAcessEquip(\'' + eid + '\',\'' + a.id + '\')">x</button>'
+        + '</span>';
+    }).join('');
+
+    return '<div class="equip-card" draggable="true" id="ecard-' + eid + '"'
+      + ' ondragstart="dragStartEquip(\'' + eid + '\')" ondragend="dragEndEquip(\'' + eid + '\')"'
+      + ' ondragover="dragOverEquip(event,\'' + eid + '\')"'
+      + ' ondragleave="dragLeaveEquip(event,\'' + eid + '\')"'
+      + ' ondrop="dropAcessNoEquip(event,\'' + eid + '\')">'
+      + '<div class="equip-icon">'
+      + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'
+      + '</div>'
+      + '<div class="equip-nome">' + esc(eq.nome || eq.id) + '</div>'
+      + (eq.categoria ? '<div class="equip-cat">' + esc(eq.categoria) + '</div>' : '')
+      + (aceHtml ? '<div class="equip-acess-lista">' + aceHtml + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function removerAcessEquip(equipId, acessId) {
+  var lista = _equipAcessCarga[equipId] || [];
+  _equipAcessCarga[equipId] = lista.filter(function(a) { return a.id !== acessId; });
+  renderEquipamentos();
+}
+
+// ── Render: Acessorios ───────────────────────────────
+function renderAcessorios() {
+  var grid = document.getElementById('acess-grid');
+  var list = Object.values(_acessorios);
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-state">Nenhum acessório cadastrado.</div>';
+    return;
+  }
+  grid.innerHTML = list.map(function(a) {
+    return '<div class="acess-chip" draggable="true" id="achip-' + a.id + '"'
+      + ' ondragstart="dragStartAcess(\'' + a.id + '\')" ondragend="dragEndAcess(\'' + a.id + '\')">'
+      + esc((a.nome||a.id).substring(0,18))
+      + '</div>';
+  }).join('');
+}
+
+// ── Render: Cargas ───────────────────────────────────
+function renderCargas() {
+  var wrap = document.getElementById('cargas-list');
+  var list = Object.values(_cargas);
+  if (!list.length) {
+    wrap.innerHTML = '<div class="empty-state">Nenhuma carga registrada.</div>';
+    return;
+  }
+  // Sort by criadoEm desc
+  list.sort(function(a,b) { return (b.criadoEm||0) - (a.criadoEm||0); });
+  wrap.innerHTML = list.map(function(c) {
+    var statusMap = { preparando: 'Preparando', confirmado: 'Confirmado', saiu: 'Saiu', voltou: 'Voltou' };
+    var st = c.status || 'preparando';
+    var kitsCount = Array.isArray(c.kits) ? c.kits.length : 0;
+    return '<div class="carga-row" onclick="abrirCargaModal(\'' + c.id + '\')">'
+      + '<div class="carga-row-info">'
+      + '<div class="carga-row-nome">' + esc(c.evento_nome || c.evento_id || '—') + '</div>'
+      + '<div class="carga-row-sub">' + fmtData(c.evento_data||'') + ' · ' + esc(c.veiculo_nome||'—') + ' · ' + kitsCount + ' kit(s)</div>'
+      + '</div>'
+      + '<div class="carga-status ' + st + '">' + (statusMap[st] || st) + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── Modal: Carga ─────────────────────────────────────
+function abrirCargaModal(cargaId) {
+  var c = _cargas[cargaId];
+  if (!c) return;
+  document.getElementById('carga-modal-title').textContent = (c.evento_nome||'Carga') + ' — ' + (c.veiculo_nome||'');
+  var statusMap = { preparando: 'Preparando', confirmado: 'Confirmado', saiu: 'Saiu', voltou: 'Voltou' };
+  var st = c.status || 'preparando';
+  var kitsHtml = (Array.isArray(c.kits) ? c.kits : []).map(function(k) {
+    var itensHtml = (Array.isArray(k.itens) ? k.itens : []).map(function(it) {
+      return '<div class="modal-item">&#128295; ' + esc(it.nome||it.equipId||'—') + (it.qtd > 1 ? ' x' + it.qtd : '') + '</div>';
+    }).join('');
+    return '<div class="modal-kit"><div class="modal-kit-nome">&#128193; ' + esc(k.kit_nome||k.kit_id||'—') + '</div>' + itensHtml + '</div>';
+  }).join('');
+  var btns = '';
+  if (st === 'preparando') btns += '<button class="modal-btn" onclick="mudarStatusCarga(\'' + cargaId + '\',\'confirmado\')">Confirmar</button>';
+  if (st === 'confirmado')  btns += '<button class="modal-btn" onclick="mudarStatusCarga(\'' + cargaId + '\',\'saiu\')">Saiu</button>';
+  if (st === 'saiu')        btns += '<button class="modal-btn" onclick="mudarStatusCarga(\'' + cargaId + '\',\'voltou\')">Voltou</button>';
+  btns += '<button class="modal-btn danger" onclick="deletarCarga(\'' + cargaId + '\')">Excluir</button>';
+  document.getElementById('carga-modal-body').innerHTML =
+    '<div class="modal-status ' + st + '">' + (statusMap[st]||st) + '</div>'
+    + (kitsHtml || '<div style="color:var(--muted);font-size:0.85rem">Sem kits registrados.</div>')
+    + '<div class="modal-btns">' + btns + '</div>';
+  document.getElementById('carga-modal').style.display = 'flex';
+}
+
+function fecharCargaModal() {
+  document.getElementById('carga-modal').style.display = 'none';
+}
+
+function mudarStatusCarga(cargaId, novoStatus) {
+  db.collection('cargas').doc(cargaId).update({ status: novoStatus, atualizadoEm: Date.now() })
+    .then(function() { toast('Status: ' + novoStatus); fecharCargaModal(); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+function deletarCarga(cargaId) {
+  if (!confirm('Excluir esta carga?')) return;
+  db.collection('cargas').doc(cargaId).delete()
+    .then(function() { toast('Carga excluída.'); fecharCargaModal(); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+// ── Drag: Kit ────────────────────────────────────────
+function dragStartKit(kitId) {
+  _dragTipo = 'kit';
+  _dragId   = kitId;
+  var el = document.getElementById('kcard-' + kitId);
+  if (el) el.style.opacity = '0.5';
+}
+function dragEndKit(kitId) {
+  _dragTipo = null;
+  _dragId   = null;
+  var el = document.getElementById('kcard-' + kitId);
+  if (el) el.style.opacity = '';
+}
+
+// ── Drag: Equipamento ────────────────────────────────
+function dragStartEquip(equipId) {
+  _dragTipo = 'equip';
+  _dragId   = equipId;
+  var el = document.getElementById('ecard-' + equipId);
+  if (el) el.style.opacity = '0.5';
+}
+function dragEndEquip(equipId) {
+  _dragTipo = null;
+  _dragId   = null;
+  var el = document.getElementById('ecard-' + equipId);
+  if (el) el.style.opacity = '';
+}
+
+// ── Drag: Acessorio ──────────────────────────────────
+function dragStartAcess(acessId) {
+  _dragTipo = 'acess';
+  _dragId   = acessId;
+  var el = document.getElementById('achip-' + acessId);
+  if (el) el.style.opacity = '0.5';
+}
+function dragEndAcess(acessId) {
+  _dragTipo = null;
+  _dragId   = null;
+  var el = document.getElementById('achip-' + acessId);
+  if (el) el.style.opacity = '';
+}
+
+// ── Drag: Veiculo ────────────────────────────────────
+function dragStartVeiculo(veiculoId) {
+  _dragTipo = 'veiculo';
+  _dragId   = veiculoId;
+  var el = document.getElementById('vcard-' + veiculoId);
+  if (el) el.style.opacity = '0.5';
+}
+function dragEndVeiculo(veiculoId) {
+  _dragTipo = null;
+  _dragId   = null;
+  var el = document.getElementById('vcard-' + veiculoId);
+  if (el) el.style.opacity = '';
+}
+
+// ── Drop: Kit inline slot ────────────────────────────
 function dragOverKitInlineSlot(event, kitId, idx) {
   if (_dragTipo !== 'equip' && _dragTipo !== 'kit') return;
   if (_dragTipo === 'kit' && _dragId === kitId) return;
@@ -1441,7 +857,7 @@ function dropNoKitInlineSlot(event, kitId, idx) {
   if (!_dragId) return;
   if (!_kitSlotsEdit[kitId]) {
     _kitExpandidos[kitId] = true;
-    _kitSlotsEdit[kitId] = _kitSlotsFromItens(_kits[kitId] || {});
+    _kitSlotsEdit[kitId]  = _kitSlotsFromItens(_kits[kitId] || {});
   }
   if (_dragTipo === 'equip') {
     var eq = _equipamentos[_dragId];
@@ -1453,283 +869,27 @@ function dropNoKitInlineSlot(event, kitId, idx) {
     if (!k2 || _dragId === kitId) return;
     for (var i = 0; i < 3; i++) {
       if (idx + i >= 9) break;
-      _kitSlotsEdit[kitId][idx+i] = i === 0
+      _kitSlotsEdit[kitId][idx+i] = (i === 0)
         ? { tipo: 'kit',     id: _dragId, nome: k2.nome, qtd: 1 }
         : { tipo: 'kit-ext', id: _dragId, nome: k2.nome, qtd: 1 };
     }
-    toast('+ Kit ' + k2.nome + ' Slots ' + (idx+1) + '-' + Math.min(idx+3,9));
+    toast('+ Kit ' + k2.nome);
   }
   renderKits();
 }
-function removerKitInlineSlot(kitId, idx) {
-  if (!_kitSlotsEdit[kitId]) return;
-  var slot = _kitSlotsEdit[kitId][idx];
-  if (slot && slot.tipo === 'kit-ext') {
-    for (var i = idx; i >= 0; i--) {
-      if (_kitSlotsEdit[kitId][i] && _kitSlotsEdit[kitId][i].tipo === 'kit') {
-        for (var j = i; j < i+3 && j < 9; j++) _kitSlotsEdit[kitId][j] = null;
-        break;
-      }
-    }
-  } else {
-    _kitSlotsEdit[kitId][idx] = null;
-  }
-  renderKits();
-}
-function salvarKitInline(kitId) {
-  var slots = _kitSlotsEdit[kitId];
-  if (!slots) return;
-  var itens = [];
-  for (var i = 0; i < 9; i++) {
-    var s = slots[i];
-    if (!s || s.tipo === 'kit-ext') continue;
-    if (s.tipo === 'equipamento') itens.push({ equipId: s.id, qtd: s.qtd || 1, acessorios: '', nome: s.nome });
-    else if (s.tipo === 'kit') itens.push({ kitId: s.id, qtd: 1, nome: s.nome, _isKit: true });
-  }
-  db.collection('kits').doc(kitId).update({ itens: itens, _atualizado: Date.now() })
-    .then(function() {
-      toast('Kit salvo!');
-      delete _kitExpandidos[kitId];
-      delete _kitSlotsEdit[kitId];
-    })
-    .catch(function(e) { toast('Erro: ' + e.message, true); });
-}
 
-// RENDER: Equipamentos
-// ════════════════════════════════════════════════════
-function renderEquipamentos() {
-  var grid = document.getElementById('equips-grid');
-  var list = Object.values(_equipamentos).sort(function(a,b) {
-    return (a.nome||'').localeCompare(b.nome||'');
-  });
-  if (!list.length) {
-    grid.innerHTML = '<div class="empty-state">Nenhum equipamento cadastrado</div>';
-    return;
-  }
-  var ICONS = {
-    'Som':'🔊','Iluminação':'💡','Microfone':'🎤','Cabeamento':'🔌',
-    'Estrutura':'📦','Vídeo':'📽️','Potência':'⚡','Periférico':'🎛️',
-    'Veículo':'🚚','Outros':'🛠️'
-  };
-  var html = list.map(function(e) {
-    var icon = ICONS[e.categoria] || '🔧';
-    var subitens = Array.isArray(e.subitens) ? e.subitens : [];
-    var acessHtml = subitens.slice(0,4).map(function(s) {
-      return '<span class="equip-acess-chip">' + esc(s.nome||s) + '</span>';
-    }).join('');
-    if (subitens.length > 4) acessHtml += '<span class="equip-acess-chip">+' + (subitens.length-4) + '</span>';
-    return '<div class="equip-card" draggable="true" id="ecard-' + e.id + '"' +
-      ' ondragstart="dragStartEquip(\'' + e.id + '\')" ondragend="dragEndEquip(\'' + e.id + '\')"' +
-      ' ondragover="dragOverEquip(event,\'' + e.id + '\')" ondragleave="dragLeaveEquip(event,\'' + e.id + '\')" ondrop="dropAcessNoEquip(event,\'' + e.id + '\')">' +
-      '<div class="equip-card-header">' +
-        '<div class="equip-card-icon">' + icon + '</div>' +
-        '<div><div class="equip-card-nome">' + esc(e.nome) + '</div>' +
-          '<div class="equip-card-cat">' + esc(e.categoria||'Outros') + '</div></div>' +
-      '</div>' +
-      (acessHtml ? '<div class="equip-card-acess">' + acessHtml + '</div>' : '') +
-      (_equipAcessCarga[e.id] && _equipAcessCarga[e.id].length
-        ? '<div class="equip-card-acess" style="border-top:1px solid var(--border);margin-top:4px;padding-top:3px">' +
-          _equipAcessCarga[e.id].map(function(a){ return '<span class="equip-acess-chip" style="border-color:var(--green);color:var(--green);display:inline-flex;align-items:center;gap:3px">+' + esc(a.nome) + '<button onclick="event.stopPropagation();removerAcessEquip(\'' + e.id + '\',\'' + a.id + '\')" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:0.65rem;line-height:1;padding:0;opacity:0.7" title="Remover">&#x2715;</button></span>'; }).join('') +
-          '</div>'
-        : '') +
-      '</div>';
-  }).join('');
-  grid.innerHTML = html;
-}
-
-// ════════════════════════════════════════════════════
-// RENDER: Acessórios
-// ════════════════════════════════════════════════════
-function renderAcessorios() {
-  var grid = document.getElementById('acess-grid');
-  var list = Object.values(_acessorios).sort(function(a,b) {
-    return (a.nome||'').localeCompare(b.nome||'');
-  });
-  if (!list.length) {
-    grid.innerHTML = '<div class="empty-state">Nenhum acessório cadastrado</div>';
-    return;
-  }
-  var html = list.map(function(a) {
-    return '<div class="acess-chip" draggable="true" id="acard-' + a.id + '"' +
-      ' ondragstart="dragStartAcess(\'' + a.id + '\')" ondragend="dragEndAcess(\'' + a.id + '\')">' +
-      esc(a.nome) + '</div>';
-  }).join('');
-  grid.innerHTML = html;
-}
-
-// ════════════════════════════════════════════════════
-// RENDER: Cargas do evento selecionado
-// ════════════════════════════════════════════════════
-function renderCargasEvento() {
-  var container = document.getElementById('cargas-list');
-  var empty = document.getElementById('cargas-empty');
-  if (!_eventoSel) {
-    container.innerHTML = '<div class="empty-state" id="cargas-empty">Selecione um evento para ver cargas</div>';
-    return;
-  }
-  var cargas = Object.values(_cargas).filter(function(c) { return c.evento_id === _eventoSel.id; });
-  if (!cargas.length) {
-    container.innerHTML = '<div class="empty-state" id="cargas-empty">Nenhuma carga para este evento. Arraste kits para um veículo e confirme.</div>';
-    return;
-  }
-  var html = cargas.map(function(c) {
-    var statusClass = c.status || 'preparando';
-    var kitsStr = Array.isArray(c.kits) ? c.kits.map(function(k){return k.kit_nome||k.nome||'Kit';}).join(', ') : '—';
-    return '<div class="carga-card" onclick="abrirCargaDetail(\'' + c.id + '\')">' +
-      '<div class="carga-card-info">' +
-        '<div class="carga-card-nome">' + esc(c.veiculo_nome||'Veículo') + '</div>' +
-        '<div class="carga-card-sub">' + esc(kitsStr) + '</div>' +
-      '</div>' +
-      '<div class="carga-status ' + statusClass + '">' + _labelStatus(statusClass) + '</div>' +
-      '</div>';
-  }).join('');
-  container.innerHTML = html;
-}
-
-function _labelStatus(s) {
-  if (s==='confirmado') return 'Confirmado';
-  if (s==='saiu')       return 'Saiu';
-  if (s==='voltou')     return 'Voltou';
-  return 'Preparando';
-}
-
-// ════════════════════════════════════════════════════
-// DRAG AND DROP — Kits → Veículos
-// ════════════════════════════════════════════════════
-function dragStartKit(id) {
-  _dragTipo = 'kit'; _dragId = id;
-  setTimeout(function() {
-    var el = document.getElementById('kcard-' + id);
-    if (el) el.classList.add('dragging');
-  }, 0);
-}
-function dragEndKit(id) {
-  _dragTipo = null; _dragId = null;
-  var el = document.getElementById('kcard-' + id);
-  if (el) el.classList.remove('dragging');
-  // Remove todos drag-over estados
-  document.querySelectorAll('.veiculo-card.drop-target').forEach(function(el) { el.classList.remove('drop-target'); });
-}
-
-function dragOverVeiculoSlot(event, veiculoId) {
-  if (_dragTipo !== 'kit') return;
-  event.preventDefault();
-  event.dataTransfer.dropEffect = 'move';
-  var card = document.getElementById('vcard-' + veiculoId);
-  if (card) card.classList.add('drop-target');
-}
-function dragLeaveVeiculoSlot(event, veiculoId) {
-  var card = document.getElementById('vcard-' + veiculoId);
-  if (card) card.classList.remove('drop-target');
-}
-
-function dropNoVeiculo(event, veiculoId) {
-  event.preventDefault();
-  if (_dragTipo !== 'kit' || !_dragId) return;
-
-  if (!_cargaAtual) _cargaAtual = { kits_veiculo: {} };
-  if (!_cargaAtual.kits_veiculo[veiculoId]) _cargaAtual.kits_veiculo[veiculoId] = [];
-
-  var arr = _cargaAtual.kits_veiculo[veiculoId];
-  if (arr.length >= 8) { toast('Máximo de 8 kits por veículo!', true); return; }
-  if (arr.indexOf(_dragId) !== -1) { toast('Kit já adicionado a este veículo.', true); return; }
-
-  arr.push(_dragId);
-  var card = document.getElementById('vcard-' + veiculoId);
-  if (card) card.classList.remove('drop-target');
-
-  var kitNome = _kits[_dragId] ? _kits[_dragId].nome : 'Kit';
-  var veicNome = _veiculos.find(function(v){return v.id===veiculoId;});
-  toast((veicNome ? veicNome.nome : 'Veículo') + ' ← ' + kitNome);
-
-  // Checa conflitos
-  _verificarConflitos();
-  renderVeiculos();
-}
-
-function removerKitDeVeiculo(veiculoId, kitId) {
-  if (!_cargaAtual || !_cargaAtual.kits_veiculo[veiculoId]) return;
-  var arr = _cargaAtual.kits_veiculo[veiculoId];
-  var idx = arr.indexOf(kitId);
-  if (idx !== -1) arr.splice(idx, 1);
-  renderVeiculos();
-}
-
-// ════════════════════════════════════════════════════
-// DRAG AND DROP — Equipamentos → Kit slots (editor)
-// ════════════════════════════════════════════════════
-function dragStartEquip(id) {
-  _dragTipo = 'equip'; _dragId = id;
-  setTimeout(function() {
-    var el = document.getElementById('ecard-' + id);
-    if (el) el.classList.add('dragging');
-  }, 0);
-}
-function dragEndEquip(id) {
-  _dragTipo = null; _dragId = null;
-  var el = document.getElementById('ecard-' + id);
-  if (el) el.classList.remove('dragging');
-  document.querySelectorAll('.kit-editor-slot.drag-over, .kit-inline-slot.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
-  document.querySelectorAll('.equip-card.acess-drop-over').forEach(function(el) { el.classList.remove('acess-drop-over'); });
-}
-
-// Veículo → Evento
-function dragStartVeiculo(id) {
-  _dragTipo = 'veiculo'; _dragId = id;
-  setTimeout(function() {
-    var el = document.getElementById('vcard-' + id);
-    if (el) el.classList.add('dragging');
-  }, 0);
-}
-function dragEndVeiculo(id) {
-  _dragTipo = null; _dragId = null;
-  var el = document.getElementById('vcard-' + id);
-  if (el) el.classList.remove('dragging');
-  document.querySelectorAll('.ev-chip.veiculo-drop-over').forEach(function(el) { el.classList.remove('veiculo-drop-over'); });
-}
-function dragOverEvento(event, eventoId) {
-  if (_dragTipo !== 'veiculo') return;
-  event.preventDefault();
-  event.dataTransfer.dropEffect = 'move';
-  var chip = document.getElementById('evchip-' + eventoId);
-  if (chip) chip.classList.add('veiculo-drop-over');
-}
-function dragLeaveEvento(event, eventoId) {
-  var chip = document.getElementById('evchip-' + eventoId);
-  if (chip) chip.classList.remove('veiculo-drop-over');
-}
-function dropVeiculoNoEvento(event, eventoId) {
-  event.preventDefault();
-  if (_dragTipo !== 'veiculo' || !_dragId) return;
-  var veiculoId = _dragId;
-  var ev = _eventos.find(function(e) { return e.id === eventoId; });
-  var v  = _veiculos.find(function(v) { return v.id === veiculoId; });
-  if (!ev || !v) return;
-  // Verifica se há kits no veículo
-  var kitsIds = _cargaAtual && _cargaAtual.kits_veiculo && _cargaAtual.kits_veiculo[veiculoId] || [];
-  if (!kitsIds.length) {
-    toast('Adicione pelo menos um kit ao veículo antes de confirmar.', true);
-    return;
-  }
-  // Seleciona o evento automaticamente se ainda não estava
-  if (!_eventoSel || _eventoSel.id !== eventoId) {
-    selecionarEvento(eventoId);
-  }
-  confirmarCarga(veiculoId, eventoId);
-}
-
-// Acessório → Equipamento
+// ── Drop: Acessorio no Equipamento ───────────────────
 function dragOverEquip(event, equipId) {
   if (_dragTipo !== 'acess') return;
   event.preventDefault();
   event.stopPropagation();
-  event.dataTransfer.dropEffect = 'move';
-  var card = document.getElementById('ecard-' + equipId);
-  if (card) card.classList.add('acess-drop-over');
+  event.dataTransfer.dropEffect = 'copy';
+  var el = document.getElementById('ecard-' + equipId);
+  if (el) el.classList.add('drag-over');
 }
 function dragLeaveEquip(event, equipId) {
-  var card = document.getElementById('ecard-' + equipId);
-  if (card) card.classList.remove('acess-drop-over');
+  var el = document.getElementById('ecard-' + equipId);
+  if (el) el.classList.remove('drag-over');
 }
 function dropAcessNoEquip(event, equipId) {
   event.preventDefault();
@@ -1738,341 +898,128 @@ function dropAcessNoEquip(event, equipId) {
   var acess = _acessorios[_dragId];
   if (!acess) return;
   if (!_equipAcessCarga[equipId]) _equipAcessCarga[equipId] = [];
-  // Evita duplicata
-  if (_equipAcessCarga[equipId].some(function(a){ return a.id === _dragId; })) {
-    toast('Acessório já adicionado a este equipamento.', true); return;
+  var jaExiste = _equipAcessCarga[equipId].some(function(a) { return a.id === _dragId; });
+  if (!jaExiste) {
+    _equipAcessCarga[equipId].push({ id: _dragId, nome: acess.nome });
+    toast('+ ' + acess.nome);
+    renderEquipamentos();
   }
-  _equipAcessCarga[equipId].push({ id: _dragId, nome: acess.nome });
-  toast('+ ' + acess.nome + ' → ' + (_equipamentos[equipId] ? _equipamentos[equipId].nome : 'Equip'));
-  renderEquipamentos();
+  var el = document.getElementById('ecard-' + equipId);
+  if (el) el.classList.remove('drag-over');
 }
 
-function removerAcessEquip(equipId, acessId) {
-  if (!_equipAcessCarga[equipId]) return;
-  _equipAcessCarga[equipId] = _equipAcessCarga[equipId].filter(function(a) { return a.id !== acessId; });
-  renderEquipamentos();
-}
-
-function dragStartAcess(id) {
-  _dragTipo = 'acess'; _dragId = id;
-  setTimeout(function() {
-    var el = document.getElementById('acard-' + id);
-    if (el) el.classList.add('dragging');
-  }, 0);
-}
-function dragEndAcess(id) {
-  _dragTipo = null; _dragId = null;
-  var el = document.getElementById('acard-' + id);
-  if (el) el.classList.remove('dragging');
-}
-
-// ════════════════════════════════════════════════════
-// KIT EDITOR
-// ════════════════════════════════════════════════════
-function abrirKitEditor(kitId) {
-  _kitEditorId = kitId || null;
-  var kit = kitId ? _kits[kitId] : null;
-  document.getElementById('kit-editor-title').textContent = kit ? 'Editar Kit' : 'Novo Kit';
-  document.getElementById('kit-editor-nome').value = kit ? (kit.nome||'') : '';
-  document.getElementById('kit-editor-desc').value = kit ? (kit.descricao||'') : '';
-  document.getElementById('kit-editor-delete-btn').style.display = kitId ? 'inline-block' : 'none';
-
-  // Inicializar slots a partir do kit existente
-  _kitEditorSlots = new Array(9).fill(null);
-  if (kit && Array.isArray(kit.itens)) {
-    kit.itens.forEach(function(it, i) {
-      if (i < 9 && it.equipId) {
-        var eq = _equipamentos[it.equipId];
-        _kitEditorSlots[i] = { tipo: 'equipamento', id: it.equipId, nome: eq ? eq.nome : (it.nome||'Equip'), qtd: it.qtd||1 };
-      }
-    });
-  }
-
-  renderKitEditorSlots();
-  document.getElementById('kit-editor-overlay').style.display = 'flex';
-}
-
-function abrirModalNovoKit() {
-  abrirKitEditor(null);
-}
-
-function fecharKitEditor() {
-  document.getElementById('kit-editor-overlay').style.display = 'none';
-  _kitEditorId = null;
-  _kitEditorSlots = new Array(9).fill(null);
-}
-
-function renderKitEditorSlots() {
-  var container = document.getElementById('kit-editor-slots');
-  var html = '';
-  for (var i = 0; i < 9; i++) {
-    var slot = _kitEditorSlots[i];
-    var idx = i;
-    if (slot) {
-      html += '<div class="kit-editor-slot filled"' +
-        ' ondragover="dragOverKitSlot(event,' + idx + ')" ondragleave="dragLeaveKitSlot(event,' + idx + ')" ondrop="dropNoKitSlot(event,' + idx + ')">' +
-        '<span class="slot-num">' + (idx+1) + '</span>' +
-        '<button class="slot-remove-btn" onclick="removerDoSlot(' + idx + ')">✕</button>' +
-        '<div style="font-size:1rem;margin-bottom:3px">' + (slot.tipo==='equipamento'?'🔧':'📁') + '</div>' +
-        '<div class="slot-item-nome">' + esc(slot.nome) + '</div>' +
-        '</div>';
-    } else {
-      html += '<div class="kit-editor-slot"' +
-        ' ondragover="dragOverKitSlot(event,' + idx + ')" ondragleave="dragLeaveKitSlot(event,' + idx + ')" ondrop="dropNoKitSlot(event,' + idx + ')">' +
-        '<span class="slot-num">' + (idx+1) + '</span>' +
-        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-        '</div>';
-    }
-  }
-  container.innerHTML = html;
-}
-
-function dragOverKitSlot(event, idx) {
-  if (_dragTipo !== 'equip' && _dragTipo !== 'kit') return;
+// ── Drop: Kit no slot do Veiculo ─────────────────────
+function dragOverVeiculoSlot(event, veiculoId, idx) {
+  if (_dragTipo !== 'kit') return;
   event.preventDefault();
+  event.stopPropagation();
   event.dataTransfer.dropEffect = 'move';
-  var slots = document.querySelectorAll('.kit-editor-slot');
+  var slots = document.querySelectorAll('#vcard-' + veiculoId + ' .veiculo-slot');
   if (slots[idx]) slots[idx].classList.add('drag-over');
 }
-function dragLeaveKitSlot(event, idx) {
-  var slots = document.querySelectorAll('.kit-editor-slot');
+function dragLeaveVeiculoSlot(event, veiculoId, idx) {
+  var slots = document.querySelectorAll('#vcard-' + veiculoId + ' .veiculo-slot');
   if (slots[idx]) slots[idx].classList.remove('drag-over');
 }
-function dropNoKitSlot(event, idx) {
+function dropNoVeiculo(event, veiculoId, idx) {
   event.preventDefault();
-  if (!_dragId) return;
-  if (_dragTipo === 'equip') {
-    var eq = _equipamentos[_dragId];
-    if (!eq) return;
-    _kitEditorSlots[idx] = { tipo: 'equipamento', id: _dragId, nome: eq.nome, qtd: 1 };
-    renderKitEditorSlots();
-    toast('+ ' + eq.nome + ' → Slot ' + (idx+1));
-  } else if (_dragTipo === 'kit') {
-    // Kit dentro de kit: ocupa 3 slots a partir de idx
-    var k = _kits[_dragId];
-    if (!k) return;
-    if (_dragId === _kitEditorId) { toast('Não é possível adicionar um kit a si mesmo.', true); return; }
-    // Preenche 3 slots
-    for (var i = 0; i < 3; i++) {
-      var si = idx + i;
-      if (si >= 9) break;
-      _kitEditorSlots[si] = i === 0
-        ? { tipo: 'kit', id: _dragId, nome: k.nome, qtd: 1 }
-        : { tipo: 'kit-ext', id: _dragId, nome: '▸ ' + k.nome, qtd: 1 };
-    }
-    renderKitEditorSlots();
-    toast('+ Kit ' + k.nome + ' → Slots ' + (idx+1) + '–' + Math.min(idx+3,9));
-  }
-}
-function removerDoSlot(idx) {
-  // Se for kit-ext, encontra o slot raiz e remove todos os 3
-  var slot = _kitEditorSlots[idx];
-  if (slot && slot.tipo === 'kit-ext') {
-    // Encontra o slot raiz
-    for (var i = idx; i >= 0; i--) {
-      if (_kitEditorSlots[i] && _kitEditorSlots[i].tipo === 'kit') {
-        for (var j = i; j < i+3 && j < 9; j++) _kitEditorSlots[j] = null;
-        break;
-      }
-    }
-  } else {
-    _kitEditorSlots[idx] = null;
-  }
-  renderKitEditorSlots();
+  event.stopPropagation();
+  if (_dragTipo !== 'kit' || !_dragId) return;
+  var k = _kits[_dragId];
+  if (!k) return;
+  if (!_veiculoSlots[veiculoId]) _veiculoSlots[veiculoId] = new Array(8).fill(null);
+  _veiculoSlots[veiculoId][idx] = { tipo: 'kit', id: _dragId, nome: k.nome };
+  toast('Kit ' + k.nome + ' no slot ' + (idx+1));
+  renderVeiculos();
 }
 
-function salvarKitEditor() {
-  var nome = (document.getElementById('kit-editor-nome').value || '').trim();
-  if (!nome) { toast('Digite um nome para o kit.', true); return; }
-  var desc = (document.getElementById('kit-editor-desc').value || '').trim();
-
-  // Converte slots para itens (formato compatível com estoque.html)
-  var itens = [];
-  for (var i = 0; i < 9; i++) {
-    var s = _kitEditorSlots[i];
-    if (s && s.tipo === 'equipamento') {
-      itens.push({ equipId: s.id, qtd: s.qtd||1, acessorios: '', nome: s.nome });
-    } else if (s && s.tipo === 'kit') {
-      itens.push({ kitId: s.id, qtd: 1, nome: s.nome, _isKit: true });
-    }
-    // kit-ext = extensão do kit, ignorado na persistência
-  }
-
-  var dados = { nome: nome, descricao: desc, itens: itens, _atualizado: Date.now() };
-  var promise = _kitEditorId
-    ? db.collection('kits').doc(_kitEditorId).update(dados)
-    : (dados._criado = Date.now(), db.collection('kits').add(dados));
-
-  promise.then(function() {
-    toast(_kitEditorId ? 'Kit salvo!' : 'Kit criado!');
-    fecharKitEditor();
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
+function removerVeiculoSlot(veiculoId, idx) {
+  if (!_veiculoSlots[veiculoId]) return;
+  _veiculoSlots[veiculoId][idx] = null;
+  renderVeiculos();
 }
 
-function deletarKitEditando() {
-  if (!_kitEditorId) return;
-  var kit = _kits[_kitEditorId];
-  if (!confirm('Excluir kit "'+ (kit ? kit.nome : '') + '"?\nEsta ação não pode ser desfeita.')) return;
-  db.collection('kits').doc(_kitEditorId).delete()
-    .then(function() { toast('Kit excluído.'); fecharKitEditor(); })
-    .catch(function(e) { toast('Erro: ' + e.message, true); });
+// ── Drop: Veiculo no Evento ──────────────────────────
+function dragOverEvento(event, eventoId) {
+  if (_dragTipo !== 'veiculo') return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.dataTransfer.dropEffect = 'move';
+  var el = document.getElementById('evchip-' + eventoId);
+  if (el) el.classList.add('drag-over');
+}
+function dragLeaveEvento(event, eventoId) {
+  var el = document.getElementById('evchip-' + eventoId);
+  if (el) el.classList.remove('drag-over');
+}
+function dropVeiculoNoEvento(event, eventoId) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (_dragTipo !== 'veiculo' || !_dragId) return;
+  var ev = _eventos[eventoId];
+  var v  = _veiculos[_dragId];
+  if (!ev || !v) return;
+  var el = document.getElementById('evchip-' + eventoId);
+  if (el) el.classList.remove('drag-over');
+  confirmarCarga(_dragId, eventoId);
 }
 
-// ════════════════════════════════════════════════════
-// CONFIRMAR / SALVAR CARGA
-// ════════════════════════════════════════════════════
-function confirmarCarga(veiculoId) {
-  if (!_eventoSel) { toast('Selecione um evento primeiro!', true); return; }
-  var kitsIds = _cargaAtual && _cargaAtual.kits_veiculo && _cargaAtual.kits_veiculo[veiculoId] || [];
-  if (!kitsIds.length) { toast('Adicione pelo menos um kit ao veículo.', true); return; }
+// ── Confirmar Carga ──────────────────────────────────
+function confirmarCarga(veiculoId, eventoId) {
+  var ev = _eventos[eventoId];
+  var v  = _veiculos[veiculoId];
+  if (!ev || !v) { toast('Evento ou veículo inválido.', true); return; }
 
-  var veiculo = _veiculos.find(function(v) { return v.id === veiculoId; });
-  var kitsData = kitsIds.map(function(kid) {
-    var k = _kits[kid] || {};
-    return { kit_id: kid, kit_nome: k.nome || 'Kit', itens: k.itens || [] };
+  var slots = _veiculoSlots[veiculoId] || [];
+  var kitsNoVeiculo = slots.filter(function(s) { return s && s.tipo === 'kit'; });
+
+  var kitsData = kitsNoVeiculo.map(function(s) {
+    var kit   = _kits[s.id] || {};
+    var itens = Array.isArray(kit.itens) ? kit.itens.map(function(it) {
+      var acessList = (it.equipId && _equipAcessCarga[it.equipId]) || [];
+      return {
+        equipId   : it.equipId || null,
+        kitId     : it.kitId   || null,
+        nome      : it.nome    || (it.equipId ? ((_equipamentos[it.equipId] || {}).nome || '') : ''),
+        qtd       : it.qtd     || 1,
+        acessorios: acessList.map(function(a) { return a.nome; }).join(', ')
+      };
+    }) : [];
+    return { kit_id: s.id, kit_nome: s.nome, slot: slots.indexOf(s), itens: itens };
   });
 
-  // Verifica se já existe carga para este evento+veículo
-  var existente = Object.values(_cargas).find(function(c) {
-    return c.evento_id === eventoAlvo.id && c.veiculo_id === veiculoId;
-  });
-
-  var payload = {
-    evento_id:    eventoAlvo.id,
-    evento_nome:  eventoAlvo.nome_cliente || eventoAlvo.nome || 'Evento',
-    evento_data:  eventoAlvo.ev_data,
-    veiculo_id:   veiculoId,
-    veiculo_nome: veiculo ? veiculo.nome : 'Veículo',
-    kits:         kitsData,
-    status:       'confirmado',
-    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+  var novaCarga = {
+    evento_id  : eventoId,
+    evento_nome: ev.nome || ev.name || eventoId,
+    evento_data: ev.data || ev.date || '',
+    veiculo_id : veiculoId,
+    veiculo_nome: v.nome || veiculoId,
+    kits       : kitsData,
+    status     : 'preparando',
+    criadoEm   : Date.now(),
+    atualizadoEm: Date.now()
   };
 
-  var promise = existente
-    ? db.collection('cargas').doc(existente.id).update(payload)
-    : (payload.criadoEm = firebase.firestore.FieldValue.serverTimestamp(), db.collection('cargas').add(payload));
-
-  promise.then(function() {
-    toast('✓ Carga confirmada para ' + (veiculo ? veiculo.nome : 'veículo') + '!');
-    renderCargasEvento();
-  }).catch(function(e) { toast('Erro ao salvar: ' + e.message, true); });
-}
-
-// ════════════════════════════════════════════════════
-// DETALHE DE CARGA
-// ════════════════════════════════════════════════════
-function abrirCargaDetail(cargaId) {
-  var c = _cargas[cargaId];
-  if (!c) return;
-  document.getElementById('carga-detail-title').textContent = c.veiculo_nome || 'Carga';
-  var statuses = ['preparando','confirmado','saiu','voltou'];
-  var statusHtml = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
-    statuses.map(function(s) {
-      var act = c.status === s ? 'border-color:var(--gold);color:var(--gold);' : '';
-      return '<button class="btn sm" style="' + act + '" onclick="atualizarStatusCarga(\'' + cargaId + '\',\'' + s + '\')">' + _labelStatus(s) + '</button>';
-    }).join('') +
-  '</div>';
-
-  var kitsHtml = '<div class="section-label" style="margin-bottom:8px">Kits</div>';
-  if (Array.isArray(c.kits) && c.kits.length) {
-    kitsHtml += c.kits.map(function(k) {
-      var itensHtml = Array.isArray(k.itens) ? k.itens.map(function(it) {
-        return '<div style="padding:4px 0;border-bottom:1px solid var(--border);font-size:0.78rem;color:var(--text)">' + esc(it.nome||it.equipId||'Item') + '</div>';
-      }).join('') : '';
-      return '<div style="background:var(--surface2);border-radius:8px;padding:10px;margin-bottom:8px">' +
-        '<div style="font-family:Barlow Condensed,sans-serif;font-size:0.85rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">' + esc(k.kit_nome||'Kit') + '</div>' +
-        itensHtml +
-      '</div>';
-    }).join('');
-  } else {
-    kitsHtml += '<div class="empty-state">Nenhum kit</div>';
-  }
-
-  var body = statusHtml + kitsHtml +
-    '<button class="btn danger sm" style="margin-top:14px" onclick="excluirCarga(\'' + cargaId + '\')">' +
-    'Excluir carga</button>';
-
-  document.getElementById('carga-detail-body').innerHTML = body;
-  document.getElementById('carga-detail-overlay').style.display = 'flex';
-}
-
-function fecharCargaDetail() {
-  document.getElementById('carga-detail-overlay').style.display = 'none';
-}
-
-function atualizarStatusCarga(cargaId, novoStatus) {
-  db.collection('cargas').doc(cargaId).update({
-    status: novoStatus,
-    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(function() {
-    toast('Status: ' + _labelStatus(novoStatus));
-    fecharCargaDetail();
-    renderCargasEvento();
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
-}
-
-function excluirCarga(cargaId) {
-  var c = _cargas[cargaId];
-  if (!confirm('Excluir esta carga?\nEsta ação não pode ser desfeita.')) return;
-  db.collection('cargas').doc(cargaId).delete()
+  db.collection('cargas').add(novaCarga)
     .then(function() {
-      toast('Carga excluída.');
-      fecharCargaDetail();
-      // Limpa carga atual se for a mesma
-      if (_cargaAtual && c && _cargaAtual.kits_veiculo) {
-        delete _cargaAtual.kits_veiculo[c.veiculo_id];
-      }
+      toast('Carga registrada! ' + (kitsData.length) + ' kit(s) para ' + (ev.nome || eventoId));
+      // Reset slots do veiculo
+      delete _veiculoSlots[veiculoId];
       renderVeiculos();
-      renderCargasEvento();
-      renderEventos();
-    }).catch(function(e) { toast('Erro: ' + e.message, true); });
+    })
+    .catch(function(e) { toast('Erro ao salvar: ' + e.message, true); });
 }
 
-// ════════════════════════════════════════════════════
-// DETECÇÃO DE CONFLITOS
-// ════════════════════════════════════════════════════
-function _verificarConflitos() {
-  var banner = document.getElementById('conflict-banner');
-  if (!_eventoSel || !_cargaAtual) { banner.classList.remove('show'); return; }
+// ── Fechar modais ao clicar fora ─────────────────────
+document.getElementById('carga-modal').addEventListener('click', function(e) {
+  if (e.target === this) fecharCargaModal();
+});
 
-  // Coleta todos os itens na carga atual
-  var itensNaCarga = [];
-  Object.keys(_cargaAtual.kits_veiculo||{}).forEach(function(vid) {
-    (_cargaAtual.kits_veiculo[vid]||[]).forEach(function(kid) {
-      var k = _kits[kid];
-      if (k && Array.isArray(k.itens)) {
-        k.itens.forEach(function(it) { if (it.equipId) itensNaCarga.push(it.equipId); });
-      }
-    });
-  });
-
-  // Verifica conflitos com outras cargas no mesmo dia
-  var data = _eventoSel.ev_data;
-  var conflitos = [];
-  Object.values(_cargas).forEach(function(c) {
-    if (c.evento_id === _eventoSel.id) return; // mesmo evento, ok
-    if (c.evento_data !== data) return;        // dia diferente, ok
-    if (Array.isArray(c.kits)) {
-      c.kits.forEach(function(ck) {
-        if (Array.isArray(ck.itens)) {
-          ck.itens.forEach(function(it) {
-            if (it.equipId && itensNaCarga.indexOf(it.equipId) !== -1) {
-              var eq = _equipamentos[it.equipId];
-              var eqNome = eq ? eq.nome : it.equipId;
-              if (conflitos.indexOf(eqNome) === -1) conflitos.push(eqNome);
-            }
-          });
-        }
-      });
-    }
-  });
-
-  if (conflitos.length) {
-    banner.textContent = '⚠ Conflito de equipamentos com outro evento no mesmo dia: ' + conflitos.join(', ');
-    banner.classList.add('show');
-  } else {
-    banner.classList.remove('show');
-  }
+// ── Tab PWA ──────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  // opcional: sem SW para simplificar
 }
 
-// ═══════════════════════════════�
+  </script>
+</body>
+</html>
