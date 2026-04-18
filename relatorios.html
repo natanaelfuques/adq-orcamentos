@@ -3779,11 +3779,15 @@ function renderPagamentos() {
   // "Total a faturar" = apenas eventos confirmados/concluídos (receita garantida)
   const confirmedBase = todosBase.filter(function(e) { return ['confirmado','concluido'].includes(getStatusContrato(e)); });
   const totalConfirmado = confirmedBase.reduce(function(s, e) { return s + valorEv(e); }, 0);
+  // Cálculos específicos do card A Receber (só pendente + parcial)
+  const aReceberBase = todosBase.filter(function(e) { const st = getStatusPgto(e); return st === 'pendente' || st === 'parcial'; });
+  const pendentesCount = todosBase.filter(function(e) { return getStatusPgto(e) === 'pendente'; }).length;
+  const aReceberVal = aReceberBase.reduce(function(s, e) { return s + Math.max(0, valorEv(e) - getTotalPagoAuto(e)); }, 0);
 
   document.getElementById('kpi-pgto').innerHTML =
     '<div class="kpi-card' + (_pgtoFiltro === 'todos' ? ' pgto-active' : '') + '" data-filtro="todos" onclick="filtroPgto(\'todos\')" title="Ver todos os eventos"><div class="kpi-label">Total a faturar</div><div class="kpi-value">' + frsShort(totalConfirmado) + '</div><div class="kpi-sub">' + confirmedBase.length + ' confirmado(s) · ' + todosBase.length + ' total</div></div>' +
     '<div class="kpi-card green' + (_pgtoFiltro === 'quitados' ? ' pgto-active' : '') + '" data-filtro="quitados" onclick="filtroPgto(\'quitados\')" title="Ver quitados"><div class="kpi-label">Total recebido</div><div class="kpi-value">' + frsShort(totalPago) + '</div><div class="kpi-sub">' + quitados + ' quitado(s)</div></div>' +
-    '<div class="kpi-card amber' + (_pgtoFiltro === 'a-receber' ? ' pgto-active' : '') + '" data-filtro="a-receber" onclick="filtroPgto(\'a-receber\')" title="Ver pendentes e parciais"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(totalRestante) + '</div><div class="kpi-sub">' + (todosBase.length - quitados) + ' pendente(s)' + (parciais > 0 ? ' · ' + parciais + ' parcial' : '') + '</div></div>' +
+    '<div class="kpi-card amber' + (_pgtoFiltro === 'a-receber' ? ' pgto-active' : '') + '" data-filtro="a-receber" onclick="filtroPgto(\'a-receber\')" title="Ver pendentes e parciais"><div class="kpi-label">A receber</div><div class="kpi-value">' + frsShort(aReceberVal) + '</div><div class="kpi-sub">' + pendentesCount + ' pendente(s)' + (parciais > 0 ? ' · ' + parciais + ' parcial' : '') + '</div></div>' +
     '<div class="kpi-card red' + (_pgtoFiltro === 'monitoramento' ? ' pgto-active' : '') + '" data-filtro="monitoramento" onclick="filtroPgto(\'monitoramento\')" title="Ver monitoramento"><div class="kpi-label">Monitoramento</div><div class="kpi-value">' + emMonitoramento + '</div><div class="kpi-sub">Pendência sinalizada</div></div>';
 
   const container = document.getElementById('pgto-lista');
