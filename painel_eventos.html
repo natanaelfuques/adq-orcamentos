@@ -823,7 +823,7 @@ header {
   padding: 5px 8px;
   outline: none;
 }
-.add-item-input:focus { border-color: var(--gold); }
+.add-item-input:focus { border-color: var(--col-color, var(--gold)); }
 .btn-add-item-ok {
   background: var(--gold);
   color: #111;
@@ -1931,7 +1931,7 @@ function buildCard(ev, past, col) {
         })() +
       '</div>' +
       itensHtml + extrasHtml +
-      '<div id="add-form-' + esc(ev.id) + '" style="display:none" class="add-item-form">' +
+      '<div id="add-form-' + esc(ev.id) + '" style="display:none;--col-color:' + colColor + '" class="add-item-form">' +
         '<input class="add-item-input" placeholder="Item ou obs: observação..." />' +
         '<button class="btn-add-item-ok" data-evid="' + esc(ev.id) + '" style="background:' + colColor + ';color:#111">OK</button>' +
       '</div>' +
