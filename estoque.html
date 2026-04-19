@@ -7714,33 +7714,35 @@ function evCardDrop(ev, evId) {
   var itemId = ev.dataTransfer.getData('text/plain') || _draggingEqId || _draggingKitId || _draggingStagingId;
   var tipo = ev.dataTransfer.getData('tipo') || (_draggingKitId ? 'kit' : _draggingEqId ? 'eq' : _draggingStagingId ? 'staging' : null);
   if (!itemId || !tipo) return;
-  // Kit temporário de carga
-  if (tipo === 'kit' && typeof itemId === 'string' && itemId.indexOf('temp_') === 0) {
-    var tKit = _kitsTemp[itemId];
-    if (!tKit || !tKit.itens || !tKit.itens.length) { toast('Kit vazio!', true); return; }
-    var ev2b = _eventosAndamento[evId];
-    var novosItens = tKit.itens.map(function(it) {
-      var eq = _equipamentos[it.equipId] || {};
-      return { estoque_id: it.equipId, nome: eq.nome || it.equipId, tipo: 'eq', qtd: it.qtd || 1 };
+  // Kit (normal ou temporário) → expandir itens na carga local
+  if (tipo === 'kit') {
+    var kitItens = [];
+    var kitNome = itemId;
+    if (typeof itemId === 'string' && itemId.indexOf('temp_') === 0) {
+      var tKit = _kitsTemp[itemId];
+      if (!tKit || !tKit.itens || !tKit.itens.length) { toast('Kit vazio!', true); return; }
+      kitItens = tKit.itens;
+      kitNome = tKit.nome || 'Kit temporário';
+      delete _kitsTemp[itemId]; renderKits();
+    } else {
+      var kit = _kits[itemId];
+      if (!kit || !kit.itens || !kit.itens.length) { toast('Kit vazio!', true); return; }
+      kitItens = kit.itens;
+      kitNome = kit.nome || 'Kit';
+    }
+    if (!_cargaEvento[evId]) _cargaEvento[evId] = {};
+    kitItens.forEach(function(it) {
+      var eqId = it.equipId;
+      var qtd = it.qtd || 1;
+      if (!eqId) return;
+      _cargaEvento[evId][eqId] = (_cargaEvento[evId][eqId] || 0) + qtd;
+      _atualizarCardEqDOM(eqId);
     });
-    db.collection('reservas_evento').doc(evId).get().then(function(snap) {
-      var dados = snap.exists ? snap.data() : {};
-      var itensSalvos = Array.isArray(dados.itens) ? dados.itens.slice() : [];
-      novosItens.forEach(function(ni) {
-        var ex = itensSalvos.find(function(it) { return it.estoque_id === ni.estoque_id; });
-        if (ex) { ex.qtd = (ex.qtd || 1) + ni.qtd; } else { itensSalvos.push(ni); }
-      });
-      return db.collection('reservas_evento').doc(evId).set({
-        evento_id: evId,
-        ev_nome: ev2b ? (ev2b.ev_nome || ev2b.nome || '') : '',
-        ev_data: ev2b ? (ev2b.ev_data || '') : '',
-        itens: itensSalvos, status: 'reservado',
-        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }).then(function() {
-      toast('Carga vinculada ao evento!');
-      delete _kitsTemp[itemId]; renderKits(); _draggingKitId = null;
-    }).catch(function(e) { toast('Erro: ' + e.message, true); });
+    _draggingKitId = null;
+    _atualizarCargaDOM(evId);
+    var evCardEl2 = document.getElementById('ev-card-' + evId);
+    if (evCardEl2 && !evCardEl2.classList.contains('expanded')) evCardEl2.classList.add('expanded');
+    toast(kitNome + ' adicionado (' + kitItens.length + ' itens)');
     return;
   }
   if (tipo === 'staging') {
@@ -7764,10 +7766,9 @@ function evCardDrop(ev, evId) {
     return;
   }
 
-  // Vincular item ao evento na coleção reservas_evento
+  // Vincular acessório ao evento na coleção reservas_evento
   var nomeItem = '';
-  if (tipo === 'kit') { var k = _kits[itemId]; nomeItem = k ? (k.nome || 'Kit') : itemId; }
-  else if (tipo === 'acessorio') { var a = _acessorios[itemId]; nomeItem = a ? (a.nome || 'Ac') : itemId; }
+  if (tipo === 'acessorio') { var a = _acessorios[itemId]; nomeItem = a ? (a.nome || 'Ac') : itemId; }
 
   var novoItem = { estoque_id: itemId, nome: nomeItem, tipo: tipo, qtd: 1 };
   var ev2 = _eventosAndamento[evId];
