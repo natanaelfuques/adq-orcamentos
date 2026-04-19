@@ -3070,6 +3070,57 @@ function renderStats() {
   if (statKits) statKits.textContent = kitsCount;
 }
 
+
+// ── Stats ajustados: inclui alocações de eventos em andamento/staging ──
+function _renderStatsAjustados() {
+  // Constrói mapa nome→eqId
+  var nomeToId = {};
+  Object.keys(_equipamentos).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
+    if (nome) nomeToId[nome] = eqId;
+  });
+
+  // Alocações de cards FECHADOS (cards abertos já estão refletidos em _equipamentos)
+  var closedAlloc = {};
+  var allEvs = Object.assign({}, _eventosAndamento, _eventosStagingCarga);
+  Object.values(allEvs).forEach(function(ev) {
+    if (_evEqDragItems[ev.id] \!== undefined) return; // card aberto — já aplicado
+    (ev.itens_extras || []).forEach(function(item) {
+      var m = item.match(/^(\d+)x\s+(.+)$/);
+      var qty  = m ? parseInt(m[1]) : 1;
+      var nome = (m ? m[2] : item).trim().toLowerCase();
+      var eqId = nomeToId[nome];
+      if (eqId) closedAlloc[eqId] = (closedAlloc[eqId] || 0) + qty;
+    });
+  });
+
+  // Soma totais (_equipamentos já tem ajuste de cards abertos)
+  var totalQtd = 0, totalDisp = 0, totalEmUso = 0, totalManut = 0;
+  Object.keys(_equipamentos).forEach(function(eqId) {
+    var e = _equipamentos[eqId];
+    totalQtd   += (e.qtd_total || 0);
+    totalManut += (e.qtd_manutencao || 0);
+    var disp = e.qtd_disponivel || 0;
+    var uso  = e.qtd_em_uso || 0;
+    if (closedAlloc[eqId]) {
+      var adj = Math.min(closedAlloc[eqId], disp);
+      disp -= adj;
+      uso  += adj;
+    }
+    totalDisp  += disp;
+    totalEmUso += uso;
+  });
+
+  var cats = new Set(Object.values(_equipamentos).map(function(e) { return e.categoria; }).filter(Boolean));
+  var el;
+  el = document.getElementById('stat-total');      if (el) el.textContent = totalQtd;
+  el = document.getElementById('stat-disponivel'); if (el) el.textContent = Math.max(0, totalDisp);
+  el = document.getElementById('stat-em-uso');     if (el) el.textContent = totalEmUso;
+  el = document.getElementById('stat-manutencao'); if (el) el.textContent = totalManut;
+  el = document.getElementById('stat-categorias'); if (el) el.textContent = cats.size;
+  el = document.getElementById('stat-kits');       if (el) el.textContent = Object.keys(_kits).length;
+}
+
 function renderCatTabs() {
   var equips = Object.values(_equipamentos);
   var catCount = {};
@@ -7859,6 +7910,7 @@ function renderEventosAndamento() {
     _atualizarCargaDOM(evId);
     Object.keys(_cargaEvento[evId] || {}).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
   });
+  _renderStatsAjustados();
 }
 
 
@@ -8287,6 +8339,7 @@ renderTudo = function() {
   // Adiciona badge de reservas nos cards após render
   setTimeout(_aplicarBadgesReservas, 80);
   _reaplicarCartasAbertas();
+  _renderStatsAjustados(); // atualiza stats com alocações de eventos
 };
 
 function _aplicarBadgesReservas() {
