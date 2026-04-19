@@ -2349,11 +2349,6 @@
       <button class="btn-hd" onclick="abrirModalCategorias()" title="Gerenciar categorias" style="display:flex;align-items:center;gap:5px;border-color:rgba(74,144,217,0.5);color:var(--gold)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Categorias</button>
       <button class="btn-hd" onclick="abrirAgenda()" title="Agenda de eventos" id="btn-agenda" style="display:flex;align-items:center;gap:5px;border-color:rgba(245,166,35,0.5);color:#F5A623"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Agenda<span id="agenda-badge" style="display:none;background:#F5A623;color:#111;border-radius:9px;padding:0 5px;font-size:0.55rem;font-weight:800;line-height:15px">0</span></button>
       <button id="btn-admin-estoque" onclick="abrirPainelAdminEstoque()" title="Painel do Administrador" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:0;width:26px;height:26px;box-sizing:border-box;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-      <button id="btn-ev-andamento-hd" onclick="_toggleSidebar()" title="Eventos em andamento" style="display:flex;align-items:center;gap:5px;border-color:rgba(245,166,35,0.6);color:#F5A623;position:relative">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><polyline points="9 9 15 12 9 15"/></svg>
-        Carga
-        <span id="btn-ev-andamento-count" style="background:#F5A623;color:#111;border-radius:9px;padding:0 5px;font-size:0.55rem;font-weight:800;line-height:15px;min-width:15px;text-align:center">0</span>
-      </button>
       <button class="btn-hd danger" onclick="sair()" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair</button>
     </div>
   </header>
@@ -3290,7 +3285,7 @@ function buildCard(e) {
     });
   }
 
-  return '<div class="eq-card' + cardClass + '" data-eq-id="' + e.id + '" onclick="abrirDetalhe(\'' + e.id + '\')" style="cursor:pointer">' +
+  return '<div class="eq-card' + cardClass + '" onclick="abrirDetalhe(\'' + e.id + '\')" style="cursor:pointer">' +
     '<div class="eq-status-bar ' + statusBarClass + '"></div>' +
     '<div class="eq-card-body">' +
       '<div class="eq-top">' +
@@ -7008,47 +7003,8 @@ body.has-ev-sidebar { padding-right: 272px; }
 .ev-andamento-scroll .veiculo-icon-btn img { height: 22px; width: auto; display: block; }
 .ev-andamento-scroll .veiculo-icon-btn .veiculo-label { font-size: 0.6rem; color: #888; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
 .ev-andamento-scroll .veiculo-icon-btn.tem-veiculo .veiculo-label { color: #bbb; }
-/* Sidebar collapsed */
-#eventos-andamento-section.sidebar-collapsed .ev-andamento-scroll { display: none; }
-#eventos-andamento-section.sidebar-collapsed { height: auto; overflow: visible; }
-
-/* Botão de toggle da sidebar — sempre visível quando há eventos */
-#ev-sidebar-tab {
-  position: fixed;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  z-index: 200;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  width: 24px;
-  background: #F5A623;
-  border: none;
-  border-radius: 6px 0 0 6px;
-  padding: 12px 4px;
-  cursor: pointer;
-  box-shadow: -3px 0 10px rgba(0,0,0,0.4);
-  transition: width 0.2s, background 0.15s;
-}
-#ev-sidebar-tab:hover { background: #e69b1a; width: 28px; }
-/* Del button permanente */
-.item-del-ev-btn { background:none;border:none;cursor:pointer;padding:0 2px;font-size:1rem;color:#e05c5c;flex-shrink:0;line-height:1;opacity:0.7;transition:opacity 0.15s; }
-.item-del-ev-btn:hover { opacity:1; }
-/* Carga seção */
-.card-carga { }
-.card-carga .agev-section-title { font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:800;color:#4A90C8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;display:flex;align-items:center;gap:5px; }
-.card-carga .agev-item { display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.78rem;color:var(--text); }
-.card-carga .agev-item:last-child { border-bottom:none; }
 
 </style>
-
-<!-- Aba lateral de toggle — sempre visível quando há eventos em andamento -->
-<button id="ev-sidebar-tab" onclick="_toggleSidebar()" title="Mostrar/ocultar eventos em andamento" aria-label="Toggle eventos em andamento">
-  <svg id="ev-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-</button>
 
 <!-- HTML: Eventos em andamento (inserido logo após o header no app-screen via JS) -->
 <div id="eventos-andamento-section">
@@ -7222,7 +7178,6 @@ function _buildEvAndamentoCard(ev) {
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Excluir item">&times;</button>' +
         '</div>';
     }).join('');
     var extrasRowHtml = (ev.itens_extras || []).map(function(s, i) {
@@ -7233,7 +7188,6 @@ function _buildEvAndamentoCard(ev) {
         '<span class="item-text">' + esc(s) + '</span>' +
         '<span class="item-extra-tag">+</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Excluir item">&times;</button>' +
         '</div>';
     }).join('');
 
@@ -7295,7 +7249,6 @@ function _buildEvAndamentoCard(ev) {
           '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') + '</span>' +
         '</div>' +
         itensHtml +
-        '<div class="card-carga" id="card-carga-' + esc(ev.id) + '"></div>' +
       '</div>' +
     '</div>' +
   '</div>';
@@ -7403,27 +7356,12 @@ function _bindEvAndamentoCards() {
     summary.addEventListener('click', function(e) {
       if (e.target.closest('.item-check') || e.target.closest('.veiculo-icon-btn') ||
           e.target.closest('.btn-add-item') || e.target.closest('.btn-add-item-ok') ||
-          e.target.closest('.btn-wa-painel') || e.target.closest('.item-del-ev-btn') ||
-          e.target.closest('.item-rem-ev-btn')) return;
+          e.target.closest('.btn-wa-painel')) return;
       var card = summary.closest('.evento-card');
       if (!card) return;
       var wasExpanded = card.classList.contains('expanded');
-      scroll.querySelectorAll('.evento-card.expanded').forEach(function(cEl) {
-        var cId = cEl.id.replace('ev-card-', '');
-        _resetarCargaEvento(cId);
-        cEl.classList.remove('expanded');
-      });
-      if (!wasExpanded) {
-        card.classList.add('expanded');
-        _atualizarCargaDOM(card.id.replace('ev-card-', ''));
-      }
-    });
-  });
-
-  scroll.querySelectorAll('.item-del-ev-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      _deletarItemEv(btn.getAttribute('data-evid'), btn.getAttribute('data-idx'), btn.getAttribute('data-tipo'));
+      scroll.querySelectorAll('.evento-card.expanded').forEach(function(c){ c.classList.remove('expanded'); });
+      if (!wasExpanded) card.classList.add('expanded');
     });
   });
 
@@ -7520,10 +7458,6 @@ function renderEventosAndamento() {
   if (todos.length === 0) {
     sec.style.display = 'none';
     document.body.classList.remove('has-ev-sidebar');
-    var tab0 = document.getElementById('ev-sidebar-tab');
-    if (tab0) tab0.style.display = 'none';
-    var hdBtn0 = document.getElementById('btn-ev-andamento-hd');
-    if (hdBtn0) hdBtn0.style.display = 'none';
     return;
   }
 
@@ -7536,20 +7470,6 @@ function renderEventosAndamento() {
 
   sec.style.display = 'block';
   document.body.classList.add('has-ev-sidebar');
-  var tab1 = document.getElementById('ev-sidebar-tab');
-  if (tab1) {
-    tab1.style.display = 'flex';
-    if (!document.body.classList.contains('sidebar-hidden')) {
-      tab1.style.right = '272px';
-    } else {
-      tab1.style.right = '0';
-    }
-  }
-  // Botão do cabeçalho — sempre visível quando há eventos
-  var hdBtn1 = document.getElementById('btn-ev-andamento-hd');
-  var hdCount1 = document.getElementById('btn-ev-andamento-count');
-  if (hdBtn1) { hdBtn1.style.display = 'flex'; }
-  if (hdCount1) { hdCount1.textContent = todos.length; }
   if (count) count.textContent = todos.length + ' ativo' + (todos.length > 1 ? 's' : '');
 
   scroll.innerHTML = todos.map(function(ev) {
@@ -7649,24 +7569,10 @@ function evCardDrop(ev, evId) {
     _draggingStagingId = null; return;
   }
 
-  // ── Equipamento → carga local (reseta ao fechar o card) ──
-  if (tipo === 'eq') {
-    if (!_cargaEvento[evId]) _cargaEvento[evId] = {};
-    _cargaEvento[evId][itemId] = (_cargaEvento[evId][itemId] || 0) + 1;
-    _draggingEqId = null;
-    var eqNome2 = _equipamentos[itemId] ? (_equipamentos[itemId].nome || itemId) : itemId;
-    var qtdAtual = _cargaEvento[evId][itemId];
-    _atualizarCardEqDOM(itemId);
-    _atualizarCargaDOM(evId);
-    var evCard2 = document.getElementById('ev-card-' + evId);
-    if (evCard2 && !evCard2.classList.contains('expanded')) evCard2.classList.add('expanded');
-    toast(qtdAtual + 'x ' + eqNome2);
-    return;
-  }
-
   // Vincular item ao evento na coleção reservas_evento
   var nomeItem = '';
   if (tipo === 'kit') { var k = _kits[itemId]; nomeItem = k ? (k.nome || 'Kit') : itemId; }
+  else if (tipo === 'eq') { var e = _equipamentos[itemId]; nomeItem = e ? (e.nome || 'Eq') : itemId; }
   else if (tipo === 'acessorio') { var a = _acessorios[itemId]; nomeItem = a ? (a.nome || 'Ac') : itemId; }
 
   var novoItem = { estoque_id: itemId, nome: nomeItem, tipo: tipo, qtd: 1 };
@@ -7698,145 +7604,6 @@ function evCardDrop(ev, evId) {
 
 var _draggingKitId = null;
 var _draggingStagingId = null;
-
-// ═══════════════════════════════════════════
-// CARGA LOCAL — contagem temporária de equipamentos arrastados para evento
-// Reseta automaticamente ao fechar o card
-// ═══════════════════════════════════════════
-var _cargaEvento = {}; // evId → { eqId: qtd }
-
-function _getCargaTotalEq(eqId) {
-  var total = 0;
-  Object.keys(_cargaEvento).forEach(function(evId) {
-    total += (_cargaEvento[evId][eqId] || 0);
-  });
-  return total;
-}
-
-function _atualizarCardEqDOM(eqId) {
-  var e = _equipamentos[eqId];
-  if (!e) return;
-  var cargaQtd = _getCargaTotalEq(eqId);
-  var disp = Math.max(0, (e.qtd_disponivel || 0) - cargaQtd);
-  var emUso = (e.qtd_em_uso || 0) + cargaQtd;
-  var total = e.qtd_total || 0;
-  var pct = total > 0 ? Math.round((disp / total) * 100) : 0;
-  var barColor = pct === 0 ? '#e05c5c' : pct < 50 ? '#5BA8E8' : '#25D366';
-  document.querySelectorAll('[data-eq-id="' + eqId + '"]').forEach(function(card) {
-    var dispEl = card.querySelector('.qty-num.disponivel');
-    var emUsoEl = card.querySelector('.qty-num.em-uso');
-    if (dispEl) { dispEl.textContent = disp; dispEl.style.color = disp === 0 ? '#e05c5c' : ''; }
-    if (emUsoEl) emUsoEl.textContent = emUso;
-    var fillEl = card.querySelector('.avail-fill');
-    if (fillEl) { fillEl.style.width = pct + '%'; fillEl.style.background = barColor; }
-    if (disp === 0) card.classList.add('status-alerta');
-    else card.classList.remove('status-alerta');
-  });
-}
-
-function _atualizarCargaDOM(evId) {
-  var cargaDiv = document.getElementById('card-carga-' + evId);
-  if (!cargaDiv) return;
-  var carga = _cargaEvento[evId] || {};
-  var keys = Object.keys(carga).filter(function(k) { return carga[k] > 0; });
-  if (!keys.length) { cargaDiv.innerHTML = ''; return; }
-  var escF = typeof _escEv === 'function' ? _escEv : function(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
-  var html = '<div style="border-top:1px solid var(--border2);padding-top:8px;margin-top:8px">' +
-    '<div class="agev-section-title"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4A90C8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 5-5 5V8z"/></svg> Carga montada</div>';
-  html += keys.map(function(eqId) {
-    var eq = _equipamentos[eqId];
-    var qtd = carga[eqId];
-    var nome = eq ? (eq.nome || eqId) : eqId;
-    return '<div class="agev-item">' +
-      '<span class="agev-item-text" style="flex:1">' +
-        (qtd > 1 ? '<strong style="color:var(--gold);margin-right:3px">' + qtd + 'x</strong>' : '') +
-        escF(nome) +
-      '</span>' +
-      '<button onclick="event.stopPropagation();_removerCargaItem('' + evId + '','' + eqId + '')" ' +
-        'style="background:none;border:none;color:#e05c5c;cursor:pointer;font-size:1rem;padding:0 2px;flex-shrink:0;line-height:1;opacity:0.7" ' +
-        'onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7" title="Remover da carga">&times;</button>' +
-    '</div>';
-  }).join('');
-  html += '</div>';
-  cargaDiv.innerHTML = html;
-}
-
-function _resetarCargaEvento(evId) {
-  var carga = _cargaEvento[evId] || {};
-  var affectedEqs = Object.keys(carga);
-  delete _cargaEvento[evId];
-  affectedEqs.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
-  var cargaDiv = document.getElementById('card-carga-' + evId);
-  if (cargaDiv) cargaDiv.innerHTML = '';
-}
-
-function _removerCargaItem(evId, eqId) {
-  if (!_cargaEvento[evId] || !_cargaEvento[evId][eqId]) return;
-  delete _cargaEvento[evId][eqId];
-  _atualizarCardEqDOM(eqId);
-  _atualizarCargaDOM(evId);
-}
-
-function _deletarItemEv(evId, idx, tipo) {
-  var ev = _eventosAndamento[evId];
-  if (!ev) return;
-  idx = parseInt(idx);
-  if (!confirm('Excluir este item do evento permanentemente?')) return;
-  if (tipo === 'orig') {
-    var servicos = (ev.servicos || []).slice();
-    if (idx < 0 || idx >= servicos.length) return;
-    servicos.splice(idx, 1);
-    // Reindexar itens_ok e itens_removidos
-    var itensOk = {};
-    Object.keys(ev.itens_ok || {}).forEach(function(k) {
-      var ki = parseInt(k);
-      if (ki < idx) itensOk[k] = ev.itens_ok[k];
-      else if (ki > idx) itensOk[String(ki - 1)] = ev.itens_ok[k];
-    });
-    var itensRem = {};
-    Object.keys(ev.itens_removidos || {}).forEach(function(k) {
-      var ki = parseInt(k);
-      if (ki < idx) itensRem[k] = ev.itens_removidos[k];
-      else if (ki > idx) itensRem[String(ki - 1)] = ev.itens_removidos[k];
-    });
-    db.collection('eventos_campo').doc(evId).update({ servicos: servicos, itens_ok: itensOk, itens_removidos: itensRem })
-      .catch(function(e) { toast('Erro ao excluir: ' + e.message, true); });
-  } else {
-    var extras = (ev.itens_extras || []).slice();
-    if (idx < 0 || idx >= extras.length) return;
-    extras.splice(idx, 1);
-    db.collection('eventos_campo').doc(evId).update({ itens_extras: extras })
-      .catch(function(e) { toast('Erro ao excluir: ' + e.message, true); });
-  }
-}
-
-function _toggleSidebar() {
-  var sec = document.getElementById('eventos-andamento-section');
-  var tab = document.getElementById('ev-sidebar-tab');
-  var icon = document.getElementById('ev-tab-icon');
-  var hdBtn = document.getElementById('btn-ev-andamento-hd');
-  if (!sec) return;
-  // Usa o display real da seção como fonte de verdade (não a classe sidebar-hidden)
-  var isOpen = (sec.style.display === 'block');
-  if (isOpen) {
-    // Recolher
-    sec.style.display = 'none';
-    document.body.classList.add('sidebar-hidden');
-    document.body.style.paddingRight = '0';
-    if (tab) tab.style.right = '0';
-    if (icon) { icon.style.transform = 'rotate(180deg)'; }
-    if (hdBtn) { hdBtn.style.borderColor = 'rgba(245,166,35,0.3)'; hdBtn.style.opacity = '0.7'; }
-  } else {
-    // Expandir — força renderização dos eventos antes de mostrar
-    renderEventosAndamento();
-    sec.style.display = 'block';
-    document.body.classList.remove('sidebar-hidden');
-    document.body.style.paddingRight = '272px';
-    if (tab) tab.style.right = '272px';
-    if (icon) { icon.style.transform = ''; }
-    if (hdBtn) { hdBtn.style.borderColor = 'rgba(245,166,35,0.6)'; hdBtn.style.opacity = '1'; }
-  }
-}
 
 function _kitDragStart(ev, kitId) {
   _draggingKitId = kitId;
