@@ -783,7 +783,7 @@ header {
 }
 
 .card-item.item-removido .item-text { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
-.item-del-btn { display: none; background: none; border: none; color: #e05c5c; cursor: pointer; font-size: 0.9rem; padding: 0 2px; flex-shrink: 0; }
+.item-del-btn { display: none; background: none; border: none; color: #e05c5c; cursor: pointer; font-size: 1.1rem; padding: 0 2px; flex-shrink: 0; }
 .editor-mode .item-del-btn { display: inline-block; }
 
 .item-extra-tag {
@@ -1900,14 +1900,14 @@ function buildCard(ev, past, col) {
       if (isObs) {
         return '<div class="card-item" style="align-items:center;display:flex">' +
           '<span class="item-text" style="color:#FFD600;flex:1">' + esc(s) + '</span>' +
-          '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="margin-left:auto;background:none;border:none;color:#555;cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+          '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="margin-left:auto;background:none;border:none;color:#555;cursor:pointer;font-size:1.1rem;padding:0 2px;flex-shrink:0">×</button>' +
           '<button class="item-del-btn item-del-orig-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Excluir permanente">×</button>' +
           '</div>';
       }
       return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '">' +
         '<div class="item-check' + (done && !removido ? ' checked' : '') + (removido ? '' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text item-label" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="cursor:pointer;flex:1">' + esc(s) + '</span>' +
-        '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="margin-left:auto;background:none;border:none;color:' + (removido ? '#4AC87A' : '#555') + ';cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+        '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="margin-left:auto;background:none;border:none;color:' + (removido ? '#4AC87A' : '#555') + ';cursor:pointer;font-size:1.1rem;padding:0 2px;flex-shrink:0">×</button>' +
         '<button class="item-del-btn item-del-orig-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Excluir permanente">×</button>' +
         '</div>';
     }).join('');
@@ -1919,7 +1919,7 @@ function buildCard(ev, past, col) {
         (!isObs ? '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' : '') +
         '<span class="item-text' + (!isObs ? ' item-label-extra' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (isObs ? 'color:#FFD600;' : 'cursor:pointer;') + 'flex:1">' + esc(s) + '</span>' +
         '<span class="item-extra-tag" style="flex-shrink:0">+</span>' +
-        '<button class="item-rem-extra-toggle-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="background:none;border:none;color:' + (removido ? '#4AC87A' : '#555') + ';cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+        '<button class="item-rem-extra-toggle-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="background:none;border:none;color:' + (removido ? '#4AC87A' : '#555') + ';cursor:pointer;font-size:1.1rem;padding:0 2px;flex-shrink:0">×</button>' +
         '<button class="item-del-btn item-del-extra-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Excluir permanente">×</button>' +
         '</div>';
     }).join('');
