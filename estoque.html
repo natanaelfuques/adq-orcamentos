@@ -7118,7 +7118,7 @@ function _atualizarCargaDOM(evId) {
       return '<div class="card-item">' +
         '<div class="item-check" style="cursor:default;flex-shrink:0"></div>' +
         '<span class="item-text">' + label + '</span>' +
-        '<button style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:#888;flex-shrink:0;line-height:1;" title="Riscar" onclick="event.stopPropagation();var it=this.closest(\'.card-item\');it.classList.toggle(\'item-removido\');this.style.color=it.classList.contains(\'item-removido\')?\' + \'#4AC87A\' + \':\'#888\'">&times;</button>' +
+        '<button class="item-rem-carga-btn" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:#888;flex-shrink:0;line-height:1;" title="Riscar" onclick="event.stopPropagation();_riscarCargaItem(this)">&times;</button>' +
         '<button class="card-carga-del" onclick="event.stopPropagation();_removerCargaItem(\'' + evId + '\',\'' + it.eqId + '\')" title="Remover da carga">&times;</button>' +
       '</div>';
     }).join('');
@@ -7455,8 +7455,16 @@ function _salvarVeiculosEv(evId, ids) {
   if (db) db.collection('eventos_campo').doc(evId).update({ veiculos: ids }).catch(function(e){ console.error('[Ev] veiculo:', e); });
 }
 
+function _riscarCargaItem(btn) {
+  var item = btn.closest('.card-item');
+  if (!item) return;
+  item.classList.toggle('item-removido');
+  btn.style.color = item.classList.contains('item-removido') ? '#4AC87A' : '#888';
+  btn.title = item.classList.contains('item-removido') ? 'Restaurar' : 'Riscar';
+}
+
 function _toggleItemEv(evId, idx) {
-  var ev = _eventosAndamento[evId];
+  var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
   if (!ev) return;
   var itensOk = Object.assign({}, ev.itens_ok || {});
   itensOk[idx] = !itensOk[idx];
@@ -7471,7 +7479,7 @@ function _toggleItemEv(evId, idx) {
 }
 
 function _adicionarItemExtraEv(evId, texto) {
-  var ev = _eventosAndamento[evId];
+  var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
   if (!ev) return;
   var extras = (ev.itens_extras || []).concat([texto]);
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
@@ -7542,7 +7550,7 @@ function _bindEvAndamentoCards() {
       var evId = btn.getAttribute('data-evid');
       var idx  = btn.getAttribute('data-idx');
       var tipo = btn.getAttribute('data-tipo');
-      var evObj = _eventosAndamento[evId];
+      var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
       if (!evObj) return;
       if (tipo === 'orig') {
         var rem = Object.assign({}, evObj.itens_removidos || {});
