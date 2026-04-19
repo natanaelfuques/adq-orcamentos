@@ -7153,6 +7153,7 @@ function _buildEvAndamentoCard(ev) {
       return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '" draggable="true" data-item-ev="' + esc(ev.id) + '" data-item-txt="' + esc(s) + '">' +
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
+        '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
         '</div>';
     }).join('');
     var extrasRowHtml = (ev.itens_extras || []).map(function(s, i) {
@@ -7162,6 +7163,7 @@ function _buildEvAndamentoCard(ev) {
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
         '<span class="item-extra-tag">+</span>' +
+        '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
         '</div>';
     }).join('');
 
@@ -7375,6 +7377,38 @@ function _bindEvAndamentoCards() {
     });
   });
 
+  scroll.querySelectorAll('.item-rem-ev-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var evId = btn.getAttribute('data-evid');
+      var idx  = btn.getAttribute('data-idx');
+      var tipo = btn.getAttribute('data-tipo');
+      var evObj = _eventosAndamento[evId];
+      if (!evObj) return;
+      if (tipo === 'orig') {
+        var rem = Object.assign({}, evObj.itens_removidos || {});
+        rem[idx] = !rem[idx];
+        evObj.itens_removidos = rem;
+        db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
+      } else {
+        var remE = Object.assign({}, evObj.itens_extras_removidos || {});
+        remE[idx] = !remE[idx];
+        evObj.itens_extras_removidos = remE;
+        db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
+      }
+      // Update UI immediately
+      var item = btn.closest('.card-item');
+      if (item) {
+        var isNowRemoved = (tipo === 'orig') ? evObj.itens_removidos[idx] : evObj.itens_extras_removidos[idx];
+        item.classList.toggle('item-removido', !!isNowRemoved);
+        btn.style.color = isNowRemoved ? '#4AC87A' : '#555';
+        btn.title = isNowRemoved ? 'Restaurar' : 'Riscar';
+        var chk = item.querySelector('.item-check');
+        if (chk) { chk.style.pointerEvents = isNowRemoved ? 'none' : ''; chk.style.opacity = isNowRemoved ? '0.3' : ''; }
+      }
+    });
+  });
+
   scroll.querySelectorAll('.card-item[draggable]').forEach(function(item) {
     item.addEventListener('dragstart', function(e) {
       var txt = item.getAttribute('data-item-txt') || '';
@@ -7522,6 +7556,10 @@ function evCardDrop(ev, evId) {
       atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   }).then(function() {
+    if (nomeItem && ev2) {
+      var extras = (ev2.itens_extras || []).concat([nomeItem]);
+      db.collection('eventos_campo').doc(evId).update({ itens_extras: extras }).catch(function(){});
+    }
     toast('Adicionado ao evento!');
   }).catch(function(e) { toast('Erro: ' + e.message, true); });
 }
