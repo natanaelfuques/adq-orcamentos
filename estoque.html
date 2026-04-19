@@ -5868,17 +5868,23 @@ function _renderAgendaCalendar() {
       return ini && ds >= ini && ds <= fim;
     }).sort(function(a,b) { return (a.ev_data||'') < (b.ev_data||'') ? -1 : 1; });
 
-    var MAX_EV = 2;
-    var pills = evDia.slice(0, MAX_EV).map(function(ev) {
+    var pills = evDia.map(function(ev) {
       var temMaterial = !!ev.material_reservado;
+      var cargaFinalizada = !!ev.carga_finalizada;
       var cor = _corBadgeEvento(ev);
-      var estilo = temMaterial
-        ? 'color:var(--green);border-color:rgba(37,211,102,0.4);background:rgba(37,211,102,0.08);border-style:solid'
-        : 'color:' + cor + ';border-color:' + cor + '44';
-      var label = esc((ev.cli_nome || ev.ev_nome || 'Evento').substring(0,14));
-      return '<div class="agenda-ev-pill" style="' + estilo + '"' +
-        ' onclick="event.stopPropagation();_abrirCardEvento(\'' + ev.id + '\')"' +
-        ' title="' + esc(ev.cli_nome||ev.ev_nome||'') + '">' + label + '</div>';
+      var estilo;
+      if (cargaFinalizada) {
+        estilo = 'color:#50C878;border-color:rgba(80,200,120,0.5);background:rgba(80,200,120,0.1);border-style:solid';
+      } else if (temMaterial) {
+        estilo = 'color:var(--green);border-color:rgba(37,211,102,0.4);background:rgba(37,211,102,0.08);border-style:solid';
+      } else {
+        estilo = 'color:' + cor + ';border-color:' + cor + '44';
+      }
+      var prefixo = cargaFinalizada ? '\u2713 ' : '';
+      var label = esc(prefixo + (ev.cli_nome || ev.ev_nome || 'Evento').substring(0,13));
+      return '<div class="agenda-ev-pill" style="' + estilo + '"'
+        + ' onclick="event.stopPropagation();_abrirCardEvento(\'' + ev.id + '\')"'
+        + ' title="' + esc(ev.cli_nome||ev.ev_nome||'') + '">' + label + '</div>';
     }).join('');
 
     // Reservas de kit neste dia
@@ -5888,17 +5894,13 @@ function _renderAgendaCalendar() {
       return ini && ds >= ini && ds <= fim;
     }).sort(function(a,b) { return new Date(a.dataInicio) - new Date(b.dataInicio); });
 
-    var MAX_RES = 1;
-    var bars = resDia.slice(0, MAX_RES).map(function(r) {
+    var bars = resDia.map(function(r) {
       var st  = _statusReserva(r);
       var cor = st === 'conflito' ? '#e05c5c' : st === 'ativo' ? '#25D366' : st === 'passado' ? '#555' : '#F5A623';
-      return '<div class="agenda-cal-ev-bar" style="background:' + cor + '22;color:' + cor + ';border-left:2px solid ' + cor + '"' +
-        ' onclick="event.stopPropagation();editarReserva(\'' + r.id + '\')" title="' + esc(r.nome||'') + '">' +
-        esc(r.nome || 'Sem nome') + '</div>';
+      return '<div class="agenda-cal-ev-bar" style="background:' + cor + '22;color:' + cor + ';border-left:2px solid ' + cor + '"'
+        + ' onclick="event.stopPropagation();editarReserva(\'' + r.id + '\')" title="' + esc(r.nome||'') + '">' 
+        + esc(r.nome || 'Sem nome') + '</div>';
     }).join('');
-
-    var extra = (evDia.length > MAX_EV ? evDia.length - MAX_EV : 0) + (resDia.length > MAX_RES ? resDia.length - MAX_RES : 0);
-    if (extra > 0) bars += '<div class="agenda-cal-more">+' + extra + ' mais</div>';
 
     var cls = 'agenda-cal-cell' + (cell.outroMes?' outro-mes':'') + (isHoje?' hoje-cell':'') + (isSel?' sel-cell':'');
     var numCls = 'agenda-cal-day-num' + (isHoje?' hoje-num':'');
@@ -8264,7 +8266,16 @@ function _finalizarCargaEvento(evId) {
   _fecharCargaEvento(evId);
   delete _eventosStagingCarga[evId];
   renderEventosAndamento();
-  toast('Carga finalizada — evento removido da fila.');
+  // Marca o evento com carga_finalizada no Firestore
+  if (db) {
+    db.collection('eventos_campo').doc(evId).update({ carga_finalizada: true })
+      .catch(function(e) { console.warn('carga_finalizada update:', e); });
+  }
+  // Atualiza referência local na agenda
+  if (_eventosAgenda[evId]) _eventosAgenda[evId].carga_finalizada = true;
+  _renderAgendaCalendar();
+  _renderAgendaListaDia(_agDiaSelecionado);
+  toast('Carga finalizada!');
 }
 
 // Patch no renderTudo para sempre re-renderizar eventos
