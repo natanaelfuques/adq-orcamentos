@@ -2140,7 +2140,7 @@
   .kit-slot-panel.drag-over-kit { border-color: var(--amber); background: rgba(245,166,35,0.06); }
 .kit-temp-panel { border-color: rgba(74,144,217,0.45); }
 .kit-temp-panel::before { content: "CARGA"; position: absolute; top: 3px; right: 8px; font-size: 0.45rem; font-family: "Barlow Condensed", sans-serif; font-weight: 800; letter-spacing: 0.1em; color: #4A90D9; opacity: 0.7; }
-.kit-temp-panel .kit-slot-panel-title { color: #4A90D9 \!important; }
+.kit-temp-panel .kit-slot-panel-title { color: #4A90D9 !important; }
 .kit-temp-panel:hover { border-color: rgba(74,144,217,0.7); box-shadow: 0 6px 24px rgba(74,144,217,0.15); }
 .kit-temp-panel.drag-over-kit { border-color: #4A90D9; background: rgba(74,144,217,0.07); }
   .kit-slot-panel-header {
@@ -6919,6 +6919,67 @@ function _atualizarConflitosNosKits() {
   transition: background 0.15s;
 }
 .vm-add-btn:hover { background: rgba(74,144,217,0.2); }
+
+/* == Painel-style cards for Eventos em Andamento == */
+.ev-andamento-scroll .evento-card {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  cursor: default;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  user-select: none;
+  overflow: hidden;
+}
+.ev-andamento-scroll .evento-card:hover { border-color: #444; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+.ev-andamento-scroll .card-summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; }
+.ev-andamento-scroll .card-summary-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ev-andamento-scroll .card-evento { font-family: 'Barlow', sans-serif; font-size: 0.72rem; font-weight: 500; color: var(--muted); letter-spacing: 0.02em; margin-top: 2px; white-space: normal; word-break: break-word; min-width: 0; flex: 1; }
+.ev-andamento-scroll .card-evento--destaque { font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); letter-spacing: 0.03em; margin-top: 0; }
+.ev-andamento-scroll .card-cliente { font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); letter-spacing: 0.03em; white-space: normal; word-break: break-word; }
+.ev-andamento-scroll .card-data-badge { font-size: 0.65rem; font-weight: 700; color: var(--andamento, #C8A94A); background: var(--andamento-dim, rgba(200,169,74,0.15)); padding: 3px 7px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; letter-spacing: 0.06em; }
+.ev-andamento-scroll .card-expand-icon { color: var(--muted); flex-shrink: 0; transition: transform 0.2s; }
+.ev-andamento-scroll .evento-card.expanded .card-expand-icon { transform: rotate(180deg); }
+.ev-andamento-scroll .card-body { overflow: hidden; max-height: 0; transition: max-height 0.25s ease, opacity 0.2s; opacity: 0; }
+.ev-andamento-scroll .evento-card.expanded .card-body { max-height: 2000px; opacity: 1; }
+.ev-andamento-scroll .card-body-inner { padding-top: 12px; }
+.ev-andamento-scroll .card-horario-block { font-size: 0.78rem; color: #9B5CE5; font-weight: 600; margin-bottom: 10px; }
+.ev-andamento-scroll .card-local { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.ev-andamento-scroll .btn-wa-painel { display: inline-flex; align-items: center; justify-content: center; padding: 2px 5px; border-radius: 3px; background: transparent; border: 1px solid var(--border); color: var(--muted); cursor: pointer; line-height: 1; flex-shrink: 0; transition: border-color 0.15s, color 0.15s; }
+.ev-andamento-scroll .btn-wa-painel.tem-fone { color: #bbb; }
+.ev-andamento-scroll .btn-wa-painel.tem-fone:hover { border-color: #25D366 !important; color: #25D366 !important; }
+.ev-andamento-scroll .card-resp-bar { height: 3px; width: calc(100% + 32px); margin: -12px -16px 10px -16px; border-radius: 6px 6px 0 0; display: flex; flex-shrink: 0; overflow: hidden; opacity: 0.85; }
+.ev-andamento-scroll .card-resp-bar-track { flex: 1; height: 100%; background: linear-gradient(to right, rgba(120,120,130,0.25), rgba(120,120,130,0.45)); border-radius: 6px 0 0 0; }
+.ev-andamento-scroll .card-resp-bar-colors { display: flex; height: 100%; gap: 2px; overflow: hidden; }
+.ev-andamento-scroll .card-resp-bar-color { width: 18px; height: 100%; }
+.ev-andamento-scroll .card-resp-bar-colors .card-resp-bar-color:last-child { border-radius: 0 6px 0 0; }
+.ev-andamento-scroll .card-itens { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; }
+.ev-andamento-scroll .card-itens-title { font-size: 0.65rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+.ev-andamento-scroll .card-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem; color: var(--text); cursor: grab; }
+.ev-andamento-scroll .card-item:last-child { border-bottom: none; }
+.ev-andamento-scroll .card-item:active { cursor: grabbing; }
+.ev-andamento-scroll .item-check { width: 16px; height: 16px; min-width: 16px; border: 1.5px solid var(--border2); border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+.ev-andamento-scroll .item-check.checked { background: var(--concluido); border-color: var(--concluido); }
+.ev-andamento-scroll .item-check.checked::after { content: ''; width: 9px; height: 5px; border-left: 2px solid #111; border-bottom: 2px solid #111; transform: rotate(-45deg) translateY(-1px); display: block; }
+.ev-andamento-scroll .item-text { flex: 1; }
+.ev-andamento-scroll .card-item.item-done .item-text { }
+.ev-andamento-scroll .card-item.item-removido .item-text { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
+.ev-andamento-scroll .item-extra-tag { font-size: 0.85rem; font-weight: 700; color: #4A90C8; flex-shrink: 0; line-height: 1; }
+.ev-andamento-scroll .btn-add-item { display: flex; align-items: center; gap: 5px; margin-top: 8px; background: transparent; border: 1px dashed var(--border); color: var(--muted); border-radius: 4px; padding: 5px 10px; font-family: 'Barlow', sans-serif; font-size: 0.72rem; cursor: pointer; width: 100%; text-align: left; transition: all 0.15s; }
+.ev-andamento-scroll .btn-add-item:hover { border-color: var(--andamento, #C8A94A); color: var(--andamento, #C8A94A); }
+.ev-andamento-scroll .add-item-form { display: flex; gap: 6px; margin-top: 8px; }
+.ev-andamento-scroll .add-item-input { flex: 1; background: #2a2a2a; border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 0.8rem; padding: 5px 8px; outline: none; }
+.ev-andamento-scroll .add-item-input:focus { border-color: var(--andamento, #C8A94A); }
+.ev-andamento-scroll .btn-add-item-ok { background: var(--andamento, #C8A94A); color: #111; border: none; border-radius: 4px; padding: 5px 10px; font-weight: 700; font-size: 0.75rem; cursor: pointer; font-family: 'Barlow', sans-serif; }
+.ev-andamento-scroll .veiculo-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.ev-andamento-scroll .veiculo-icon-btn { background: none; border: 1px solid transparent; border-radius: 4px; padding: 1px 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: border-color 0.15s, background 0.15s; flex-shrink: 0; }
+.ev-andamento-scroll .veiculo-icon-btn:hover { border-color: var(--border2); background: rgba(255,255,255,0.04); }
+.ev-andamento-scroll .veiculo-icon-btn.tem-veiculo { border-color: rgba(180,180,180,0.25); }
+.ev-andamento-scroll .veiculo-icon-btn img { height: 22px; width: auto; display: block; }
+.ev-andamento-scroll .veiculo-icon-btn .veiculo-label { font-size: 0.6rem; color: #888; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+.ev-andamento-scroll .veiculo-icon-btn.tem-veiculo .veiculo-label { color: #bbb; }
+
 </style>
 
 <!-- HTML: Eventos em andamento (inserido logo após o header no app-screen via JS) -->
@@ -6948,6 +7009,7 @@ var _reservasEventos = {};      // estoque_id → [{evento, qtd, status}]
 
 // ── Iniciar listener de eventos em andamento ──
 function iniciarEventosAndamento() {
+  _carregarVeiculosEv();
   // Ouve a coleção do painel de eventos
   try {
     db.collection('eventos_campo').where('etapa', '==', 'andamento').onSnapshot(function(snap) {
@@ -6995,6 +7057,334 @@ function iniciarEventosAndamento() {
 }
 
 // ── Render banner de eventos em andamento ──
+
+/* == Helpers for Eventos em Andamento painel-style cards == */
+var _veiculosDisponiveisEv = [];
+var _usuariosCadastradosEv = [];
+var _veiculoPopoverElEv = null;
+
+function _carregarVeiculosEv() {
+  if (!db) return;
+  db.collection('configuracoes').doc('veiculos').get().then(function(doc) {
+    if (doc.exists && doc.data().lista) {
+      _veiculosDisponiveisEv = doc.data().lista;
+    }
+  }).catch(function(){});
+  db.collection('configuracoes').doc('usuarios_cadastrados').get().then(function(doc) {
+    if (doc.exists && doc.data().usuarios) {
+      _usuariosCadastradosEv = doc.data().usuarios;
+    }
+  }).catch(function(){});
+}
+
+function _escEv(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function _fmtHoraEv(val) {
+  if (!val) return '';
+  var v = val.trim();
+  var digits = v.replace(/\D/g, '');
+  if (!digits) return v;
+  var h, m;
+  if (digits.length <= 2) { h = digits; m = '00'; }
+  else if (digits.length === 3) { h = digits.slice(0,1); m = digits.slice(1); }
+  else { h = digits.slice(0,2); m = digits.slice(2,4); }
+  var horaFmt = h.padStart(2,'0') + ':' + (m||'00').padStart(2,'0');
+  var semNumeros = v.replace(/[\d:hH]/g, '').trim().replace(/[-\u2013]/g, '').trim();
+  return semNumeros ? semNumeros + ' ' + horaFmt : horaFmt;
+}
+
+function _buildRespBarEvHTML(responsaveis) {
+  if (!responsaveis || !responsaveis.length) return '';
+  var colors = responsaveis.map(function(uid) {
+    var u = (_usuariosCadastradosEv || []).find(function(x) { return x.uid === uid; });
+    return u ? u.cor : '#888';
+  });
+  var colorSegs = '';
+  colors.forEach(function(c) {
+    colorSegs += '<div class="card-resp-bar-color" style="background:' + c + '"></div>';
+  });
+  return '<div class="card-resp-bar"><div class="card-resp-bar-track"></div><div class="card-resp-bar-colors">' + colorSegs + '</div></div>';
+}
+
+function _buildEvAndamentoCard(ev) {
+  var esc = _escEv;
+  var dataFmt = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
+  var dataFimFmt = ev.ev_data_fim ? ev.ev_data_fim.split('-').reverse().join('/') : '';
+  var respBar = _buildRespBarEvHTML(ev.responsaveis || []);
+
+  var temHorario = ev.ev_montagem || ev.ev_inicio || ev.ev_fim || ev.ev_desmontagem;
+  var horarioBlock = '';
+  if (temHorario) {
+    var l1 = [], l2 = [];
+    if (ev.ev_montagem) l1.push('Mont. ' + _fmtHoraEv(ev.ev_montagem));
+    if (ev.ev_inicio)   l1.push('In\u00EDc. ' + _fmtHoraEv(ev.ev_inicio));
+    if (ev.ev_fim)      l2.push('Fim ' + _fmtHoraEv(ev.ev_fim));
+    if (ev.ev_desmontagem) l2.push('Desm. ' + _fmtHoraEv(ev.ev_desmontagem));
+    horarioBlock = [l1.join(' \u00B7 '), l2.join(' \u00B7 ')].filter(Boolean).join('<br>');
+  }
+
+  var itensHtml = '';
+  if ((ev.servicos && ev.servicos.length) || (ev.itens_extras && ev.itens_extras.length)) {
+    var removidos = ev.itens_removidos || {};
+    var servicosExpandidos = [];
+    (ev.servicos || []).forEach(function(s, origIdx) {
+      if (s && s.indexOf('\u2022') >= 0) {
+        s.split('\u2022').forEach(function(parte) {
+          var p = parte.trim();
+          if (p) servicosExpandidos.push({ texto: p, idx: origIdx });
+        });
+      } else {
+        servicosExpandidos.push({ texto: s, idx: origIdx });
+      }
+    });
+    var itensRowHtml = servicosExpandidos.map(function(item) {
+      var s = item.texto;
+      var i = item.idx;
+      var done = ev.itens_ok && ev.itens_ok[i];
+      var removido = removidos[i];
+      return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '" draggable="true" data-item-ev="' + esc(ev.id) + '" data-item-txt="' + esc(s) + '">' +
+        '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
+        '<span class="item-text">' + esc(s) + '</span>' +
+        '</div>';
+    }).join('');
+    var extrasRowHtml = (ev.itens_extras || []).map(function(s, i) {
+      var done = ev.itens_ok && ev.itens_ok['extra_' + i];
+      var removido = ev.itens_extras_removidos && ev.itens_extras_removidos[i];
+      return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '" draggable="true" data-item-ev="' + esc(ev.id) + '" data-item-txt="' + esc(s) + '">' +
+        '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
+        '<span class="item-text">' + esc(s) + '</span>' +
+        '<span class="item-extra-tag">+</span>' +
+        '</div>';
+    }).join('');
+
+    var sels = ev.veiculos && ev.veiculos.length ? ev.veiculos : (ev.veiculo ? [ev.veiculo] : []);
+    var selObjs = sels.map(function(id) { return (_veiculosDisponiveisEv || []).find(function(x){ return x.id === id; }); }).filter(Boolean);
+    var temVeiculo = selObjs.length > 0;
+    var btnContent = '';
+    if (!temVeiculo) {
+      btnContent = '<svg width="18" height="12" viewBox="0 0 36 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35;vertical-align:middle;display:block"><rect x="1" y="7" width="34" height="11" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="18" r="3"/><circle cx="27" cy="18" r="3"/></svg><span class="veiculo-label">Selecionar</span>';
+    } else if (selObjs.length === 1) {
+      var aj0 = selObjs[0].ajuste || { x:0, y:0, scale:1 };
+      btnContent = '<img src="' + selObjs[0].img + '" alt="' + esc(selObjs[0].nome) + '" style="height:' + (22*aj0.scale) + 'px"><span class="veiculo-label">' + esc(selObjs[0].nome) + '</span>';
+    } else {
+      btnContent = selObjs.map(function(v) {
+        var aj = v.ajuste || { x:0, y:0, scale:1 };
+        return '<img src="' + v.img + '" alt="' + esc(v.nome) + '" title="' + esc(v.nome) + '" style="height:' + (22*aj.scale) + 'px">';
+      }).join('');
+    }
+    var veiculoBtn = '<button class="veiculo-icon-btn' + (temVeiculo ? ' tem-veiculo' : '') + '" data-evid="' + esc(ev.id) + '" data-veiculos="' + esc(JSON.stringify(sels)) + '" onclick="event.stopPropagation();_abrirVeiculoPopoverEv(this)" title="Selecionar ve\u00EDculo">' + btnContent + '</button>';
+
+    itensHtml = '<div class="card-itens">' +
+      '<div class="veiculo-row"><div class="card-itens-title">Itens / Ve\u00EDculos</div>' + veiculoBtn + '</div>' +
+      itensRowHtml + extrasRowHtml +
+      '<div id="add-form-ev-' + esc(ev.id) + '" style="display:none" class="add-item-form">' +
+        '<input class="add-item-input" placeholder="Item..." />' +
+        '<button class="btn-add-item-ok" data-evid="' + esc(ev.id) + '">OK</button>' +
+      '</div>' +
+      '<button class="btn-add-item" data-evid="' + esc(ev.id) + '">' +
+        '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>' +
+        'Adicionar item' +
+      '</button>' +
+    '</div>';
+  }
+
+  return '<div class="evento-card" id="ev-card-' + esc(ev.id) + '"' +
+    ' ondragover="evCardOver(event,\'' + esc(ev.id) + '\')"' +
+    ' ondragleave="evCardLeave(event,\'' + esc(ev.id) + '\')"' +
+    ' ondrop="evCardDrop(event,\'' + esc(ev.id) + '\')"' +
+    '>' +
+    respBar +
+    '<div class="card-summary">' +
+      '<div class="card-summary-left">' +
+        '<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start">' +
+          (dataFmt ? '<div class="card-data-badge">' + dataFmt + '</div>' : '') +
+          (dataFimFmt ? '<div class="card-data-badge">' + dataFimFmt + '</div>' : '') +
+        '</div>' +
+        '<div>' +
+          (ev.cli_nome ? '<div class="card-cliente">' + esc(ev.cli_nome) + '</div>' : '') +
+          '<div class="card-evento">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
+    '</div>' +
+    '<div class="card-body">' +
+      '<div class="card-body-inner">' +
+        (horarioBlock ? '<div class="card-horario-block">' + horarioBlock + '</div>' : '') +
+        '<div class="card-local">' +
+          '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>' +
+          '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') + '</span>' +
+        '</div>' +
+        itensHtml +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function _abrirVeiculoPopoverEv(btn) {
+  if (_veiculoPopoverElEv) { _veiculoPopoverElEv.remove(); _veiculoPopoverElEv = null; return; }
+  var evId = btn.getAttribute('data-evid');
+  var atuais = [];
+  try { atuais = JSON.parse(btn.getAttribute('data-veiculos') || '[]'); } catch(e) {}
+  if (!Array.isArray(atuais)) atuais = atuais ? [atuais] : [];
+  var pop = document.createElement('div');
+  pop.className = 'veiculo-popover';
+  var html = '<div class="veiculo-popover-title">Ve\u00EDculos</div>';
+  (_veiculosDisponiveisEv || []).forEach(function(v) {
+    var sel = atuais.indexOf(v.id) >= 0;
+    html += '<div class="veiculo-opt' + (sel ? ' selecionado' : '') + '" data-vid="' + v.id + '">' +
+      '<img src="' + v.img + '" alt="' + v.nome + '"><span class="veiculo-opt-nome">' + v.nome + '</span>' +
+      '<div class="veiculo-opt-check"></div></div>';
+  });
+  html += '<div class="veiculo-opt-none">\u2715 Sem ve\u00EDculo</div>';
+  html += '<div class="veiculo-opt-ok">\u2713 Selecionar</div>';
+  pop.innerHTML = html;
+  var rect = btn.getBoundingClientRect();
+  pop.style.cssText = 'position:fixed;top:' + (rect.bottom+6) + 'px;left:' + Math.min(rect.left, window.innerWidth-200) + 'px;';
+  document.body.appendChild(pop);
+  _veiculoPopoverElEv = pop;
+  pop.querySelectorAll('.veiculo-opt').forEach(function(opt) {
+    opt.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var vid = opt.getAttribute('data-vid');
+      var idx = atuais.indexOf(vid);
+      if (idx >= 0) { atuais.splice(idx,1); opt.classList.remove('selecionado'); }
+      else { atuais.push(vid); opt.classList.add('selecionado'); }
+      _salvarVeiculosEv(evId, atuais.slice());
+      _atualizarBotaoVeiculoEv(evId, atuais.slice());
+    });
+  });
+  pop.querySelector('.veiculo-opt-none').addEventListener('click', function(e) {
+    e.stopPropagation(); atuais = [];
+    pop.querySelectorAll('.veiculo-opt').forEach(function(o){ o.classList.remove('selecionado'); });
+    _salvarVeiculosEv(evId,[]); _atualizarBotaoVeiculoEv(evId,[]);
+  });
+  pop.querySelector('.veiculo-opt-ok').addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (_veiculoPopoverElEv) { _veiculoPopoverElEv.remove(); _veiculoPopoverElEv = null; }
+  });
+  setTimeout(function() {
+    document.addEventListener('click', function() {
+      if (_veiculoPopoverElEv) { _veiculoPopoverElEv.remove(); _veiculoPopoverElEv = null; }
+    }, { once: true });
+  }, 0);
+}
+
+function _atualizarBotaoVeiculoEv(evId, sels) {
+  var btn = document.querySelector('#ev-andamento-scroll .veiculo-icon-btn[data-evid="' + evId + '"]');
+  if (!btn) return;
+  var selObjs = (sels||[]).map(function(id){ return (_veiculosDisponiveisEv||[]).find(function(x){ return x.id===id; }); }).filter(Boolean);
+  var tem = selObjs.length > 0;
+  btn.setAttribute('data-veiculos', JSON.stringify(sels));
+  btn.className = 'veiculo-icon-btn' + (tem ? ' tem-veiculo' : '');
+  var c = '';
+  if (!tem) {
+    c = '<svg width="18" height="12" viewBox="0 0 36 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35;vertical-align:middle;display:block"><rect x="1" y="7" width="34" height="11" rx="3"/><path d="M4 7V6a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="18" r="3"/><circle cx="27" cy="18" r="3"/></svg><span class="veiculo-label">Selecionar</span>';
+  } else if (selObjs.length===1) {
+    var aj0 = selObjs[0].ajuste||{x:0,y:0,scale:1};
+    c = '<img src="'+selObjs[0].img+'" style="height:'+(22*aj0.scale)+'px"><span class="veiculo-label">'+selObjs[0].nome+'</span>';
+  } else {
+    c = selObjs.map(function(v){var aj=v.ajuste||{x:0,y:0,scale:1};return '<img src="'+v.img+'" style="height:'+(22*aj.scale)+'px">';}).join('');
+  }
+  btn.innerHTML = c;
+}
+
+function _salvarVeiculosEv(evId, ids) {
+  if (db) db.collection('eventos_campo').doc(evId).update({ veiculos: ids }).catch(function(e){ console.error('[Ev] veiculo:', e); });
+}
+
+function _toggleItemEv(evId, idx) {
+  var ev = _eventosAndamento[evId];
+  if (!ev) return;
+  var itensOk = Object.assign({}, ev.itens_ok || {});
+  itensOk[idx] = !itensOk[idx];
+  ev.itens_ok = itensOk;
+  if (db) db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
+  var chk = document.querySelector('#ev-andamento-scroll .item-check[data-evid="' + evId + '"][data-idx="' + idx + '"]');
+  if (chk) {
+    var item = chk.closest('.card-item');
+    if (itensOk[idx]) { chk.classList.add('checked'); if(item) item.classList.add('item-done'); }
+    else { chk.classList.remove('checked'); if(item) item.classList.remove('item-done'); }
+  }
+}
+
+function _adicionarItemExtraEv(evId, texto) {
+  var ev = _eventosAndamento[evId];
+  if (!ev) return;
+  var extras = (ev.itens_extras || []).concat([texto]);
+  if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+}
+
+function _bindEvAndamentoCards() {
+  var scroll = document.getElementById('ev-andamento-scroll');
+  if (!scroll) return;
+
+  scroll.querySelectorAll('.card-summary').forEach(function(summary) {
+    summary.addEventListener('click', function(e) {
+      if (e.target.closest('.item-check') || e.target.closest('.veiculo-icon-btn') ||
+          e.target.closest('.btn-add-item') || e.target.closest('.btn-add-item-ok') ||
+          e.target.closest('.btn-wa-painel')) return;
+      var card = summary.closest('.evento-card');
+      if (!card) return;
+      var wasExpanded = card.classList.contains('expanded');
+      scroll.querySelectorAll('.evento-card.expanded').forEach(function(c){ c.classList.remove('expanded'); });
+      if (!wasExpanded) card.classList.add('expanded');
+    });
+  });
+
+  scroll.querySelectorAll('.item-check').forEach(function(chk) {
+    chk.addEventListener('click', function(e) {
+      e.stopPropagation();
+      _toggleItemEv(chk.getAttribute('data-evid'), chk.getAttribute('data-idx'));
+    });
+  });
+
+  scroll.querySelectorAll('.btn-add-item').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var evId = btn.getAttribute('data-evid');
+      var form = document.getElementById('add-form-ev-' + evId);
+      if (form) {
+        form.style.display = (form.style.display === 'none' || !form.style.display) ? 'flex' : 'none';
+        if (form.style.display === 'flex') {
+          btn.style.display = 'none';
+          var inp = form.querySelector('.add-item-input');
+          if (inp) inp.focus();
+        }
+      }
+    });
+  });
+
+  scroll.querySelectorAll('.btn-add-item-ok').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var evId = btn.getAttribute('data-evid');
+      var form = document.getElementById('add-form-ev-' + evId);
+      var inp = form ? form.querySelector('.add-item-input') : null;
+      if (inp && inp.value.trim()) {
+        _adicionarItemExtraEv(evId, inp.value.trim());
+        inp.value = '';
+      }
+    });
+  });
+
+  scroll.querySelectorAll('.card-item[draggable]').forEach(function(item) {
+    item.addEventListener('dragstart', function(e) {
+      var txt = item.getAttribute('data-item-txt') || '';
+      e.dataTransfer.setData('text/plain', txt);
+      e.dataTransfer.setData('tipo', 'item_ev');
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+  });
+}
+
 function renderEventosAndamento() {
   var sec = document.getElementById('eventos-andamento-section');
   var scroll = document.getElementById('ev-andamento-scroll');
@@ -7003,58 +7393,44 @@ function renderEventosAndamento() {
 
   var eventosAndamento = Object.values(_eventosAndamento);
   var eventosStaging = Object.values(_eventosStagingCarga).filter(function(ev) {
-    return !_eventosAndamento[ev.id]; // evitar duplicata se evento entrou em andamento real
+    return !_eventosAndamento[ev.id];
   });
   var todos = eventosAndamento.concat(eventosStaging);
 
-  if (todos.length === 0) {
-    sec.style.display = 'none';
-    return;
-  }
+  if (todos.length === 0) { sec.style.display = 'none'; return; }
 
   sec.style.display = 'block';
   if (count) count.textContent = todos.length + ' ativo' + (todos.length > 1 ? 's' : '');
 
   scroll.innerHTML = todos.map(function(ev) {
     var isStaging = !_eventosAndamento[ev.id] && !!_eventosStagingCarga[ev.id];
-    var servicos = ev.servicos || [];
-    var chipsHtml = servicos.slice(0, 4).map(function(s) {
-      return '<span class="ev-item-chip">' + esc(typeof s === 'string' ? s : (s.nome || s)) + '</span>';
-    }).join('');
-    if (servicos.length > 4) chipsHtml += '<span class="ev-item-chip">+' + (servicos.length - 4) + '</span>';
-
-    var dataStr = ev.ev_data ? _fmtEvData(ev.ev_data) : '';
-
-    return '<div class="ev-card' + (isStaging ? ' ev-card-staging' : '') + '" id="ev-card-' + ev.id + '"' +
-      (isStaging ? ' draggable="true" ondragstart="_stagingDragStart(event,\'' + ev.id + '\')" ondragend="_stagingDragEnd(event,\'' + ev.id + '\')"' : '') +
-      (isStaging ? ' style="border-color:rgba(74,144,217,0.5)"' : '') +
-      ' ondragover="evCardOver(event,\'' + ev.id + '\')"' +
-      ' ondragleave="evCardLeave(event,\'' + ev.id + '\')"' +
-      ' ondrop="evCardDrop(event,\'' + ev.id + '\')"' +
-      ' onclick="' + (isStaging ? '_abrirCargaBuilder(\'' + ev.id + '\')' : 'abrirVincularEstoqueEvento(\'' + ev.id + '\')') + '">' +
-      (isStaging ? '<div class="ev-card-staging-badge">Preparando carga</div>' : '') +
-      '<div class="ev-card-nome">' + esc(ev.ev_nome || ev.cli_nome || ev.nome || 'Evento') + '</div>' +
-      (isStaging && ev._carga_itens && ev._carga_itens.length > 0 ? '<div class="ev-card-data" style="color:#4A90D9">' + ev._carga_itens.reduce(function(s,it){return s+(it.qtd||1);},0) + ' item(s) na carga</div>' : '') +
-      (dataStr ? '<div class="ev-card-data">' + dataStr + '</div>' : '') +
-      (chipsHtml ? '<div class="ev-card-itens">' + chipsHtml + '</div>' : '') +
-      (isStaging
-        ? '<button class="ev-vincular-btn ev-staging-remove-btn" onclick="event.stopPropagation();_removerStagingCarga(\'' + ev.id + '\')">' +
-            '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-            'Remover' +
-          '</button>'
-        : '<button class="ev-vincular-btn" onclick="event.stopPropagation();abrirVincularEstoqueEvento(\'' + ev.id + '\')">' +
-            '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
-            'Vincular itens' +
-          '</button>') +
-    '</div>';
+    if (isStaging) {
+      var dataStr = ev.ev_data ? _fmtEvData(ev.ev_data) : '';
+      return '<div class="ev-card ev-card-staging" id="ev-card-' + esc(ev.id) + '"' +
+        ' draggable="true" ondragstart="_stagingDragStart(event,\'' + esc(ev.id) + '\')" ondragend="_stagingDragEnd(event,\'' + esc(ev.id) + '\')"' +
+        ' style="border-color:rgba(74,144,217,0.5)"' +
+        ' ondragover="evCardOver(event,\'' + esc(ev.id) + '\')"' +
+        ' ondragleave="evCardLeave(event,\'' + esc(ev.id) + '\')"' +
+        ' ondrop="evCardDrop(event,\'' + esc(ev.id) + '\')">' +
+        '<div class="ev-card-staging-badge">Preparando carga</div>' +
+        '<div class="ev-card-nome">' + esc(ev.ev_nome || ev.cli_nome || ev.nome || 'Evento') + '</div>' +
+        (dataStr ? '<div class="ev-card-data">' + dataStr + '</div>' : '') +
+        '<button class="ev-vincular-btn ev-staging-remove-btn" onclick="event.stopPropagation();_removerStagingCarga(\'' + esc(ev.id) + '\')">' +
+          '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Remover</button>' +
+      '</div>';
+    } else {
+      return _buildEvAndamentoCard(ev);
+    }
   }).join('');
 
-  // Coloca a seção antes dos kits
+  _bindEvAndamentoCards();
+
   var kitsSection = document.getElementById('kits-section');
   if (kitsSection && sec.parentNode !== kitsSection.parentNode) {
     kitsSection.parentNode.insertBefore(sec, kitsSection);
   }
 }
+
 
 function _fmtEvData(d) {
   if (!d) return '';
