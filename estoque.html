@@ -7007,59 +7007,28 @@ body.has-ev-sidebar { padding-right: 272px; }
 #eventos-andamento-section.sidebar-collapsed .ev-andamento-scroll { display: none; }
 #eventos-andamento-section.sidebar-collapsed { height: auto; overflow: visible; }
 
-/* Tab de abertura — sempre visível na borda direita */
+/* Botão de toggle da sidebar — sempre visível quando há eventos */
 #ev-sidebar-tab {
   position: fixed;
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  z-index: 95;
-  display: none; /* só quando há eventos */
+  z-index: 200;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  background: var(--dark);
-  border: 1px solid rgba(245,166,35,0.35);
-  border-right: none;
-  border-radius: 8px 0 0 8px;
-  padding: 10px 5px;
-  cursor: pointer;
-  transition: right 0.25s, background 0.15s;
-  box-shadow: -2px 0 12px rgba(0,0,0,0.3);
-}
-#ev-sidebar-tab:hover { background: #252525; }
-#ev-sidebar-tab .tab-arrow {
-  color: #F5A623;
-  transition: transform 0.25s;
-  display: flex; align-items: center; justify-content: center;
-}
-#ev-sidebar-tab .tab-label {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.55rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #777;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  line-height: 1;
-}
-#ev-sidebar-tab .tab-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
+  gap: 5px;
+  width: 24px;
   background: #F5A623;
-  box-shadow: 0 0 0 0 rgba(245,166,35,0.6);
-  animation: pulse-amber 1.8s infinite;
-  flex-shrink: 0;
+  border: none;
+  border-radius: 6px 0 0 6px;
+  padding: 12px 4px;
+  cursor: pointer;
+  box-shadow: -3px 0 10px rgba(0,0,0,0.4);
+  transition: width 0.2s, background 0.15s;
 }
-/* Sidebar aberta → tab posiciona na borda esquerda da sidebar */
-body.has-ev-sidebar:not(.sidebar-hidden) #ev-sidebar-tab { right: 272px; }
-body.has-ev-sidebar:not(.sidebar-hidden) #ev-sidebar-tab .tab-arrow { transform: rotate(180deg); }
-/* Sidebar recolhida */
-body.sidebar-hidden #ev-sidebar-tab { right: 0; }
-body.sidebar-hidden #ev-sidebar-tab .tab-arrow { transform: rotate(0deg); }
+#ev-sidebar-tab:hover { background: #e69b1a; width: 28px; }
 /* Del button permanente */
 .item-del-ev-btn { background:none;border:none;cursor:pointer;padding:0 2px;font-size:1rem;color:#e05c5c;flex-shrink:0;line-height:1;opacity:0.7;transition:opacity 0.15s; }
 .item-del-ev-btn:hover { opacity:1; }
@@ -7072,13 +7041,9 @@ body.sidebar-hidden #ev-sidebar-tab .tab-arrow { transform: rotate(0deg); }
 </style>
 
 <!-- Aba lateral de toggle — sempre visível quando há eventos em andamento -->
-<div id="ev-sidebar-tab" onclick="_toggleSidebar()" role="button" aria-label="Mostrar/ocultar eventos em andamento">
-  <div class="tab-dot"></div>
-  <div class="tab-arrow">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-  </div>
-  <div class="tab-label">Eventos</div>
-</div>
+<button id="ev-sidebar-tab" onclick="_toggleSidebar()" title="Mostrar/ocultar eventos em andamento" aria-label="Toggle eventos em andamento">
+  <svg id="ev-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+</button>
 
 <!-- HTML: Eventos em andamento (inserido logo após o header no app-screen via JS) -->
 <div id="eventos-andamento-section">
@@ -7565,7 +7530,15 @@ function renderEventosAndamento() {
   sec.style.display = 'block';
   document.body.classList.add('has-ev-sidebar');
   var tab1 = document.getElementById('ev-sidebar-tab');
-  if (tab1) tab1.style.display = 'flex';
+  if (tab1) {
+    tab1.style.display = 'flex';
+    // Se a sidebar não está escondida, tab fica na borda da sidebar
+    if (!document.body.classList.contains('sidebar-hidden')) {
+      tab1.style.right = '272px';
+    } else {
+      tab1.style.right = '0';
+    }
+  }
   if (count) count.textContent = todos.length + ' ativo' + (todos.length > 1 ? 's' : '');
 
   scroll.innerHTML = todos.map(function(ev) {
@@ -7828,20 +7801,29 @@ function _deletarItemEv(evId, idx, tipo) {
 
 function _toggleSidebar() {
   var sec = document.getElementById('eventos-andamento-section');
+  var tab = document.getElementById('ev-sidebar-tab');
+  var icon = document.getElementById('ev-tab-icon');
   if (!sec) return;
   var isOpen = !document.body.classList.contains('sidebar-hidden');
   if (isOpen) {
-    // Recolher
+    // Recolher sidebar
     sec.classList.add('sidebar-collapsed');
     document.body.classList.add('sidebar-hidden');
     document.body.style.paddingRight = '0';
     sec.style.display = 'none';
+    // Tab fica em right:0 (borda direita da tela) com seta apontando para esquerda
+    if (tab) tab.style.right = '0';
+    if (icon) icon.setAttribute('points', '15 18 9 12 15 6'); // seta para esquerda ← corrigir: usar transform
+    if (icon) { icon.style.transform = 'rotate(180deg)'; }
   } else {
-    // Expandir
+    // Expandir sidebar
     sec.classList.remove('sidebar-collapsed');
     document.body.classList.remove('sidebar-hidden');
     document.body.style.paddingRight = '272px';
     sec.style.display = 'block';
+    // Tab fica na borda esquerda da sidebar
+    if (tab) tab.style.right = '272px';
+    if (icon) { icon.style.transform = ''; }
   }
 }
 
