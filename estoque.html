@@ -2625,41 +2625,12 @@ function abrirPainelAdminEstoque() {
       </div>\
       <div style="position:relative;padding:14px 22px 0 22px;margin-top:14px">\
         <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1">\
-          <button id="adm-est-tab-veic" onclick="_admEstAba(0)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #4A90D9;color:#4A90D9;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Veículos</button>\
-          <button id="adm-est-tab-hist" onclick="_admEstAba(1)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\
+          <button id="adm-est-tab-hist" onclick="_admEstAba(0)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #4A90D9;color:#4A90D9;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\
         </div>\
         <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:#2a2a2a;z-index:0"></div>\
       </div>\
       <div id="adm-est-slider" style="display:block;overflow:hidden;height:60vh">\
-        <div id="adm-est-panel-veic" style="padding:20px 22px 22px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain">\
-          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
-            <div style="font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;color:#4A90D9;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Veículos cadastrados</div>\
-            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Estes veículos aparecem no seletor de cada card de evento.</div>\
-            <div id="adm-est-veic-lista" style="margin-bottom:4px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
-          </div>\
-          <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px">\
-            <div style="font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;color:#4A90D9;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Adicionar veículo</div>\
-            <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:14px">Carregue uma imagem (fundo preto ou branco) — ela será recortada e otimizada automaticamente.</div>\
-            <div id="adm-est-veic-dropzone" onclick="document.getElementById(\'adm-est-veic-file\').click()" style="border:2px dashed #2a2a2a;border-radius:6px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:12px">\
-              <svg width="28" height="20" viewBox="0 0 36 24" fill="none" stroke="#444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="8" width="34" height="13" rx="3"/><path d="M4 8V7a3 3 0 0 1 3-3h10a3 3 0 0 1 2.8 2l1.2 2"/><circle cx="9" cy="21" r="2.5"/><circle cx="27" cy="21" r="2.5"/></svg>\
-              <div style="font-size:0.7rem;color:#444;margin-top:8px">Clique para selecionar imagem</div>\
-              <div style="font-size:0.62rem;color:#333;margin-top:3px">PNG, JPG — fundo preto ou branco</div>\
-            </div>\
-            <input id="adm-est-veic-file" type="file" accept="image/*" style="display:none" onchange="_admEstVeicPreview(this)" />\
-            <div id="adm-est-veic-preview-area" style="display:none;margin-bottom:12px">\
-              <div style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Preview (fundo removido)</div>\
-              <div style="background:#0e0e0e;border:1px solid #222;border-radius:5px;padding:10px;display:flex;align-items:center;justify-content:center;min-height:60px">\
-                <img id="adm-est-veic-preview-img" style="max-height:50px;max-width:180px" />\
-              </div>\
-            </div>\
-            <div style="display:flex;gap:8px;align-items:center">\
-              <input id="adm-est-veic-nome" type="text" placeholder="Nome do veículo (ex: Sprinter)" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:Barlow,sans-serif;font-size:0.78rem;padding:8px 10px;outline:none;box-sizing:border-box" />\
-              <button onclick="_admEstVeicAdicionar()" style="background:#4A90D9;color:#fff;border:none;border-radius:4px;padding:8px 16px;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;white-space:nowrap;flex-shrink:0">Salvar</button>\
-            </div>\
-            <div id="adm-est-veic-status" style="margin-top:8px;font-size:0.68rem;min-height:16px"></div>\
-          </div>\
-        </div>\
-        <div id="adm-est-panel-hist" style="padding:0;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
+        <div id="adm-est-panel-hist" style="padding:0;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:block">\
           <div id="adm-est-hist-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
         </div>\
       </div>\
@@ -2673,15 +2644,14 @@ function abrirPainelAdminEstoque() {
 }
 
 function _admEstAba(idx) {
-  var keys = ['veic', 'hist'];
+  var keys = ['hist'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('adm-est-tab-' + k);
     var panel = document.getElementById('adm-est-panel-' + k);
     if (tab) { tab.style.borderBottomColor = i === idx ? '#4A90D9' : 'transparent'; tab.style.color = i === idx ? '#4A90D9' : '#555'; }
     if (panel) panel.style.display = i === idx ? '' : 'none';
   });
-  if (idx === 0) { _admEstVeicCarregar(); }
-  if (idx === 1) { _admEstHistCarregar(); }
+  if (idx === 0) { _admEstHistCarregar(); }
 }
 
 // ── Admin Estoque: Veículos ──
@@ -3084,7 +3054,7 @@ function _renderStatsAjustados() {
   var closedAlloc = {};
   var allEvs = Object.assign({}, _eventosAndamento, _eventosStagingCarga);
   Object.values(allEvs).forEach(function(ev) {
-    if (_evEqDragItems[ev.id] \!== undefined) return; // card aberto — já aplicado
+    if (_evEqDragItems[ev.id] !== undefined) return; // card aberto — já aplicado
     (ev.itens_extras || []).forEach(function(item) {
       var m = item.match(/^(\d+)x\s+(.+)$/);
       var qty  = m ? parseInt(m[1]) : 1;
@@ -4793,7 +4763,7 @@ function renderAcessorios() {
     var emUso = a.qtd_em_uso || 0;
     var sideClass = disp === 0 ? ' zero' : (emUso > 0 ? ' warn' : '');
     var numClass = disp === 0 ? ' zero' : ' disp';
-    return '<div class="ac-card' + (disp === 0 ? ' status-alerta' : '') + '" data-ac-id="' + esc(a.id) + '" onclick="abrirModalEditAcessorio(\'' + a.id + '\')">' +
+    return '<div class="ac-card' + (disp === 0 ? ' status-alerta' : '') + '" data-ac-id="' + esc(a.id) + '">' +
       '<div class="ac-side-bar' + sideClass + '"></div>' +
       '<div class="ac-body">' +
         '<div class="ac-icon">' + _getEqSvg(a.emoji || 'tool', 14) + '</div>' +
@@ -8396,7 +8366,7 @@ function _abrirDropdownNovo(btn) {
   document.body.appendChild(drop);
   setTimeout(function() {
     document.addEventListener('click', function _close(e) {
-      if (\!drop.contains(e.target) && e.target \!== btn) { drop.remove(); }
+      if (!drop.contains(e.target) && e.target !== btn) { drop.remove(); }
       document.removeEventListener('click', _close);
     });
   }, 0);
@@ -8467,10 +8437,10 @@ function _fecharModalVeiculos() {
 
 function _mvCarregar() {
   var lista = document.getElementById('mv-lista');
-  if (\!lista) return;
+  if (!lista) return;
   db.collection('configuracoes').doc('veiculos').get().then(function(doc) {
     var veics = (doc.exists && doc.data().lista) ? doc.data().lista : [];
-    if (\!veics.length) { lista.innerHTML = '<div style="font-size:0.73rem;color:#555;padding:4px 0">Nenhum veículo cadastrado.</div>'; return; }
+    if (!veics.length) { lista.innerHTML = '<div style="font-size:0.73rem;color:#555;padding:4px 0">Nenhum veículo cadastrado.</div>'; return; }
     lista.innerHTML = veics.map(function(v, i) {
       var img = v.img ? '<img src="' + v.img + '" style="height:28px;max-width:60px;object-fit:contain;border-radius:3px;background:#0e0e0e;padding:2px 4px">' : '<span style="font-size:0.75rem;color:#555">sem imagem</span>';
       return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #1e1e1e">' +
@@ -8485,7 +8455,7 @@ function _mvCarregar() {
 function _mvPreview(input) {
   // Reutiliza mesma lógica do admin: apenas exibe a imagem
   var file = input.files[0];
-  if (\!file) return;
+  if (!file) return;
   var reader = new FileReader();
   reader.onload = function(e) {
     var area = document.getElementById('mv-preview-area');
@@ -8501,14 +8471,14 @@ function _mvAdicionar() {
   var imgEl  = document.getElementById('mv-preview-img');
   var status = document.getElementById('mv-status');
   nome = nome.trim();
-  if (\!nome) { if (status) { status.style.color = '#e05c5c'; status.textContent = 'Informe o nome.'; } return; }
+  if (!nome) { if (status) { status.style.color = '#e05c5c'; status.textContent = 'Informe o nome.'; } return; }
   var imgSrc = (imgEl && imgEl.src && imgEl.src.length > 50) ? imgEl.src : '';
   db.collection('configuracoes').doc('veiculos').get().then(function(doc) {
     var veics = (doc.exists && doc.data().lista) ? doc.data().lista.slice() : [];
     veics.push({ nome: nome, img: imgSrc });
     return db.collection('configuracoes').doc('veiculos').set({ lista: veics });
   }).then(function() {
-    if (status) { status.style.color = '#50C878'; status.textContent = 'Veículo salvo\!'; }
+    if (status) { status.style.color = '#50C878'; status.textContent = 'Veículo salvo!'; }
     var nomeEl = document.getElementById('mv-nome');
     var area   = document.getElementById('mv-preview-area');
     var fileEl = document.getElementById('mv-file');
@@ -8521,7 +8491,7 @@ function _mvAdicionar() {
 }
 
 function _mvRemover(idx) {
-  if (\!confirm('Remover este veículo?')) return;
+  if (!confirm('Remover este veículo?')) return;
   db.collection('configuracoes').doc('veiculos').get().then(function(doc) {
     var veics = (doc.exists && doc.data().lista) ? doc.data().lista.slice() : [];
     veics.splice(idx, 1);
