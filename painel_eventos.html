@@ -942,30 +942,36 @@ header {
   /* ── FILTROS DE PERIODO ── */
   .periodo-bar {
     display: flex;
-    gap: 8px;
+    align-items: center;
     padding: 14px 24px 0;
-    overflow-x: auto;
-    scrollbar-width: none;
   }
-  .periodo-bar::-webkit-scrollbar { display: none; }
-  .periodo-btn {
-    padding: 6px 16px;
-    background: transparent;
+  .periodo-toggle {
+    display: flex;
+    align-items: center;
+    background: #1a1a1a;
     border: 1px solid var(--border);
-    color: var(--muted);
     border-radius: 20px;
+    padding: 3px;
+    gap: 2px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .periodo-toggle-opt {
+    padding: 4px 14px;
+    border-radius: 16px;
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
     white-space: nowrap;
-    transition: all 0.15s;
-    flex-shrink: 0;
   }
-  .periodo-btn:hover { border-color: var(--gold); color: var(--gold); }
-  .periodo-btn.active { border-color: var(--gold); color: var(--dark); background: var(--gold); }
+  .periodo-toggle-opt.active {
+    background: var(--gold);
+    color: var(--dark);
+  }
 
   /* ── SEPARADORES DE GRUPO ── */
   .group-separator {
@@ -1239,9 +1245,10 @@ header {
   </header>
 
   <div class="periodo-bar">
-    <button class="periodo-btn active" id="periodo-30dias" onclick="setPeriodo('30dias')">30 dias</button>
-    <button class="periodo-btn" id="periodo-todos" onclick="setPeriodo('todos')">Todos</button>
-    <button class="periodo-btn" id="periodo-realizados" onclick="setPeriodo('realizados')">Realizados</button>
+    <div class="periodo-toggle" onclick="setPeriodo(_periodo === '30dias' ? 'todos' : '30dias')">
+      <div class="periodo-toggle-opt active" id="periodo-30dias">30 dias</div>
+      <div class="periodo-toggle-opt" id="periodo-todos">Todos</div>
+    </div>
   </div>
   <div class="board-container" ondragover="onDragOverBoard(event)" ondrop="onDropBoard(event)">
     <div class="board">
@@ -1546,7 +1553,6 @@ function renderBoard() {
     var count = document.getElementById('count-' + col);
 
     // Split: past vs future/current, filtered by period
-    var isRealizados = _periodo === 'realizados';
     var futuros, passados;
     if (col === 'andamento') {
       // Em Andamento: sempre exibe todos, sem filtro de período
@@ -1562,9 +1568,6 @@ function renderBoard() {
         var d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
         return d >= _ini30c && d <= _fim30c;
       });
-      passados = [];
-    } else if (isRealizados) {
-      futuros  = colunas[col].filter(function(ev) { return isPast(ev); });
       passados = [];
     } else {
       futuros  = colunas[col].filter(function(ev) { return !isPast(ev) && matchesPeriodo(ev, _periodo); });
@@ -2248,9 +2251,9 @@ var _periodo = '30dias';
 
 function setPeriodo(p) {
   _periodo = p;
-  document.querySelectorAll('.periodo-btn').forEach(function(b) { b.classList.remove('active'); });
-  var btn = document.getElementById('periodo-' + p);
-  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.periodo-toggle-opt').forEach(function(b) { b.classList.remove('active'); });
+  var opt = document.getElementById('periodo-' + p);
+  if (opt) opt.classList.add('active');
   renderBoard();
 }
 
@@ -2268,7 +2271,6 @@ function getWeekRange() {
 
 function matchesPeriodo(ev, periodo) {
   if (periodo === 'todos') return true;
-  if (periodo === 'realizados') return isPast(ev);
   if (!ev.ev_data) return false;
   var parts = ev.ev_data.split('-');
   var evDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
