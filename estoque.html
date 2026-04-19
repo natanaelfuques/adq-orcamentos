@@ -7859,6 +7859,16 @@ function evCardDrop(ev, evId) {
     _draggingEqId = null;
     if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
     if (!_evEqDragItems[evId][itemId]) _evEqDragItems[evId][itemId] = { nome: eqNome, qty: 0 };
+    // Verificar cap ANTES de incrementar
+    var eqObjCap = _equipamentos[itemId];
+    if (eqObjCap) {
+      if (!_evEqOrigCounts[itemId]) {
+        _evEqOrigCounts[itemId] = { qtd_disponivel: eqObjCap.qtd_disponivel || 0, qtd_em_uso: eqObjCap.qtd_em_uso || 0 };
+      }
+      var origDispCap = _evEqOrigCounts[itemId].qtd_disponivel;
+      var alreadyUsed = _evEqDragItems[evId][itemId].qty;
+      if (alreadyUsed >= origDispCap) { toast('Limite atingido: ' + origDispCap + ' unidade' + (origDispCap !== 1 ? 's' : ''), true); return; }
+    }
     _evEqDragItems[evId][itemId].qty++;
     var qty = _evEqDragItems[evId][itemId].qty;
     var label = qty > 1 ? qty + 'x ' + eqNome : eqNome;
@@ -7872,15 +7882,11 @@ function evCardDrop(ev, evId) {
       evObj2.itens_extras = extras2;
       if (db && _eventosAndamento[evId]) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
     }
-    // Atualiza contagem do card do equipamento (temporariamente, via _equipamentos)
+    // Atualiza contagem do card do equipamento
     var eqObj = _equipamentos[itemId];
     if (eqObj) {
-      if (!_evEqOrigCounts[itemId]) {
-        _evEqOrigCounts[itemId] = { qtd_disponivel: eqObj.qtd_disponivel || 0, qtd_em_uso: eqObj.qtd_em_uso || 0 };
-      }
       var origDisp = _evEqOrigCounts[itemId].qtd_disponivel;
       var origUso  = _evEqOrigCounts[itemId].qtd_em_uso;
-      if (origDisp <= 0) { _evEqDragItems[evId][itemId].qty--; toast('Sem unidades disponíveis', true); return; }
       var aplicado = Math.min(qty, origDisp);
       eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
       eqObj.qtd_em_uso     = origUso + aplicado;
