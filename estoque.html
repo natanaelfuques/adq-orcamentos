@@ -7809,7 +7809,13 @@ function renderEventosAndamento() {
   // Restaurar cards que estavam expandidos antes do re-render
   _expandedIds.forEach(function(id2) {
     var card2 = document.getElementById('ev-card-' + id2);
-    if (card2) card2.classList.add('expanded');
+    if (card2) {
+      card2.classList.add('expanded');
+      // Re-aplica contagens se nao ha sessao de drag ativa para este evento
+      if (!_evEqDragItems[id2] || Object.keys(_evEqDragItems[id2]).length === 0) {
+        _abrirCargaEvento(id2);
+      }
+    }
   });
   // Restaurar carga local nos cards re-renderizados
   Object.keys(_cargaEvento).forEach(function(evId) {
@@ -7907,7 +7913,7 @@ function evCardDrop(ev, evId) {
     });
     if (evObjKit) {
       evObjKit.itens_extras = extrasKit;
-      if (db && _eventosAndamento[evId]) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasKit });
+      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasKit });
     }
     _draggingKitId = null;
     renderEventosAndamento();
@@ -7951,7 +7957,7 @@ function evCardDrop(ev, evId) {
       });
       extras2.push(label);
       evObj2.itens_extras = extras2;
-      if (db && _eventosAndamento[evId]) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
+      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
     }
     // Atualiza contagem do card do equipamento
     var eqObj = _equipamentos[itemId];
