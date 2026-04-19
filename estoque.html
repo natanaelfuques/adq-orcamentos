@@ -1370,8 +1370,8 @@
   .kit-item-chip:hover { border-color: #555; }
   .kit-item-chip.dragging { opacity: 0.3; }
   .kit-item-chip-icon {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     background: var(--gold-dim);
     border-radius: 4px;
     display: flex;
@@ -1760,7 +1760,7 @@
   .ac-qty-num.disp { color: var(--green); }
   .ac-qty-num.zero { color: var(--red); }
   .ac-qty-label {
-    font-size: 0.5rem;
+    font-size: 0.42rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -2149,16 +2149,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 10px;
+    padding: 5px 8px;
     background: rgba(74,144,217,0.07);
     border-bottom: 1px solid rgba(74,144,217,0.18);
     user-select: none;
   }
   .kit-slot-panel-title {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.72rem;
+    font-size: 0.6rem;
     font-weight: 800;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--gold);
     display: flex;
@@ -2188,12 +2188,15 @@
   }
   .kit-slot-panel-btn:hover { border-color: var(--gold); color: var(--gold); }
   .kit-slot-panel-btn.del:hover { border-color: var(--red); color: var(--red); }
-  .kit-slot-panel-body { padding: 10px; }
+  .kit-slot-panel-body { padding: 7px; transition: max-height 0.2s ease, opacity 0.15s; overflow: hidden; }
+  .kit-slot-panel.kit-collapsed .kit-slot-panel-body { display: none; }
+  .kit-slot-panel-title .kit-chevron { transition: transform 0.2s; flex-shrink: 0; }
+  .kit-slot-panel.kit-collapsed .kit-slot-panel-title .kit-chevron { transform: rotate(-90deg); }
   .kit-slot-grid-3x3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    gap: 5px;
+    gap: 3px;
   }
   .kit-slot-item {
     background: var(--darker);
@@ -2205,8 +2208,8 @@
     align-items: center;
     justify-content: center;
     gap: 3px;
-    padding: 6px 4px 5px;
-    min-height: 72px;
+    padding: 4px 3px;
+    min-height: 48px;
     transition: border-color 0.15s;
   }
   .kit-slot-item.filled {
@@ -2227,11 +2230,11 @@
     background: var(--gold);
     color: #fff;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.55rem;
+    font-size: 0.48rem;
     font-weight: 800;
     border-radius: 8px;
-    min-width: 14px;
-    height: 14px;
+    min-width: 11px;
+    height: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5029,7 +5032,7 @@ function renderKits() {
       ' ondrop="kitFolderDrop(event,\'' + esc(kit.id) + '\')"' +
       ' ondragstart="_kitDragStart(event,\'' + esc(kit.id) + '\')" ondragend="_kitDragEnd()">' +
       '<div class="kit-slot-panel-header">' +
-        '<div class="kit-slot-panel-title" onclick="abrirModalEditarKit(\'' + esc(kit.id) + '\')">' +
+        '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_toggleKitPanel(\'' + esc(kit.id) + '\')">' +
           svgChevron + esc(kit.nome || 'Kit') +
         '</div>' +
         '<div class="kit-slot-panel-actions">' +
@@ -7008,6 +7011,34 @@ body.has-ev-sidebar { padding-right: 272px; }
 .ev-andamento-scroll .add-item-input { flex: 1; background: #2a2a2a; border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 0.8rem; padding: 5px 8px; outline: none; }
 .ev-andamento-scroll .add-item-input:focus { border-color: var(--andamento, #C8A94A); }
 .ev-andamento-scroll .btn-add-item-ok { background: var(--andamento, #C8A94A); color: #111; border: none; border-radius: 4px; padding: 5px 10px; font-weight: 700; font-size: 0.75rem; cursor: pointer; font-family: 'Barlow', sans-serif; }
+.veiculo-popover {
+  position: fixed;
+  z-index: 500;
+  background: rgba(18,18,20,0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.85);
+  min-width: 160px;
+}
+.veiculo-popover-title { font-size:0.6rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:2px; }
+.veiculo-opt { display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:5px;border:1px solid transparent;transition:background 0.15s,border-color 0.15s; }
+.veiculo-opt:hover { background:rgba(255,255,255,0.07);border-color:var(--border2); }
+.veiculo-opt.selecionado { border-color:var(--gold);background:rgba(212,175,55,0.1); }
+.veiculo-opt img { height:30px;width:auto; }
+.veiculo-opt-nome { font-size:0.7rem;font-weight:700;color:#ccc;white-space:nowrap;flex:1; }
+.veiculo-opt-check { width:15px;height:15px;border:1.5px solid #444;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.15s,border-color 0.15s; }
+.veiculo-opt.selecionado .veiculo-opt-check { background:var(--gold);border-color:var(--gold); }
+.veiculo-opt.selecionado .veiculo-opt-check::after { content:'';width:8px;height:4px;border-left:2px solid #111;border-bottom:2px solid #111;transform:rotate(-45deg) translateY(-1px);display:block; }
+.veiculo-opt-none { display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;padding:6px 10px;border-radius:5px;font-size:0.68rem;font-weight:700;color:#e05c5c;border:1px solid rgba(224,92,92,0.35);background:rgba(224,92,92,0.07);letter-spacing:0.04em;transition:background 0.15s,border-color 0.15s,color 0.15s;margin-top:2px; }
+.veiculo-opt-none:hover { background:rgba(224,92,92,0.18);border-color:rgba(224,92,92,0.7);color:#ff7b7b; }
+.veiculo-opt-ok { display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;padding:6px 10px;border-radius:5px;font-size:0.68rem;font-weight:700;color:#4AC87A;border:1px solid rgba(74,200,122,0.35);background:rgba(74,200,122,0.07);letter-spacing:0.04em;transition:background 0.15s,border-color 0.15s,color 0.15s; }
+.veiculo-opt-ok:hover { background:rgba(74,200,122,0.18);border-color:rgba(74,200,122,0.7);color:#6fe89a; }
 .ev-andamento-scroll .veiculo-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
 .ev-andamento-scroll .veiculo-icon-btn { background: none; border: 1px solid transparent; border-radius: 4px; padding: 1px 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: border-color 0.15s, background 0.15s; flex-shrink: 0; }
 .ev-andamento-scroll .veiculo-icon-btn:hover { border-color: var(--border2); background: rgba(255,255,255,0.04); }
@@ -7767,6 +7798,12 @@ function evCardDrop(ev, evId) {
 
 var _draggingKitId = null;
 var _draggingStagingId = null;
+
+function _toggleKitPanel(kitId) {
+  var panel = document.getElementById('kit-card-' + kitId);
+  if (!panel) return;
+  panel.classList.toggle('kit-collapsed');
+}
 
 function _kitDragStart(ev, kitId) {
   _draggingKitId = kitId;
