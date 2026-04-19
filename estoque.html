@@ -7816,20 +7816,22 @@ function _toggleSidebar() {
   var icon = document.getElementById('ev-tab-icon');
   var hdBtn = document.getElementById('btn-ev-andamento-hd');
   if (!sec) return;
-  var isOpen = !document.body.classList.contains('sidebar-hidden');
+  // Usa o display real da seção como fonte de verdade (não a classe sidebar-hidden)
+  var isOpen = (sec.style.display === 'block');
   if (isOpen) {
-    sec.classList.add('sidebar-collapsed');
+    // Recolher
+    sec.style.display = 'none';
     document.body.classList.add('sidebar-hidden');
     document.body.style.paddingRight = '0';
-    sec.style.display = 'none';
     if (tab) tab.style.right = '0';
     if (icon) { icon.style.transform = 'rotate(180deg)'; }
     if (hdBtn) { hdBtn.style.borderColor = 'rgba(245,166,35,0.3)'; hdBtn.style.opacity = '0.7'; }
   } else {
-    sec.classList.remove('sidebar-collapsed');
+    // Expandir — força renderização dos eventos antes de mostrar
+    renderEventosAndamento();
+    sec.style.display = 'block';
     document.body.classList.remove('sidebar-hidden');
     document.body.style.paddingRight = '272px';
-    sec.style.display = 'block';
     if (tab) tab.style.right = '272px';
     if (icon) { icon.style.transform = ''; }
     if (hdBtn) { hdBtn.style.borderColor = 'rgba(245,166,35,0.6)'; hdBtn.style.opacity = '1'; }
