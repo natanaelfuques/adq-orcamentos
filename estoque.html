@@ -1290,7 +1290,7 @@
 
   .kits-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
 
@@ -4712,6 +4712,11 @@ function switchTabSecao(tab) {
   var btnAc   = document.getElementById('tab-btn-acessorios');
   var btnNovoEq = document.getElementById('btn-novo-eq-tab');
   var btnNovoAc = document.getElementById('btn-novo-ac-tab');
+  // Trava a altura mínima no container para evitar recolhimento ao trocar abas
+  var tabContainer = panelEq && panelEq.parentElement;
+  if (tabContainer && panelEq && panelEq.style.display !== 'none') {
+    tabContainer.style.minHeight = panelEq.offsetHeight + 'px';
+  }
   if (tab === 'equipamentos') {
     if (panelEq) panelEq.style.display = '';
     if (panelAc) panelAc.style.display = 'none';
@@ -4719,6 +4724,7 @@ function switchTabSecao(tab) {
     if (btnAc) btnAc.classList.remove('active');
     if (btnNovoEq) btnNovoEq.style.display = '';
     if (btnNovoAc) btnNovoAc.style.display = 'none';
+    if (tabContainer) tabContainer.style.minHeight = '';
   } else {
     if (panelEq) panelEq.style.display = 'none';
     if (panelAc) panelAc.style.display = '';
@@ -5039,7 +5045,7 @@ function renderKits() {
         '</div>' +
         '<div class="kit-slot-panel-actions">' +
           '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="Editar">' + svgEdit + '</button>' +
-          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();excluirKit(\\\'' + esc(kit.id) + '\\\')" title="Excluir kit" style="color:var(--red);font-size:1.1rem;line-height:1;padding:0 3px">&times;</button>' +
+          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();excluirKit(\'' + esc(kit.id) + '\')" title="Excluir kit" style="color:var(--red);font-size:1.1rem;line-height:1;padding:0 3px">&times;</button>' +
         '</div>' +
       '</div>' +
       '<div class="kit-slot-panel-body">' +
