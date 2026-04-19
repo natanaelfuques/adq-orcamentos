@@ -514,8 +514,43 @@ header {
 
 .card-horario-block .horario-sep {
   color: var(--muted);
-  margin: 0 3px;
+  margin: 0 2px;
   font-weight: 400;
+}
+
+.hor-linha {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  line-height: 1.5;
+}
+
+.hor-field-span {
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 1px 3px;
+  transition: background 0.15s, color 0.15s;
+  display: inline-block;
+}
+
+.hor-field-span:hover {
+  background: rgba(200, 169, 74, 0.15);
+  color: #C8A94A;
+}
+
+.hor-field-input {
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: 'Barlow', sans-serif;
+  background: #1a1a1a;
+  border: 1px solid #C8A94A;
+  border-radius: 3px;
+  color: #ccc;
+  padding: 1px 5px;
+  outline: none;
+  width: 90px;
+  box-sizing: border-box;
 }
 
 .card-horario-inline {
@@ -1831,31 +1866,32 @@ function buildCard(ev, past, col) {
     var semNumeros = v.replace(/[\d:hH]/g, '').trim().replace(/[-–]/g, '').trim();
     return semNumeros ? semNumeros + ' ' + horaFmt : horaFmt;
   }
-  var horarioLinha1 = ''; // Mont. · Iníc.
-  var horarioLinha2 = ''; // Fim · Desm.
   var temHorario = ev.ev_montagem || ev.ev_inicio || ev.ev_fim || ev.ev_desmontagem;
-  if (temHorario) {
-    var l1 = [];
-    var l2 = [];
-    if (ev.ev_montagem) l1.push('Mont. ' + fmtHora(ev.ev_montagem));
-    if (ev.ev_inicio)   l1.push('Iníc. ' + fmtHora(ev.ev_inicio));
-    if (ev.ev_fim)      l2.push('Fim ' + fmtHora(ev.ev_fim));
-    if (ev.ev_desmontagem) l2.push('Desm. ' + fmtHora(ev.ev_desmontagem));
-    horarioLinha1 = l1.join(' · ');
-    horarioLinha2 = l2.join(' · ');
-  }
-  var horarioBlock = '';
   var horarioInline = '';
-  if (ev.nota_id && temHorario) {
-    // Eventos de nota: Iníc. e Fim na mesma linha separados por " • "
-    var partes = [];
-    if (ev.ev_montagem) partes.push('Mont. ' + fmtHora(ev.ev_montagem));
-    if (ev.ev_inicio)   partes.push('Iníc. ' + fmtHora(ev.ev_inicio));
-    if (ev.ev_fim)      partes.push('Fim ' + fmtHora(ev.ev_fim));
-    if (ev.ev_desmontagem) partes.push('Desm. ' + fmtHora(ev.ev_desmontagem));
-    horarioBlock = partes.join('<span class="horario-sep">•</span>');
-  } else {
-    horarioBlock = [horarioLinha1, horarioLinha2].filter(Boolean).join('\n');
+
+  // Gera span clicável por campo de horário
+  function _horSpan(field, label, val) {
+    if (!val) return '';
+    return '<span class="hor-field-span" data-field="' + field + '" data-evid="' + esc(ev.id) + '" data-val="' + esc(val) + '" title="Clique para editar">' + label + ' ' + fmtHora(val) + '</span>';
+  }
+
+  var horarioBlock = '';
+  if (temHorario) {
+    var s_mont = _horSpan('ev_montagem', 'Mont.', ev.ev_montagem);
+    var s_inic = _horSpan('ev_inicio', ev.nota_id ? 'Iníc. Cerimônia' : 'Iníc.', ev.ev_inicio);
+    var s_fim  = _horSpan('ev_fim', 'Fim', ev.ev_fim);
+    var s_desm = _horSpan('ev_desmontagem', 'Desm.', ev.ev_desmontagem);
+    if (ev.nota_id) {
+      var partes = [s_mont, s_inic, s_fim, s_desm].filter(Boolean);
+      horarioBlock = partes.join('<span class="horario-sep">•</span>');
+    } else {
+      var l1Parts = [s_mont, s_inic].filter(Boolean);
+      var l2Parts = [s_fim, s_desm].filter(Boolean);
+      var linhas = [];
+      if (l1Parts.length) linhas.push('<div class="hor-linha">' + l1Parts.join('<span class="horario-sep"> · </span>') + '</div>');
+      if (l2Parts.length) linhas.push('<div class="hor-linha">' + l2Parts.join('<span class="horario-sep"> · </span>') + '</div>');
+      horarioBlock = linhas.join('');
+    }
   }
   var resp = ev.ev_resp ? '<div class="card-resp card-field-editable" data-field="ev_resp" data-evid="' + esc(ev.id) + '">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '';
   var itens = '';
@@ -1970,7 +2006,7 @@ function buildCard(ev, past, col) {
     '</div>' +
     '<div class="card-body">' +
       '<div class="card-body-inner">' +
-        (horarioBlock ? '<div class="card-horario-block card-field-editable" data-field="ev_horarios" data-evid="' + esc(ev.id) + '">' + (ev.nota_id ? horarioBlock : horarioBlock.split('\n').map(esc).join('<br>')) + '</div>' : '') +
+        (horarioBlock ? '<div class="card-horario-block">' + horarioBlock + '</div>' : '') +
         '<div class="card-local">' +
           (function() {
             var wFone = ev.cli_fone || '';
@@ -3495,6 +3531,53 @@ function _toggleEditorMode() {
     if (banner) banner.remove();
   }
 }
+
+// ── Edição inline de horários (sempre disponível, sem modo editor) ──
+document.addEventListener('click', function(e) {
+  var span = e.target.closest('.hor-field-span');
+  if (!span) return;
+  e.stopPropagation();
+  e.preventDefault();
+
+  // Já em edição?
+  if (span.querySelector('.hor-field-input')) return;
+
+  var field = span.dataset.field;
+  var evId  = span.dataset.evid;
+  var valAtual = span.dataset.val || '';
+  var textoOriginal = span.innerHTML;
+
+  var input = document.createElement('input');
+  input.type = 'time';
+  input.className = 'hor-field-input';
+  input.value = valAtual;
+
+  span.innerHTML = '';
+  span.appendChild(input);
+  input.focus();
+
+  function salvarHorario() {
+    var novoValor = input.value;
+    span.innerHTML = textoOriginal;
+    if (novoValor === valAtual) return;
+    if (!db) return;
+    var upd = {};
+    upd[field] = novoValor;
+    db.collection('eventos_campo').doc(evId).update(upd)
+      .then(function() {
+        if (_eventosCache && _eventosCache[evId]) _eventosCache[evId][field] = novoValor;
+        renderBoard();
+        _editorToast('Horário atualizado!');
+      })
+      .catch(function(err) { _editorToast('Erro: ' + err.message, true); });
+  }
+
+  input.addEventListener('blur', salvarHorario);
+  input.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+    if (ev.key === 'Escape') { span.innerHTML = textoOriginal; }
+  });
+}, true);
 
 // Delegação de cliques para edição inline
 document.addEventListener('click', function(e) {
