@@ -1293,35 +1293,54 @@ const db = firebase.firestore();
 // Persist login
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-// ── Auth ──
-// E-mails com permissão de acesso ao botão de orçamentos (fallback local)
+// ── Auth / Níveis ──
+// Níveis: 'colaborador' | 'gerente' | 'adm'
+// adm       → tudo
+// gerente   → orçamentos, seleção de responsáveis, ver todos os eventos
+// colaborador → apenas eventos onde é responsável
+
+// Fallbacks legado (mantidos para compatibilidade)
 var EMAILS_ORCAMENTO_PADRAO = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
-// E-mails com permissão para usar o Modo Editor (fallback local)
 var EMAILS_EDITOR_PADRAO = ['natanael.fuques@gmail.com'];
-// E-mails com permissão para ver o Histórico (fallback local)
 var EMAILS_HISTORICO_PADRAO = ['natanael.fuques@gmail.com'];
+
+// Nível do usuário atual (carregado no login)
+var _nivelUsuarioAtual = null; // 'colaborador' | 'gerente' | 'adm'
 
 // Permissões carregadas do Firestore (atualizadas no login)
 var _permissoesEditor = EMAILS_EDITOR_PADRAO.slice();
 var _permissoesHistorico = EMAILS_HISTORICO_PADRAO.slice();
 
+// Retorna true se o nível atual tem a permissão solicitada
+function _temPermissao(permissao) {
+  var nivel = _nivelUsuarioAtual;
+  if (nivel === 'adm') return true;
+  if (permissao === 'orcamento')     return nivel === 'gerente';
+  if (permissao === 'editor')        return false;
+  if (permissao === 'historico')     return false;
+  if (permissao === 'responsaveis')  return nivel === 'gerente';
+  if (permissao === 'verTodos')      return nivel === 'gerente';
+  return false;
+}
+
 function _aplicarPermissaoVoltar(emailUsuario, permissoes) {
-  var lista = permissoes || EMAILS_ORCAMENTO_PADRAO;
+  // Usa nível se disponível, senão fallback para lista de e-mails (legado)
   var btn = document.getElementById('btn-voltar-shortcut');
-  if (btn) {
-    var visivel = lista.indexOf(emailUsuario) >= 0;
-    btn.style.display = visivel ? 'flex' : 'none';
-  }
+  if (!btn) return;
+  var visivel = _nivelUsuarioAtual
+    ? _temPermissao('orcamento')
+    : (permissoes || EMAILS_ORCAMENTO_PADRAO).indexOf(emailUsuario) >= 0;
+  btn.style.display = visivel ? 'flex' : 'none';
 }
 
 function _aplicarPermissaoEditor(emailUsuario, permissoes) {
-  _permissoesEditor = permissoes || EMAILS_EDITOR_PADRAO;
-  // Ocultar toggle do editor no painel admin se não tiver permissão
-  var toggle = document.getElementById('adm-editor-toggle');
+  // Usa nível se disponível, senão fallback legado
+  var temPermissao = _nivelUsuarioAtual
+    ? _temPermissao('editor')
+    : (permissoes || EMAILS_EDITOR_PADRAO).indexOf(emailUsuario) >= 0;
+  _permissoesEditor = temPermissao ? [emailUsuario] : [];
   var editorBloco = document.getElementById('adm-editor-bloco');
-  var temPermissao = _permissoesEditor.indexOf(emailUsuario) >= 0;
   if (editorBloco) editorBloco.style.display = temPermissao ? '' : 'none';
-  // Se o modo editor estava ativo mas perdeu permissão, desativa
   if (!temPermissao && _editorModeAtivo) {
     _editorModeAtivo = false;
     document.body.classList.remove('editor-mode');
@@ -1331,7 +1350,19 @@ function _aplicarPermissaoEditor(emailUsuario, permissoes) {
 }
 
 function _aplicarPermissaoHistorico(emailUsuario, permissoes) {
-  _permissoesHistorico = permissoes || EMAILS_HISTORICO_PADRAO;
+  var temPermissao = _nivelUsuarioAtual
+    ? _temPermissao('historico')
+    : (permissoes || EMAILS_HISTORICO_PADRAO).indexOf(emailUsuario) >= 0;
+  _permissoesHistorico = temPermissao ? [emailUsuario] : [];
+}
+
+function _aplicarTodasPermissoesDoNivel(emailUsuario) {
+  _aplicarPermissaoVoltar(emailUsuario, []);
+  _aplicarPermissaoEditor(emailUsuario, []);
+  _aplicarPermissaoHistorico(emailUsuario, []);
+  // Responsáveis: atualiza cache e re-renderiza
+  _admPermRespEmailsAtuais = _temPermissao('responsaveis') ? [emailUsuario] : [];
+  renderBoard();
 }
 
 auth.onAuthStateChanged(function(user) {
@@ -1340,61 +1371,47 @@ auth.onAuthStateChanged(function(user) {
     document.getElementById('app-screen').style.display = 'block';
     var name = user.email.split('@')[0];
     document.getElementById('user-name').textContent = name;
-    var btnAdmin = document.getElementById('btn-admin-painel');
-    if (btnAdmin) {
-      btnAdmin.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'flex' : 'none';
-    }
-
-    // Buscar permissões do Firestore para o botão de orçamentos
-    db.collection('configuracoes').doc('permissoes_orcamento').get()
+    // Carregar usuários para obter o nível do usuário atual
+    db.collection('configuracoes').doc('usuarios_cadastrados').get()
       .then(function(doc) {
-        var lista = doc.exists && doc.data().emails ? doc.data().emails : EMAILS_ORCAMENTO_PADRAO;
-        _aplicarPermissaoVoltar(user.email, lista);
+        _usuariosCadastrados = doc.exists && doc.data().usuarios ? doc.data().usuarios : [];
+
+        // Descobrir nível do usuário logado
+        var usuarioDoc = _usuariosCadastrados.find(function(u) {
+          return u.email === user.email || u.uid === user.email;
+        });
+
+        // natanael é sempre adm; demais usuários usam o campo nivel
+        if (user.email === 'natanael.fuques@gmail.com') {
+          _nivelUsuarioAtual = 'adm';
+        } else if (usuarioDoc && usuarioDoc.nivel) {
+          _nivelUsuarioAtual = usuarioDoc.nivel;
+        } else {
+          // Fallback: se não tem nível definido, trata como colaborador
+          _nivelUsuarioAtual = 'colaborador';
+        }
+
+        // Botão admin: só adm vê
+        var btnAdmin = document.getElementById('btn-admin-painel');
+        if (btnAdmin) {
+          btnAdmin.style.display = _nivelUsuarioAtual === 'adm' ? 'flex' : 'none';
+        }
+
+        // Aplicar todas as permissões baseadas no nível
+        _aplicarTodasPermissoesDoNivel(user.email);
+
+        registrarAcesso(user);
+        iniciarBoard();
       })
       .catch(function() {
-        // Se falhar, usa fallback local
-        _aplicarPermissaoVoltar(user.email, EMAILS_ORCAMENTO_PADRAO);
+        // Fallback se Firestore falhar
+        _nivelUsuarioAtual = user.email === 'natanael.fuques@gmail.com' ? 'adm' : 'colaborador';
+        var btnAdmin = document.getElementById('btn-admin-painel');
+        if (btnAdmin) btnAdmin.style.display = _nivelUsuarioAtual === 'adm' ? 'flex' : 'none';
+        _aplicarTodasPermissoesDoNivel(user.email);
+        registrarAcesso(user);
+        iniciarBoard();
       });
-
-    // Buscar permissões do modo editor
-    db.collection('configuracoes').doc('permissoes_editor').get()
-      .then(function(doc) {
-        var lista = doc.exists && doc.data().emails ? doc.data().emails : EMAILS_EDITOR_PADRAO;
-        _aplicarPermissaoEditor(user.email, lista);
-      })
-      .catch(function() {
-        _aplicarPermissaoEditor(user.email, EMAILS_EDITOR_PADRAO);
-      });
-
-    // Buscar permissões do histórico
-    db.collection('configuracoes').doc('permissoes_historico').get()
-      .then(function(doc) {
-        var lista = doc.exists && doc.data().emails ? doc.data().emails : EMAILS_HISTORICO_PADRAO;
-        _aplicarPermissaoHistorico(user.email, lista);
-      })
-      .catch(function() {
-        _aplicarPermissaoHistorico(user.email, EMAILS_HISTORICO_PADRAO);
-      });
-
-    // Buscar permissões de seleção de responsáveis
-    db.collection('configuracoes').doc('permissoes_responsaveis').get()
-      .then(function(doc) {
-        _admPermRespEmailsAtuais = doc.exists && doc.data().emails ? doc.data().emails : [];
-        renderBoard();
-      })
-      .catch(function() {
-        _admPermRespEmailsAtuais = [];
-      });
-
-    registrarAcesso(user);
-    // Pré-carregar usuários cadastrados para as barrinhas dos cards
-    if (db) {
-      db.collection('configuracoes').doc('usuarios_cadastrados').get()
-        .then(function(doc) {
-          _usuariosCadastrados = doc.exists && doc.data().usuarios ? doc.data().usuarios : [];
-        }).catch(function(){});
-    }
-    iniciarBoard();
   } else {
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
@@ -1511,7 +1528,15 @@ function iniciarBoard() {
 
 function renderBoard() {
   var colunas = { eventos: [], andamento: [], concluido: [] };
+  var emailAtual = auth && auth.currentUser ? auth.currentUser.email : null;
+  var uidAtual = emailAtual; // uid = email no sistema atual
+
   _todosEventos.forEach(function(ev) {
+    // Colaborador vê apenas eventos onde é responsável
+    if (_nivelUsuarioAtual === 'colaborador' && uidAtual) {
+      var resps = ev.responsaveis || [];
+      if (resps.indexOf(uidAtual) < 0) return;
+    }
     var col = ev.etapa || 'eventos';
     if (colunas[col]) colunas[col].push(ev);
   });
@@ -1959,7 +1984,9 @@ function buildCard(ev, past, col) {
             (horarioInline ? '<span class="card-local-sep">·</span><span class="card-horario-inline">' + esc(horarioInline) + '</span>' : '') +
           '</span>' +
           (ev.contrato_id || ev.id ? (function() {
-            var temPermResp = !_admPermRespEmailsAtuais || !_admPermRespEmailsAtuais.length || (auth && auth.currentUser && _admPermRespEmailsAtuais.indexOf(auth.currentUser.email) >= 0);
+            var temPermResp = _nivelUsuarioAtual
+              ? _temPermissao('responsaveis')
+              : (!_admPermRespEmailsAtuais || !_admPermRespEmailsAtuais.length || (auth && auth.currentUser && _admPermRespEmailsAtuais.indexOf(auth.currentUser.email) >= 0));
             return temPermResp
               ? '<span class="card-ref-link" data-evid="' + esc(ev.id) + '" onclick="event.stopPropagation();_abrirModalResponsaveis(\'' + esc(ev.id) + '\')" title="Clique para definir responsável"># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>'
               : '<span class="card-ref-link" style="cursor:default;pointer-events:none;opacity:0.4" title=""># ' + esc((ev.contrato_id || ev.id).substring(0, 8).toUpperCase()) + '</span>';
@@ -2565,52 +2592,31 @@ function abrirPainelAdmin() {
             </div>\
           </div>\
           <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
-            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Permissões</div>\
-            <div style="font-size:0.68rem;color:#555;margin-bottom:12px">Controle quem pode acessar cada funcionalidade do painel.</div>\
-            <details style="margin-bottom:8px">\
-              <summary style="font-size:0.73rem;color:#aaa;cursor:pointer;padding:6px 0;list-style:none">▸ Botão de Orçamentos</summary>\
-              <div style="padding-top:8px">\
-                <div style="font-size:0.67rem;color:#555;margin-bottom:8px">Quem pode ver o botão de acesso à página de orçamentos.</div>\
-                <div id="adm-perm-lista" style="margin-bottom:8px"><div style="font-size:0.73rem;color:#555">Carregando...</div></div>\
-                <div style="display:flex;gap:6px">\
-                  <input id="adm-perm-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.73rem;padding:6px 8px;outline:none;box-sizing:border-box" />\
-                  <button onclick="_admPermAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;cursor:pointer">+</button>\
+            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Níveis de Acesso</div>\
+            <div style="font-size:0.68rem;color:#555;margin-bottom:14px">Defina o nível de cada usuário acima. As permissões são aplicadas automaticamente.</div>\
+            <div style="display:flex;flex-direction:column;gap:8px">\
+              <div style="background:#0e0e0e;border-radius:6px;padding:10px 12px">\
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">\
+                  <span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.73rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.08em">ADM</span>\
+                  <span style="font-size:0.65rem;color:#444">Acesso total</span>\
                 </div>\
+                <div style="font-size:0.67rem;color:#555;line-height:1.7">✓ Ver todos os eventos &nbsp;✓ Botão Orçamentos<br>✓ Modo Editor &nbsp;✓ Histórico<br>✓ Seleção de Responsáveis &nbsp;✓ Painel Admin</div>\
               </div>\
-            </details>\
-            <details style="margin-bottom:8px">\
-              <summary style="font-size:0.73rem;color:#aaa;cursor:pointer;padding:6px 0;list-style:none">▸ Modo Editor</summary>\
-              <div style="padding-top:8px">\
-                <div style="font-size:0.67rem;color:#555;margin-bottom:8px">Quem pode ativar a edição de campos dos cards.</div>\
-                <div id="adm-perm-editor-lista" style="margin-bottom:8px"><div style="font-size:0.73rem;color:#555">Carregando...</div></div>\
-                <div style="display:flex;gap:6px">\
-                  <input id="adm-perm-editor-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.73rem;padding:6px 8px;outline:none;box-sizing:border-box" />\
-                  <button onclick="_admPermEditorAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;cursor:pointer">+</button>\
+              <div style="background:#0e0e0e;border-radius:6px;padding:10px 12px">\
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">\
+                  <span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.73rem;font-weight:700;color:#C8A94A;text-transform:uppercase;letter-spacing:0.08em">Gerente</span>\
+                  <span style="font-size:0.65rem;color:#444">Acesso parcial</span>\
                 </div>\
+                <div style="font-size:0.67rem;color:#555;line-height:1.7">✓ Ver todos os eventos &nbsp;✓ Botão Orçamentos<br>✓ Seleção de Responsáveis<br><span style="color:#333">— Modo Editor &nbsp;— Histórico &nbsp;— Painel Admin</span></div>\
               </div>\
-            </details>\
-            <details>\
-              <summary style="font-size:0.73rem;color:#aaa;cursor:pointer;padding:6px 0;list-style:none">▸ Histórico</summary>\
-              <div style="padding-top:8px">\
-                <div style="font-size:0.67rem;color:#555;margin-bottom:8px">Quem pode acessar a aba de histórico.</div>\
-                <div id="adm-perm-hist-lista" style="margin-bottom:8px"><div style="font-size:0.73rem;color:#555">Carregando...</div></div>\
-                <div style="display:flex;gap:6px">\
-                  <input id="adm-perm-hist-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.73rem;padding:6px 8px;outline:none;box-sizing:border-box" />\
-                  <button onclick="_admPermHistAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;cursor:pointer">+</button>\
+              <div style="background:#0e0e0e;border-radius:6px;padding:10px 12px">\
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">\
+                  <span style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.73rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em">Colaborador</span>\
+                  <span style="font-size:0.65rem;color:#444">Acesso restrito</span>\
                 </div>\
+                <div style="font-size:0.67rem;color:#555;line-height:1.7">✓ Eventos onde é responsável<br><span style="color:#333">— Todas as demais funcionalidades</span></div>\
               </div>\
-            </details>\
-            <details>\
-              <summary style="font-size:0.73rem;color:#aaa;cursor:pointer;padding:6px 0;list-style:none">▸ Seleção de Responsáveis</summary>\
-              <div style="padding-top:8px">\
-                <div style="font-size:0.67rem;color:#555;margin-bottom:8px">Quem pode selecionar o usuário responsável por cada evento.</div>\
-                <div id="adm-perm-resp-lista" style="margin-bottom:8px"><div style="font-size:0.73rem;color:#555">Carregando...</div></div>\
-                <div style="display:flex;gap:6px">\
-                  <input id="adm-perm-resp-novo-email" type="email" placeholder="novo@email.com" style="flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:\'Barlow\',sans-serif;font-size:0.73rem;padding:6px 8px;outline:none;box-sizing:border-box" />\
-                  <button onclick="_admPermRespAdicionar()" style="background:#7B22B8;color:#fff;border:none;border-radius:4px;padding:6px 12px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.7rem;font-weight:800;text-transform:uppercase;cursor:pointer">+</button>\
-                </div>\
-              </div>\
-            </details>\
+            </div>\
           </div>\
         </div>\
         <div id="adm-panel-veic" style="padding:20px 22px 22px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain">\
@@ -3217,10 +3223,18 @@ function _admUsersRender() {
     return;
   }
   lista.innerHTML = _usuariosCadastrados.map(function(u, i) {
-    return '<div class="adm-user-row">' +
+    var nivel = u.nivel || 'colaborador';
+    var nivelColors = { colaborador: '#555', gerente: '#C8A94A', adm: '#7B22B8' };
+    var nivelColor = nivelColors[nivel] || '#555';
+    return '<div class="adm-user-row" style="flex-wrap:wrap;gap:4px">' +
       '<div class="adm-user-dot" style="background:' + (u.cor || '#888') + ';cursor:pointer" onclick="_admUsersEditarCor(' + i + ')" title="Trocar cor"></div>' +
-      '<span class="adm-user-email">' + u.email + '</span>' +
-      '<button onclick="_admUsersRemover(' + i + ')" title="Remover" style="background:none;border:none;color:#555;cursor:pointer;font-size:1rem;padding:0 4px;line-height:1" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'">x</button>' +
+      '<span class="adm-user-email" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">' + u.email + '</span>' +
+      '<select onchange="_admUsersAlterarNivel(' + i + ',this.value)" style="background:#1a1a1a;border:1px solid #333;color:' + nivelColor + ';border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:2px 6px;cursor:pointer;flex-shrink:0">' +
+        '<option value="colaborador"' + (nivel === 'colaborador' ? ' selected' : '') + '>Colaborador</option>' +
+        '<option value="gerente"' + (nivel === 'gerente' ? ' selected' : '') + '>Gerente</option>' +
+        '<option value="adm"' + (nivel === 'adm' ? ' selected' : '') + '>ADM</option>' +
+      '</select>' +
+      '<button onclick="_admUsersRemover(' + i + ')" title="Remover" style="background:none;border:none;color:#555;cursor:pointer;font-size:1rem;padding:0 4px;line-height:1;flex-shrink:0" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'">x</button>' +
     '</div>';
   }).join('');
 }
@@ -3236,7 +3250,7 @@ function _admUsersAdicionar() {
   }
   var uid = email;
   if (_usuariosCadastrados.find(function(u) { return u.uid === uid; })) { input.value = ''; return; }
-  _usuariosCadastrados = _usuariosCadastrados.concat([{ uid: uid, email: email, cor: _admUserCorSelecionada }]);
+  _usuariosCadastrados = _usuariosCadastrados.concat([{ uid: uid, email: email, cor: _admUserCorSelecionada, nivel: 'colaborador' }]);
   input.value = '';
   _admUsersSalvar();
   var picker = document.getElementById('adm-users-color-picker');
@@ -3245,6 +3259,12 @@ function _admUsersAdicionar() {
 
 function _admUsersRemover(idx) {
   _usuariosCadastrados = _usuariosCadastrados.filter(function(_, i) { return i !== idx; });
+  _admUsersSalvar();
+}
+
+function _admUsersAlterarNivel(idx, novoNivel) {
+  if (!_usuariosCadastrados[idx]) return;
+  _usuariosCadastrados[idx].nivel = novoNivel;
   _admUsersSalvar();
 }
 
