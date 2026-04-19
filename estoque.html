@@ -7824,12 +7824,16 @@ function renderEventosAndamento() {
   document.body.classList.add('has-ev-sidebar');
   if (count) count.textContent = eventosAndamento.length + ' ativo' + (eventosAndamento.length !== 1 ? 's' : '');
 
-  scroll.innerHTML = todos.map(function(ev) {
-    var isStaging = !_eventosAndamento[ev.id] && !!_eventosStagingCarga[ev.id];
-    // Staging e andamento usam o mesmo visual de card do painel
-    var cardHtml = _buildEvAndamentoCard(ev);
-    if (isStaging) {
-      // Adiciona badge azul e botão remover ao card de staging
+  // Renderiza andamento primeiro, depois separador + staging
+  var andamentoHtml = eventosAndamento.map(function(ev) {
+    return _buildEvAndamentoCard(ev);
+  }).join('');
+
+  var stagingHtml = '';
+  if (eventosStaging.length) {
+    var separador = '<div class="ev-section-separator"><div class="ev-section-separator-pulse"></div>Montando carga</div>';
+    stagingHtml = separador + eventosStaging.map(function(ev) {
+      var cardHtml = _buildEvAndamentoCard(ev);
       cardHtml = cardHtml.replace(
         'class="evento-card"',
         'class="evento-card" style="border-color:rgba(74,144,217,0.4)"'
@@ -7837,9 +7841,11 @@ function renderEventosAndamento() {
         '<div class="card-summary">',
         '<div class="ev-card-staging-badge">Preparando carga</div><div class="card-summary">'
       );
-    }
-    return cardHtml;
-  }).join('');
+      return cardHtml;
+    }).join('');
+  }
+
+  scroll.innerHTML = andamentoHtml + stagingHtml;
 
   _bindEvAndamentoCards();
 
