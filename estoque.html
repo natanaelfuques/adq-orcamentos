@@ -7118,6 +7118,7 @@ function _atualizarCargaDOM(evId) {
       return '<div class="card-item">' +
         '<div class="item-check" style="cursor:default;flex-shrink:0"></div>' +
         '<span class="item-text">' + label + '</span>' +
+        '<button style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:#888;flex-shrink:0;line-height:1;" title="Riscar" onclick="event.stopPropagation();var it=this.closest(\'.card-item\');it.classList.toggle(\'item-removido\');this.style.color=it.classList.contains(\'item-removido\')?\' + \'#4AC87A\' + \':\'#888\'">&times;</button>' +
         '<button class="card-carga-del" onclick="event.stopPropagation();_removerCargaItem(\'' + evId + '\',\'' + it.eqId + '\')" title="Remover da carga">&times;</button>' +
       '</div>';
     }).join('');
