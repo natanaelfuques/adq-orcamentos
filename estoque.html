@@ -274,13 +274,8 @@
   .btn-add-eq:active { transform: translateY(0); }
 
   /* ── CATEGORY TABS ── */
-  .cat-tabs {
-    display: flex;
-    gap: 6px;
-    padding: 0 24px 16px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
+  /* cat-tabs agora é inline na section-tabs-bar */
+  .cat-tabs { display: contents; }
   .cat-tabs::-webkit-scrollbar { display: none; }
 
   .cat-tab {
@@ -316,7 +311,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 8px;
-    padding: 0 24px 32px;
+    padding: 16px 24px 32px;
   }
 
   /* ── EQUIPMENT CARD ── */
@@ -930,6 +925,7 @@
     white-space: nowrap;
   }
   .toast.error { background: #1a0a0a; border-color: var(--red); color: var(--red); }
+  .toast.has-undo { pointer-events: auto; }
   @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
   /* ── SECTION TITLE ── */
@@ -1320,21 +1316,23 @@
 .kit-remove-zone {
   border: 2px dashed rgba(224,92,92,0.35);
   border-radius: 8px;
-  background: transparent;
-  color: rgba(224,92,92,0.5);
+  background: rgba(224,92,92,0.03);
+  color: rgba(224,92,92,0.45);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   cursor: default;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-  min-height: 110px;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  grid-column: 1 / -1;
+  min-height: 52px;
+  user-select: none;
 }
 .kit-remove-zone.drag-over-remove { border-color: #e05c5c; background: rgba(224,92,92,0.07); color: #e05c5c; }
 
@@ -2151,7 +2149,7 @@
   /* ── KIT SLOT PANELS ── */
   .kit-slot-panel {
     background: var(--surface);
-    border: 1px solid var(--gold);
+    border: 1px solid rgba(74,144,217,0.45);
     border-radius: 8px;
     overflow: hidden;
     position: relative;
@@ -2210,21 +2208,6 @@
   .kit-slot-panel-body { padding: 7px; transition: max-height 0.2s ease, opacity 0.15s; overflow: hidden; }
   .kit-slot-panel.kit-collapsed .kit-slot-panel-body { display: none; }
   .kit-slot-panel-title .kit-chevron { transition: transform 0.2s; flex-shrink: 0; }
-.kit-nome-label { cursor: text; border-radius: 3px; padding: 1px 3px; transition: background 0.12s; }
-.kit-nome-label:hover { background: rgba(255,255,255,0.06); }
-.kit-nome-input {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(245,166,35,0.5);
-  border-radius: 3px;
-  color: var(--text);
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  letter-spacing: inherit;
-  padding: 1px 5px;
-  outline: none;
-  width: 130px;
-}
   .kit-slot-panel.kit-collapsed .kit-slot-panel-title .kit-chevron { transform: rotate(-90deg); }
   .kit-slot-grid-3x3 {
     display: grid;
@@ -2314,10 +2297,20 @@
     text-transform: uppercase;
     cursor: pointer;
     padding: 10px 16px 8px;
-    transition: color 0.15s, border-color 0.15s;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
     margin-bottom: -1px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .section-tab-btn:hover { color: #ccc; }
+  /* Abas primárias (Equipamentos / Acessórios) */
+  .section-tab-btn.primary-tab.active {
+    color: #fff;
+    border-bottom-color: rgba(74,144,217,0.9);
+    background: rgba(74,144,217,0.08);
+  }
+  .section-tab-btn.primary-tab:hover { color: #ccc; background: rgba(74,144,217,0.04); }
+  /* Abas de categoria — mais sutis */
   .section-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
   .section-tabs-right {
     display: flex;
@@ -2325,6 +2318,24 @@
     gap: 6px;
     padding: 6px 0;
   }
+  .section-tabs-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--border2);
+    margin: 0 4px;
+    flex-shrink: 0;
+  }
+  .section-tab-btn .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 0.62rem;
+    margin-left: 5px;
+  }
+  .section-tab-btn.active .tab-count { background: rgba(200,169,74,0.18); }
   @media (max-width: 600px) {
     .section-tabs-bar { padding: 0 12px; }
     .kit-slot-grid-3x3 { gap: 4px; }
@@ -2466,13 +2477,6 @@
     </select>
   </div>
 
-  <!-- CATEGORY TABS -->
-  <div class="cat-tabs" id="cat-tabs">
-    <button class="cat-tab active" data-cat="todos" onclick="filtrarCategoria('todos', this)">
-      Todos <span class="cat-count" id="cnt-todos">0</span>
-    </button>
-  </div>
-
   <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
     <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
@@ -2488,12 +2492,14 @@
     </div>
   </div>
 
-  <!-- SECTION TABS (Equipamentos / Acessórios) -->
-  <div class="section-tabs-bar">
-    <div class="section-tabs-left">
-      <button class="section-tab-btn active" id="tab-btn-equipamentos" onclick="switchTabSecao('equipamentos')">Equipamentos</button>
-      <button class="section-tab-btn" id="tab-btn-acessorios" onclick="switchTabSecao('acessorios')">Acessórios</button>
+  <!-- SECTION TABS (Equipamentos / Acessórios / Categorias) -->
+  <div class="section-tabs-bar" style="overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap">
+    <div class="section-tabs-left" style="flex-shrink:0">
+      <button class="section-tab-btn primary-tab active" id="tab-btn-equipamentos" onclick="switchTabSecao('equipamentos')">Equipamentos <span class="tab-count" id="cnt-primary-equipamentos"></span></button>
+      <button class="section-tab-btn primary-tab" id="tab-btn-acessorios" onclick="switchTabSecao('acessorios')">Acessórios <span class="tab-count" id="cnt-primary-acessorios"></span></button>
     </div>
+    <div class="section-tabs-sep" id="cat-tabs-sep" style="display:none"></div>
+    <div id="cat-tabs" style="display:flex;align-items:stretch;gap:0;overflow:visible;flex-shrink:0"></div>
     <div class="section-tabs-right"></div>
   </div>
 
@@ -2506,7 +2512,7 @@
   </div>
 
   <!-- TAB PANEL: Acessórios -->
-  <div id="tab-panel-acessorios" style="display:none;padding:0 24px 24px">
+  <div id="tab-panel-acessorios" style="display:none;padding:16px 24px 24px">
     <div class="acessorios-grid" id="acessorios-grid">
       <!-- renderizado por JS -->
     </div>
@@ -3128,30 +3134,80 @@ function _renderStatsAjustados() {
 
 function renderCatTabs() {
   var equips = Object.values(_equipamentos);
-  var catCount = {};
+  var acessorios = Object.values(_acessorios);
+  var isAcessorios = _tabSecaoAtiva === 'acessorios';
+
+  // Contagem por categoria para a aba ATIVA
+  var catCountEq = {};
   equips.forEach(function(e) {
-    if (e.categoria) {
-      catCount[e.categoria] = (catCount[e.categoria] || 0) + 1;
-    }
+    if (e.categoria) catCountEq[e.categoria] = (catCountEq[e.categoria] || 0) + 1;
+  });
+  var catCountAc = {};
+  acessorios.forEach(function(a) {
+    if (a.categoria) catCountAc[a.categoria] = (catCountAc[a.categoria] || 0) + 1;
   });
 
+  // União de todas as categorias (de ambos)
+  var todasCats = Array.from(new Set(
+    Object.keys(catCountEq).concat(Object.keys(catCountAc))
+  )).sort();
+
   var container = document.getElementById('cat-tabs');
-  var totalBtn = '<button class="cat-tab' + (_catAtual === 'todos' ? ' active' : '') + '" data-cat="todos" onclick="filtrarCategoria(\'todos\', this)">Todos <span class="cat-count" id="cnt-todos">' + equips.length + '</span></button>';
-  var catBtns = Object.keys(catCount).sort().map(function(cat) {
+  var sep = document.getElementById('cat-tabs-sep');
+
+  if (!todasCats.length) {
+    if (container) container.innerHTML = '';
+    if (sep) sep.style.display = 'none';
+    return;
+  }
+
+  if (sep) sep.style.display = '';
+
+  // Total visível na aba ativa
+  var totalAtivo = isAcessorios ? acessorios.length : equips.length;
+
+  var totalBtn = '<button class="section-tab-btn' + (_catAtual === 'todos' ? ' active' : '') +
+    '" data-cat="todos" onclick="filtrarCategoria(\'todos\', this)">' +
+    'Todos <span class="tab-count" id="cnt-todos">' + totalAtivo + '</span></button>';
+
+  // Atualizar contadores primários
+  var cntPrimEq = document.getElementById('cnt-primary-equipamentos');
+  if (cntPrimEq) cntPrimEq.textContent = equips.length;
+  var cntPrimAc = document.getElementById('cnt-primary-acessorios');
+  if (cntPrimAc) cntPrimAc.textContent = acessorios.length;
+
+  var catBtns = todasCats.map(function(cat) {
     var ativo = _catAtual === cat ? ' active' : '';
-    var svgIcon = CATEGORIAS_SVG[cat] ? '<span class="cat-svg-icon">' + CATEGORIAS_SVG[cat] + '</span>' : '';
-    return '<button class="cat-tab' + ativo + '" data-cat="' + esc(cat) + '" onclick="filtrarCategoria(\'' + esc(cat) + '\', this)">' +
+    var svgIcon = CATEGORIAS_SVG[cat] ? '<span class="cat-svg-icon" style="margin-right:3px">' + CATEGORIAS_SVG[cat] + '</span>' : '';
+    // Contagem conforme aba ativa; zero = não tem nada nessa cat para esta aba
+    var count = isAcessorios ? (catCountAc[cat] || 0) : (catCountEq[cat] || 0);
+    var zeroStyle = count === 0 ? ' style="opacity:0.35"' : '';
+    return '<button class="section-tab-btn' + ativo + '"' + zeroStyle + ' data-cat="' + esc(cat) +
+      '" onclick="filtrarCategoriaAba(\'' + esc(cat) + '\', this)">' +
       svgIcon + esc(cat) +
-      ' <span class="cat-count">' + catCount[cat] + '</span></button>';
+      '<span class="tab-count">' + count + '</span></button>';
   }).join('');
+
   container.innerHTML = totalBtn + catBtns;
 }
 
 function filtrarCategoria(cat, el) {
   _catAtual = cat;
-  document.querySelectorAll('.cat-tab').forEach(function(b) { b.classList.remove('active'); });
+  // Limpa active só nos botões de categoria (dentro do #cat-tabs)
+  var catContainer = document.getElementById('cat-tabs');
+  if (catContainer) catContainer.querySelectorAll('.section-tab-btn').forEach(function(b) { b.classList.remove('active'); });
   if (el) el.classList.add('active');
-  renderEquipamentos();
+  if (_tabSecaoAtiva === 'acessorios') {
+    renderAcessorios();
+  } else {
+    renderEquipamentos();
+  }
+}
+
+// Filtra categoria no painel ativo (Equipamentos ou Acessórios)
+function filtrarCategoriaAba(cat, el) {
+  // filtrarCategoria já renderiza o painel correto conforme _tabSecaoAtiva
+  filtrarCategoria(cat, el);
 }
 
 function filtrarStat(tipo) {
@@ -4242,6 +4298,30 @@ function toast(msg, isError) {
   setTimeout(function() { if (t.parentNode) t.remove(); }, 2800);
 }
 
+function toastUndo(msg, undoFn) {
+  var existing = document.getElementById('_toast');
+  if (existing) existing.remove();
+  var t = document.createElement('div');
+  t.id = '_toast';
+  t.className = 'toast';
+  t.style.cssText = 'display:flex;align-items:center;gap:10px';
+  var span = document.createElement('span');
+  span.textContent = msg;
+  t.appendChild(span);
+  if (undoFn) {
+    t.classList.add('has-undo');
+    var btn = document.createElement('button');
+    btn.textContent = 'Desfazer';
+    btn.style.cssText = "background:transparent;border:1px solid rgba(80,200,120,0.55);color:#50C878;border-radius:3px;padding:2px 9px;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;flex-shrink:0;transition:background 0.15s";
+    btn.onmouseover = function() { btn.style.background = 'rgba(80,200,120,0.12)'; };
+    btn.onmouseout  = function() { btn.style.background = 'transparent'; };
+    btn.addEventListener('click', function() { undoFn(); t.remove(); });
+    t.appendChild(btn);
+  }
+  document.body.appendChild(t);
+  setTimeout(function() { if (t.parentNode) t.remove(); }, 5000);
+}
+
 // ESC para fechar modais
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') fecharTodosModais();
@@ -4770,11 +4850,15 @@ function switchTabSecao(tab) {
     if (btnEq) btnEq.classList.add('active');
     if (btnAc) btnAc.classList.remove('active');
     if (tabContainer) tabContainer.style.minHeight = '';
+    renderCatTabs();
+    renderEquipamentos();
   } else {
     if (panelEq) panelEq.style.display = 'none';
     if (panelAc) panelAc.style.display = '';
     if (btnEq) btnEq.classList.remove('active');
     if (btnAc) btnAc.classList.add('active');
+    renderCatTabs();
+    renderAcessorios();
   }
 }
 
@@ -4787,8 +4871,13 @@ function renderAcessorios() {
     return (a.nome || '').localeCompare(b.nome || '');
   });
 
+  // Filtrar por categoria ativa
+  if (_catAtual && _catAtual !== 'todos') {
+    lista = lista.filter(function(a) { return a.categoria === _catAtual; });
+  }
+
   if (!lista.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:28px 24px;color:#444;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em">Nenhum acessório cadastrado</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:28px 24px;color:#444;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em">Nenhum acessório nesta categoria</div>';
     return;
   }
 
@@ -4859,7 +4948,7 @@ function _abrirModalFormAcessorio(a) {
       return '<option value="' + esc(e.nome) + '"' + (a.equipamento === e.nome ? ' selected' : '') + '>' + esc(e.nome) + '</option>';
     }).join('');
 
-  var catOptions = ['Som', 'Iluminação', 'Microfone', 'Cabeamento', 'Estrutura', 'Vídeo', 'Potência', 'Periférico', 'Veículo', 'Outros'].map(function(c) {
+  var catOptions = _todasCategorias().map(function(c) {
     return '<option value="' + c + '"' + (a.categoria === c ? ' selected' : '') + '>' + c + '</option>';
   }).join('');
 
@@ -5037,20 +5126,17 @@ function renderKits() {
   if (!grid) return;
 
   var kitsArr = Object.values(_kits);
-  var html = '';
+  var svgRemove = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
+  var html = '<div class="kit-remove-zone" id="kit-remove-zone"' +
+    ' ondragover="_kitRemoveZoneOver(event)"' +
+    ' ondragleave="_kitRemoveZoneLeave(event)"' +
+    ' ondrop="_kitRemoveZoneDrop(event)">' +
+    svgRemove +
+    'Arraste aqui para remover' +
+  '</div>';
 
   kitsArr.forEach(function(kit) {
     var itens = Array.isArray(kit.itens) ? kit.itens : [];
-    var temZero = itens.some(function(it) {
-      var eq = _equipamentos[it.equipId];
-      return eq && (eq.qtd_disponivel || 0) < (it.qtd || 1);
-    });
-    var temWarn = itens.some(function(it) {
-      var eq = _equipamentos[it.equipId];
-      return eq && (eq.qtd_manutencao || 0) > 0;
-    });
-    var borderStyle = temZero ? 'border-color:var(--red)' : (temWarn ? 'border-color:var(--amber)' : '');
-
     // 9 slots 3×3
     var slots = '';
     for (var s = 0; s < 9; s++) {
@@ -5059,11 +5145,18 @@ function renderKits() {
         var eq = _equipamentos[it.equipId];
         if (eq) {
           var svgStr = _getEqSvg(eq.emoji, 18);
-          slots += '<div class="kit-slot-item filled" draggable="true" style="position:relative;cursor:grab" onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" " ondragstart="_kitSlotDragStart(event,\'" + esc(kit.id) + "\',\'" + esc(it.equipId) + "\')" ondragend="_kitSlotDragEnd()" title="' + esc(eq.nome || '') + '">' +
+          slots += '<div class="kit-slot-item filled" draggable="true" ' +
+          'style="position:relative;cursor:grab" ' +
+          'data-kit-id="' + esc(kit.id) + '" data-equip-id="' + esc(it.equipId) + '" ' +
+          'onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" ' +
+          'onclick="event.stopPropagation();abrirModalEditarKit(this.dataset.kitId)" ' +
+          'ondragstart="_kitSlotDragStart(this,event)" ' +
+          'ondragend="_kitSlotDragEnd(event)" ' +
+          'title="' + esc(eq.nome || '') + '">'+
             '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
             '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
             '<div class="kit-slot-item-name">' + esc(eq.nome || '') + '</div>' +
-            '<button class="kit-item-del-btn" onclick="event.stopPropagation();removerItemDoKit(\\\'' + esc(kit.id) + '\\\',\\\'' + esc(it.equipId) + '\\\')" title="Remover item" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);border:none;color:#e05c5c;cursor:pointer;border-radius:3px;width:16px;height:16px;font-size:0.75rem;line-height:16px;text-align:center;padding:0;opacity:0;transition:opacity 0.15s">&times;</button>' +
+
           '</div>';
         } else {
           slots += '<div class="kit-slot-item empty"></div>';
@@ -5073,21 +5166,22 @@ function renderKits() {
       }
     }
 
+    var svgEdit = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
     var svgChevron = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
     html += '<div class="kit-slot-panel kit-folder" id="kit-card-' + esc(kit.id) + '" draggable="true"' +
-      (borderStyle ? ' style="' + borderStyle + '"' : '') +
+
       ' ondragover="kitFolderOver(event,\'' + esc(kit.id) + '\')"' +
       ' ondragleave="kitFolderLeave(event,\'' + esc(kit.id) + '\')"' +
       ' ondrop="kitFolderDrop(event,\'' + esc(kit.id) + '\')"' +
       ' ondragstart="_kitDragStart(event,\'' + esc(kit.id) + '\')" ondragend="_kitDragEnd()">' +
       '<div class="kit-slot-panel-header">' +
         '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_toggleKitPanel(\'' + esc(kit.id) + '\')">' +
-          svgChevron +
-          '<span class="kit-nome-label" onclick="event.stopPropagation();_editarNomeKit(\'' + esc(kit.id) + '\')">' + esc(kit.nome || 'Kit') + '</span>' +
+          svgChevron + esc(kit.nome || 'Kit') +
         '</div>' +
         '<div class="kit-slot-panel-actions">' +
-          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();excluirKit(\'' + esc(kit.id) + '\')" title="Excluir kit" style="color:var(--red);font-size:1.1rem;line-height:1;padding:0 3px">&times;</button>' +
+          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="Editar">' + svgEdit + '</button>' +
+
         '</div>' +
       '</div>' +
       '<div class="kit-slot-panel-body">' +
@@ -5100,14 +5194,6 @@ function renderKits() {
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
     'Novo kit' +
   '</div>';
-  html += '<div class="kit-remove-zone" id="kit-remove-zone"' +
-    ' ondragover="_kitRemoveZoneOver(event)"' +
-    ' ondragleave="_kitRemoveZoneLeave(event)"' +
-    ' ondrop="_kitRemoveZoneDrop(event)">' +
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
-    'Remover do kit' +
-  '</div>';
-
   grid.innerHTML = html;
 
   // Restaura estado de colapso
@@ -5239,7 +5325,7 @@ function _getKitBadgesForEq(eqId) {
     if (!Array.isArray(kit.itens)) return;
     var found = kit.itens.some(function(it) { return it.equipId === eqId; });
     if (found) {
-      html += '<span class="eq-kit-badge" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</span>';
+      html += '<span class="eq-kit-badge" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</span>';
     }
   });
   return html;
@@ -5552,23 +5638,40 @@ function atualizarAcessorioItem(eqId, valor) {
 
 function excluirKit(kitId) {
   if (!confirm('Excluir este kit?')) return;
+  excluirKitSemConfirm(kitId);
+}
+function excluirKitSemConfirm(kitId) {
+  var kitBackup = Object.assign({}, _kits[kitId]);
+  var backupId = kitId;
+  delete kitBackup.id;
   db.collection('kits').doc(kitId).delete()
-    .then(function() { toast('Kit excluído'); })
+    .then(function() {
+      toastUndo('Kit excluído', function() {
+        db.collection('kits').doc(backupId).set(kitBackup)
+          .catch(function(e) { toast('Erro ao desfazer: ' + e.message, true); });
+      });
+    })
     .catch(function(e) { toast('Erro: ' + e.message, true); });
 }
 
 function removerItemDoKit(kitId, eqId) {
   var kit = _kits[kitId];
   if (!kit) return;
-  var novosItens = (kit.itens || []).filter(function(it) { return it.equipId !== eqId; });
+  var itensAntigos = (kit.itens || []).slice();
+  var novosItens   = itensAntigos.filter(function(it) { return it.equipId !== eqId; });
   db.collection('kits').doc(kitId).update({ itens: novosItens })
-    .then(function() { toast('Item removido do kit'); })
+    .then(function() {
+      toastUndo('Item removido do kit', function() {
+        db.collection('kits').doc(kitId).update({ itens: itensAntigos })
+          .catch(function(e) { toast('Erro ao desfazer: ' + e.message, true); });
+      });
+    })
     .catch(function(e) { toast('Erro: ' + e.message, true); });
 }
 
 function _kitSlotHover(el, show) {
   var btn = el.querySelector('.kit-item-del-btn');
-  if (btn) btn.style.display = show ? 'block' : 'none';
+  if (btn) btn.style.opacity = show ? '1' : '0';
 }
 function removerItemKit(eqId) {
   _kitItensAtual = _kitItensAtual.filter(function(it) { return it.equipId !== eqId; });
@@ -7128,6 +7231,8 @@ body.has-ev-sidebar header { margin-right: -272px; }
 .ev-andamento-scroll .card-item.item-done .item-text { }
 .ev-andamento-scroll .card-item.item-removido .item-text { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
 .ev-andamento-scroll .item-extra-tag { font-size: 0.85rem; font-weight: 700; color: #4A90C8; flex-shrink: 0; line-height: 1; }
+  .card-item.drag-reorder-over-top { border-top: 2px solid #4A90C8 !important; }
+  .card-item.drag-reorder-over-bottom { border-bottom: 2px solid #4A90C8 !important; }
 .ev-andamento-scroll .btn-add-item { display: flex; align-items: center; gap: 5px; margin-top: 8px; background: transparent; border: 1px dashed var(--border); color: var(--muted); border-radius: 4px; padding: 5px 10px; font-family: 'Barlow', sans-serif; font-size: 0.72rem; cursor: pointer; width: 100%; text-align: left; transition: all 0.15s; }
 .ev-andamento-scroll .btn-add-item:hover { border-color: var(--andamento, #C8A94A); color: var(--andamento, #C8A94A); }
 .ev-andamento-scroll .btn-finalizar-carga { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 10px; background: rgba(74,144,217,0.08); border: 1px solid rgba(74,144,217,0.4); color: #4A90D9; border-radius: 4px; padding: 6px 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; width: 100%; transition: all 0.15s; }
@@ -7204,7 +7309,12 @@ var _evEqOrigCounts = {};    // { eqId: {qtd_disponivel,qtd_em_uso} } — antes 
 
 function _getCargaTotalEq(eqId) {
   var total = 0;
+  // Itens arrastados visualmente (sistema de carga local)
   Object.values(_cargaEvento).forEach(function(c) { total += (c[eqId] || 0); });
+  // Itens dos eventos abertos (itens_extras / servicos não riscados)
+  Object.values(_evEqDragItems).forEach(function(ev) {
+    if (ev[eqId]) total += ev[eqId].qty;
+  });
   return total;
 }
 function _atualizarCardEqDOM(eqId) {
@@ -7432,7 +7542,7 @@ function _buildEvAndamentoCard(ev) {
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Excluir item permanentemente">&times;</button>' +
+
         '</div>';
     }).join('');
     var extrasRowHtml = (ev.itens_extras || []).map(function(s, i) {
@@ -7441,8 +7551,9 @@ function _buildEvAndamentoCard(ev) {
       return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '" draggable="true" data-item-ev="' + esc(ev.id) + '" data-item-txt="' + esc(s) + '">' +
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
+        '<span class="item-extra-tag">+</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Excluir item permanentemente">&times;</button>' +
+
         '</div>';
     }).join('');
 
@@ -7614,7 +7725,11 @@ function _adicionarItemExtraEv(evId, texto) {
   var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
   if (!ev) return;
   var extras = (ev.itens_extras || []).concat([texto]);
+  ev.itens_extras = extras; // atualiza localmente para evitar dessincronização
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+  // Recalcula contagens imediatamente (prefixo 2x, 3x...)
+  _recalcularCargaEvento(evId);
+  renderEventosAndamento();
 }
 
 function _abrirCargaEvento(evId) {
@@ -7626,50 +7741,96 @@ function _abrirCargaEvento(evId) {
     var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
     if (nome) nomeToId[nome] = eqId;
   });
-  if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
-  // Aplica cada item do evento nos counts de equipamento
-  (ev.itens_extras || []).forEach(function(item) {
+  _evEqDragItems[evId] = {}; // reset antes de reconstruir
+  // Reconstrói a partir dos itens ativos (não riscados) do evento
+  var itensExtrasRem = ev.itens_extras_removidos || {};
+  var itensOrigRem   = ev.itens_removidos || {};
+  var afetados = {};
+
+  (ev.itens_extras || []).forEach(function(item, i) {
+    if (itensExtrasRem[i]) return; // riscado, ignora
     var m = item.match(/^(\d+)x\s+(.+)$/);
     var qty = m ? parseInt(m[1]) : 1;
     var nome = (m ? m[2] : item).trim();
     var eqId = nomeToId[nome.toLowerCase()];
-    if (!eqId) return;
-    var eqObj = _equipamentos[eqId];
-    if (!eqObj) return;
-    if (!_evEqOrigCounts[eqId]) {
-      _evEqOrigCounts[eqId] = { qtd_disponivel: eqObj.qtd_disponivel || 0, qtd_em_uso: eqObj.qtd_em_uso || 0 };
-    }
-    _evEqDragItems[evId][eqId] = { nome: nome, qty: qty };
-    // Recalcula total aplicado (pode ter drags da sessao atual tambem)
-    var totalApplied = 0;
-    Object.keys(_evEqDragItems).forEach(function(eid) {
-      if (_evEqDragItems[eid][eqId]) totalApplied += _evEqDragItems[eid][eqId].qty;
-    });
-    var origDisp = _evEqOrigCounts[eqId].qtd_disponivel;
-    var origUso  = _evEqOrigCounts[eqId].qtd_em_uso;
-    var aplicado = Math.min(totalApplied, origDisp);
-    eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
-    eqObj.qtd_em_uso     = origUso + aplicado;
-    _atualizarCardEqDOM(eqId);
+    if (!eqId || !_equipamentos[eqId]) return;
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
+    afetados[eqId] = true;
   });
+
+  (ev.servicos || []).forEach(function(item, i) {
+    if (itensOrigRem[i]) return; // riscado, ignora
+    var m = item.match(/^(\d+)x\s+(.+)$/);
+    var qty = m ? parseInt(m[1]) : 1;
+    var nome = (m ? m[2] : item).trim();
+    var eqId = nomeToId[nome.toLowerCase()];
+    if (!eqId || !_equipamentos[eqId]) return;
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
+    afetados[eqId] = true;
+  });
+
+  Object.keys(afetados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+}
+
+// Ajusta contagem de um equipamento pelo texto do item (ex: "2x Par LED RGB")
+// delta = +1 para alocar (riscar restaurado), -1 para liberar (riscar ativado)
+// Reconstrói _evEqDragItems[evId] a partir dos itens ATIVOS (não riscados)
+// e atualiza os cards via _atualizarCardEqDOM (que usa _getCargaTotalEq).
+// Não modifica _equipamentos nem escreve no Firestore.
+function _recalcularCargaEvento(evId) {
+  var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
+  if (!ev) return;
+
+  var nomeToId = {};
+  Object.keys(_equipamentos).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
+    if (nome) nomeToId[nome] = eqId;
+  });
+
+  var afetadosAntes = _evEqDragItems[evId] ? Object.keys(_evEqDragItems[evId]) : [];
+  var novasCounts = {};
+  var itensExtrasRem = ev.itens_extras_removidos || {};
+  var itensOrigRem   = ev.itens_removidos || {};
+
+  (ev.itens_extras || []).forEach(function(s, i) {
+    if (itensExtrasRem[i]) return;
+    var m = s.match(/^(\d+)x\s+(.+)$/);
+    var qty = m ? parseInt(m[1]) : 1;
+    var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
+    if (!eqId) return;
+    novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
+  });
+
+  (ev.servicos || []).forEach(function(s, i) {
+    if (itensOrigRem[i]) return;
+    var m = s.match(/^(\d+)x\s+(.+)$/);
+    var qty = m ? parseInt(m[1]) : 1;
+    var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
+    if (!eqId) return;
+    novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
+  });
+
+  _evEqDragItems[evId] = {};
+  Object.keys(novasCounts).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: novasCounts[eqId] };
+  });
+
+  var afetados = {};
+  afetadosAntes.forEach(function(id) { afetados[id] = true; });
+  Object.keys(novasCounts).forEach(function(id) { afetados[id] = true; });
+  Object.keys(afetados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
 }
 
 function _fecharCargaEvento(evId) {
-  // Restaura counts de todos equipamentos afetados por este evento
+  // Coleta eqIds afetados antes de limpar
   var dragItems = _evEqDragItems[evId];
-  if (dragItems) {
-    Object.keys(dragItems).forEach(function(eqId) {
-      var orig = _evEqOrigCounts[eqId];
-      var eq   = _equipamentos[eqId];
-      if (eq && orig) {
-        eq.qtd_disponivel = orig.qtd_disponivel;
-        eq.qtd_em_uso     = orig.qtd_em_uso;
-        _atualizarCardEqDOM(eqId);
-        delete _evEqOrigCounts[eqId];
-      }
-    });
-    delete _evEqDragItems[evId];
-  }
+  var afetados = dragItems ? Object.keys(dragItems) : [];
+  // Limpa alocações deste evento
+  delete _evEqDragItems[evId];
+  delete _evEqOrigCounts[evId]; // não é mais usado mas limpa por segurança
+  // Atualiza cards — _getCargaTotalEq agora retornará menos, mostrando os itens liberados
+  afetados.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
   _resetarCargaEvento(evId);
 }
 
@@ -7682,7 +7843,7 @@ function _bindEvAndamentoCards() {
       if (e.target.closest('.item-check') || e.target.closest('.veiculo-icon-btn') ||
           e.target.closest('.btn-add-item') || e.target.closest('.btn-add-item-ok') ||
           e.target.closest('.btn-wa-painel') || e.target.closest('.item-rem-ev-btn') ||
-          e.target.closest('.item-del-ev-btn') || e.target.closest('.card-carga-del')) return;
+          e.target.closest('.card-carga-del')) return;
       var card = summary.closest('.evento-card');
       if (!card) return;
       var wasExpanded = card.classList.contains('expanded');
@@ -7744,21 +7905,29 @@ function _bindEvAndamentoCards() {
       var tipo = btn.getAttribute('data-tipo');
       var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
       if (!evObj) return;
+
+      var isNowRemoved;
+
       if (tipo === 'orig') {
         var rem = Object.assign({}, evObj.itens_removidos || {});
         rem[idx] = !rem[idx];
         evObj.itens_removidos = rem;
+        isNowRemoved = rem[idx];
         db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
       } else {
         var remE = Object.assign({}, evObj.itens_extras_removidos || {});
         remE[idx] = !remE[idx];
         evObj.itens_extras_removidos = remE;
+        isNowRemoved = remE[idx];
         db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
       }
+
+      // Recalcula contagens a partir dos itens ativos (não riscados) do evento
+      _recalcularCargaEvento(evId);
+
       // Update UI immediately
       var item = btn.closest('.card-item');
       if (item) {
-        var isNowRemoved = (tipo === 'orig') ? evObj.itens_removidos[idx] : evObj.itens_extras_removidos[idx];
         item.classList.toggle('item-removido', !!isNowRemoved);
         btn.style.color = isNowRemoved ? '#4AC87A' : '#555';
         btn.title = isNowRemoved ? 'Restaurar' : 'Riscar';
@@ -7771,9 +7940,85 @@ function _bindEvAndamentoCards() {
   scroll.querySelectorAll('.card-item[draggable]').forEach(function(item) {
     item.addEventListener('dragstart', function(e) {
       var txt = item.getAttribute('data-item-txt') || '';
-      e.dataTransfer.setData('text/plain', txt);
-      e.dataTransfer.setData('tipo', 'item_ev');
-      e.dataTransfer.effectAllowed = 'copy';
+      e.dataTransfer.effectAllowed = 'all';
+      // Captura dados pelo botão de riscar (item-rem-ev-btn), que sempre existe
+      var remBtn = item.querySelector('.item-rem-ev-btn');
+      if (remBtn) {
+        var evId   = remBtn.getAttribute('data-evid');
+        var rawIdx = remBtn.getAttribute('data-idx');
+        var tipo   = remBtn.getAttribute('data-tipo');
+        // Grava no dataTransfer para sobreviver ao dragend
+        e.dataTransfer.setData('text/plain', evId + '|' + rawIdx + '|' + tipo + '|' + txt);
+        e.dataTransfer.setData('tipo', 'item_ev');
+        _draggingItemData = {
+          evId: evId,
+          idx:  parseInt(rawIdx, 10),
+          tipo: tipo,
+          txt:  txt,
+          el:   item
+        };
+      } else {
+        e.dataTransfer.setData('text/plain', txt);
+        e.dataTransfer.setData('tipo', 'item_ev');
+      }
+    });
+    item.addEventListener('dragend', function() {
+      _draggingItemData = null;
+    });
+
+    // Reorder: dragover sobre outro card-item do mesmo evento
+    item.addEventListener('dragover', function(e) {
+      if (!_draggingItemData || _draggingItemData.tipo !== 'extra') return;
+      var remBtn = item.querySelector('.item-rem-ev-btn');
+      if (!remBtn) return;
+      var targetEvId = remBtn.getAttribute('data-evid');
+      if (targetEvId !== _draggingItemData.evId) return;
+      if (item === _draggingItemData.el) return;
+      e.preventDefault();
+      e.stopPropagation();
+      // Indicador visual: acima ou abaixo
+      var rect = item.getBoundingClientRect();
+      var mid  = rect.top + rect.height / 2;
+      item.classList.remove('drag-reorder-over-top', 'drag-reorder-over-bottom');
+      item.classList.add(e.clientY < mid ? 'drag-reorder-over-top' : 'drag-reorder-over-bottom');
+    });
+    item.addEventListener('dragleave', function() {
+      item.classList.remove('drag-reorder-over-top', 'drag-reorder-over-bottom');
+    });
+    item.addEventListener('drop', function(e) {
+      item.classList.remove('drag-reorder-over-top', 'drag-reorder-over-bottom');
+      if (!_draggingItemData || _draggingItemData.tipo !== 'extra') return;
+      var remBtn = item.querySelector('.item-rem-ev-btn');
+      if (!remBtn) return;
+      var targetEvId = remBtn.getAttribute('data-evid');
+      if (targetEvId !== _draggingItemData.evId) return;
+      var targetIdx = parseInt(remBtn.getAttribute('data-idx'), 10);
+      var fromIdx   = _draggingItemData.idx;
+      if (isNaN(targetIdx) || isNaN(fromIdx) || targetIdx === fromIdx) return;
+      e.preventDefault();
+      e.stopPropagation();
+      // Determina se inserir antes ou depois do alvo
+      var rect = item.getBoundingClientRect();
+      var insertBefore = e.clientY < rect.top + rect.height / 2;
+      var evId = _draggingItemData.evId;
+      var ev   = _eventosAndamento[evId] || _eventosStagingCarga[evId];
+      if (!ev) return;
+      var extras = (ev.itens_extras || []).slice();
+      var moved  = extras.splice(fromIdx, 1)[0];
+      var insertAt = targetIdx > fromIdx ? targetIdx - 1 : targetIdx;
+      if (!insertBefore) insertAt++;
+      insertAt = Math.max(0, Math.min(insertAt, extras.length));
+      extras.splice(insertAt, 0, moved);
+      // Reajusta removidos e ok para seguirem os indices
+      ev.itens_extras = extras;
+      ev.itens_extras_removidos = {};
+      if (db) db.collection('eventos_campo').doc(evId).update({
+        itens_extras: extras,
+        itens_extras_removidos: {}
+      });
+      _draggingItemData = null;
+      _recalcularCargaEvento(evId);
+      renderEventosAndamento();
     });
   });
 
@@ -7788,61 +8033,7 @@ function _bindEvAndamentoCards() {
     });
   });
 
-  // Botão X vermelho: excluir item permanentemente do Firebase
-  scroll.querySelectorAll('.item-del-ev-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var evId = btn.getAttribute('data-evid');
-      var idx  = parseInt(btn.getAttribute('data-idx'), 10);
-      var tipo = btn.getAttribute('data-tipo');
-      var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
-      if (!evObj) return;
-      if (!confirm('Excluir este item permanentemente?')) return;
 
-      function _restaurarEqCount(itemStr) {
-        if (!itemStr) return;
-        var _dm = itemStr.match(/^(\d+)x\s+(.+)$/);
-        var _nome = (_dm ? _dm[2] : itemStr).trim().toLowerCase();
-        var _qty  = _dm ? parseInt(_dm[1]) : 1;
-        Object.keys(_equipamentos).forEach(function(eqId) {
-          if ((_equipamentos[eqId].nome || '').trim().toLowerCase() !== _nome) return;
-          if (_evEqDragItems[evId] && _evEqDragItems[evId][eqId]) {
-            _evEqDragItems[evId][eqId].qty = Math.max(0, _evEqDragItems[evId][eqId].qty - _qty);
-            if (_evEqDragItems[evId][eqId].qty === 0) delete _evEqDragItems[evId][eqId];
-          }
-          var orig = _evEqOrigCounts[eqId];
-          var eqO  = _equipamentos[eqId];
-          if (eqO && orig) {
-            var totalLeft = 0;
-            Object.keys(_evEqDragItems).forEach(function(eid) {
-              if (_evEqDragItems[eid] && _evEqDragItems[eid][eqId]) totalLeft += _evEqDragItems[eid][eqId].qty;
-            });
-            eqO.qtd_disponivel = Math.max(0, orig.qtd_disponivel - Math.min(totalLeft, orig.qtd_disponivel));
-            eqO.qtd_em_uso     = orig.qtd_em_uso + Math.min(totalLeft, orig.qtd_disponivel);
-            _atualizarCardEqDOM(eqId);
-          }
-        });
-      }
-
-      if (tipo === 'orig') {
-        var srvs = (evObj.servicos || []).slice();
-        srvs.splice(idx, 1);
-        evObj.servicos = srvs;
-        db.collection('eventos_campo').doc(evId).update({ servicos: srvs })
-          .catch(function(err) { toast('Erro: ' + err.message, true); });
-      } else {
-        var extras = (evObj.itens_extras || []).slice();
-        var deletedItem = extras[idx];
-        extras.splice(idx, 1);
-        evObj.itens_extras = extras;
-        _restaurarEqCount(deletedItem);
-        db.collection('eventos_campo').doc(evId).update({ itens_extras: extras })
-          .catch(function(err) { toast('Erro: ' + err.message, true); });
-      }
-      var itemEl = btn.closest('.card-item');
-      if (itemEl) itemEl.remove();
-    });
-  });
 }
 
 function renderEventosAndamento() {
@@ -7981,9 +8172,9 @@ function evCardDrop(ev, evId) {
       var qtd = it.qtd || 1;
       if (!eqId) return;
       var eqNome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
-      var _origDK = (_evEqOrigCounts[eqId] ? _evEqOrigCounts[eqId].qtd_disponivel : (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0));
-      var _alreadyDK = (_evEqDragItems[evId] && _evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty : 0);
-      var qtdCap = Math.min(qtd, Math.max(0, _origDK - _alreadyDK));
+      var _dispFir = (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0);
+      var _jaAlocado = _getCargaTotalEq(eqId);
+      var qtdCap = Math.min(qtd, Math.max(0, _dispFir - _jaAlocado));
       if (qtdCap <= 0) { return; }
       // Deduplica no array de extras
       var existIdx = -1;
@@ -8000,16 +8191,7 @@ function evCardDrop(ev, evId) {
       // Tracking para restaurar contagens
       if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
       _evEqDragItems[evId][eqId].qty += qtdCap;
-      var eqObjK = _equipamentos[eqId];
-      if (eqObjK) {
-        if (!_evEqOrigCounts[eqId]) _evEqOrigCounts[eqId] = { qtd_disponivel: eqObjK.qtd_disponivel || 0, qtd_em_uso: eqObjK.qtd_em_uso || 0 };
-        var origDispK = _evEqOrigCounts[eqId].qtd_disponivel;
-        var origUsoK  = _evEqOrigCounts[eqId].qtd_em_uso;
-        var aplicadoK = Math.min(_evEqDragItems[evId][eqId].qty, origDispK);
-        eqObjK.qtd_disponivel = Math.max(0, origDispK - aplicadoK);
-        eqObjK.qtd_em_uso     = origUsoK + aplicadoK;
-        _atualizarCardEqDOM(eqId);
-      }
+      _atualizarCardEqDOM(eqId);
     });
     if (evObjKit) {
       evObjKit.itens_extras = extrasKit;
@@ -8039,12 +8221,10 @@ function evCardDrop(ev, evId) {
     // Verificar cap ANTES de incrementar
     var eqObjCap = _equipamentos[itemId];
     if (eqObjCap) {
-      if (!_evEqOrigCounts[itemId]) {
-        _evEqOrigCounts[itemId] = { qtd_disponivel: eqObjCap.qtd_disponivel || 0, qtd_em_uso: eqObjCap.qtd_em_uso || 0 };
-      }
-      var origDispCap = _evEqOrigCounts[itemId].qtd_disponivel;
-      var alreadyUsed = _evEqDragItems[evId][itemId].qty;
-      if (alreadyUsed >= origDispCap) { toast('Limite atingido: ' + origDispCap + ' unidade' + (origDispCap !== 1 ? 's' : ''), true); return; }
+      // Disponível real = do Firestore menos o já alocado em TODOS os eventos abertos
+      var totalJaAlocado = _getCargaTotalEq(itemId);
+      var dispReal = Math.max(0, (eqObjCap.qtd_disponivel || 0) - totalJaAlocado);
+      if (dispReal <= 0) { toast('Sem unidades disponíveis', true); return; }
     }
     _evEqDragItems[evId][itemId].qty++;
     var qty = _evEqDragItems[evId][itemId].qty;
@@ -8060,15 +8240,7 @@ function evCardDrop(ev, evId) {
       if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
     }
     // Atualiza contagem do card do equipamento
-    var eqObj = _equipamentos[itemId];
-    if (eqObj) {
-      var origDisp = _evEqOrigCounts[itemId].qtd_disponivel;
-      var origUso  = _evEqOrigCounts[itemId].qtd_em_uso;
-      var aplicado = Math.min(qty, origDisp);
-      eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
-      eqObj.qtd_em_uso     = origUso + aplicado;
-      _atualizarCardEqDOM(itemId);
-    }
+    _atualizarCardEqDOM(itemId);
     renderEventosAndamento();
     setTimeout(function() {
       var evCardEl = document.getElementById('ev-card-' + evId);
@@ -8122,7 +8294,7 @@ function _kitDragStart(ev, kitId) {
   _draggingKitId = kitId;
   ev.dataTransfer.setData('text/plain', kitId);
   ev.dataTransfer.setData('tipo', 'kit');
-  ev.dataTransfer.effectAllowed = 'copy';
+  ev.dataTransfer.effectAllowed = 'all';
   var el = document.getElementById('kit-card-' + kitId);
   if (el) setTimeout(function() { el.style.opacity = '0.5'; }, 0);
 }
@@ -8132,6 +8304,9 @@ function _kitDragEnd() {
     if (el) el.style.opacity = '';
   }
   _draggingKitId = null;
+  _draggingItemData = null;
+  var _zoneEl = document.getElementById('kit-remove-zone');
+  if (_zoneEl) _zoneEl.classList.remove('drag-over-remove');
   document.querySelectorAll('.ev-card.drag-target-ev').forEach(function(el) { el.classList.remove('drag-target-ev'); });
   document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
 }
@@ -8542,22 +8717,30 @@ function _mvRemover(idx) {
 }
 
 // ── Drag de slot de kit → zona remover ──
-var _draggingKitSlot = null; // { kitId, equipId }
+var _draggingKitSlot  = null; // { kitId, equipId }
+var _draggingItemData = null; // { evId, idx, tipo, txt, el }
 
-function _kitSlotDragStart(ev, kitId, equipId) {
+function _kitSlotDragStart(el, ev) {
+  var kitId   = el.dataset.kitId;
+  var equipId = el.dataset.equipId;
   _draggingKitSlot = { kitId: kitId, equipId: equipId };
+  ev.dataTransfer.setData('text/plain', kitId + ':' + equipId);
+  ev.dataTransfer.setData('tipo', 'kit-slot');
   ev.dataTransfer.effectAllowed = 'move';
   ev.stopPropagation(); // não aciona drag do kit-folder pai
 }
 
-function _kitSlotDragEnd() {
+function _kitSlotDragEnd(ev) {
   _draggingKitSlot = null;
+  _draggingItemData = null;
   var zone = document.getElementById('kit-remove-zone');
-  if (zone) { zone.classList.remove('drag-over-remove'); }
+  if (zone) zone.classList.remove('drag-over-remove');
 }
 
 function _kitRemoveZoneOver(ev) {
-  if (\!_draggingKitSlot) return;
+  var tipos = ev.dataTransfer.types || [];
+  var temTipo = tipos.indexOf('tipo') >= 0 || tipos.indexOf('text/plain') >= 0;
+  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData && !temTipo) return;
   ev.preventDefault();
   ev.dataTransfer.dropEffect = 'move';
   var zone = document.getElementById('kit-remove-zone');
@@ -8569,77 +8752,80 @@ function _kitRemoveZoneLeave(ev) {
   if (zone) zone.classList.remove('drag-over-remove');
 }
 
+function _excluirItemEvDrop(data) {
+  var evObj = _eventosAndamento[data.evId] || _eventosStagingCarga[data.evId];
+  if (!evObj) return;
+  var backup;
+  if (data.tipo === 'orig') {
+    var srvs = (evObj.servicos || []).slice();
+    backup = { tipo: 'orig', lista: srvs.slice(), evId: data.evId };
+    srvs.splice(data.idx, 1);
+    evObj.servicos = srvs;
+    db.collection('eventos_campo').doc(data.evId).update({ servicos: srvs })
+      .catch(function(err) { toast('Erro: ' + err.message, true); });
+  } else {
+    var extras = (evObj.itens_extras || []).slice();
+    backup = { tipo: 'extra', lista: extras.slice(), evId: data.evId };
+    extras.splice(data.idx, 1);
+    evObj.itens_extras = extras;
+    db.collection('eventos_campo').doc(data.evId).update({ itens_extras: extras })
+      .catch(function(err) { toast('Erro: ' + err.message, true); });
+  }
+  if (data.el && data.el.parentNode) data.el.remove();
+  _recalcularCargaEvento(data.evId); // libera contagem do item removido
+  renderEventosAndamento();
+  toastUndo('Item excluído', function() {
+    var evO = _eventosAndamento[backup.evId] || _eventosStagingCarga[backup.evId];
+    if (!evO) return;
+    if (backup.tipo === 'orig') {
+      evO.servicos = backup.lista;
+      db.collection('eventos_campo').doc(backup.evId).update({ servicos: backup.lista })
+        .catch(function(e) { toast('Erro ao desfazer: ' + e.message, true); });
+    } else {
+      evO.itens_extras = backup.lista;
+      db.collection('eventos_campo').doc(backup.evId).update({ itens_extras: backup.lista })
+        .catch(function(e) { toast('Erro ao desfazer: ' + e.message, true); });
+    }
+    _recalcularCargaEvento(backup.evId); // restaura contagem ao desfazer
+    renderEventosAndamento();
+  });
+}
+
 function _kitRemoveZoneDrop(ev) {
   ev.preventDefault();
   var zone = document.getElementById('kit-remove-zone');
-  if (zone) { zone.classList.remove('drag-over-remove'); }
-  if (\!_draggingKitSlot) return;
-  var kitId = _draggingKitSlot.kitId;
-  var equipId = _draggingKitSlot.equipId;
-  _draggingKitSlot = null;
-  removerItemDoKit(kitId, equipId);
-}
+  if (zone) zone.classList.remove('drag-over-remove');
 
-// ── Edição inline do nome do kit ──────────────────────────────
-function _editarNomeKit(kitId) {
-  // Se já há input aberto neste kit, ignora
-  if (document.querySelector('#kit-card-' + kitId + ' .kit-nome-input')) return;
-  var label = document.querySelector('#kit-card-' + kitId + ' .kit-nome-label');
-  if (\!label) return;
-  var nomeAtual = (_kits[kitId] && _kits[kitId].nome) || label.textContent.trim() || 'Kit';
+  var tipo = ev.dataTransfer.getData('tipo');
 
-  // Cria wrapper com input + botões
-  var wrap = document.createElement('span');
-  wrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px';
+  if (_draggingKitSlot) {
+    // ── Item de slot de kit ──
+    var kitId   = _draggingKitSlot.kitId;
+    var equipId = _draggingKitSlot.equipId;
+    _draggingKitSlot = null;
+    removerItemDoKit(kitId, equipId);
 
-  var input = document.createElement('input');
-  input.className = 'kit-nome-input';
-  input.value = nomeAtual;
-  input.onclick = function(e) { e.stopPropagation(); };
+  } else if (_draggingKitId || tipo === 'kit') {
+    // ── Kit inteiro ──
+    var kitId = _draggingKitId || ev.dataTransfer.getData('text/plain');
+    _draggingKitId = null;
+    var el = document.getElementById('kit-card-' + kitId);
+    if (el) el.style.opacity = '';
+    if (kitId) excluirKitSemConfirm(kitId);
 
-  var btnOk = document.createElement('button');
-  btnOk.textContent = 'OK';
-  btnOk.style.cssText = 'background:#50C878;color:#111;border:none;border-radius:3px;padding:1px 7px;font-family:Barlow Condensed,sans-serif;font-size:0.7rem;font-weight:800;cursor:pointer;flex-shrink:0';
-
-  var btnX = document.createElement('button');
-  btnX.textContent = '×';
-  btnX.style.cssText = 'background:transparent;color:#e05c5c;border:1px solid rgba(224,92,92,0.4);border-radius:3px;padding:1px 6px;font-size:0.85rem;cursor:pointer;flex-shrink:0';
-
-  wrap.appendChild(input);
-  wrap.appendChild(btnOk);
-  wrap.appendChild(btnX);
-  label.replaceWith(wrap);
-  input.focus();
-  input.select();
-
-  function restaurar(novoNome) {
-    var span = document.createElement('span');
-    span.className = 'kit-nome-label';
-    span.textContent = novoNome;
-    span.setAttribute('onclick', 'event.stopPropagation();_editarNomeKit("' + kitId + '")');
-    wrap.replaceWith(span);
+  } else if (tipo === 'item_ev') {
+    // ── Item de evento — usa variável global ou fallback do dataTransfer ──
+    var data = _draggingItemData;
+    _draggingItemData = null;
+    if (!data) {
+      // Fallback: reconstruir dos dados gravados no dataTransfer
+      var raw = ev.dataTransfer.getData('text/plain').split('|');
+      if (raw.length >= 3) {
+        data = { evId: raw[0], idx: parseInt(raw[1], 10), tipo: raw[2], txt: raw[3] || '', el: null };
+      }
+    }
+    if (data) _excluirItemEvDrop(data);
   }
-
-  function salvar() {
-    var novoNome = input.value.trim() || nomeAtual;
-    restaurar(novoNome);
-    if (novoNome === nomeAtual) return;
-    db.collection('kits').doc(kitId).update({ nome: novoNome })
-      .then(function() { toast('Kit renomeado'); })
-      .catch(function(e) { toast('Erro: ' + e.message, true); });
-  }
-
-  function cancelar() { restaurar(nomeAtual); }
-
-  btnOk.addEventListener('mousedown', function(e) { e.preventDefault(); });
-  btnOk.addEventListener('click', function(e) { e.stopPropagation(); salvar(); });
-  btnX.addEventListener('mousedown', function(e) { e.preventDefault(); });
-  btnX.addEventListener('click', function(e) { e.stopPropagation(); cancelar(); });
-
-  input.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); salvar(); }
-    if (e.key === 'Escape') { e.stopPropagation(); cancelar(); }
-  });
 }
 
 </script>
