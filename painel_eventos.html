@@ -1609,13 +1609,13 @@ function renderBoard() {
       var today2 = new Date(); today2.setHours(0,0,0,0);
       futuros.forEach(function(ev) {
         var evDate = ev.ev_data ? new Date(ev.ev_data + 'T00:00:00') : null;
-        var isPastCard = evDate && evDate < today2;
+        var isPastCard = col !== 'andamento' && evDate && evDate < today2;
         html += buildCard(ev, isPastCard, col);
       });
     } else {
       // Passados — no topo da coluna "eventos"
       if (passados.length > 0) {
-        html += '<div class="group-separator" style="color:#e05c5c;border-color:rgba(224,92,92,0.25)">Realizados</div>';
+        html += '<div class="group-separator" style="color:#e05c5c;border-color:rgba(224,92,92,0.25)">Passado</div>';
         passados.forEach(function(ev) { html += buildCard(ev, true, col); });
       }
 
