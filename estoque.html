@@ -6986,14 +6986,11 @@ body.has-ev-sidebar { padding-right: 272px; }
 .ev-andamento-scroll .card-itens { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; }
 .ev-andamento-scroll .card-itens-title { font-size: 0.65rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
 .ev-andamento-scroll .card-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem; color: var(--text); cursor: grab; }
-.item-del-ev-btn { background:none;border:none;cursor:pointer;padding:0 2px;font-size:0.95rem;color:#e05c5c;flex-shrink:0;line-height:1;opacity:0.55;transition:opacity 0.15s; }
+.item-del-ev-btn { background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:#e05c5c;flex-shrink:0;line-height:1;opacity:0.65;transition:opacity 0.15s; }
 .item-del-ev-btn:hover { opacity:1; }
-.card-carga { margin-top:10px;border-top:1px solid rgba(74,144,200,0.18);padding-top:8px; }
-.card-carga-title { font-family:'Barlow Condensed',sans-serif;font-size:0.62rem;font-weight:800;color:#4A90C8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;display:flex;align-items:center;gap:5px; }
-.card-carga-item { display:flex;align-items:center;gap:6px;padding:3px 0;font-size:0.78rem;color:var(--text); }
-.card-carga-item:last-child { border-bottom:none; }
-.card-carga-qtd { color:#4A90C8;font-weight:700;font-size:0.85em;min-width:18px; }
-.card-carga-del { margin-left:auto;background:none;border:none;color:#e05c5c;cursor:pointer;font-size:0.9rem;padding:0 2px;line-height:1;opacity:0.6;transition:opacity 0.15s; }
+.card-carga-inline { }
+.item-carga-qtd { color:#4A90C8;font-weight:700;font-size:0.85em;min-width:22px;flex-shrink:0; }
+.card-carga-del { background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:#e05c5c;flex-shrink:0;line-height:1;opacity:0.7;transition:opacity 0.15s; }
 .card-carga-del:hover { opacity:1; }
 #btn-ev-carga-hd { display:flex;align-items:center;gap:5px;border-color:rgba(245,166,35,0.6);color:#F5A623; }
 #btn-ev-carga-hd .carga-badge { background:#F5A623;color:#111;border-radius:9px;padding:0 5px;font-size:0.55rem;font-weight:800;line-height:15px;min-width:15px;text-align:center; }
@@ -7085,12 +7082,11 @@ function _atualizarCargaDOM(evId) {
     return { eqId: eqId, qtd: carga[eqId], nome: (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId };
   });
   if (!itens.length) { div.innerHTML = ''; return; }
-  div.innerHTML = '<div class="card-carga-title"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Carga montada</div>' +
-    itens.map(function(it) {
-      return '<div class="card-carga-item">' +
-        '<span class="card-carga-qtd">' + it.qtd + 'x</span>' +
-        '<span>' + (window.esc ? esc(it.nome) : it.nome) + '</span>' +
-        '<button class="card-carga-del" onclick="event.stopPropagation();_removerCargaItem(\'' + evId + '\',\'' + it.eqId + '\')" title="Remover">&times;</button>' +
+  div.innerHTML = itens.map(function(it) {
+      return '<div class="card-item">' +
+        '<span class="item-carga-qtd">' + it.qtd + 'x</span>' +
+        '<span class="item-text">' + (esc ? esc(it.nome) : it.nome) + '</span>' +
+        '<button class="card-carga-del" onclick="event.stopPropagation();_removerCargaItem(\'' + evId + '\',\'' + it.eqId + '\')" title="Remover da carga">&times;</button>' +
       '</div>';
     }).join('');
 }
@@ -7275,7 +7271,7 @@ function _buildEvAndamentoCard(ev) {
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Excluir item permanentemente">&#128465;</button>' +
+        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Excluir item permanentemente">&times;</button>' +
         '</div>';
     }).join('');
     var extrasRowHtml = (ev.itens_extras || []).map(function(s, i) {
@@ -7286,7 +7282,7 @@ function _buildEvAndamentoCard(ev) {
         '<span class="item-text">' + esc(s) + '</span>' +
         '<span class="item-extra-tag">+</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Excluir item permanentemente">&#128465;</button>' +
+        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Excluir item permanentemente">&times;</button>' +
         '</div>';
     }).join('');
 
@@ -7310,6 +7306,7 @@ function _buildEvAndamentoCard(ev) {
     itensHtml = '<div class="card-itens">' +
       '<div class="veiculo-row"><div class="card-itens-title">Itens / Ve\u00EDculos</div>' + veiculoBtn + '</div>' +
       itensRowHtml + extrasRowHtml +
+      '<div id="card-carga-' + esc(ev.id) + '" class="card-carga-inline"></div>' +
       '<div id="add-form-ev-' + esc(ev.id) + '" style="display:none" class="add-item-form">' +
         '<input class="add-item-input" placeholder="Item..." />' +
         '<button class="btn-add-item-ok" data-evid="' + esc(ev.id) + '">OK</button>' +
@@ -7343,7 +7340,6 @@ function _buildEvAndamentoCard(ev) {
     '<div class="card-body">' +
       '<div class="card-body-inner">' +
         (horarioBlock ? '<div class="card-horario-block">' + horarioBlock + '</div>' : '') +
-        '<div id="card-carga-' + esc(ev.id) + '" class="card-carga"></div>' +
         '<div class="card-local">' +
           '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>' +
           '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local || '') + '</span>' +
