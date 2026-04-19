@@ -5084,7 +5084,7 @@ function renderKits() {
       '<div class="kit-slot-panel-header">' +
         '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_toggleKitPanel(\'' + esc(kit.id) + '\')">' +
           svgChevron +
-          '<span class="kit-nome-label" ondblclick="event.stopPropagation();_editarNomeKit(\'' + esc(kit.id) + '\')">' + esc(kit.nome || 'Kit') + '</span>' +
+          '<span class="kit-nome-label" onclick="event.stopPropagation();_editarNomeKit(\'' + esc(kit.id) + '\')">' + esc(kit.nome || 'Kit') + '</span>' +
         '</div>' +
         '<div class="kit-slot-panel-actions">' +
           '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();excluirKit(\'' + esc(kit.id) + '\')" title="Excluir kit" style="color:var(--red);font-size:1.1rem;line-height:1;padding:0 3px">&times;</button>' +
@@ -8582,36 +8582,64 @@ function _kitRemoveZoneDrop(ev) {
 
 // ── Edição inline do nome do kit ──────────────────────────────
 function _editarNomeKit(kitId) {
+  // Se já há input aberto neste kit, ignora
+  if (document.querySelector('#kit-card-' + kitId + ' .kit-nome-input')) return;
   var label = document.querySelector('#kit-card-' + kitId + ' .kit-nome-label');
   if (\!label) return;
-  var nomeAtual = (_kits[kitId] && _kits[kitId].nome) || label.textContent || 'Kit';
+  var nomeAtual = (_kits[kitId] && _kits[kitId].nome) || label.textContent.trim() || 'Kit';
+
+  // Cria wrapper com input + botões
+  var wrap = document.createElement('span');
+  wrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px';
+
   var input = document.createElement('input');
   input.className = 'kit-nome-input';
   input.value = nomeAtual;
-  label.replaceWith(input);
+  input.onclick = function(e) { e.stopPropagation(); };
+
+  var btnOk = document.createElement('button');
+  btnOk.textContent = 'OK';
+  btnOk.style.cssText = 'background:#50C878;color:#111;border:none;border-radius:3px;padding:1px 7px;font-family:Barlow Condensed,sans-serif;font-size:0.7rem;font-weight:800;cursor:pointer;flex-shrink:0';
+
+  var btnX = document.createElement('button');
+  btnX.textContent = '×';
+  btnX.style.cssText = 'background:transparent;color:#e05c5c;border:1px solid rgba(224,92,92,0.4);border-radius:3px;padding:1px 6px;font-size:0.85rem;cursor:pointer;flex-shrink:0';
+
+  wrap.appendChild(input);
+  wrap.appendChild(btnOk);
+  wrap.appendChild(btnX);
+  label.replaceWith(wrap);
   input.focus();
   input.select();
 
-  function salvar() {
-    var novoNome = input.value.trim() || nomeAtual;
-    // Restaura label imediatamente
+  function restaurar(novoNome) {
     var span = document.createElement('span');
     span.className = 'kit-nome-label';
     span.textContent = novoNome;
-    span.setAttribute('ondblclick', 'event.stopPropagation();_editarNomeKit("' + kitId + '")');
-    input.replaceWith(span);
+    span.setAttribute('onclick', 'event.stopPropagation();_editarNomeKit("' + kitId + '")');
+    wrap.replaceWith(span);
+  }
+
+  function salvar() {
+    var novoNome = input.value.trim() || nomeAtual;
+    restaurar(novoNome);
     if (novoNome === nomeAtual) return;
     db.collection('kits').doc(kitId).update({ nome: novoNome })
       .then(function() { toast('Kit renomeado'); })
       .catch(function(e) { toast('Erro: ' + e.message, true); });
   }
 
+  function cancelar() { restaurar(nomeAtual); }
+
+  btnOk.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  btnOk.addEventListener('click', function(e) { e.stopPropagation(); salvar(); });
+  btnX.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  btnX.addEventListener('click', function(e) { e.stopPropagation(); cancelar(); });
+
   input.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); salvar(); }
-    if (e.key === 'Escape') { input.value = nomeAtual; salvar(); }
+    if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); salvar(); }
+    if (e.key === 'Escape') { e.stopPropagation(); cancelar(); }
   });
-  input.addEventListener('blur', salvar);
-  input.addEventListener('click', function(e) { e.stopPropagation(); });
 }
 
 </script>
