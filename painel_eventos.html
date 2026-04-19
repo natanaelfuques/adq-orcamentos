@@ -1790,7 +1790,7 @@ function renderBoard() {
 }
 
 function buildCard(ev, past, col) {
-  var colColor = col === 'concluido' ? '#4AC87A' : col === 'andamento' ? 'rgba(200,169,74,0.7)' : '#4A90C8';
+  var colColor = col === 'concluido' ? '#4AC87A' : col === 'andamento' ? 'rgba(200,169,74,0.8)' : '#4A90C8';
   var dataFmt    = ev.ev_data     ? ev.ev_data.split('-').reverse().join('/')     : '';
   var dataFimFmt = ev.ev_data_fim ? ev.ev_data_fim.split('-').reverse().join('/') : '';
   // Cor do badge de data conforme coluna e proximidade
