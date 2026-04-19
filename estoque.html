@@ -6483,6 +6483,7 @@ function _atualizarConflitosNosKits() {
 #eventos-andamento-section::-webkit-scrollbar { width: 4px; }
 #eventos-andamento-section::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 body.has-ev-sidebar { padding-right: 272px; }
+body.has-ev-sidebar header { margin-right: -272px; }
 @media (max-width: 768px) {
   #eventos-andamento-section {
     position: static !important;
@@ -7760,18 +7761,14 @@ function evCardDrop(ev, evId) {
     _draggingStagingId = null; return;
   }
 
-  // Arrastar equipamento = carga local (não grava Firebase)
+  // Arrastar equipamento → salva em itens_extras (Firestore) para persistir com checkbox
   if (tipo === 'eq') {
     var eqNome = (_equipamentos[itemId] && _equipamentos[itemId].nome) || itemId;
-    if (!_cargaEvento[evId]) _cargaEvento[evId] = {};
-    _cargaEvento[evId][itemId] = (_cargaEvento[evId][itemId] || 0) + 1;
-    var qtdAtual = _cargaEvento[evId][itemId];
     _draggingEqId = null;
-    _atualizarCardEqDOM(itemId);
-    _atualizarCargaDOM(evId);
     var evCardEl = document.getElementById('ev-card-' + evId);
     if (evCardEl && !evCardEl.classList.contains('expanded')) evCardEl.classList.add('expanded');
-    toast(qtdAtual + 'x ' + eqNome);
+    _adicionarItemExtraEv(evId, eqNome);
+    toast(eqNome + ' adicionado ao evento!');
     return;
   }
 
