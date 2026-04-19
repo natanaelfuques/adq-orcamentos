@@ -7486,6 +7486,25 @@ function _adicionarItemExtraEv(evId, texto) {
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
 }
 
+function _fecharCargaEvento(evId) {
+  // Remove itens arrastados de itens_extras e restaura contagem dos equipamentos
+  var carga = _cargaEvento[evId];
+  if (carga && Object.keys(carga).length) {
+    var evObj = _eventosAndamento[evId];
+    if (evObj) {
+      var dragNomes = Object.keys(carga).map(function(eqId) {
+        return (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
+      });
+      var extras = (evObj.itens_extras || []).filter(function(s) {
+        return dragNomes.indexOf(s.replace(/^\d+x\s+/, '')) === -1;
+      });
+      evObj.itens_extras = extras;
+      if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+    }
+  }
+  _resetarCargaEvento(evId);
+}
+
 function _bindEvAndamentoCards() {
   var scroll = document.getElementById('ev-andamento-scroll');
   if (!scroll) return;
@@ -7502,7 +7521,7 @@ function _bindEvAndamentoCards() {
       // Recolhendo: resetar carga dos cards que serão fechados
       scroll.querySelectorAll('.evento-card.expanded').forEach(function(c) {
         var cId = c.id.replace('ev-card-', '');
-        if (cId) _resetarCargaEvento(cId);
+        if (cId) _fecharCargaEvento(cId);
         c.classList.remove('expanded');
       });
       if (!wasExpanded) card.classList.add('expanded');
@@ -7761,14 +7780,30 @@ function evCardDrop(ev, evId) {
     _draggingStagingId = null; return;
   }
 
-  // Arrastar equipamento → salva em itens_extras (Firestore) para persistir com checkbox
+  // Arrastar equipamento → qty local (_cargaEvento) + itens_extras deduplicados
   if (tipo === 'eq') {
     var eqNome = (_equipamentos[itemId] && _equipamentos[itemId].nome) || itemId;
     _draggingEqId = null;
+    // Acumula qty no cache local (usado pelo _atualizarCardEqDOM)
+    if (!_cargaEvento[evId]) _cargaEvento[evId] = {};
+    _cargaEvento[evId][itemId] = (_cargaEvento[evId][itemId] || 0) + 1;
+    var qty = _cargaEvento[evId][itemId];
+    var label = qty > 1 ? qty + 'x ' + eqNome : eqNome;
+    // Atualiza itens_extras no Firestore (remove entrada anterior p/ este eq, adiciona com qty)
+    var evObj2 = _eventosAndamento[evId];
+    if (evObj2) {
+      var extras2 = (evObj2.itens_extras || []).filter(function(s) {
+        return s.replace(/^\d+x\s+/, '') !== eqNome;
+      });
+      extras2.push(label);
+      evObj2.itens_extras = extras2;
+      if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
+    }
+    // Atualiza contagem do card do equipamento
+    _atualizarCardEqDOM(itemId);
     var evCardEl = document.getElementById('ev-card-' + evId);
     if (evCardEl && !evCardEl.classList.contains('expanded')) evCardEl.classList.add('expanded');
-    _adicionarItemExtraEv(evId, eqNome);
-    toast(eqNome + ' adicionado ao evento!');
+    toast(label);
     return;
   }
 
