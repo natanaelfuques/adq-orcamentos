@@ -3034,7 +3034,7 @@ function iniciarEstoque() {
       _equipamentos[doc.id] = Object.assign({ id: doc.id }, doc.data());
     });
     renderTudo();
-    _sincronizarCargasComEquipamentos();
+    // (sincronizacao feita ao abrir card do evento)
   }, function(err) {
     console.error('[Estoque]', err);
     toast('Erro ao carregar estoque.', true);
@@ -7211,7 +7211,7 @@ function iniciarEventosAndamento() {
         _eventosAndamento[doc.id] = Object.assign({ id: doc.id }, doc.data());
       });
       renderEventosAndamento();
-      _sincronizarCargasComEquipamentos();
+      // (sincronizacao feita ao abrir card do evento)
     }, function(err) {
       console.warn('[EventosAndamento]', err.message);
       // Se não tiver acesso à coleção, não quebra o sistema
@@ -7529,47 +7529,33 @@ function _adicionarItemExtraEv(evId, texto) {
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
 }
 
-function _sincronizarCargasComEquipamentos() {
-  if (!Object.keys(_equipamentos).length) return;
-  // Mapeia nome (lower) -> eqId
+function _abrirCargaEvento(evId) {
+  var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
+  if (!ev) return;
+  // Mapeia nome -> eqId
   var nomeToId = {};
   Object.keys(_equipamentos).forEach(function(eqId) {
     var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
     if (nome) nomeToId[nome] = eqId;
   });
-  // Remove entradas de andamento de _evEqDragItems (serao reconstruidas)
-  Object.keys(_evEqDragItems).forEach(function(evId) {
-    if (_eventosAndamento[evId]) delete _evEqDragItems[evId];
-  });
-  // Reseta _evEqOrigCounts para usar dados frescos do Firestore
-  _evEqOrigCounts = {};
-  // Reconstroi _evEqDragItems a partir dos itens_extras de cada evento andamento
-  Object.keys(_eventosAndamento).forEach(function(evId) {
-    var ev = _eventosAndamento[evId];
-    (ev.itens_extras || []).forEach(function(item) {
-      var m = item.match(/^(\d+)x\s+(.+)$/);
-      var qty = m ? parseInt(m[1]) : 1;
-      var nome = (m ? m[2] : item).trim();
-      var eqId = nomeToId[nome.toLowerCase()];
-      if (!eqId) return;
-      if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
-      if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: nome, qty: 0 };
-      _evEqDragItems[evId][eqId].qty = Math.max(_evEqDragItems[evId][eqId].qty, qty);
-    });
-  });
-  // Coleta todos os eqIds envolvidos (andamento + staging)
-  var eqIdsEnvolvidos = {};
-  Object.keys(_evEqDragItems).forEach(function(evId) {
-    Object.keys(_evEqDragItems[evId]).forEach(function(eqId) { eqIdsEnvolvidos[eqId] = true; });
-  });
-  // Salva originais e aplica total de alocacoes
-  Object.keys(eqIdsEnvolvidos).forEach(function(eqId) {
+  if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
+  // Aplica cada item do evento nos counts de equipamento
+  (ev.itens_extras || []).forEach(function(item) {
+    var m = item.match(/^(\d+)x\s+(.+)$/);
+    var qty = m ? parseInt(m[1]) : 1;
+    var nome = (m ? m[2] : item).trim();
+    var eqId = nomeToId[nome.toLowerCase()];
+    if (!eqId) return;
     var eqObj = _equipamentos[eqId];
     if (!eqObj) return;
-    _evEqOrigCounts[eqId] = { qtd_disponivel: eqObj.qtd_disponivel || 0, qtd_em_uso: eqObj.qtd_em_uso || 0 };
+    if (!_evEqOrigCounts[eqId]) {
+      _evEqOrigCounts[eqId] = { qtd_disponivel: eqObj.qtd_disponivel || 0, qtd_em_uso: eqObj.qtd_em_uso || 0 };
+    }
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: qty };
+    // Recalcula total aplicado (pode ter drags da sessao atual tambem)
     var totalApplied = 0;
-    Object.keys(_evEqDragItems).forEach(function(evId) {
-      if (_evEqDragItems[evId][eqId]) totalApplied += _evEqDragItems[evId][eqId].qty;
+    Object.keys(_evEqDragItems).forEach(function(eid) {
+      if (_evEqDragItems[eid][eqId]) totalApplied += _evEqDragItems[eid][eqId].qty;
     });
     var origDisp = _evEqOrigCounts[eqId].qtd_disponivel;
     var origUso  = _evEqOrigCounts[eqId].qtd_em_uso;
@@ -7581,12 +7567,22 @@ function _sincronizarCargasComEquipamentos() {
 }
 
 function _fecharCargaEvento(evId) {
-  // Para eventos em andamento (itens salvos no Firestore): nao restaura contagens
-  // Para staging: limpa e ressincroniza
-  if (_evEqDragItems[evId]) delete _evEqDragItems[evId];
+  // Restaura counts de todos equipamentos afetados por este evento
+  var dragItems = _evEqDragItems[evId];
+  if (dragItems) {
+    Object.keys(dragItems).forEach(function(eqId) {
+      var orig = _evEqOrigCounts[eqId];
+      var eq   = _equipamentos[eqId];
+      if (eq && orig) {
+        eq.qtd_disponivel = orig.qtd_disponivel;
+        eq.qtd_em_uso     = orig.qtd_em_uso;
+        _atualizarCardEqDOM(eqId);
+        delete _evEqOrigCounts[eqId];
+      }
+    });
+    delete _evEqDragItems[evId];
+  }
   _resetarCargaEvento(evId);
-  // Recalcula todas as contagens a partir dos dados comprometidos
-  _sincronizarCargasComEquipamentos();
 }
 
 function _bindEvAndamentoCards() {
@@ -7608,7 +7604,11 @@ function _bindEvAndamentoCards() {
         if (cId) _fecharCargaEvento(cId);
         c.classList.remove('expanded');
       });
-      if (!wasExpanded) card.classList.add('expanded');
+      if (!wasExpanded) {
+        card.classList.add('expanded');
+        var openId = card.id.replace('ev-card-', '');
+        if (openId) _abrirCargaEvento(openId);
+      }
     });
   });
 
@@ -7713,13 +7713,36 @@ function _bindEvAndamentoCards() {
       if (tipo === 'orig') {
         var srvs = (evObj.servicos || []).slice();
         srvs.splice(idx, 1);
-        evObj.servicos = srvs;
-        db.collection('eventos_campo').doc(evId).update({ servicos: srvs })
-          .catch(function(err) { toast('Erro: ' + err.message, true); });
-      } else {
         var extras = (evObj.itens_extras || []).slice();
+        var deletedItem = extras[idx];
         extras.splice(idx, 1);
         evObj.itens_extras = extras;
+        // Restaura count do equipamento correspondente
+        if (deletedItem) {
+          var _dm = deletedItem.match(/^(\d+)x\s+(.+)$/);
+          var _dNome = (_dm ? _dm[2] : deletedItem).trim().toLowerCase();
+          var _dQty = _dm ? parseInt(_dm[1]) : 1;
+          Object.keys(_equipamentos).forEach(function(eqId) {
+            if ((_equipamentos[eqId].nome || '').trim().toLowerCase() === _dNome) {
+              if (_evEqDragItems[evId] && _evEqDragItems[evId][eqId]) {
+                _evEqDragItems[evId][eqId].qty = Math.max(0, _evEqDragItems[evId][eqId].qty - _dQty);
+                if (_evEqDragItems[evId][eqId].qty === 0) delete _evEqDragItems[evId][eqId];
+              }
+              var orig = _evEqOrigCounts[eqId];
+              var eqO  = _equipamentos[eqId];
+              if (eqO && orig) {
+                var totalLeft = 0;
+                Object.keys(_evEqDragItems).forEach(function(eid) {
+                  if (_evEqDragItems[eid] && _evEqDragItems[eid][eqId]) totalLeft += _evEqDragItems[eid][eqId].qty;
+                });
+                var aplLeft = Math.min(totalLeft, orig.qtd_disponivel);
+                eqO.qtd_disponivel = Math.max(0, orig.qtd_disponivel - aplLeft);
+                eqO.qtd_em_uso     = orig.qtd_em_uso + aplLeft;
+                _atualizarCardEqDOM(eqId);
+              }
+            }
+          });
+        }
         db.collection('eventos_campo').doc(evId).update({ itens_extras: extras })
           .catch(function(err) { toast('Erro: ' + err.message, true); });
       }
