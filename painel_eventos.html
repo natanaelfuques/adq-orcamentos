@@ -1699,14 +1699,10 @@ function renderBoard() {
       });
     });
 
-    body.querySelectorAll('.item-rem-extra-btn').forEach(function(btn) {
+    body.querySelectorAll('.item-rem-extra-toggle-btn').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        var ev = _todosEventos.find(function(ev) { return ev.id === btn.dataset.evid; });
-        var texto = ev && ev.itens_extras ? ev.itens_extras[parseInt(btn.dataset.idx)] : 'este item';
-        if (confirm('Excluir "' + texto + '"?')) {
-          removerItemExtra(btn.dataset.evid, parseInt(btn.dataset.idx));
-        }
+        removerExtraToggle(btn.dataset.evid, parseInt(btn.dataset.idx));
       });
     });
 
@@ -1897,12 +1893,13 @@ function buildCard(ev, past, col) {
     }).join('');
     var extrasHtml = (ev.itens_extras || []).map(function(s, i) {
       var done = ev.itens_ok && ev.itens_ok['extra_' + i];
+      var removido = ev.itens_extras_removidos && ev.itens_extras_removidos[i];
       var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
-      return '<div class="card-item' + (done && !isObs ? ' item-done' : '') + '" style="display:flex;align-items:center">' +
-        (!isObs ? '<div class="item-check' + (done ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '"></div>' : '') +
+      return '<div class="card-item' + (done && !isObs ? ' item-done' : '') + (removido ? ' item-removido' : '') + '" style="display:flex;align-items:center">' +
+        (!isObs ? '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' : '') +
         '<span class="item-text' + (!isObs ? ' item-label-extra' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (isObs ? 'color:#FFD600;' : 'cursor:pointer;') + 'flex:1">' + esc(s) + '</span>' +
         '<span class="item-extra-tag" style="flex-shrink:0">+</span>' +
-        '<button class="item-rem-extra-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="background:none;border:none;color:#e05c5c;cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+        '<button class="item-rem-extra-toggle-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="background:none;border:none;color:' + (removido ? '#4AC87A' : '#555') + ';cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
         '</div>';
     }).join('');
     itens = '<div class="card-itens">' +
@@ -2169,6 +2166,15 @@ function adicionarItemExtra(evId, texto) {
   var extras = (ev.itens_extras || []).concat([texto]);
   db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
   registrarAlteracao(evId, 'adicionou', texto);
+}
+
+function removerExtraToggle(evId, idx) {
+  var ev = _todosEventos.find(function(e) { return e.id === evId; });
+  if (!ev) return;
+  var removidos = Object.assign({}, ev.itens_extras_removidos || {});
+  removidos[idx] = !removidos[idx];
+  db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: removidos });
+  registrarAlteracao(evId, removidos[idx] ? 'removeu extra' : 'restaurou extra', (ev.itens_extras || [])[idx] || '');
 }
 
 function removerItemExtra(evId, idx) {
