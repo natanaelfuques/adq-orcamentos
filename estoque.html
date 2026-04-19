@@ -3059,6 +3059,7 @@ function renderTudo() {
   renderStats();
   renderCatTabs();
   renderEquipamentos();
+  requestAnimationFrame(function() { _fixarAlturaTabContainer(); });
 }
 
 function renderStats() {
@@ -4833,26 +4834,37 @@ function toggleSecaoAcessorios() {
 
 // ── Tab switching: Equipamentos / Acessórios ──
 var _tabSecaoAtiva = 'equipamentos';
+var _tabEqMinHeight = 0;
+function _fixarAlturaTabContainer() {
+  var panelEq = document.getElementById('tab-panel-equipamentos');
+  if (!panelEq || panelEq.style.display === 'none') return;
+  var h = panelEq.offsetHeight;
+  if (h > _tabEqMinHeight) {
+    _tabEqMinHeight = h;
+    var c = panelEq.parentElement;
+    if (c) c.style.minHeight = _tabEqMinHeight + 'px';
+  }
+}
 function switchTabSecao(tab) {
   _tabSecaoAtiva = tab;
   var panelEq = document.getElementById('tab-panel-equipamentos');
   var panelAc = document.getElementById('tab-panel-acessorios');
   var btnEq   = document.getElementById('tab-btn-equipamentos');
   var btnAc   = document.getElementById('tab-btn-acessorios');
-  // Trava a altura mínima no container para evitar recolhimento ao trocar abas
   var tabContainer = panelEq && panelEq.parentElement;
-  if (tabContainer && panelEq && panelEq.style.display !== 'none') {
-    tabContainer.style.minHeight = panelEq.offsetHeight + 'px';
-  }
   if (tab === 'equipamentos') {
     if (panelEq) panelEq.style.display = '';
     if (panelAc) panelAc.style.display = 'none';
     if (btnEq) btnEq.classList.add('active');
     if (btnAc) btnAc.classList.remove('active');
-    if (tabContainer) tabContainer.style.minHeight = '';
     renderCatTabs();
     renderEquipamentos();
+    // Atualiza referencia de altura apos renderizar
+    requestAnimationFrame(function() { _fixarAlturaTabContainer(); });
   } else {
+    // Fixa altura antes de esconder o painel maior
+    _fixarAlturaTabContainer();
+    if (tabContainer && _tabEqMinHeight > 0) tabContainer.style.minHeight = _tabEqMinHeight + 'px';
     if (panelEq) panelEq.style.display = 'none';
     if (panelAc) panelAc.style.display = '';
     if (btnEq) btnEq.classList.remove('active');
