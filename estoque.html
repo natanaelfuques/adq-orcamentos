@@ -2503,18 +2503,21 @@
     <div class="section-tabs-right"></div>
   </div>
 
-  <!-- TAB PANEL: Equipamentos -->
-  <div id="tab-panel-equipamentos">
-    <div class="equip-grid" id="equip-grid">
-      <div class="loading-state">Carregando estoque...</div>
+  <\!-- TAB PANELS WRAPPER -->
+  <div id="tabs-content-wrap" style="position:relative">
+    <\!-- TAB PANEL: Equipamentos -->
+    <div id="tab-panel-equipamentos">
+      <div class="equip-grid" id="equip-grid">
+        <div class="loading-state">Carregando estoque...</div>
+      </div>
+      <div class="equip-list" id="equip-list"></div>
     </div>
-    <div class="equip-list" id="equip-list"></div>
-  </div>
 
-  <!-- TAB PANEL: Acessórios -->
-  <div id="tab-panel-acessorios" style="display:none;padding:16px 24px 24px">
-    <div class="acessorios-grid" id="acessorios-grid">
-      <!-- renderizado por JS -->
+    <\!-- TAB PANEL: Acessórios (absolute para não colapsar wrapper) -->
+    <div id="tab-panel-acessorios" style="position:absolute;top:0;left:0;right:0;visibility:hidden;pointer-events:none;padding:16px 24px 24px">
+      <div class="acessorios-grid" id="acessorios-grid">
+        <\!-- renderizado por JS -->
+      </div>
     </div>
   </div>
 
@@ -3059,7 +3062,6 @@ function renderTudo() {
   renderStats();
   renderCatTabs();
   renderEquipamentos();
-  requestAnimationFrame(function() { _fixarAlturaTabContainer(); });
 }
 
 function renderStats() {
@@ -4834,39 +4836,24 @@ function toggleSecaoAcessorios() {
 
 // ── Tab switching: Equipamentos / Acessórios ──
 var _tabSecaoAtiva = 'equipamentos';
-var _tabEqMinHeight = 0;
-function _fixarAlturaTabContainer() {
-  var panelEq = document.getElementById('tab-panel-equipamentos');
-  if (!panelEq || panelEq.style.display === 'none') return;
-  var h = panelEq.offsetHeight;
-  if (h > _tabEqMinHeight) {
-    _tabEqMinHeight = h;
-    var c = panelEq.parentElement;
-    if (c) c.style.minHeight = _tabEqMinHeight + 'px';
-  }
-}
 function switchTabSecao(tab) {
   _tabSecaoAtiva = tab;
   var panelEq = document.getElementById('tab-panel-equipamentos');
   var panelAc = document.getElementById('tab-panel-acessorios');
   var btnEq   = document.getElementById('tab-btn-equipamentos');
   var btnAc   = document.getElementById('tab-btn-acessorios');
-  var tabContainer = panelEq && panelEq.parentElement;
+  // panelEq fica sempre no fluxo (define altura do wrapper).
+  // panelAc e' position:absolute — apenas visibility e pointer-events alternam.
   if (tab === 'equipamentos') {
-    if (panelEq) panelEq.style.display = '';
-    if (panelAc) panelAc.style.display = 'none';
+    if (panelEq) { panelEq.style.visibility = ''; panelEq.style.pointerEvents = ''; }
+    if (panelAc) { panelAc.style.visibility = 'hidden'; panelAc.style.pointerEvents = 'none'; }
     if (btnEq) btnEq.classList.add('active');
     if (btnAc) btnAc.classList.remove('active');
     renderCatTabs();
     renderEquipamentos();
-    // Atualiza referencia de altura apos renderizar
-    requestAnimationFrame(function() { _fixarAlturaTabContainer(); });
   } else {
-    // Fixa altura antes de esconder o painel maior
-    _fixarAlturaTabContainer();
-    if (tabContainer && _tabEqMinHeight > 0) tabContainer.style.minHeight = _tabEqMinHeight + 'px';
-    if (panelEq) panelEq.style.display = 'none';
-    if (panelAc) panelAc.style.display = '';
+    if (panelEq) { panelEq.style.visibility = 'hidden'; panelEq.style.pointerEvents = 'none'; }
+    if (panelAc) { panelAc.style.visibility = ''; panelAc.style.pointerEvents = 'auto'; }
     if (btnEq) btnEq.classList.remove('active');
     if (btnAc) btnAc.classList.add('active');
     renderCatTabs();
