@@ -7090,7 +7090,7 @@ function _atualizarCargaDOM(evId) {
       return '<div class="card-carga-item">' +
         '<span class="card-carga-qtd">' + it.qtd + 'x</span>' +
         '<span>' + (window.esc ? esc(it.nome) : it.nome) + '</span>' +
-        '<button class="card-carga-del" onclick="event.stopPropagation();_removerCargaItem('' + evId + '','' + it.eqId + '')" title="Remover">&times;</button>' +
+        '<button class="card-carga-del" onclick="event.stopPropagation();_removerCargaItem(\'' + evId + '\',\'' + it.eqId + '\')" title="Remover">&times;</button>' +
       '</div>';
     }).join('');
 }
