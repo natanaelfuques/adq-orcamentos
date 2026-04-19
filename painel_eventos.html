@@ -3597,7 +3597,7 @@ function _abrirEditorHorarios(evId) {
   var fieldsHtml = campos.map(function(c) {
     return '<div style="margin-bottom:10px">' +
       '<div style="font-size:0.68rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">' + c.label + '</div>' +
-      '<input id="ed-hor-' + c.key + '" type="time" value="' + c.val + '" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:monospace;font-size:0.75rem;box-sizing:border-box" />' +
+      '<input id="ed-hor-' + c.key + '" type="text" value="' + c.val + '" placeholder="Ex: 14:00 ou Segue o DJ" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:\'Barlow\',sans-serif;font-size:0.75rem;box-sizing:border-box" />' +
     '</div>';
   }).join('');
 
