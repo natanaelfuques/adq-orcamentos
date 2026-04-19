@@ -7710,39 +7710,44 @@ function _bindEvAndamentoCards() {
       var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
       if (!evObj) return;
       if (!confirm('Excluir este item permanentemente?')) return;
+
+      function _restaurarEqCount(itemStr) {
+        if (!itemStr) return;
+        var _dm = itemStr.match(/^(\d+)x\s+(.+)$/);
+        var _nome = (_dm ? _dm[2] : itemStr).trim().toLowerCase();
+        var _qty  = _dm ? parseInt(_dm[1]) : 1;
+        Object.keys(_equipamentos).forEach(function(eqId) {
+          if ((_equipamentos[eqId].nome || '').trim().toLowerCase() !== _nome) return;
+          if (_evEqDragItems[evId] && _evEqDragItems[evId][eqId]) {
+            _evEqDragItems[evId][eqId].qty = Math.max(0, _evEqDragItems[evId][eqId].qty - _qty);
+            if (_evEqDragItems[evId][eqId].qty === 0) delete _evEqDragItems[evId][eqId];
+          }
+          var orig = _evEqOrigCounts[eqId];
+          var eqO  = _equipamentos[eqId];
+          if (eqO && orig) {
+            var totalLeft = 0;
+            Object.keys(_evEqDragItems).forEach(function(eid) {
+              if (_evEqDragItems[eid] && _evEqDragItems[eid][eqId]) totalLeft += _evEqDragItems[eid][eqId].qty;
+            });
+            eqO.qtd_disponivel = Math.max(0, orig.qtd_disponivel - Math.min(totalLeft, orig.qtd_disponivel));
+            eqO.qtd_em_uso     = orig.qtd_em_uso + Math.min(totalLeft, orig.qtd_disponivel);
+            _atualizarCardEqDOM(eqId);
+          }
+        });
+      }
+
       if (tipo === 'orig') {
         var srvs = (evObj.servicos || []).slice();
         srvs.splice(idx, 1);
+        evObj.servicos = srvs;
+        db.collection('eventos_campo').doc(evId).update({ servicos: srvs })
+          .catch(function(err) { toast('Erro: ' + err.message, true); });
+      } else {
         var extras = (evObj.itens_extras || []).slice();
         var deletedItem = extras[idx];
         extras.splice(idx, 1);
         evObj.itens_extras = extras;
-        // Restaura count do equipamento correspondente
-        if (deletedItem) {
-          var _dm = deletedItem.match(/^(\d+)x\s+(.+)$/);
-          var _dNome = (_dm ? _dm[2] : deletedItem).trim().toLowerCase();
-          var _dQty = _dm ? parseInt(_dm[1]) : 1;
-          Object.keys(_equipamentos).forEach(function(eqId) {
-            if ((_equipamentos[eqId].nome || '').trim().toLowerCase() === _dNome) {
-              if (_evEqDragItems[evId] && _evEqDragItems[evId][eqId]) {
-                _evEqDragItems[evId][eqId].qty = Math.max(0, _evEqDragItems[evId][eqId].qty - _dQty);
-                if (_evEqDragItems[evId][eqId].qty === 0) delete _evEqDragItems[evId][eqId];
-              }
-              var orig = _evEqOrigCounts[eqId];
-              var eqO  = _equipamentos[eqId];
-              if (eqO && orig) {
-                var totalLeft = 0;
-                Object.keys(_evEqDragItems).forEach(function(eid) {
-                  if (_evEqDragItems[eid] && _evEqDragItems[eid][eqId]) totalLeft += _evEqDragItems[eid][eqId].qty;
-                });
-                var aplLeft = Math.min(totalLeft, orig.qtd_disponivel);
-                eqO.qtd_disponivel = Math.max(0, orig.qtd_disponivel - aplLeft);
-                eqO.qtd_em_uso     = orig.qtd_em_uso + aplLeft;
-                _atualizarCardEqDOM(eqId);
-              }
-            }
-          });
-        }
+        _restaurarEqCount(deletedItem);
         db.collection('eventos_campo').doc(evId).update({ itens_extras: extras })
           .catch(function(err) { toast('Erro: ' + err.message, true); });
       }
@@ -8219,11 +8224,29 @@ function _finalizarCargaEvento(evId) {
 }
 
 // Patch no renderTudo para sempre re-renderizar eventos
+function _reaplicarCartasAbertas() {
+  var scroll = document.getElementById('ev-andamento-scroll');
+  if (!scroll) return;
+  scroll.querySelectorAll('.evento-card.expanded').forEach(function(card) {
+    var evId = card.id.replace('ev-card-', '');
+    if (!evId) return;
+    // Limpa tracking antigo e re-aplica com dados frescos do Firestore
+    if (_evEqDragItems[evId]) {
+      Object.keys(_evEqDragItems[evId]).forEach(function(eqId) {
+        delete _evEqOrigCounts[eqId];
+      });
+      delete _evEqDragItems[evId];
+    }
+    _abrirCargaEvento(evId);
+  });
+}
+
 var _renderTudoOrig = renderTudo;
 renderTudo = function() {
   _renderTudoOrig();
   // Adiciona badge de reservas nos cards após render
   setTimeout(_aplicarBadgesReservas, 80);
+  _reaplicarCartasAbertas();
 };
 
 function _aplicarBadgesReservas() {
