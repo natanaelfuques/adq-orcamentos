@@ -1322,7 +1322,7 @@
   border-radius: 8px;
   background: transparent;
   color: rgba(224,92,92,0.5);
-  display: none;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -8548,14 +8548,12 @@ function _kitSlotDragStart(ev, kitId, equipId) {
   _draggingKitSlot = { kitId: kitId, equipId: equipId };
   ev.dataTransfer.effectAllowed = 'move';
   ev.stopPropagation(); // não aciona drag do kit-folder pai
-  var zone = document.getElementById('kit-remove-zone');
-  if (zone) zone.style.display = 'flex';
 }
 
 function _kitSlotDragEnd() {
   _draggingKitSlot = null;
   var zone = document.getElementById('kit-remove-zone');
-  if (zone) { zone.style.display = 'none'; zone.classList.remove('drag-over-remove'); }
+  if (zone) { zone.classList.remove('drag-over-remove'); }
 }
 
 function _kitRemoveZoneOver(ev) {
@@ -8574,7 +8572,7 @@ function _kitRemoveZoneLeave(ev) {
 function _kitRemoveZoneDrop(ev) {
   ev.preventDefault();
   var zone = document.getElementById('kit-remove-zone');
-  if (zone) { zone.style.display = 'none'; zone.classList.remove('drag-over-remove'); }
+  if (zone) { zone.classList.remove('drag-over-remove'); }
   if (\!_draggingKitSlot) return;
   var kitId = _draggingKitSlot.kitId;
   var equipId = _draggingKitSlot.equipId;
