@@ -331,7 +331,6 @@
   .eq-card:hover {
     border-color: #444;
     box-shadow: 0 4px 20px rgba(0,0,0,0.35);
-    transform: translateY(-2px);
   }
   .eq-card.status-alerta { border-color: rgba(224,92,92,0.4); }
   .eq-card.status-alerta:hover { border-color: rgba(224,92,92,0.7); }
@@ -346,7 +345,7 @@
   .status-bar-manutencao { background: linear-gradient(90deg, #5BA8E8, rgba(91,168,232,0.4)); }
   .status-bar-indisponivel { background: linear-gradient(90deg, #555, rgba(85,85,85,0.4)); }
 
-  .eq-card-body { padding: 10px 12px; }
+  .eq-card-body { padding: 8px 10px; }
 
   .eq-top {
     display: flex;
@@ -357,8 +356,8 @@
   }
 
   .eq-icon {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     background: var(--gold-dim);
     border: 1px solid rgba(74,144,217,0.2);
     border-radius: 6px;
@@ -374,7 +373,7 @@
 
   .eq-name {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: var(--text);
     letter-spacing: 0.03em;
@@ -417,8 +416,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 7px;
-    padding: 6px 8px;
+    margin-bottom: 5px;
+    padding: 4px 6px;
     background: var(--surface2);
     border-radius: 4px;
   }
@@ -432,7 +431,7 @@
   }
   .qty-num {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 800;
     line-height: 1;
   }
@@ -456,7 +455,7 @@
     background: var(--border2);
     border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 7px;
+    margin-bottom: 0;
   }
   .avail-fill {
     height: 100%;
@@ -3293,7 +3292,7 @@ function buildCard(e) {
     });
   }
 
-  return '<div class="eq-card' + cardClass + '" data-eq-id="' + e.id + '" onclick="abrirDetalhe(\'' + e.id + '\')" style="cursor:pointer">' +
+  return '<div class="eq-card' + cardClass + '" data-eq-id="' + e.id + '">' +
     '<div class="eq-status-bar ' + statusBarClass + '"></div>' +
     '<div class="eq-card-body">' +
       '<div class="eq-top">' +
@@ -3334,9 +3333,6 @@ function buildCard(e) {
         '<div class="avail-fill" style="width:' + pct + '%;background:' + barColor + '"></div>' +
       '</div>' +
 
-      (tags ? '<div class="eq-tags">' + tags + '</div>' : '') +
-      (e.obs ? '<div class="eq-obs">' + esc(e.obs) + '</div>' : '') +
-      _buildSubitensToggle(e) +
     '</div>' +
   '</div>';
 }
