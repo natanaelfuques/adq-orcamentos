@@ -5009,10 +5009,11 @@ function renderKits() {
         var eq = _equipamentos[it.equipId];
         if (eq) {
           var svgStr = _getEqSvg(eq.emoji, 18);
-          slots += '<div class="kit-slot-item filled" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="' + esc(eq.nome || '') + '">' +
+          slots += '<div class="kit-slot-item filled" style="position:relative" onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="' + esc(eq.nome || '') + '">' +
             '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
             '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
             '<div class="kit-slot-item-name">' + esc(eq.nome || '') + '</div>' +
+            '<button class="kit-item-del-btn" onclick="event.stopPropagation();removerItemDoKit(\\\'' + esc(kit.id) + '\\\',\\\'' + esc(it.equipId) + '\\\')" title="Remover" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.6);border:none;color:#e05c5c;cursor:pointer;border-radius:3px;padding:0 2px;font-size:0.8rem;line-height:1.2;display:none">&times;</button>' +
           '</div>';
         } else {
           slots += '<div class="kit-slot-item empty"></div>';
@@ -5037,6 +5038,7 @@ function renderKits() {
         '</div>' +
         '<div class="kit-slot-panel-actions">' +
           '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="Editar">' + svgEdit + '</button>' +
+          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();excluirKit(\\\'' + esc(kit.id) + '\\\')" title="Excluir kit" style="color:var(--red)"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></button>' +
         '</div>' +
       '</div>' +
       '<div class="kit-slot-panel-body">' +
@@ -5482,6 +5484,27 @@ function atualizarAcessorioItem(eqId, valor) {
   }
 }
 
+
+function excluirKit(kitId) {
+  if (!confirm('Excluir este kit?')) return;
+  db.collection('kits').doc(kitId).delete()
+    .then(function() { toast('Kit excluído'); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+function removerItemDoKit(kitId, eqId) {
+  var kit = _kits[kitId];
+  if (!kit) return;
+  var novosItens = (kit.itens || []).filter(function(it) { return it.equipId !== eqId; });
+  db.collection('kits').doc(kitId).update({ itens: novosItens })
+    .then(function() { toast('Item removido do kit'); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+function _kitSlotHover(el, show) {
+  var btn = el.querySelector('.kit-item-del-btn');
+  if (btn) btn.style.display = show ? 'block' : 'none';
+}
 function removerItemKit(eqId) {
   _kitItensAtual = _kitItensAtual.filter(function(it) { return it.equipId !== eqId; });
   renderKitDropZone();
@@ -7088,8 +7111,8 @@ function _atualizarCardEqDOM(eqId) {
   if (!e) return;
   var cargaQtd = _getCargaTotalEq(eqId);
   var disp = Math.max(0, (e.qtd_disponivel || 0) - cargaQtd);
-  var emUso = Math.min(total, (e.qtd_em_uso || 0) + cargaQtd);
   var total = e.qtd_total || 0;
+  var emUso = Math.min(total, (e.qtd_em_uso || 0) + cargaQtd);
   var pct = total > 0 ? Math.round((disp / total) * 100) : 0;
   var barColor = pct === 0 ? '#e05c5c' : pct < 50 ? '#5BA8E8' : '#25D366';
   document.querySelectorAll('[data-eq-id="' + eqId + '"]').forEach(function(card) {
@@ -7762,16 +7785,46 @@ function evCardDrop(ev, evId) {
       kitItens = kit.itens;
       kitNome = kit.nome || 'Kit';
     }
-    if (!_cargaEvento[evId]) _cargaEvento[evId] = {};
+    // Salvar itens do kit em itens_extras (Firestore) + atualizar contagens
+    var evObjKit = _eventosAndamento[evId];
+    var extrasKit = evObjKit ? (evObjKit.itens_extras || []).slice() : [];
+    if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
     kitItens.forEach(function(it) {
       var eqId = it.equipId;
       var qtd = it.qtd || 1;
       if (!eqId) return;
-      _cargaEvento[evId][eqId] = (_cargaEvento[evId][eqId] || 0) + qtd;
-      _atualizarCardEqDOM(eqId);
+      var eqNome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
+      // Deduplica no array de extras
+      var existIdx = -1;
+      for (var xi = 0; xi < extrasKit.length; xi++) {
+        if (extrasKit[xi].replace(/^\d+x\s+/, '') === eqNome) { existIdx = xi; break; }
+      }
+      if (existIdx >= 0) {
+        var m = extrasKit[existIdx].match(/^(\d+)x\s+/);
+        var prevQty = m ? parseInt(m[1]) : 1;
+        extrasKit[existIdx] = (prevQty + qtd) + 'x ' + eqNome;
+      } else {
+        extrasKit.push(qtd > 1 ? qtd + 'x ' + eqNome : eqNome);
+      }
+      // Tracking para restaurar contagens
+      if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
+      _evEqDragItems[evId][eqId].qty += qtd;
+      var eqObjK = _equipamentos[eqId];
+      if (eqObjK) {
+        if (!_evEqOrigCounts[eqId]) _evEqOrigCounts[eqId] = { qtd_disponivel: eqObjK.qtd_disponivel || 0, qtd_em_uso: eqObjK.qtd_em_uso || 0 };
+        var origDispK = _evEqOrigCounts[eqId].qtd_disponivel;
+        var origUsoK  = _evEqOrigCounts[eqId].qtd_em_uso;
+        var aplicadoK = Math.min(_evEqDragItems[evId][eqId].qty, origDispK);
+        eqObjK.qtd_disponivel = Math.max(0, origDispK - aplicadoK);
+        eqObjK.qtd_em_uso     = origUsoK + aplicadoK;
+        _atualizarCardEqDOM(eqId);
+      }
     });
+    if (evObjKit) {
+      evObjKit.itens_extras = extrasKit;
+      if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasKit });
+    }
     _draggingKitId = null;
-    _atualizarCargaDOM(evId);
     var evCardEl2 = document.getElementById('ev-card-' + evId);
     if (evCardEl2 && !evCardEl2.classList.contains('expanded')) evCardEl2.classList.add('expanded');
     toast(kitNome + ' adicionado (' + kitItens.length + ' itens)');
@@ -7810,6 +7863,7 @@ function evCardDrop(ev, evId) {
       }
       var origDisp = _evEqOrigCounts[itemId].qtd_disponivel;
       var origUso  = _evEqOrigCounts[itemId].qtd_em_uso;
+      if (origDisp <= 0) { _evEqDragItems[evId][itemId].qty--; toast('Sem unidades disponíveis', true); return; }
       var aplicado = Math.min(qty, origDisp);
       eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
       eqObj.qtd_em_uso     = origUso + aplicado;
