@@ -6404,6 +6404,25 @@ function substituirContratoNaNuvem() {
     if (_userAtualC) dados.atualizadoPor = _userAtualC.email;
     return db.collection('contratos').doc(_contratoCarregadoId).set(dados);
   }).then(function() {
+    // Atualizar eventos_campo se o contrato já estiver no painel
+    var evRef = db.collection('eventos_campo').doc(_contratoCarregadoId);
+    evRef.get().then(function(evSnap) {
+      if (!evSnap.exists) return;
+      evRef.update({
+        ev_nome:        dados.ev_nome        || '',
+        ev_local:       dados.ev_local       || '',
+        ev_maps:        dados.ev_maps        || '',
+        ev_data:        dados.ev_data        || '',
+        ev_data_fim:    dados.ev_data_fim    || '',
+        ev_inicio:      dados.ev_inicio      || '',
+        ev_fim:         dados.ev_fim         || '',
+        ev_montagem:    dados.montagem       || '',
+        ev_desmontagem: dados.desmontagem    || '',
+        ev_resp:        dados.ev_resp        || '',
+        cli_nome:       dados.cli_nome       || '',
+        servicos:       dados.servicos       || []
+      }).catch(function(e) { console.warn('[AdQ] Erro ao atualizar painel:', e); });
+    });
     if (btn) { btn.textContent = 'Substituído!'; }
     setTimeout(function() {
       if (btn) { btn.textContent = 'Salvar contrato (substituir)'; btn.disabled = false; }
