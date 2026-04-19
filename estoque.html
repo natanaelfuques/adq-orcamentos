@@ -1317,6 +1317,26 @@
     text-transform: uppercase;
   }
   .kit-novo-card:hover { border-color: var(--gold); color: var(--gold); }
+.kit-remove-zone {
+  border: 2px dashed rgba(224,92,92,0.35);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(224,92,92,0.5);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: default;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  min-height: 110px;
+}
+.kit-remove-zone.drag-over-remove { border-color: #e05c5c; background: rgba(224,92,92,0.07); color: #e05c5c; }
 
   /* KIT MODAL */
   .kit-modal-box {
@@ -5024,7 +5044,7 @@ function renderKits() {
         var eq = _equipamentos[it.equipId];
         if (eq) {
           var svgStr = _getEqSvg(eq.emoji, 18);
-          slots += '<div class="kit-slot-item filled" style="position:relative" onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="' + esc(eq.nome || '') + '">' +
+          slots += '<div class="kit-slot-item filled" draggable="true" style="position:relative;cursor:grab" onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" onclick="event.stopPropagation();abrirModalEditarKit(\'" + esc(kit.id) + "\')" ondragstart="_kitSlotDragStart(event,\'" + esc(kit.id) + "\',\'" + esc(it.equipId) + "\')" ondragend="_kitSlotDragEnd()" title="' + esc(eq.nome || '') + '">' +
             '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
             '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
             '<div class="kit-slot-item-name">' + esc(eq.nome || '') + '</div>' +
@@ -5065,6 +5085,13 @@ function renderKits() {
   html += '<div class="kit-novo-card" onclick="abrirModalNovoKit()">' +
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
     'Novo kit' +
+  '</div>';
+  html += '<div class="kit-remove-zone" id="kit-remove-zone"' +
+    ' ondragover="_kitRemoveZoneOver(event)"' +
+    ' ondragleave="_kitRemoveZoneLeave(event)"' +
+    ' ondrop="_kitRemoveZoneDrop(event)">' +
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
+    'Remover do kit' +
   '</div>';
 
   grid.innerHTML = html;
@@ -8498,6 +8525,47 @@ function _mvRemover(idx) {
     return db.collection('configuracoes').doc('veiculos').set({ lista: veics });
   }).then(function() { _mvCarregar(); })
     .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+// ── Drag de slot de kit → zona remover ──
+var _draggingKitSlot = null; // { kitId, equipId }
+
+function _kitSlotDragStart(ev, kitId, equipId) {
+  _draggingKitSlot = { kitId: kitId, equipId: equipId };
+  ev.dataTransfer.effectAllowed = 'move';
+  ev.stopPropagation(); // não aciona drag do kit-folder pai
+  var zone = document.getElementById('kit-remove-zone');
+  if (zone) zone.style.display = 'flex';
+}
+
+function _kitSlotDragEnd() {
+  _draggingKitSlot = null;
+  var zone = document.getElementById('kit-remove-zone');
+  if (zone) { zone.style.display = 'none'; zone.classList.remove('drag-over-remove'); }
+}
+
+function _kitRemoveZoneOver(ev) {
+  if (\!_draggingKitSlot) return;
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect = 'move';
+  var zone = document.getElementById('kit-remove-zone');
+  if (zone) zone.classList.add('drag-over-remove');
+}
+
+function _kitRemoveZoneLeave(ev) {
+  var zone = document.getElementById('kit-remove-zone');
+  if (zone) zone.classList.remove('drag-over-remove');
+}
+
+function _kitRemoveZoneDrop(ev) {
+  ev.preventDefault();
+  var zone = document.getElementById('kit-remove-zone');
+  if (zone) { zone.style.display = 'none'; zone.classList.remove('drag-over-remove'); }
+  if (\!_draggingKitSlot) return;
+  var kitId = _draggingKitSlot.kitId;
+  var equipId = _draggingKitSlot.equipId;
+  _draggingKitSlot = null;
+  removerItemDoKit(kitId, equipId);
 }
 
 </script>
