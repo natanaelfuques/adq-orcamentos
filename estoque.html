@@ -7075,6 +7075,8 @@ var _eventosAndamento = {};     // id → doc do painel
 var _eventosStagingCarga = {};  // eventos pinados da agenda para montar carga
 var _reservasEventos = {};      // estoque_id → [{evento, qtd, status}]
 var _cargaEvento = {};          // { evId: { eqId: qtd } } — local, não vai ao Firebase
+var _evEqDragItems = {};     // { evId: { eqId: {nome,qty} } } — eq arrastados (temporário)
+var _evEqOrigCounts = {};    // { eqId: {qtd_disponivel,qtd_em_uso} } — antes do drag
 
 function _getCargaTotalEq(eqId) {
   var total = 0;
@@ -7086,7 +7088,7 @@ function _atualizarCardEqDOM(eqId) {
   if (!e) return;
   var cargaQtd = _getCargaTotalEq(eqId);
   var disp = Math.max(0, (e.qtd_disponivel || 0) - cargaQtd);
-  var emUso = (e.qtd_em_uso || 0) + cargaQtd;
+  var emUso = Math.min(total, (e.qtd_em_uso || 0) + cargaQtd);
   var total = e.qtd_total || 0;
   var pct = total > 0 ? Math.round((disp / total) * 100) : 0;
   var barColor = pct === 0 ? '#e05c5c' : pct < 50 ? '#5BA8E8' : '#25D366';
@@ -7487,21 +7489,22 @@ function _adicionarItemExtraEv(evId, texto) {
 }
 
 function _fecharCargaEvento(evId) {
-  // Remove itens arrastados de itens_extras e restaura contagem dos equipamentos
-  var carga = _cargaEvento[evId];
-  if (carga && Object.keys(carga).length) {
-    var evObj = _eventosAndamento[evId];
-    if (evObj) {
-      var dragNomes = Object.keys(carga).map(function(eqId) {
-        return (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
-      });
-      var extras = (evObj.itens_extras || []).filter(function(s) {
-        return dragNomes.indexOf(s.replace(/^\d+x\s+/, '')) === -1;
-      });
-      evObj.itens_extras = extras;
-      if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
-    }
+  // Restaura qtd_disponivel/qtd_em_uso dos equipamentos arrastados (não remove itens do Firestore)
+  var dragItems = _evEqDragItems[evId];
+  if (dragItems) {
+    Object.keys(dragItems).forEach(function(eqId) {
+      var orig = _evEqOrigCounts[eqId];
+      var eq   = _equipamentos[eqId];
+      if (eq && orig) {
+        eq.qtd_disponivel = orig.qtd_disponivel;
+        eq.qtd_em_uso     = orig.qtd_em_uso;
+        _atualizarCardEqDOM(eqId);
+        delete _evEqOrigCounts[eqId];
+      }
+    });
+    delete _evEqDragItems[evId];
   }
+  // Restaura contagem de kits (cargaEvento local)
   _resetarCargaEvento(evId);
 }
 
@@ -7780,16 +7783,16 @@ function evCardDrop(ev, evId) {
     _draggingStagingId = null; return;
   }
 
-  // Arrastar equipamento → qty local (_cargaEvento) + itens_extras deduplicados
+  // Arrastar equipamento → qty em _evEqDragItems (não _cargaEvento, evita duplicata)
   if (tipo === 'eq') {
     var eqNome = (_equipamentos[itemId] && _equipamentos[itemId].nome) || itemId;
     _draggingEqId = null;
-    // Acumula qty no cache local (usado pelo _atualizarCardEqDOM)
-    if (!_cargaEvento[evId]) _cargaEvento[evId] = {};
-    _cargaEvento[evId][itemId] = (_cargaEvento[evId][itemId] || 0) + 1;
-    var qty = _cargaEvento[evId][itemId];
+    if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
+    if (!_evEqDragItems[evId][itemId]) _evEqDragItems[evId][itemId] = { nome: eqNome, qty: 0 };
+    _evEqDragItems[evId][itemId].qty++;
+    var qty = _evEqDragItems[evId][itemId].qty;
     var label = qty > 1 ? qty + 'x ' + eqNome : eqNome;
-    // Atualiza itens_extras no Firestore (remove entrada anterior p/ este eq, adiciona com qty)
+    // Atualiza itens_extras no Firestore (remove entrada anterior, adiciona com qty)
     var evObj2 = _eventosAndamento[evId];
     if (evObj2) {
       var extras2 = (evObj2.itens_extras || []).filter(function(s) {
@@ -7799,8 +7802,19 @@ function evCardDrop(ev, evId) {
       evObj2.itens_extras = extras2;
       if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
     }
-    // Atualiza contagem do card do equipamento
-    _atualizarCardEqDOM(itemId);
+    // Atualiza contagem do card do equipamento (temporariamente, via _equipamentos)
+    var eqObj = _equipamentos[itemId];
+    if (eqObj) {
+      if (!_evEqOrigCounts[itemId]) {
+        _evEqOrigCounts[itemId] = { qtd_disponivel: eqObj.qtd_disponivel || 0, qtd_em_uso: eqObj.qtd_em_uso || 0 };
+      }
+      var origDisp = _evEqOrigCounts[itemId].qtd_disponivel;
+      var origUso  = _evEqOrigCounts[itemId].qtd_em_uso;
+      var aplicado = Math.min(qty, origDisp);
+      eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
+      eqObj.qtd_em_uso     = origUso + aplicado;
+      _atualizarCardEqDOM(itemId);
+    }
     var evCardEl = document.getElementById('ev-card-' + evId);
     if (evCardEl && !evCardEl.classList.contains('expanded')) evCardEl.classList.add('expanded');
     toast(label);
