@@ -7281,7 +7281,6 @@ function _buildEvAndamentoCard(ev) {
       return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '" draggable="true" data-item-ev="' + esc(ev.id) + '" data-item-txt="' + esc(s) + '">' +
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
-        '<span class="item-extra-tag">+</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
         '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Excluir item permanentemente">&times;</button>' +
         '</div>';
@@ -7308,6 +7307,14 @@ function _buildEvAndamentoCard(ev) {
       '<div class="veiculo-row"><div class="card-itens-title">Itens / Ve\u00EDculos</div>' + veiculoBtn + '</div>' +
       itensRowHtml + extrasRowHtml +
       '<div id="card-carga-' + esc(ev.id) + '" class="card-carga-inline"></div>' +
+      '<div id="add-form-ev-' + esc(ev.id) + '" style="display:none" class="add-item-form">' +
+        '<input class="add-item-input" placeholder="Item..." />' +
+        '<button class="btn-add-item-ok" data-evid="' + esc(ev.id) + '">OK</button>' +
+      '</div>' +
+      '<button class="btn-add-item" data-evid="' + esc(ev.id) + '">' +
+        '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>' +
+        'Adicionar item' +
+      '</button>' +
 
     '</div>';
   }
