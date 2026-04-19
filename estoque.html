@@ -3034,6 +3034,7 @@ function iniciarEstoque() {
       _equipamentos[doc.id] = Object.assign({ id: doc.id }, doc.data());
     });
     renderTudo();
+    _sincronizarCargasComEquipamentos();
   }, function(err) {
     console.error('[Estoque]', err);
     toast('Erro ao carregar estoque.', true);
@@ -7210,6 +7211,7 @@ function iniciarEventosAndamento() {
         _eventosAndamento[doc.id] = Object.assign({ id: doc.id }, doc.data());
       });
       renderEventosAndamento();
+      _sincronizarCargasComEquipamentos();
     }, function(err) {
       console.warn('[EventosAndamento]', err.message);
       // Se não tiver acesso à coleção, não quebra o sistema
@@ -7527,24 +7529,64 @@ function _adicionarItemExtraEv(evId, texto) {
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
 }
 
-function _fecharCargaEvento(evId) {
-  // Restaura qtd_disponivel/qtd_em_uso dos equipamentos arrastados (não remove itens do Firestore)
-  var dragItems = _evEqDragItems[evId];
-  if (dragItems) {
-    Object.keys(dragItems).forEach(function(eqId) {
-      var orig = _evEqOrigCounts[eqId];
-      var eq   = _equipamentos[eqId];
-      if (eq && orig) {
-        eq.qtd_disponivel = orig.qtd_disponivel;
-        eq.qtd_em_uso     = orig.qtd_em_uso;
-        _atualizarCardEqDOM(eqId);
-        delete _evEqOrigCounts[eqId];
-      }
+function _sincronizarCargasComEquipamentos() {
+  if (!Object.keys(_equipamentos).length) return;
+  // Mapeia nome (lower) -> eqId
+  var nomeToId = {};
+  Object.keys(_equipamentos).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
+    if (nome) nomeToId[nome] = eqId;
+  });
+  // Remove entradas de andamento de _evEqDragItems (serao reconstruidas)
+  Object.keys(_evEqDragItems).forEach(function(evId) {
+    if (_eventosAndamento[evId]) delete _evEqDragItems[evId];
+  });
+  // Reseta _evEqOrigCounts para usar dados frescos do Firestore
+  _evEqOrigCounts = {};
+  // Reconstroi _evEqDragItems a partir dos itens_extras de cada evento andamento
+  Object.keys(_eventosAndamento).forEach(function(evId) {
+    var ev = _eventosAndamento[evId];
+    (ev.itens_extras || []).forEach(function(item) {
+      var m = item.match(/^(\d+)x\s+(.+)$/);
+      var qty = m ? parseInt(m[1]) : 1;
+      var nome = (m ? m[2] : item).trim();
+      var eqId = nomeToId[nome.toLowerCase()];
+      if (!eqId) return;
+      if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
+      if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: nome, qty: 0 };
+      _evEqDragItems[evId][eqId].qty = Math.max(_evEqDragItems[evId][eqId].qty, qty);
     });
-    delete _evEqDragItems[evId];
-  }
-  // Restaura contagem de kits (cargaEvento local)
+  });
+  // Coleta todos os eqIds envolvidos (andamento + staging)
+  var eqIdsEnvolvidos = {};
+  Object.keys(_evEqDragItems).forEach(function(evId) {
+    Object.keys(_evEqDragItems[evId]).forEach(function(eqId) { eqIdsEnvolvidos[eqId] = true; });
+  });
+  // Salva originais e aplica total de alocacoes
+  Object.keys(eqIdsEnvolvidos).forEach(function(eqId) {
+    var eqObj = _equipamentos[eqId];
+    if (!eqObj) return;
+    _evEqOrigCounts[eqId] = { qtd_disponivel: eqObj.qtd_disponivel || 0, qtd_em_uso: eqObj.qtd_em_uso || 0 };
+    var totalApplied = 0;
+    Object.keys(_evEqDragItems).forEach(function(evId) {
+      if (_evEqDragItems[evId][eqId]) totalApplied += _evEqDragItems[evId][eqId].qty;
+    });
+    var origDisp = _evEqOrigCounts[eqId].qtd_disponivel;
+    var origUso  = _evEqOrigCounts[eqId].qtd_em_uso;
+    var aplicado = Math.min(totalApplied, origDisp);
+    eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
+    eqObj.qtd_em_uso     = origUso + aplicado;
+    _atualizarCardEqDOM(eqId);
+  });
+}
+
+function _fecharCargaEvento(evId) {
+  // Para eventos em andamento (itens salvos no Firestore): nao restaura contagens
+  // Para staging: limpa e ressincroniza
+  if (_evEqDragItems[evId]) delete _evEqDragItems[evId];
   _resetarCargaEvento(evId);
+  // Recalcula todas as contagens a partir dos dados comprometidos
+  _sincronizarCargasComEquipamentos();
 }
 
 function _bindEvAndamentoCards() {
