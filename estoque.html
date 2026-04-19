@@ -7081,6 +7081,8 @@ body.has-ev-sidebar header { margin-right: -272px; }
 .ev-andamento-scroll .item-extra-tag { font-size: 0.85rem; font-weight: 700; color: #4A90C8; flex-shrink: 0; line-height: 1; }
 .ev-andamento-scroll .btn-add-item { display: flex; align-items: center; gap: 5px; margin-top: 8px; background: transparent; border: 1px dashed var(--border); color: var(--muted); border-radius: 4px; padding: 5px 10px; font-family: 'Barlow', sans-serif; font-size: 0.72rem; cursor: pointer; width: 100%; text-align: left; transition: all 0.15s; }
 .ev-andamento-scroll .btn-add-item:hover { border-color: var(--andamento, #C8A94A); color: var(--andamento, #C8A94A); }
+.ev-andamento-scroll .btn-finalizar-carga { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 10px; background: rgba(74,144,217,0.08); border: 1px solid rgba(74,144,217,0.4); color: #4A90D9; border-radius: 4px; padding: 6px 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; width: 100%; transition: all 0.15s; }
+.ev-andamento-scroll .btn-finalizar-carga:hover { background: rgba(74,144,217,0.16); border-color: #4A90D9; }
 .ev-andamento-scroll .add-item-form { display: flex; gap: 6px; margin-top: 8px; }
 .ev-andamento-scroll .add-item-input { flex: 1; background: #2a2a2a; border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 0.8rem; padding: 5px 8px; outline: none; }
 .ev-andamento-scroll .add-item-input:focus { border-color: var(--andamento, #C8A94A); }
@@ -7424,6 +7426,10 @@ function _buildEvAndamentoCard(ev) {
         '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>' +
         'Adicionar item' +
       '</button>' +
+      (_eventosStagingCarga[ev.id] ? '<button class="btn-finalizar-carga" onclick="event.stopPropagation();_finalizarCargaEvento(\'' + esc(ev.id) + '\')">' +
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+        'Finalizar carga' +
+      '</button>' : '') +
 
     '</div>';
   }
@@ -8254,13 +8260,11 @@ function _adicionarItemReserva(evId, estoqueId, nome, tipo) {
 }
 
 function _finalizarCargaEvento(evId) {
-  db.collection('reservas_evento').doc(evId).update({
-    status: 'em_uso',
-    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(function() {
-    fecharTodosModais();
-    toast('Carga confirmada — evento em uso!');
-  }).catch(function(e) { toast('Erro: ' + e.message, true); });
+  // Remove da sidebar de staging e restaura contagens
+  _fecharCargaEvento(evId);
+  delete _eventosStagingCarga[evId];
+  renderEventosAndamento();
+  toast('Carga finalizada — evento removido da fila.');
 }
 
 // Patch no renderTudo para sempre re-renderizar eventos
