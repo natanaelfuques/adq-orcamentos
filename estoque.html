@@ -8070,6 +8070,7 @@ function _kitDragEnd() {
   }
   _draggingKitId = null;
   document.querySelectorAll('.ev-card.drag-target-ev').forEach(function(el) { el.classList.remove('drag-target-ev'); });
+  document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
 }
 
 function _stagingDragStart(ev, evId) {
