@@ -783,6 +783,8 @@ header {
 }
 
 .card-item.item-removido .item-text { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
+.item-del-btn { display: none; background: none; border: none; color: #e05c5c; cursor: pointer; font-size: 0.9rem; padding: 0 2px; flex-shrink: 0; }
+.editor-mode .item-del-btn { display: inline-block; }
 
 .item-extra-tag {
   font-size: 0.85rem;
@@ -1699,6 +1701,22 @@ function renderBoard() {
       });
     });
 
+    body.querySelectorAll('.item-del-orig-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        excluirItemOriginal(btn.dataset.evid, parseInt(btn.dataset.idx));
+      });
+    });
+    body.querySelectorAll('.item-del-extra-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var ev = _todosEventos.find(function(ev) { return ev.id === btn.dataset.evid; });
+        var texto = ev && ev.itens_extras ? ev.itens_extras[parseInt(btn.dataset.idx)] : 'este item';
+        if (confirm('Excluir "' + texto + '"?')) {
+          removerItemExtra(btn.dataset.evid, parseInt(btn.dataset.idx));
+        }
+      });
+    });
     body.querySelectorAll('.item-rem-extra-toggle-btn').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -1883,12 +1901,14 @@ function buildCard(ev, past, col) {
         return '<div class="card-item" style="align-items:center;display:flex">' +
           '<span class="item-text" style="color:#FFD600;flex:1">' + esc(s) + '</span>' +
           '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Remover" style="margin-left:auto;background:none;border:none;color:#555;cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+          '<button class="item-del-btn item-del-orig-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Excluir permanente">×</button>' +
           '</div>';
       }
       return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '">' +
         '<div class="item-check' + (done && !removido ? ' checked' : '') + (removido ? '' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text item-label" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="cursor:pointer;flex:1">' + esc(s) + '</span>' +
         '<button class="item-rem-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="margin-left:auto;background:none;border:none;color:' + (removido ? '#4AC87A' : '#555') + ';cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+        '<button class="item-del-btn item-del-orig-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Excluir permanente">×</button>' +
         '</div>';
     }).join('');
     var extrasHtml = (ev.itens_extras || []).map(function(s, i) {
@@ -1900,6 +1920,7 @@ function buildCard(ev, past, col) {
         '<span class="item-text' + (!isObs ? ' item-label-extra' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (isObs ? 'color:#FFD600;' : 'cursor:pointer;') + 'flex:1">' + esc(s) + '</span>' +
         '<span class="item-extra-tag" style="flex-shrink:0">+</span>' +
         '<button class="item-rem-extra-toggle-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="' + (removido ? 'Restaurar' : 'Remover') + '" style="background:none;border:none;color:' + (removido ? '#4AC87A' : '#555') + ';cursor:pointer;font-size:0.9rem;padding:0 2px;flex-shrink:0">×</button>' +
+        '<button class="item-del-btn item-del-extra-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" title="Excluir permanente">×</button>' +
         '</div>';
     }).join('');
     itens = '<div class="card-itens">' +
@@ -2166,6 +2187,16 @@ function adicionarItemExtra(evId, texto) {
   var extras = (ev.itens_extras || []).concat([texto]);
   db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
   registrarAlteracao(evId, 'adicionou', texto);
+}
+
+function excluirItemOriginal(evId, idx) {
+  var ev = _todosEventos.find(function(e) { return e.id === evId; });
+  if (!ev) return;
+  var texto = (ev.servicos || [])[idx] || 'este item';
+  if (!confirm('Excluir "' + texto + '"?')) return;
+  var servicos = (ev.servicos || []).filter(function(_, i) { return i !== idx; });
+  db.collection('eventos_campo').doc(evId).update({ servicos: servicos, itens_ok: {}, itens_removidos: {} });
+  registrarAlteracao(evId, 'excluiu item', texto);
 }
 
 function removerExtraToggle(evId, idx) {
