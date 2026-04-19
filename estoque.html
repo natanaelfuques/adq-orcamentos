@@ -5765,6 +5765,11 @@ function iniciarAgenda() {
     });
     _renderAgendaCalendar();
     _renderAgendaListaDia(_agDiaSelecionado);
+    // Atualiza referências de staging com dados frescos e re-renderiza painel
+    Object.keys(_eventosStagingCarga).forEach(function(evId) {
+      if (_eventosAgenda[evId]) _eventosStagingCarga[evId] = _eventosAgenda[evId];
+    });
+    if (Object.keys(_eventosStagingCarga).length) renderEventosAndamento();
   }, function(err) { console.warn('Agenda eventos error:', err); });
 }
 
@@ -7878,7 +7883,7 @@ function evCardDrop(ev, evId) {
       kitNome = kit.nome || 'Kit';
     }
     // Salvar itens do kit em itens_extras (Firestore) + atualizar contagens
-    var evObjKit = _eventosAndamento[evId];
+    var evObjKit = _eventosAndamento[evId] || _eventosStagingCarga[evId];
     var extrasKit = evObjKit ? (evObjKit.itens_extras || []).slice() : [];
     if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
     kitItens.forEach(function(it) {
@@ -7988,7 +7993,7 @@ function evCardDrop(ev, evId) {
   if (tipo === 'acessorio') { var a = _acessorios[itemId]; nomeItem = a ? (a.nome || 'Ac') : itemId; }
 
   var novoItem = { estoque_id: itemId, nome: nomeItem, tipo: tipo, qtd: 1 };
-  var ev2 = _eventosAndamento[evId];
+  var ev2 = _eventosAndamento[evId] || _eventosStagingCarga[evId];
 
   db.collection('reservas_evento').doc(evId).get().then(function(snap) {
     var dados = snap.exists ? snap.data() : {};
@@ -8054,7 +8059,7 @@ function _stagingDragEnd(ev, evId) {
 
 // ── Modal: vincular itens de estoque a um evento ──
 function abrirVincularEstoqueEvento(evId) {
-  var ev = _eventosAndamento[evId];
+  var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
   if (!ev) return;
   fecharTodosModais();
 
@@ -8186,7 +8191,7 @@ function _renderVincularSearch(evId) {
 }
 
 function _adicionarItemReserva(evId, estoqueId, nome, tipo) {
-  var ev = _eventosAndamento[evId];
+  var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
   db.collection('reservas_evento').doc(evId).get().then(function(snap) {
     var dados = snap.exists ? snap.data() : {};
     var itens = Array.isArray(dados.itens) ? dados.itens.slice() : [];
