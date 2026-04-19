@@ -21,8 +21,10 @@
     --gold-dim: rgba(74,144,217,0.08);
     --amber: #F5A623;
     --surface2: #1e1e1e;
-    --border2: #2a2a2a;
+    --border2: #3a3a3a;
     --green: #25D366;
+    --concluido: #4AC87A;
+    --concluido-dim: rgba(74,200,122,0.12);
     --red: #e05c5c;
     --blue: #4A90C8;
     --purple: #7B22B8;
@@ -5577,14 +5579,7 @@ iniciarEstoque = function() {
   _iniciarEstoqueOrigKit();
   iniciarKits();
   iniciarEventosAndamento();
-  // Posicionar seção de eventos antes dos kits
-  setTimeout(function() {
-    var sec = document.getElementById('eventos-andamento-section');
-    var kitsSection = document.getElementById('kits-section');
-    if (sec && kitsSection && kitsSection.parentNode) {
-      kitsSection.parentNode.insertBefore(sec, kitsSection);
-    }
-  }, 200);
+  // Seção de eventos agora é sidebar fixa — não precisa reposicionar no DOM
 };
 
 // ── Seções colapsáveis do modal de kit ──
@@ -6459,21 +6454,50 @@ function _atualizarConflitosNosKits() {
 ════════════════════════════════════════════════════════════════ -->
 <style>
 /* ══════════════════════════════════
-   EVENTOS EM ANDAMENTO — BANNER TOPO
+   EVENTOS EM ANDAMENTO — COLUNA LATERAL
 ══════════════════════════════════ */
 #eventos-andamento-section {
-  background: linear-gradient(135deg, rgba(245,166,35,0.06) 0%, rgba(74,144,217,0.04) 100%);
-  border-bottom: 1px solid rgba(245,166,35,0.2);
-  padding: 0 12px 10px;
-  margin-bottom: 0;
+  position: fixed;
+  top: 60px;
+  right: 0;
+  width: 272px;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--dark);
+  border-left: 1px solid rgba(245,166,35,0.22);
+  z-index: 90;
+  padding: 0 10px 24px;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
   display: none; /* mostra só quando há eventos */
+}
+#eventos-andamento-section::-webkit-scrollbar { width: 4px; }
+#eventos-andamento-section::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+body.has-ev-sidebar { padding-right: 272px; }
+@media (max-width: 768px) {
+  #eventos-andamento-section {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    border-left: none !important;
+    border-bottom: 1px solid rgba(245,166,35,0.2) !important;
+    overflow-y: visible !important;
+  }
+  body.has-ev-sidebar { padding-right: 0 !important; }
 }
 .ev-andamento-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 0 8px;
+  padding: 10px 0 8px;
   gap: 8px;
+  position: sticky;
+  top: 0;
+  background: var(--dark);
+  z-index: 2;
+  border-bottom: 1px solid rgba(245,166,35,0.12);
+  margin-bottom: 8px;
 }
 .ev-andamento-title {
   font-family: 'Barlow Condensed', sans-serif;
@@ -6501,12 +6525,12 @@ function _atualizarConflitosNosKits() {
 }
 .ev-andamento-scroll {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 4px 0 4px;
-  scrollbar-width: none;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: visible;
+  padding: 4px 0;
 }
-.ev-andamento-scroll::-webkit-scrollbar { display: none; }
+.ev-andamento-scroll .ev-card { flex-shrink: 1; min-width: unset; max-width: unset; width: 100%; box-sizing: border-box; }
 .ev-card-staging::before { background: #4A90D9; }
 .ev-card-staging:hover { border-color: rgba(74,144,217,0.8); box-shadow: 0 4px 16px rgba(74,144,217,0.12); transform: none; cursor: default; }
 .ev-card-staging-badge {
@@ -7431,9 +7455,21 @@ function renderEventosAndamento() {
   });
   var todos = eventosAndamento.concat(eventosStaging);
 
-  if (todos.length === 0) { sec.style.display = 'none'; return; }
+  if (todos.length === 0) {
+    sec.style.display = 'none';
+    document.body.classList.remove('has-ev-sidebar');
+    return;
+  }
+
+  // Salvar cards expandidos antes de re-renderizar
+  var _expandedIds = [];
+  scroll.querySelectorAll('.evento-card.expanded').forEach(function(c2) {
+    var id2 = c2.id.replace('ev-card-', '');
+    if (id2) _expandedIds.push(id2);
+  });
 
   sec.style.display = 'block';
+  document.body.classList.add('has-ev-sidebar');
   if (count) count.textContent = todos.length + ' ativo' + (todos.length > 1 ? 's' : '');
 
   scroll.innerHTML = todos.map(function(ev) {
@@ -7459,10 +7495,11 @@ function renderEventosAndamento() {
 
   _bindEvAndamentoCards();
 
-  var kitsSection = document.getElementById('kits-section');
-  if (kitsSection && sec.parentNode !== kitsSection.parentNode) {
-    kitsSection.parentNode.insertBefore(sec, kitsSection);
-  }
+  // Restaurar cards que estavam expandidos antes do re-render
+  _expandedIds.forEach(function(id2) {
+    var card2 = document.getElementById('ev-card-' + id2);
+    if (card2) card2.classList.add('expanded');
+  });
 }
 
 
