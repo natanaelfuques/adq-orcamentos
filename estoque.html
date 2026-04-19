@@ -2210,6 +2210,21 @@
   .kit-slot-panel-body { padding: 7px; transition: max-height 0.2s ease, opacity 0.15s; overflow: hidden; }
   .kit-slot-panel.kit-collapsed .kit-slot-panel-body { display: none; }
   .kit-slot-panel-title .kit-chevron { transition: transform 0.2s; flex-shrink: 0; }
+.kit-nome-label { cursor: text; border-radius: 3px; padding: 1px 3px; transition: background 0.12s; }
+.kit-nome-label:hover { background: rgba(255,255,255,0.06); }
+.kit-nome-input {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(245,166,35,0.5);
+  border-radius: 3px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  padding: 1px 5px;
+  outline: none;
+  width: 130px;
+}
   .kit-slot-panel.kit-collapsed .kit-slot-panel-title .kit-chevron { transform: rotate(-90deg); }
   .kit-slot-grid-3x3 {
     display: grid;
@@ -5044,7 +5059,7 @@ function renderKits() {
         var eq = _equipamentos[it.equipId];
         if (eq) {
           var svgStr = _getEqSvg(eq.emoji, 18);
-          slots += '<div class="kit-slot-item filled" draggable="true" style="position:relative;cursor:grab" onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" onclick="event.stopPropagation();abrirModalEditarKit(\'" + esc(kit.id) + "\')" ondragstart="_kitSlotDragStart(event,\'" + esc(kit.id) + "\',\'" + esc(it.equipId) + "\')" ondragend="_kitSlotDragEnd()" title="' + esc(eq.nome || '') + '">' +
+          slots += '<div class="kit-slot-item filled" draggable="true" style="position:relative;cursor:grab" onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" " ondragstart="_kitSlotDragStart(event,\'" + esc(kit.id) + "\',\'" + esc(it.equipId) + "\')" ondragend="_kitSlotDragEnd()" title="' + esc(eq.nome || '') + '">' +
             '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
             '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
             '<div class="kit-slot-item-name">' + esc(eq.nome || '') + '</div>' +
@@ -5058,7 +5073,6 @@ function renderKits() {
       }
     }
 
-    var svgEdit = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
     var svgChevron = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
     html += '<div class="kit-slot-panel kit-folder" id="kit-card-' + esc(kit.id) + '" draggable="true"' +
@@ -5069,10 +5083,10 @@ function renderKits() {
       ' ondragstart="_kitDragStart(event,\'' + esc(kit.id) + '\')" ondragend="_kitDragEnd()">' +
       '<div class="kit-slot-panel-header">' +
         '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_toggleKitPanel(\'' + esc(kit.id) + '\')">' +
-          svgChevron + esc(kit.nome || 'Kit') +
+          svgChevron +
+          '<span class="kit-nome-label" ondblclick="event.stopPropagation();_editarNomeKit(\'' + esc(kit.id) + '\')">' + esc(kit.nome || 'Kit') + '</span>' +
         '</div>' +
         '<div class="kit-slot-panel-actions">' +
-          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="Editar">' + svgEdit + '</button>' +
           '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();excluirKit(\'' + esc(kit.id) + '\')" title="Excluir kit" style="color:var(--red);font-size:1.1rem;line-height:1;padding:0 3px">&times;</button>' +
         '</div>' +
       '</div>' +
@@ -5225,7 +5239,7 @@ function _getKitBadgesForEq(eqId) {
     if (!Array.isArray(kit.itens)) return;
     var found = kit.itens.some(function(it) { return it.equipId === eqId; });
     if (found) {
-      html += '<span class="eq-kit-badge" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</span>';
+      html += '<span class="eq-kit-badge" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</span>';
     }
   });
   return html;
@@ -8566,6 +8580,40 @@ function _kitRemoveZoneDrop(ev) {
   var equipId = _draggingKitSlot.equipId;
   _draggingKitSlot = null;
   removerItemDoKit(kitId, equipId);
+}
+
+// ── Edição inline do nome do kit ──────────────────────────────
+function _editarNomeKit(kitId) {
+  var label = document.querySelector('#kit-card-' + kitId + ' .kit-nome-label');
+  if (\!label) return;
+  var nomeAtual = (_kits[kitId] && _kits[kitId].nome) || label.textContent || 'Kit';
+  var input = document.createElement('input');
+  input.className = 'kit-nome-input';
+  input.value = nomeAtual;
+  label.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function salvar() {
+    var novoNome = input.value.trim() || nomeAtual;
+    // Restaura label imediatamente
+    var span = document.createElement('span');
+    span.className = 'kit-nome-label';
+    span.textContent = novoNome;
+    span.setAttribute('ondblclick', 'event.stopPropagation();_editarNomeKit("' + kitId + '")');
+    input.replaceWith(span);
+    if (novoNome === nomeAtual) return;
+    db.collection('kits').doc(kitId).update({ nome: novoNome })
+      .then(function() { toast('Kit renomeado'); })
+      .catch(function(e) { toast('Erro: ' + e.message, true); });
+  }
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); salvar(); }
+    if (e.key === 'Escape') { input.value = nomeAtual; salvar(); }
+  });
+  input.addEventListener('blur', salvar);
+  input.addEventListener('click', function(e) { e.stopPropagation(); });
 }
 
 </script>
