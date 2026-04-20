@@ -2287,11 +2287,20 @@ body.kit-dragging .kit-remove-zone { display: flex; }
   .section-tabs-bar {
     display: flex;
     align-items: stretch;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 0 24px;
     border-bottom: 1px solid var(--border2);
     margin-top: 20px;
   }
+  .section-tabs-right { margin-left: auto; }
+  /* drag das abas de categoria */
+  .cat-tab-dragging { opacity: 0.4; }
+  .cat-tab-drag-over { border-bottom-color: var(--gold) !important; background: var(--gold-dim) !important; }
+  /* drag dos cards de equipamento */
+  .eq-card-dragging { opacity: 0.35; transform: scale(0.97); }
+  .eq-card-drag-over { outline: 2px dashed var(--gold); outline-offset: 2px; }
+  /* sort manual no select */
+  option[value="manual"] {}
   .section-tabs-left { display: flex; gap: 0; }
   .section-tab-btn {
     background: transparent;
@@ -2493,6 +2502,7 @@ body.kit-dragging .kit-remove-zone { display: flex; }
       <option value="disponivel">Disponível</option>
       <option value="categoria">Categoria</option>
       <option value="recente">Mais recente</option>
+      <option value="manual">Manual</option>
     </select>
   </div>
 
@@ -2527,7 +2537,6 @@ body.kit-dragging .kit-remove-zone { display: flex; }
     </div>
     <div class="section-tabs-sep" id="cat-tabs-sep" style="display:none"></div>
     <div id="cat-tabs" style="display:flex;align-items:stretch;gap:0;overflow:visible;flex-shrink:0"></div>
-    <div class="section-tabs-right"></div>
   </div>
 
   <!-- TAB PANEL: Equipamentos -->
@@ -3153,12 +3162,11 @@ function renderCatTabs() {
   lista.forEach(function(e) {
     if (e.categoria) catCount[e.categoria] = (catCount[e.categoria] || 0) + 1;
   });
-  var todasCats = Object.keys(catCount).sort();
 
   var container = document.getElementById('cat-tabs');
   var sep = document.getElementById('cat-tabs-sep');
 
-  if (!todasCats.length) {
+  if (!Object.keys(catCount).length) {
     if (container) container.innerHTML = '';
     if (sep) sep.style.display = 'none';
     return;
@@ -3170,22 +3178,121 @@ function renderCatTabs() {
   var cntPrimAc = document.getElementById('cnt-primary-acessorios');
   if (cntPrimAc) cntPrimAc.textContent = acessorios.length;
 
-  var totalBtn = '<button class="section-tab-btn' + (_catAtual === 'todos' ? ' active' : '') +
-    '" data-cat="todos" onclick="filtrarCategoria(\'todos\', this)">' +
-    'Todos <span class="tab-count" id="cnt-todos">' + lista.length + '</span></button>';
+  // Ordem persistida por aba
+  var ordemKey = 'cat_tab_ordem_' + _tabSecaoAtiva;
+  var ordemSalva = [];
+  try { ordemSalva = JSON.parse(localStorage.getItem(ordemKey) || '[]'); } catch(e) {}
 
-  var catBtns = todasCats.map(function(cat) {
+  // Monta lista ordenada: primeiro as salvas que ainda existem, depois as novas
+  var todasCats = Object.keys(catCount);
+  var ordenadas = ordemSalva.filter(function(c) { return todasCats.indexOf(c) !== -1; });
+  todasCats.forEach(function(c) { if (ordenadas.indexOf(c) === -1) ordenadas.push(c); });
+
+  var totalBtn = document.createElement('button');
+  totalBtn.className = 'section-tab-btn' + (_catAtual === 'todos' ? ' active' : '');
+  totalBtn.setAttribute('data-cat', 'todos');
+  totalBtn.innerHTML = 'Todos <span class="tab-count" id="cnt-todos">' + lista.length + '</span>';
+  totalBtn.onclick = function() { filtrarCategoria('todos', this); };
+
+  container.innerHTML = '';
+  container.appendChild(totalBtn);
+
+  ordenadas.forEach(function(cat) {
     var ativo = _catAtual === cat ? ' active' : '';
-    var svgIcon = CATEGORIAS_SVG[cat] ? '<span class="cat-svg-icon" style="margin-right:3px">' + CATEGORIAS_SVG[cat] + '</span>' : '';
     var count = catCount[cat] || 0;
-    var zeroStyle = count === 0 ? ' style="opacity:0.35"' : '';
-    return '<button class="section-tab-btn' + ativo + '"' + zeroStyle + ' data-cat="' + esc(cat) +
-      '" onclick="filtrarCategoriaAba(\'' + esc(cat) + '\', this)">' +
-      svgIcon + esc(cat) +
-      '<span class="tab-count">' + count + '</span></button>';
-  }).join('');
+    var btn = document.createElement('button');
+    btn.className = 'section-tab-btn' + ativo;
+    btn.setAttribute('data-cat', cat);
+    btn.setAttribute('draggable', 'true');
+    if (count === 0) btn.style.opacity = '0.35';
+    var svgIcon = (typeof CATEGORIAS_SVG !== 'undefined' && CATEGORIAS_SVG[cat])
+      ? '<span class="cat-svg-icon" style="margin-right:3px">' + CATEGORIAS_SVG[cat] + '</span>' : '';
+    btn.innerHTML = svgIcon + cat.replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+      '<span class="tab-count">' + count + '</span>';
+    btn.onclick = function() { filtrarCategoriaAba(cat, this); };
 
-  container.innerHTML = totalBtn + catBtns;
+    // Drag-and-drop para reordenar abas
+    btn.addEventListener('dragstart', function(ev) {
+      ev.dataTransfer.setData('text/cat-tab', cat);
+      ev.dataTransfer.effectAllowed = 'move';
+      setTimeout(function() { btn.classList.add('cat-tab-dragging'); }, 0);
+    });
+    btn.addEventListener('dragend', function() { btn.classList.remove('cat-tab-dragging'); });
+    btn.addEventListener('dragover', function(ev) {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = 'move';
+      btn.classList.add('cat-tab-drag-over');
+    });
+    btn.addEventListener('dragleave', function() { btn.classList.remove('cat-tab-drag-over'); });
+    btn.addEventListener('drop', function(ev) {
+      ev.preventDefault();
+      btn.classList.remove('cat-tab-drag-over');
+      var srcCat = ev.dataTransfer.getData('text/cat-tab');
+      if (!srcCat || srcCat === cat) return;
+      // Reordena
+      var idx = ordenadas.indexOf(cat);
+      var srcIdx = ordenadas.indexOf(srcCat);
+      if (srcIdx === -1 || idx === -1) return;
+      ordenadas.splice(srcIdx, 1);
+      ordenadas.splice(idx, 0, srcCat);
+      try { localStorage.setItem(ordemKey, JSON.stringify(ordenadas)); } catch(e) {}
+      renderCatTabs();
+    });
+
+    container.appendChild(btn);
+  });
+}
+
+// Configura drag-and-drop dos cards de equipamento para reordenação manual
+function _setupEqCardDrag() {
+  var sort = document.getElementById('sort-select');
+  if (!sort || sort.value !== 'manual') return;
+  var grid = document.getElementById('equip-grid');
+  if (!grid) return;
+  var cards = Array.from(grid.querySelectorAll('.eq-card[data-eq-id]'));
+  var _draggingCard = null;
+
+  cards.forEach(function(card) {
+    card.setAttribute('draggable', 'true');
+    card.addEventListener('dragstart', function(ev) {
+      _draggingCard = card;
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/eq-card', card.getAttribute('data-eq-id'));
+      setTimeout(function() { card.classList.add('eq-card-dragging'); }, 0);
+    });
+    card.addEventListener('dragend', function() {
+      card.classList.remove('eq-card-dragging');
+      _draggingCard = null;
+    });
+    card.addEventListener('dragover', function(ev) {
+      ev.preventDefault();
+      if (_draggingCard && _draggingCard !== card) card.classList.add('eq-card-drag-over');
+    });
+    card.addEventListener('dragleave', function() { card.classList.remove('eq-card-drag-over'); });
+    card.addEventListener('drop', function(ev) {
+      ev.preventDefault();
+      card.classList.remove('eq-card-drag-over');
+      if (!_draggingCard || _draggingCard === card) return;
+      // Reposiciona no DOM
+      var allCards = Array.from(grid.querySelectorAll('.eq-card[data-eq-id]'));
+      var srcIdx = allCards.indexOf(_draggingCard);
+      var tgtIdx = allCards.indexOf(card);
+      if (srcIdx === -1 || tgtIdx === -1) return;
+      if (srcIdx < tgtIdx) {
+        grid.insertBefore(_draggingCard, card.nextSibling);
+      } else {
+        grid.insertBefore(_draggingCard, card);
+      }
+      // Salva nova ordem
+      var newOrder = Array.from(grid.querySelectorAll('.eq-card[data-eq-id]')).map(function(c) {
+        return c.getAttribute('data-eq-id');
+      });
+      var _catAtualLocal = typeof _catAtual !== 'undefined' ? _catAtual : 'todos';
+      var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
+      var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
+      try { localStorage.setItem(key, JSON.stringify(newOrder)); } catch(e) {}
+    });
+  });
 }
 
 function filtrarCategoria(cat, el) {
@@ -3419,13 +3526,27 @@ function renderEquipamentos() {
   });
 
   // Sort
-  equips.sort(function(a, b) {
-    if (sort === 'nome') return (a.nome || '').localeCompare(b.nome || '');
-    if (sort === 'disponivel') return (b.qtd_disponivel || 0) - (a.qtd_disponivel || 0);
-    if (sort === 'categoria') return (a.categoria || '').localeCompare(b.categoria || '');
-    if (sort === 'recente') return (b._criado || 0) - (a._criado || 0);
-    return 0;
-  });
+  var _ordemManualKey = 'eq_ordem_manual_' + _tabSecaoAtiva + '_' + _catAtual;
+  if (sort === 'manual') {
+    var _ordemManual = [];
+    try { _ordemManual = JSON.parse(localStorage.getItem(_ordemManualKey) || '[]'); } catch(e) {}
+    equips.sort(function(a, b) {
+      var ia = _ordemManual.indexOf(a.id);
+      var ib = _ordemManual.indexOf(b.id);
+      if (ia === -1 && ib === -1) return 0;
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    });
+  } else {
+    equips.sort(function(a, b) {
+      if (sort === 'nome') return (a.nome || '').localeCompare(b.nome || '');
+      if (sort === 'disponivel') return (b.qtd_disponivel || 0) - (a.qtd_disponivel || 0);
+      if (sort === 'categoria') return (a.categoria || '').localeCompare(b.categoria || '');
+      if (sort === 'recente') return (b._criado || 0) - (a._criado || 0);
+      return 0;
+    });
+  }
 
   // Quando filtro andamento ativo: aplica carga virtual de todos os eventos
   // para que os cards mostrem qtd ajustada (mesmo comportamento de abrir os cards)
@@ -3444,6 +3565,8 @@ function renderEquipamentos() {
 
   if (_viewAtual === 'grid') {
     renderGrid(equips);
+    // Ativa drag-and-drop de reordenação manual dos cards
+    setTimeout(_setupEqCardDrag, 0);
   } else {
     renderList(equips);
   }
