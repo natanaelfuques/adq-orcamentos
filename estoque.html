@@ -3394,8 +3394,16 @@ function renderEquipamentos() {
       (e.modelo || '').toLowerCase().includes(busca) ||
       (e.tags || '').toLowerCase().includes(busca);
     var matchStat = true;
-    if (_filtroStat === 'disponivel') matchStat = (e.qtd_disponivel || 0) > 0;
-    if (_filtroStat === 'em-uso')     matchStat = (e.qtd_em_uso || 0) > 0;
+    if (_filtroStat === 'disponivel') {
+      var _cargaAndDisp = _filtroAndamento ? _getFiltroAndamentoIds() : {};
+      var _dispEfetivo  = Math.max(0, (e.qtd_disponivel || 0) - (_cargaAndDisp[e.id] || 0));
+      matchStat = _dispEfetivo > 0;
+    }
+    if (_filtroStat === 'em-uso') {
+      var _cargaAndUso = _filtroAndamento ? _getFiltroAndamentoIds() : {};
+      var _usoEfetivo  = Math.min((e.qtd_total || 0), (e.qtd_em_uso || 0) + (_cargaAndUso[e.id] || 0));
+      matchStat = _usoEfetivo > 0;
+    }
     if (_filtroStat === 'manutencao') matchStat = (e.qtd_manutencao || 0) > 0;
 
     var matchTag = true;
