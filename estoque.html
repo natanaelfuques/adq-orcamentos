@@ -7787,8 +7787,11 @@ function _buildEvAndamentoCard(ev) {
           (dataFimFmt ? '<div class="card-data-badge" style="color:' + _corBadgeData(ev).color + ';background:' + _corBadgeData(ev).bg + '">' + dataFimFmt + '</div>' : '') +
         '</div>' +
         '<div>' +
-          (ev.cli_nome ? '<div class="card-cliente">' + esc(ev.cli_nome) + '</div>' : '') +
-          '<div class="card-evento">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+          (ev.cli_nome
+            ? '<div class="card-cliente">' + esc(ev.cli_nome) + '</div>' +
+              '<div class="card-evento">' + esc(ev.ev_nome || ev.nome || '') + '</div>'
+            : '<div class="card-cliente">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>'
+          ) +
         '</div>' +
       '</div>' +
       '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
@@ -8510,7 +8513,15 @@ function renderEventosAndamento() {
   if (!sec || !scroll) return;
 
   var eventosEmAndamento = Object.values(_eventosAndamentoSnap);
-  var eventosEmEventos   = Object.values(_eventosEventosSnap);
+  var eventosEmEventos   = Object.values(_eventosEventosSnap).sort(function(a, b) {
+    var hoje = new Date(); hoje.setHours(0,0,0,0);
+    var da = a.ev_data ? new Date(a.ev_data + 'T00:00:00') : new Date('9999-12-31');
+    var db = b.ev_data ? new Date(b.ev_data + 'T00:00:00') : new Date('9999-12-31');
+    // Passados vão para o final
+    var pastA = da < hoje, pastB = db < hoje;
+    if (pastA !== pastB) return pastA ? 1 : -1;
+    return da - db;
+  });
   var eventosAndamento   = eventosEmAndamento.concat(eventosEmEventos);
   var eventosStaging = Object.values(_eventosStagingCarga).filter(function(ev) {
     return !_eventosAndamento[ev.id];
