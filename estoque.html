@@ -6844,6 +6844,10 @@ body.has-ev-sidebar header { margin-right: -272px; }
   text-transform: uppercase;
   color: #4A90D9;
 }
+.ev-section-separator.aguardando {
+  color: #666;
+  border-top-color: rgba(255,255,255,0.07);
+}
 .ev-section-separator-pulse {
   width: 7px; height: 7px;
   border-radius: 50%;
@@ -7507,29 +7511,52 @@ function _toggleSidebar() {
 }
 
 // ── Iniciar listener de eventos em andamento ──
+var _eventosAndamentoSnap = {}; // etapa === 'andamento'
+var _eventosEventosSnap = {};   // etapa === 'eventos'
+
+function _mergeEventosSnaps() {
+  _eventosAndamento = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap);
+  _evKitGrupos = {};
+  Object.values(_eventosAndamento).forEach(function(data) {
+    if (Array.isArray(data.kits_grupos_ev) && data.kits_grupos_ev.length) {
+      _evKitGrupos[data.id] = data.kits_grupos_ev;
+    }
+  });
+  renderEventosAndamento();
+}
+
 function iniciarEventosAndamento() {
   _carregarVeiculosEv();
-  // Ouve a coleção do painel de eventos
+  // Ouve eventos com etapa === 'andamento'
   try {
     db.collection('eventos_campo').where('etapa', '==', 'andamento').onSnapshot(function(snap) {
-      _eventosAndamento = {};
-      _evKitGrupos = {};
+      _eventosAndamentoSnap = {};
       snap.forEach(function(doc) {
         var data = Object.assign({ id: doc.id }, doc.data());
-        _eventosAndamento[doc.id] = data;
-        // Carregar grupos de kit salvos
-        if (Array.isArray(data.kits_grupos_ev) && data.kits_grupos_ev.length) {
-          _evKitGrupos[doc.id] = data.kits_grupos_ev;
-        }
+        _eventosAndamentoSnap[doc.id] = data;
       });
-      renderEventosAndamento();
-      // (sincronizacao feita ao abrir card do evento)
+      _mergeEventosSnaps();
     }, function(err) {
       console.warn('[EventosAndamento]', err.message);
-      // Se não tiver acesso à coleção, não quebra o sistema
     });
   } catch(e) {
     console.warn('[EventosAndamento] inicialização:', e.message);
+  }
+
+  // Ouve eventos com etapa === 'eventos' (coluna Eventos do painel)
+  try {
+    db.collection('eventos_campo').where('etapa', '==', 'eventos').onSnapshot(function(snap) {
+      _eventosEventosSnap = {};
+      snap.forEach(function(doc) {
+        var data = Object.assign({ id: doc.id }, doc.data());
+        _eventosEventosSnap[doc.id] = data;
+      });
+      _mergeEventosSnaps();
+    }, function(err) {
+      console.warn('[EventosEventos]', err.message);
+    });
+  } catch(e) {
+    console.warn('[EventosEventos] inicialização:', e.message);
   }
 
   // Ouve reservas de eventos para cross-reference no estoque
@@ -8459,7 +8486,9 @@ function renderEventosAndamento() {
   var count = document.getElementById('ev-andamento-count');
   if (!sec || !scroll) return;
 
-  var eventosAndamento = Object.values(_eventosAndamento);
+  var eventosEmAndamento = Object.values(_eventosAndamentoSnap);
+  var eventosEmEventos   = Object.values(_eventosEventosSnap);
+  var eventosAndamento   = eventosEmAndamento.concat(eventosEmEventos);
   var eventosStaging = Object.values(_eventosStagingCarga).filter(function(ev) {
     return !_eventosAndamento[ev.id];
   });
@@ -8492,12 +8521,25 @@ function renderEventosAndamento() {
 
   sec.style.display = 'block';
   document.body.classList.add('has-ev-sidebar');
-  if (count) count.textContent = eventosAndamento.length + ' ativo' + (eventosAndamento.length !== 1 ? 's' : '');
+  if (count) count.textContent = eventosEmAndamento.length + ' ativo' + (eventosEmAndamento.length !== 1 ? 's' : '');
 
-  // Renderiza andamento primeiro, depois separador + staging
-  var andamentoHtml = eventosAndamento.map(function(ev) {
+  // Renderiza: andamento → separador → eventos (aguardando) → separador → staging
+  var andamentoHtml = eventosEmAndamento.map(function(ev) {
     return _buildEvAndamentoCard(ev);
   }).join('');
+
+  var eventosHtml = '';
+  if (eventosEmEventos.length) {
+    var sepEventos = '<div class="ev-section-separator aguardando">Aguardando</div>';
+    eventosHtml = sepEventos + eventosEmEventos.map(function(ev) {
+      var cardHtml = _buildEvAndamentoCard(ev);
+      cardHtml = cardHtml.replace(
+        'class="evento-card"',
+        'class="evento-card" style="border-color:rgba(255,255,255,0.08);opacity:0.75"'
+      );
+      return cardHtml;
+    }).join('');
+  }
 
   var stagingHtml = '';
   if (eventosStaging.length) {
@@ -8515,7 +8557,7 @@ function renderEventosAndamento() {
     }).join('');
   }
 
-  scroll.innerHTML = andamentoHtml + stagingHtml;
+  scroll.innerHTML = andamentoHtml + eventosHtml + stagingHtml;
 
   _bindEvAndamentoCards();
 
