@@ -1259,6 +1259,13 @@
   /* ── KITS SECTION ── */
   .kits-section {
     padding: 0 24px 0;
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .kits-section-inner {
+    flex: 1;
+    min-width: 0;
   }
   .kits-section-header {
     display: flex;
@@ -1337,22 +1344,25 @@
   border-radius: 8px;
   background: rgba(224,92,92,0.03);
   color: rgba(224,92,92,0.45);
-  display: flex;
-  flex-direction: row;
+  display: none;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   cursor: default;
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   transition: border-color 0.2s, background 0.2s, color 0.2s;
-  width: 100%;
-  min-height: 52px;
+  width: 52px;
+  flex-shrink: 0;
+  writing-mode: vertical-rl;
   user-select: none;
+  align-self: stretch;
 }
+body.kit-dragging .kit-remove-zone { display: flex; }
 .kit-remove-zone.drag-over-remove { border-color: #e05c5c; background: rgba(224,92,92,0.07); color: #e05c5c; }
 
   /* KIT MODAL */
@@ -2474,16 +2484,24 @@
 
   <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
-    <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
-      <div class="kits-section-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        Kits
-        <svg id="kits-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;margin-left:4px"><polyline points="6 9 12 15 18 9"/></svg>
+    <div class="kits-section-inner">
+      <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
+        <div class="kits-section-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Kits
+          <svg id="kits-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;margin-left:4px"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
       </div>
-
+      <div class="kits-grid" id="kits-grid" style="transition:max-height 0.3s ease,opacity 0.3s ease;overflow:hidden">
+        <!-- renderizado por JS -->
+      </div>
     </div>
-    <div class="kits-grid" id="kits-grid" style="transition:max-height 0.3s ease,opacity 0.3s ease;overflow:hidden">
-      <!-- renderizado por JS -->
+    <div class="kit-remove-zone" id="kit-remove-zone"
+      ondragover="_kitRemoveZoneOver(event)"
+      ondragleave="_kitRemoveZoneLeave(event)"
+      ondrop="_kitRemoveZoneDrop(event)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Remover
     </div>
   </div>
 
@@ -5259,14 +5277,7 @@ function renderKits() {
   if (!grid) return;
 
   var kitsArr = _kitOrdemGetArr(Object.values(_kits));
-  var svgRemove = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
-  var html = '<div class="kit-remove-zone" id="kit-remove-zone"' +
-    ' ondragover="_kitRemoveZoneOver(event)"' +
-    ' ondragleave="_kitRemoveZoneLeave(event)"' +
-    ' ondrop="_kitRemoveZoneDrop(event)">' +
-    svgRemove +
-    'Arraste aqui para remover' +
-  '</div>';
+  var html = '';
 
   kitsArr.forEach(function(kit) {
     var itens = Array.isArray(kit.itens) ? kit.itens : [];
@@ -9015,8 +9026,10 @@ function _kitDragStart(ev, kitId) {
   ev.dataTransfer.effectAllowed = 'all';
   var el = document.getElementById('kit-card-' + kitId);
   if (el) setTimeout(function() { el.style.opacity = '0.5'; }, 0);
+  document.body.classList.add('kit-dragging');
 }
 function _kitDragEnd() {
+  document.body.classList.remove('kit-dragging');
   if (_draggingKitId) {
     var el = document.getElementById('kit-card-' + _draggingKitId);
     if (el) el.style.opacity = '';
@@ -9449,9 +9462,11 @@ function _kitSlotDragStart(el, ev) {
   ev.dataTransfer.setData('tipo', 'kit-slot');
   ev.dataTransfer.effectAllowed = 'move';
   ev.stopPropagation(); // não aciona drag do kit-folder pai
+  document.body.classList.add('kit-dragging');
 }
 
 function _kitSlotDragEnd(ev) {
+  document.body.classList.remove('kit-dragging');
   _draggingKitSlot = null;
   _draggingItemData = null;
   var zone = document.getElementById('kit-remove-zone');
