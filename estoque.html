@@ -8741,7 +8741,7 @@ function renderEventosAndamento() {
 
   var eventosHtml = '';
   if (eventosEmEventos.length) {
-    var sepEventos = '<div class="ev-section-separator aguardando">Aguardando</div>';
+    var sepEventos = '<div class="ev-section-separator aguardando">Montar carga</div>';
     eventosHtml = sepEventos + eventosEmEventos.map(function(ev) {
       var cardHtml = _buildEvAndamentoCard(ev);
       cardHtml = cardHtml.replace(
