@@ -1309,18 +1309,11 @@
     width: 280px;
     flex-shrink: 0;
   }
-  .kit-remove-zone {
-    width: 100%;
-  }
-  .kit-novo-card {
-    width: 280px;
-  }
-
-
   /* novo kit btn */
   .kit-novo-card {
-    width: 100%;
-    min-height: 160px;
+    width: 280px;
+    flex-shrink: 0;
+    min-height: 168px;
     background: transparent;
     border: 1px dashed var(--border);
     border-radius: 8px;
@@ -1356,7 +1349,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   transition: border-color 0.2s, background 0.2s, color 0.2s;
-  grid-column: 1 / -1;
+  width: 100%;
   min-height: 52px;
   user-select: none;
 }
@@ -4724,76 +4717,7 @@ function instalarApp() {
 })();
 </script>
 <!-- ───── MODAL: KIT ───── -->
-<div id="kit-modal-overlay" class="modal-overlay" data-modal-static="1" style="display:none" onclick="fecharModalKit(event)">
-  <div class="kit-modal-box" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <div class="modal-title" id="kit-modal-title">Novo Kit</div>
-      <button class="btn-modal-close" onclick="fecharModalKit(null)">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-
-      <!-- Seção colapsável: Nome e Descrição -->
-      <div class="kit-collapsible-section">
-        <div class="kit-collapsible-header" onclick="toggleKitSection('nome-desc', this)" data-open="0">
-          <div class="kit-collapsible-label">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Nome do kit e descrição
-          </div>
-          <svg class="kit-collapsible-arrow" style="" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="kit-collapsible-body" id="kit-section-nome-desc">
-          <div class="form-group" style="margin-bottom:10px">
-            <label class="form-label">Nome do kit *</label>
-            <input type="text" class="form-input" id="kit-nome" placeholder="Ex: Kit de Som #1" />
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Descrição (opcional)</label>
-            <input type="text" class="form-input" id="kit-desc" placeholder="PA completo, shows médios..." />
-          </div>
-        </div>
-      </div>
-
-      <!-- Seção colapsável: Equipamentos no Kit -->
-      <div class="kit-collapsible-section">
-        <div class="kit-collapsible-header" onclick="toggleKitSection('equip-no-kit', this)" data-open="1">
-          <div class="kit-collapsible-label">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-            Equipamentos no kit
-          </div>
-          <svg class="kit-collapsible-arrow" style="transform:rotate(180deg)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="kit-collapsible-body open" id="kit-section-equip-no-kit">
-          <div class="kit-modal-drop" id="kit-drop-zone"
-            ondragover="kitDropZoneOver(event)"
-            ondragleave="kitDropZoneLeave(event)"
-            ondrop="kitDropZoneDrop(event)">
-            <div class="kit-modal-drop-empty" id="kit-drop-empty">Arraste equipamentos para cá ou clique em + abaixo</div>
-          </div>
-          <div style="margin-top:12px">
-            <div style="font-family:Barlow Condensed,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#555;margin-bottom:8px;display:flex;align-items:center;gap:6px">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              Adicionar equipamento (clique ou arraste)
-            </div>
-            <input type="text" class="form-input" id="kit-search-eq" placeholder="Buscar equipamento..." oninput="renderKitSearchResults()" style="margin-bottom:6px" />
-            <div id="kit-search-results" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Seção de movimentação do kit (só aparece ao editar) -->
-      <div id="kit-mov-section-container"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-cancel" onclick="fecharModalKit(null)">Cancelar</button>
-      <button class="btn-modal-save" onclick="salvarKit()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Salvar kit
-      </button>
-    </div>
-  </div>
-</div>
+<!-- kit-modal removido -->
 
 <script>
 // ── KITS: Estado ──
@@ -5154,11 +5078,13 @@ function _kitOrdemSalvar() {
 }
 
 function _kitOrdemGetArr(kitsArr) {
-  // Ordena kitsArr respeitando _kitOrdem; kits sem posição vão ao final
+  // Ordena kitsArr respeitando _kitOrdem; kits sem posição são ordenados por _criado e vão ao final
   var ordenados = _kitOrdem
     .map(function(id) { return kitsArr.find(function(k) { return k.id === id; }); })
     .filter(Boolean);
   var restantes = kitsArr.filter(function(k) { return _kitOrdem.indexOf(k.id) === -1; });
+  // Ordena os restantes por data de criação para consistência
+  restantes.sort(function(a, b) { return (a._criado || 0) - (b._criado || 0); });
   return ordenados.concat(restantes);
 }
 
@@ -5207,7 +5133,7 @@ function renderKits() {
           'style="position:relative;cursor:grab" ' +
           'data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '" data-equip-id="' + esc(it.equipId) + '" ' +
           'onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" ' +
-          'onclick="event.stopPropagation();abrirModalEditarKit(this.dataset.kitId)" ' +
+
           'ondragstart="_kitSlotDragStart(this,event)" ' +
           'ondragend="_kitSlotDragEnd(event)" ' +
           'ondragover="_kitSlotReorderOver(this,event)" ' +
@@ -5235,8 +5161,6 @@ function renderKits() {
       }
     }
 
-    var svgEdit = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-
     html += '<div class="kit-slot-panel kit-folder" id="kit-card-' + esc(kit.id) + '" draggable="true"' +
 
       ' ondragover="kitFolderOver(event,\'' + esc(kit.id) + '\')"' +
@@ -5246,10 +5170,6 @@ function renderKits() {
       '<div class="kit-slot-panel-header">' +
         '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_editarNomeKit(\'' + esc(kit.id) + '\')" style="cursor:text" title="Clique para editar o nome">' +
           esc(kit.nome || 'Kit') +
-        '</div>' +
-        '<div class="kit-slot-panel-actions">' +
-          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="Editar">' + svgEdit + '</button>' +
-
         '</div>' +
       '</div>' +
       '<div class="kit-slot-panel-body">' +
@@ -5435,7 +5355,12 @@ function criarNovoKitDireto() {
   var nome = 'Kit #' + n;
   if (!db) return;
   db.collection('kits').add({ nome: nome, descricao: '', itens: [], _criado: Date.now(), _atualizado: Date.now() })
-    .then(function() { toast('Kit criado: ' + nome); })
+    .then(function(docRef) {
+      // Adiciona o novo ID ao final da ordem persistida
+      _kitOrdem.push(docRef.id);
+      _kitOrdemSalvar();
+      toast('Kit criado: ' + nome);
+    })
     .catch(function(e) { toast('Erro: ' + e.message, true); });
 }
 
@@ -5486,21 +5411,7 @@ function _editarNomeKit(kitId) {
 }
 
 function abrirModalEditarKit(kitId) {
-  var kit = _kits[kitId];
-  if (!kit) return;
-  _kitEditandoId = kitId;
-  _kitItensAtual = Array.isArray(kit.itens) ? kit.itens.map(function(it) {
-    return { equipId: it.equipId, qtd: it.qtd || 1, acessorios: it.acessorios || '' };
-  }) : [];
-  _kitMovAberto = false;
-  document.getElementById('kit-modal-title').textContent = esc(kit.nome || 'Kit');
-  document.getElementById('kit-nome').value = kit.nome || '';
-  document.getElementById('kit-desc').value = kit.descricao || '';
-  document.getElementById('kit-search-eq').value = '';
-  _renderKitMovSection();
-  renderKitDropZone();
-  renderKitSearchResults();
-  document.getElementById('kit-modal-overlay').style.display = 'flex';
+  // modal removido — função mantida para compatibilidade com referências restantes
 }
 
 function fecharModalKit(ev) {
