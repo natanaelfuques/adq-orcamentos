@@ -1453,61 +1453,6 @@
     color: #e05c5c;
     border-color: #e05c5c;
   }
-/* ── MODO EDITOR DE EVENTOS (agenda) ── */
-.editor-mode-ev .agev-field-edit {
-  cursor: pointer;
-  border-bottom: 1px dashed rgba(74,144,217,0.4);
-  transition: border-color 0.15s;
-}
-.editor-mode-ev .agev-field-edit:hover { border-bottom-color: #4A90D9; }
-.agev-editor-input {
-  background: #0e0e0e;
-  border: 1px solid #4A90D9;
-  color: #ccc;
-  padding: 3px 6px;
-  border-radius: 3px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: inherit;
-  width: 100%;
-  box-sizing: border-box;
-}
-.agev-editor-input:focus { outline: none; border-color: #6ab0f5; }
-.agev-editor-banner {
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #0a1220;
-  border: 1px solid #4A90D9;
-  color: #4A90D9;
-  padding: 8px 20px;
-  border-radius: 20px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  z-index: 9998;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  pointer-events: none;
-}
-.agev-edit-toggle-btn {
-  background: transparent;
-  border: 1px solid #333;
-  color: #555;
-  border-radius: 4px;
-  width: 26px;
-  height: 26px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.15s, color 0.15s;
-  flex-shrink: 0;
-}
-.agev-edit-toggle-btn:hover, .agev-edit-toggle-btn.ativo { border-color: #4A90D9; color: #4A90D9; }
 /* kit-remove-zone legado — oculto (substituído pelo kit-novo-card modo duplo) */
 .kit-remove-zone { display: none !important; }
 
@@ -6951,24 +6896,23 @@ function _abrirCardEvento(id) {
       '<div class="agenda-ev-card-header">' +
         '<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">' +
           dataBadgeHtml +
-          '<span class="agev-field-edit" data-field="cli_nome" data-evid="' + id + '" style="font-family:Barlow Condensed,sans-serif;font-size:0.9rem;font-weight:800;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
+          '<span style="font-family:Barlow Condensed,sans-serif;font-size:0.9rem;font-weight:800;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
             esc(ev.cli_nome || ev.ev_nome || '—') +
           '</span>' +
         '</div>' +
-        '<button onclick="_toggleAgEvEditor(\'' + id + '\')" id="agev-edit-btn-' + id + '" class="agev-edit-toggle-btn" title="Editar evento"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
         '<button onclick="_fecharCardEvento()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:2px 6px;line-height:1;flex-shrink:0">&#x2715;</button>' +
       '</div>' +
       '<div class="agenda-ev-card-body">' +
-        (ev.cli_nome && ev.ev_nome ? '<div class="agev-evnome agev-field-edit" data-field="ev_nome" data-evid="' + id + '" style="margin-top:-4px">' + esc(ev.ev_nome) + '</div>' : '') +
+        (ev.cli_nome && ev.ev_nome ? '<div class="agev-evnome" style="margin-top:-4px">' + esc(ev.ev_nome) + '</div>' : '') +
         (horarioBlock
-          ? '<div class="card-horario-block agev-field-edit" data-field="ev_horarios" data-evid="' + id + '" style="font-size:0.78rem;color:' + corBadge.color + ';font-weight:600">' + horarioBlock + '</div>'
+          ? '<div class="card-horario-block" style="font-size:0.78rem;color:' + corBadge.color + ';font-weight:600">' + horarioBlock + '</div>'
           : '') +
         (ev.ev_local
           ? '<div class="card-local">' +
               '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>' +
               (ev.ev_maps
                 ? '<a href="' + esc(ev.ev_maps) + '" target="_blank" class="agev-local-link" onclick="event.stopPropagation()">' + esc(ev.ev_local) + '</a>'
-                : '<span class="agev-field-edit" data-field="ev_local" data-evid="' + id + '" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local) + '</span>') +
+                : '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local) + '</span>') +
             '</div>'
           : '') +
         (waHtml ? '<div style="margin-top:2px">' + waHtml + '</div>' : '') +
@@ -6981,142 +6925,9 @@ function _abrirCardEvento(id) {
   document.body.appendChild(overlay);
 }
 
-var _agEvEditorAtivo = false;
-
-function _toggleAgEvEditor(evId) {
-  _agEvEditorAtivo = !_agEvEditorAtivo;
-  var overlay = document.getElementById('agenda-ev-overlay');
-  var btn = document.getElementById('agev-edit-btn-' + evId);
-  var banner = document.getElementById('agev-editor-banner');
-  if (_agEvEditorAtivo) {
-    if (overlay) overlay.classList.add('editor-mode-ev');
-    if (btn) btn.classList.add('ativo');
-    if (!banner) {
-      banner = document.createElement('div');
-      banner.id = 'agev-editor-banner';
-      banner.className = 'agev-editor-banner';
-      banner.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>\u00a0Modo Edição ativo — clique nos campos';
-      document.body.appendChild(banner);
-    }
-  } else {
-    if (overlay) overlay.classList.remove('editor-mode-ev');
-    if (btn) btn.classList.remove('ativo');
-    if (banner) banner.remove();
-  }
-}
-
-document.addEventListener('click', function(e) {
-  if (!_agEvEditorAtivo) return;
-  var el = e.target.closest('.agev-field-edit');
-  if (!el) return;
-  e.stopPropagation();
-  e.preventDefault();
-  var field = el.dataset.field;
-  var evId = el.dataset.evid;
-  if (!field || !evId) return;
-  if (el.querySelector('.agev-editor-input')) return;
-  if (field === 'ev_horarios') { _abrirEditorHorariosAg(evId); return; }
-  var ev = _eventosAgenda[evId];
-  var valorAtual = ev ? (ev[field] || '') : el.textContent.trim();
-  var input = document.createElement('input');
-  input.className = 'agev-editor-input';
-  input.type = (field === 'ev_data' || field === 'ev_data_fim') ? 'date' : 'text';
-  input.value = valorAtual;
-  var originalHtml = el.innerHTML;
-  el.innerHTML = '';
-  el.appendChild(input);
-  input.focus();
-  if (input.type !== 'date') input.select();
-  function salvar() {
-    var novoValor = input.value.trim();
-    el.innerHTML = originalHtml;
-    if (novoValor === valorAtual) return;
-    if (db) {
-      var upd = {}; upd[field] = novoValor;
-      db.collection('eventos_campo').doc(evId).update(upd)
-        .then(function() {
-          if (_eventosAgenda[evId]) _eventosAgenda[evId][field] = novoValor;
-          _renderAgendaCalendar();
-          _renderAgendaListaDia(_agDiaSelecionado);
-          toast('Campo atualizado!');
-          _fecharCardEvento();
-          _agEvEditorAtivo = false;
-          var banner = document.getElementById('agev-editor-banner');
-          if (banner) banner.remove();
-          setTimeout(function() { _abrirCardEvento(evId); }, 80);
-        })
-        .catch(function(err) { toast('Erro: ' + err.message, true); });
-    }
-  }
-  input.addEventListener('blur', salvar);
-  input.addEventListener('keydown', function(ev2) {
-    if (ev2.key === 'Enter') { ev2.preventDefault(); input.blur(); }
-    if (ev2.key === 'Escape') { el.innerHTML = originalHtml; }
-  });
-}, true);
-
-function _abrirEditorHorariosAg(evId) {
-  var ev = _eventosAgenda[evId];
-  if (!ev) return;
-  var existing = document.getElementById('modal-agev-horarios');
-  if (existing) existing.remove();
-  var modal = document.createElement('div');
-  modal.id = 'modal-agev-horarios';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1100;display:flex;align-items:center;justify-content:center;padding:20px';
-  var campos = [
-    { key: 'ev_montagem', label: 'Montagem', val: ev.ev_montagem || '' },
-    { key: 'ev_inicio', label: 'Início', val: ev.ev_inicio || '' },
-    { key: 'ev_fim', label: 'Fim', val: ev.ev_fim || '' },
-    { key: 'ev_desmontagem', label: 'Desmontagem', val: ev.ev_desmontagem || '' }
-  ];
-  var fieldsHtml = campos.map(function(c) {
-    return '<div style="margin-bottom:10px">' +
-      '<div style="font-size:0.68rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">' + c.label + '</div>' +
-      '<input id="agev-hor-' + c.key + '" type="text" value="' + c.val + '" placeholder="Ex: 14:00" style="width:100%;background:#0e0e0e;border:1px solid #2a2a2a;color:#ccc;padding:8px 10px;border-radius:4px;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;box-sizing:border-box" />' +
-    '</div>';
-  }).join('');
-  modal.innerHTML = '<div style="background:#1a1a1a;border:1px solid #4A90D9;border-radius:8px;width:100%;max-width:300px;padding:20px;box-sizing:border-box">' +
-    '<div style="font-family:Barlow Condensed,sans-serif;font-size:0.8rem;font-weight:700;color:#4A90D9;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:14px">Editar Horários</div>' +
-    fieldsHtml +
-    '<div style="display:flex;gap:8px;margin-top:14px">' +
-      '<button onclick="_salvarHorariosAg(\'' + evId + '\')" style="flex:1;background:#4A90D9;color:#111;border:none;padding:9px;border-radius:4px;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer">&#10003; Salvar</button>' +
-      '<button onclick="document.getElementById(\'modal-agev-horarios\').remove()" style="background:#1e1e1e;border:1px solid #333;color:#555;padding:9px 14px;border-radius:4px;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;cursor:pointer">&#x2715;</button>' +
-    '</div>' +
-  '</div>';
-  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
-  document.body.appendChild(modal);
-}
-
-function _salvarHorariosAg(evId) {
-  var upd = {
-    ev_montagem:    (document.getElementById('agev-hor-ev_montagem') || {}).value || '',
-    ev_inicio:      (document.getElementById('agev-hor-ev_inicio') || {}).value || '',
-    ev_fim:         (document.getElementById('agev-hor-ev_fim') || {}).value || '',
-    ev_desmontagem: (document.getElementById('agev-hor-ev_desmontagem') || {}).value || ''
-  };
-  if (db) {
-    db.collection('eventos_campo').doc(evId).update(upd)
-      .then(function() {
-        if (_eventosAgenda[evId]) Object.keys(upd).forEach(function(k) { _eventosAgenda[evId][k] = upd[k]; });
-        var m = document.getElementById('modal-agev-horarios');
-        if (m) m.remove();
-        toast('Horários atualizados!');
-        _fecharCardEvento();
-        _agEvEditorAtivo = false;
-        var banner = document.getElementById('agev-editor-banner');
-        if (banner) banner.remove();
-        setTimeout(function() { _abrirCardEvento(evId); }, 80);
-      })
-      .catch(function(err) { toast('Erro: ' + err.message, true); });
-  }
-}
-
 function _fecharCardEvento() {
   var el = document.getElementById('agenda-ev-overlay');
   if (el) el.remove();
-  _agEvEditorAtivo = false;
-  var banner = document.getElementById('agev-editor-banner');
-  if (banner) banner.remove();
 }
 
 function _ativarMontaCarga(evId) {
