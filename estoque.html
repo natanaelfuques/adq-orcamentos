@@ -274,13 +274,8 @@
   .btn-add-eq:active { transform: translateY(0); }
 
   /* ── CATEGORY TABS ── */
-  .cat-tabs {
-    display: flex;
-    gap: 6px;
-    padding: 0 24px 16px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
+  /* cat-tabs agora é inline na section-tabs-bar */
+  .cat-tabs { display: contents; }
   .cat-tabs::-webkit-scrollbar { display: none; }
 
   .cat-tab {
@@ -316,7 +311,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 8px;
-    padding: 0 24px 32px;
+    padding: 16px 24px 32px;
   }
 
   /* ── EQUIPMENT CARD ── */
@@ -384,11 +379,26 @@
   }
 
   .eq-cat {
-    font-size: 0.62rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+  }
+  .eq-cat-pill {
+    display: inline-block;
+    font-size: 0.55rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
+    letter-spacing: 0.09em;
+    color: #777;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 2px 7px;
+    line-height: 1.5;
   }
 
   .eq-actions {
@@ -930,6 +940,7 @@
     white-space: nowrap;
   }
   .toast.error { background: #1a0a0a; border-color: var(--red); color: var(--red); }
+  .toast.has-undo { pointer-events: auto; }
   @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
   /* ── SECTION TITLE ── */
@@ -1333,7 +1344,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
   grid-column: 1 / -1;
   min-height: 52px;
   user-select: none;
@@ -1424,12 +1435,16 @@
   .kit-item-chip-remove:hover { color: var(--red); }
 
 
-  /* kit badge no card de equipamento */
-  .eq-kit-badges {
+  /* linha inferior do card: categoria + badges de kit */
+  .eq-footer-row {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 4px;
-    margin-bottom: 6px;
+    margin-top: 5px;
+  }
+  .eq-kit-badges {
+    display: contents; /* badges vivem dentro de eq-footer-row */
   }
   .eq-kit-badge {
     font-size: 0.58rem;
@@ -2153,7 +2168,7 @@
   /* ── KIT SLOT PANELS ── */
   .kit-slot-panel {
     background: var(--surface);
-    border: 1px solid var(--gold);
+    border: 1px solid rgba(74,144,217,0.45);
     border-radius: 8px;
     overflow: hidden;
     position: relative;
@@ -2301,10 +2316,20 @@
     text-transform: uppercase;
     cursor: pointer;
     padding: 10px 16px 8px;
-    transition: color 0.15s, border-color 0.15s;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
     margin-bottom: -1px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .section-tab-btn:hover { color: #ccc; }
+  /* Abas primárias (Equipamentos / Acessórios) */
+  .section-tab-btn.primary-tab.active {
+    color: #fff;
+    border-bottom-color: rgba(74,144,217,0.9);
+    background: rgba(74,144,217,0.08);
+  }
+  .section-tab-btn.primary-tab:hover { color: #ccc; background: rgba(74,144,217,0.04); }
+  /* Abas de categoria — mais sutis */
   .section-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
   .section-tabs-right {
     display: flex;
@@ -2312,6 +2337,24 @@
     gap: 6px;
     padding: 6px 0;
   }
+  .section-tabs-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--border2);
+    margin: 0 4px;
+    flex-shrink: 0;
+  }
+  .section-tab-btn .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 0.62rem;
+    margin-left: 5px;
+  }
+  .section-tab-btn.active .tab-count { background: rgba(200,169,74,0.18); }
   @media (max-width: 600px) {
     .section-tabs-bar { padding: 0 12px; }
     .kit-slot-grid-3x3 { gap: 4px; }
@@ -2453,13 +2496,6 @@
     </select>
   </div>
 
-  <!-- CATEGORY TABS -->
-  <div class="cat-tabs" id="cat-tabs">
-    <button class="cat-tab active" data-cat="todos" onclick="filtrarCategoria('todos', this)">
-      Todos <span class="cat-count" id="cnt-todos">0</span>
-    </button>
-  </div>
-
   <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
     <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
@@ -2475,12 +2511,14 @@
     </div>
   </div>
 
-  <!-- SECTION TABS (Equipamentos / Acessórios) -->
-  <div class="section-tabs-bar">
-    <div class="section-tabs-left">
-      <button class="section-tab-btn active" id="tab-btn-equipamentos" onclick="switchTabSecao('equipamentos')">Equipamentos</button>
-      <button class="section-tab-btn" id="tab-btn-acessorios" onclick="switchTabSecao('acessorios')">Acessórios</button>
+  <!-- SECTION TABS (Equipamentos / Acessórios / Categorias) -->
+  <div class="section-tabs-bar" style="overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap">
+    <div class="section-tabs-left" style="flex-shrink:0">
+      <button class="section-tab-btn primary-tab active" id="tab-btn-equipamentos" onclick="switchTabSecao('equipamentos')">Equipamentos <span class="tab-count" id="cnt-primary-equipamentos"></span></button>
+      <button class="section-tab-btn primary-tab" id="tab-btn-acessorios" onclick="switchTabSecao('acessorios')">Acessórios <span class="tab-count" id="cnt-primary-acessorios"></span></button>
     </div>
+    <div class="section-tabs-sep" id="cat-tabs-sep" style="display:none"></div>
+    <div id="cat-tabs" style="display:flex;align-items:stretch;gap:0;overflow:visible;flex-shrink:0"></div>
     <div class="section-tabs-right"></div>
   </div>
 
@@ -2493,7 +2531,7 @@
   </div>
 
   <!-- TAB PANEL: Acessórios -->
-  <div id="tab-panel-acessorios" style="display:none;padding:0 24px 24px">
+  <div id="tab-panel-acessorios" style="display:none;padding:16px 24px 24px">
     <div class="acessorios-grid" id="acessorios-grid">
       <!-- renderizado por JS -->
     </div>
@@ -3115,30 +3153,80 @@ function _renderStatsAjustados() {
 
 function renderCatTabs() {
   var equips = Object.values(_equipamentos);
-  var catCount = {};
+  var acessorios = Object.values(_acessorios);
+  var isAcessorios = _tabSecaoAtiva === 'acessorios';
+
+  // Contagem por categoria para a aba ATIVA
+  var catCountEq = {};
   equips.forEach(function(e) {
-    if (e.categoria) {
-      catCount[e.categoria] = (catCount[e.categoria] || 0) + 1;
-    }
+    if (e.categoria) catCountEq[e.categoria] = (catCountEq[e.categoria] || 0) + 1;
+  });
+  var catCountAc = {};
+  acessorios.forEach(function(a) {
+    if (a.categoria) catCountAc[a.categoria] = (catCountAc[a.categoria] || 0) + 1;
   });
 
+  // União de todas as categorias (de ambos)
+  var todasCats = Array.from(new Set(
+    Object.keys(catCountEq).concat(Object.keys(catCountAc))
+  )).sort();
+
   var container = document.getElementById('cat-tabs');
-  var totalBtn = '<button class="cat-tab' + (_catAtual === 'todos' ? ' active' : '') + '" data-cat="todos" onclick="filtrarCategoria(\'todos\', this)">Todos <span class="cat-count" id="cnt-todos">' + equips.length + '</span></button>';
-  var catBtns = Object.keys(catCount).sort().map(function(cat) {
+  var sep = document.getElementById('cat-tabs-sep');
+
+  if (!todasCats.length) {
+    if (container) container.innerHTML = '';
+    if (sep) sep.style.display = 'none';
+    return;
+  }
+
+  if (sep) sep.style.display = '';
+
+  // Total visível na aba ativa
+  var totalAtivo = isAcessorios ? acessorios.length : equips.length;
+
+  var totalBtn = '<button class="section-tab-btn' + (_catAtual === 'todos' ? ' active' : '') +
+    '" data-cat="todos" onclick="filtrarCategoria(\'todos\', this)">' +
+    'Todos <span class="tab-count" id="cnt-todos">' + totalAtivo + '</span></button>';
+
+  // Atualizar contadores primários
+  var cntPrimEq = document.getElementById('cnt-primary-equipamentos');
+  if (cntPrimEq) cntPrimEq.textContent = equips.length;
+  var cntPrimAc = document.getElementById('cnt-primary-acessorios');
+  if (cntPrimAc) cntPrimAc.textContent = acessorios.length;
+
+  var catBtns = todasCats.map(function(cat) {
     var ativo = _catAtual === cat ? ' active' : '';
-    var svgIcon = CATEGORIAS_SVG[cat] ? '<span class="cat-svg-icon">' + CATEGORIAS_SVG[cat] + '</span>' : '';
-    return '<button class="cat-tab' + ativo + '" data-cat="' + esc(cat) + '" onclick="filtrarCategoria(\'' + esc(cat) + '\', this)">' +
+    var svgIcon = CATEGORIAS_SVG[cat] ? '<span class="cat-svg-icon" style="margin-right:3px">' + CATEGORIAS_SVG[cat] + '</span>' : '';
+    // Contagem conforme aba ativa; zero = não tem nada nessa cat para esta aba
+    var count = isAcessorios ? (catCountAc[cat] || 0) : (catCountEq[cat] || 0);
+    var zeroStyle = count === 0 ? ' style="opacity:0.35"' : '';
+    return '<button class="section-tab-btn' + ativo + '"' + zeroStyle + ' data-cat="' + esc(cat) +
+      '" onclick="filtrarCategoriaAba(\'' + esc(cat) + '\', this)">' +
       svgIcon + esc(cat) +
-      ' <span class="cat-count">' + catCount[cat] + '</span></button>';
+      '<span class="tab-count">' + count + '</span></button>';
   }).join('');
+
   container.innerHTML = totalBtn + catBtns;
 }
 
 function filtrarCategoria(cat, el) {
   _catAtual = cat;
-  document.querySelectorAll('.cat-tab').forEach(function(b) { b.classList.remove('active'); });
+  // Limpa active só nos botões de categoria (dentro do #cat-tabs)
+  var catContainer = document.getElementById('cat-tabs');
+  if (catContainer) catContainer.querySelectorAll('.section-tab-btn').forEach(function(b) { b.classList.remove('active'); });
   if (el) el.classList.add('active');
-  renderEquipamentos();
+  if (_tabSecaoAtiva === 'acessorios') {
+    renderAcessorios();
+  } else {
+    renderEquipamentos();
+  }
+}
+
+// Filtra categoria no painel ativo (Equipamentos ou Acessórios)
+function filtrarCategoriaAba(cat, el) {
+  // filtrarCategoria já renderiza o painel correto conforme _tabSecaoAtiva
+  filtrarCategoria(cat, el);
 }
 
 function filtrarStat(tipo) {
@@ -3335,7 +3423,7 @@ function buildCard(e) {
         '<div class="eq-icon">' + _getEqSvg(e.emoji, 18) + '</div>' +
         '<div class="eq-info">' +
           '<div class="eq-name" title="' + esc(e.nome || '') + '">' + esc(e.nome || 'Sem nome') + '</div>' +
-          '<div class="eq-cat">' + esc(e.categoria || 'Sem categoria') + '</div>' +
+          '<div class="eq-cat">' + esc(e.modelo || '') + '</div>' +
         '</div>' +
         '<div class="eq-actions">' +
           '<button class="eq-action-btn" onclick="event.stopPropagation();abrirModalEdit(\'' + e.id + '\')" title="Editar">' +
@@ -3368,6 +3456,7 @@ function buildCard(e) {
       '<div class="avail-bar">' +
         '<div class="avail-fill" style="width:' + pct + '%;background:' + barColor + '"></div>' +
       '</div>' +
+      '<div class="eq-footer-row">' + (e.categoria ? '<span class="eq-cat-pill">' + esc(e.categoria) + '</span>' : '') + '</div>' +
 
     '</div>' +
   '</div>';
@@ -4240,15 +4329,13 @@ function toastUndo(msg, undoFn) {
   span.textContent = msg;
   t.appendChild(span);
   if (undoFn) {
+    t.classList.add('has-undo');
     var btn = document.createElement('button');
     btn.textContent = 'Desfazer';
-    btn.style.cssText = 'background:transparent;border:1px solid rgba(80,200,120,0.55);color:#50C878;border-radius:3px;padding:2px 9px;font-family:Barlow Condensed,sans-serif;font-size:0.65rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;flex-shrink:0;transition:background 0.15s';
+    btn.style.cssText = "background:transparent;border:1px solid rgba(80,200,120,0.55);color:#50C878;border-radius:3px;padding:2px 9px;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;flex-shrink:0;transition:background 0.15s";
     btn.onmouseover = function() { btn.style.background = 'rgba(80,200,120,0.12)'; };
     btn.onmouseout  = function() { btn.style.background = 'transparent'; };
-    btn.addEventListener('click', function() {
-      undoFn();
-      t.remove();
-    });
+    btn.addEventListener('click', function() { undoFn(); t.remove(); });
     t.appendChild(btn);
   }
   document.body.appendChild(t);
@@ -4783,11 +4870,15 @@ function switchTabSecao(tab) {
     if (btnEq) btnEq.classList.add('active');
     if (btnAc) btnAc.classList.remove('active');
     if (tabContainer) tabContainer.style.minHeight = '';
+    renderCatTabs();
+    renderEquipamentos();
   } else {
     if (panelEq) panelEq.style.display = 'none';
     if (panelAc) panelAc.style.display = '';
     if (btnEq) btnEq.classList.remove('active');
     if (btnAc) btnAc.classList.add('active');
+    renderCatTabs();
+    renderAcessorios();
   }
 }
 
@@ -4800,8 +4891,13 @@ function renderAcessorios() {
     return (a.nome || '').localeCompare(b.nome || '');
   });
 
+  // Filtrar por categoria ativa
+  if (_catAtual && _catAtual !== 'todos') {
+    lista = lista.filter(function(a) { return a.categoria === _catAtual; });
+  }
+
   if (!lista.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:28px 24px;color:#444;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em">Nenhum acessório cadastrado</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:28px 24px;color:#444;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em">Nenhum acessório nesta categoria</div>';
     return;
   }
 
@@ -4872,7 +4968,7 @@ function _abrirModalFormAcessorio(a) {
       return '<option value="' + esc(e.nome) + '"' + (a.equipamento === e.nome ? ' selected' : '') + '>' + esc(e.nome) + '</option>';
     }).join('');
 
-  var catOptions = ['Som', 'Iluminação', 'Microfone', 'Cabeamento', 'Estrutura', 'Vídeo', 'Potência', 'Periférico', 'Veículo', 'Outros'].map(function(c) {
+  var catOptions = _todasCategorias().map(function(c) {
     return '<option value="' + c + '"' + (a.categoria === c ? ' selected' : '') + '>' + c + '</option>';
   }).join('');
 
@@ -5061,16 +5157,6 @@ function renderKits() {
 
   kitsArr.forEach(function(kit) {
     var itens = Array.isArray(kit.itens) ? kit.itens : [];
-    var temZero = itens.some(function(it) {
-      var eq = _equipamentos[it.equipId];
-      return eq && (eq.qtd_disponivel || 0) < (it.qtd || 1);
-    });
-    var temWarn = itens.some(function(it) {
-      var eq = _equipamentos[it.equipId];
-      return eq && (eq.qtd_manutencao || 0) > 0;
-    });
-    var borderStyle = temZero ? 'border-color:var(--red)' : (temWarn ? 'border-color:var(--amber)' : '');
-
     // 9 slots 3×3
     var slots = '';
     for (var s = 0; s < 9; s++) {
@@ -5081,41 +5167,51 @@ function renderKits() {
           var svgStr = _getEqSvg(eq.emoji, 18);
           slots += '<div class="kit-slot-item filled" draggable="true" ' +
           'style="position:relative;cursor:grab" ' +
-          'data-kit-id="' + esc(kit.id) + '" data-equip-id="' + esc(it.equipId) + '" ' +
+          'data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '" data-equip-id="' + esc(it.equipId) + '" ' +
           'onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" ' +
           'onclick="event.stopPropagation();abrirModalEditarKit(this.dataset.kitId)" ' +
           'ondragstart="_kitSlotDragStart(this,event)" ' +
           'ondragend="_kitSlotDragEnd(event)" ' +
+          'ondragover="_kitSlotReorderOver(this,event)" ' +
+          'ondragleave="_kitSlotReorderLeave(this)" ' +
+          'ondrop="_kitSlotReorderDrop(this,event)" ' +
           'title="' + esc(eq.nome || '') + '">'+
             '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
             '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
             '<div class="kit-slot-item-name">' + esc(eq.nome || '') + '</div>' +
-            '<button class="kit-item-del-btn" onclick="event.stopPropagation();removerItemDoKit(\\\'' + esc(kit.id) + '\\\',\\\'' + esc(it.equipId) + '\\\')" title="Remover item" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);border:none;color:#e05c5c;cursor:pointer;border-radius:3px;width:16px;height:16px;font-size:0.75rem;line-height:16px;text-align:center;padding:0;opacity:0;transition:opacity 0.15s">&times;</button>' +
+
           '</div>';
         } else {
-          slots += '<div class="kit-slot-item empty"></div>';
+          slots += '<div class="kit-slot-item empty"' +
+            ' data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '"' +
+            ' ondragover="_kitSlotReorderOver(this,event)"' +
+            ' ondragleave="_kitSlotReorderLeave(this)"' +
+            ' ondrop="_kitSlotReorderDrop(this,event)"></div>';
         }
       } else {
-        slots += '<div class="kit-slot-item empty"></div>';
+        slots += '<div class="kit-slot-item empty"' +
+            ' data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '"' +
+            ' ondragover="_kitSlotReorderOver(this,event)"' +
+            ' ondragleave="_kitSlotReorderLeave(this)"' +
+            ' ondrop="_kitSlotReorderDrop(this,event)"></div>';
       }
     }
 
     var svgEdit = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-    var svgChevron = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
     html += '<div class="kit-slot-panel kit-folder" id="kit-card-' + esc(kit.id) + '" draggable="true"' +
-      (borderStyle ? ' style="' + borderStyle + '"' : '') +
+
       ' ondragover="kitFolderOver(event,\'' + esc(kit.id) + '\')"' +
       ' ondragleave="kitFolderLeave(event,\'' + esc(kit.id) + '\')"' +
       ' ondrop="kitFolderDrop(event,\'' + esc(kit.id) + '\')"' +
       ' ondragstart="_kitDragStart(event,\'' + esc(kit.id) + '\')" ondragend="_kitDragEnd()">' +
       '<div class="kit-slot-panel-header">' +
-        '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_toggleKitPanel(\'' + esc(kit.id) + '\')">' +
-          svgChevron + esc(kit.nome || 'Kit') +
+        '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_editarNomeKit(\'' + esc(kit.id) + '\')" style="cursor:text" title="Clique para editar o nome">' +
+          esc(kit.nome || 'Kit') +
         '</div>' +
         '<div class="kit-slot-panel-actions">' +
           '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="Editar">' + svgEdit + '</button>' +
-          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();excluirKit(\'' + esc(kit.id) + '\')" title="Excluir kit" style="color:var(--red);font-size:1.1rem;line-height:1;padding:0 3px">&times;</button>' +
+
         '</div>' +
       '</div>' +
       '<div class="kit-slot-panel-body">' +
@@ -5124,7 +5220,7 @@ function renderKits() {
     '</div>';
   });
 
-  html += '<div class="kit-novo-card" onclick="abrirModalNovoKit()">' +
+  html += '<div class="kit-novo-card" onclick="criarNovoKitDireto()">' +
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
     'Novo kit' +
   '</div>';
@@ -5240,14 +5336,17 @@ renderGrid = function(equips) {
     if (kitBadges) {
       var body = card.querySelector('.eq-card-body');
       if (body) {
-        var badgeDiv = document.createElement('div');
-        badgeDiv.className = 'eq-kit-badges';
-        badgeDiv.innerHTML = kitBadges;
-        var tagsEl = body.querySelector('.eq-tags');
-        var obsEl = body.querySelector('.eq-obs');
-        if (tagsEl) { body.insertBefore(badgeDiv, tagsEl); }
-        else if (obsEl) { body.insertBefore(badgeDiv, obsEl); }
-        else { body.appendChild(badgeDiv); }
+        var footerRow = body.querySelector('.eq-footer-row');
+        if (footerRow) {
+          var tmp = document.createElement('div');
+          tmp.innerHTML = kitBadges;
+          while (tmp.firstChild) { footerRow.appendChild(tmp.firstChild); }
+        } else {
+          var badgeDiv = document.createElement('div');
+          badgeDiv.className = 'eq-kit-badges';
+          badgeDiv.innerHTML = kitBadges;
+          body.appendChild(badgeDiv);
+        }
       }
     }
   });
@@ -5266,18 +5365,61 @@ function _getKitBadgesForEq(eqId) {
 }
 
 // ── Modal Kit ──
-function abrirModalNovoKit() {
-  _kitEditandoId = null;
-  _kitItensAtual = [];
-  _kitMovAberto = false;
-  document.getElementById('kit-modal-title').textContent = 'Novo Kit';
-  document.getElementById('kit-nome').value = '';
-  document.getElementById('kit-desc').value = '';
-  document.getElementById('kit-search-eq').value = '';
-  _renderKitMovSection();
-  renderKitDropZone();
-  renderKitSearchResults();
-  document.getElementById('kit-modal-overlay').style.display = 'flex';
+function criarNovoKitDireto() {
+  var existentes = Object.values(_kits).map(function(k) { return k.nome || ''; });
+  var n = 1;
+  while (existentes.indexOf('Kit #' + n) >= 0) n++;
+  var nome = 'Kit #' + n;
+  if (!db) return;
+  db.collection('kits').add({ nome: nome, descricao: '', itens: [], _criado: Date.now(), _atualizado: Date.now() })
+    .then(function() { toast('Kit criado: ' + nome); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+function _editarNomeKit(kitId) {
+  var titleEl = document.querySelector('#kit-card-' + kitId + ' .kit-slot-panel-title');
+  if (!titleEl || titleEl.querySelector('input')) return;
+  var kit = _kits[kitId];
+  var nomeAtual = kit ? (kit.nome || '') : '';
+  titleEl.innerHTML = '';
+  var inp = document.createElement('input');
+  inp.value = nomeAtual;
+  inp.style.cssText = 'flex:1;min-width:0;background:#1a1a1a;border:1px solid var(--gold);border-radius:4px;color:var(--text);font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:2px 6px;outline:none';
+  var btnOk = document.createElement('button');
+  btnOk.textContent = 'OK';
+  btnOk.style.cssText = 'background:var(--gold);color:#111;border:none;border-radius:4px;padding:2px 8px;font-weight:700;font-size:0.7rem;cursor:pointer;flex-shrink:0';
+  var btnX = document.createElement('button');
+  btnX.textContent = '✕';
+  btnX.style.cssText = 'background:none;border:1px solid #555;color:#888;border-radius:4px;padding:2px 6px;font-size:0.7rem;cursor:pointer;flex-shrink:0';
+  function _salvarNomeKit() {
+    var nome = inp.value.trim();
+    if (!nome) { _cancelarNomeKit(); return; }
+    if (kit) kit.nome = nome;
+    if (db) db.collection('kits').doc(kitId).update({ nome: nome })
+      .then(function() { renderKits(); }).catch(function(e) { toast('Erro: ' + e.message, true); });
+  }
+  function _cancelarNomeKit() { renderKits(); }
+  btnOk.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  btnOk.addEventListener('click', function(e) { e.stopPropagation(); _salvarNomeKit(); });
+  btnX.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  btnX.addEventListener('click', function(e) { e.stopPropagation(); _cancelarNomeKit(); });
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') _salvarNomeKit();
+    if (e.key === 'Escape') _cancelarNomeKit();
+  });
+  inp.addEventListener('blur', function() {
+    setTimeout(function() {
+      if (document.activeElement !== btnOk && document.activeElement !== btnX) _cancelarNomeKit();
+    }, 120);
+  });
+  titleEl.style.display = 'flex';
+  titleEl.style.alignItems = 'center';
+  titleEl.style.gap = '4px';
+  titleEl.appendChild(inp);
+  titleEl.appendChild(btnOk);
+  titleEl.appendChild(btnX);
+  inp.focus();
+  inp.select();
 }
 
 function abrirModalEditarKit(kitId) {
@@ -5980,7 +6122,7 @@ function _renderAgendaCalendar() {
 
     var bars = resDia.map(function(r) {
       var st  = _statusReserva(r);
-      var cor = st === 'conflito' ? '#e05c5c' : st === 'ativo' ? '#25D366' : st === 'passado' ? '#555' : '#F5A623';
+      var cor = st === 'conflito' ? '#e05c5c' : st === 'ativo' ? '#25D366' : st === 'passado' ? '#888' : '#F5A623';
       return '<div class="agenda-cal-ev-bar" style="background:' + cor + '22;color:' + cor + ';border-left:2px solid ' + cor + '"'
         + ' onclick="event.stopPropagation();editarReserva(\'' + r.id + '\')" title="' + esc(r.nome||'') + '">' 
         + esc(r.nome || 'Sem nome') + '</div>';
@@ -6197,10 +6339,10 @@ function _corBadgeEvento(ev) {
   var hoje = new Date(); hoje.setHours(0,0,0,0);
   var evData = new Date(ev.ev_data + 'T00:00:00');
   var diffDias = Math.ceil((evData - hoje) / 86400000);
-  if (diffDias < 0)  return '#555';    // passado
-  if (diffDias <= 1) return '#e05c5c'; // urgente (hoje/amanhã)
-  if (diffDias <= 7) return '#4A90D9'; // próximo (1 semana)
-  return '#aaa';                        // futuro distante
+  if (diffDias < 0)  return '#C8A94A';  // passado — mantém cor dourada
+  if (diffDias <= 1) return '#e05c5c';  // urgente (hoje/amanhã)
+  if (diffDias <= 7) return '#4A90D9';  // próximo (1 semana)
+  return '#F5A623';                     // futuro distante
 }
 
 // ── Abrir card flutuante do evento ────────────────────────
@@ -7241,7 +7383,12 @@ var _evEqOrigCounts = {};    // { eqId: {qtd_disponivel,qtd_em_uso} } — antes 
 
 function _getCargaTotalEq(eqId) {
   var total = 0;
+  // Itens arrastados visualmente (sistema de carga local)
   Object.values(_cargaEvento).forEach(function(c) { total += (c[eqId] || 0); });
+  // Itens dos eventos abertos (itens_extras / servicos não riscados)
+  Object.values(_evEqDragItems).forEach(function(ev) {
+    if (ev[eqId]) total += ev[eqId].qty;
+  });
   return total;
 }
 function _atualizarCardEqDOM(eqId) {
@@ -7469,7 +7616,7 @@ function _buildEvAndamentoCard(ev) {
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Excluir item permanentemente">&times;</button>' +
+
         '</div>';
     }).join('');
     var extrasRowHtml = (ev.itens_extras || []).map(function(s, i) {
@@ -7479,7 +7626,7 @@ function _buildEvAndamentoCard(ev) {
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Excluir item permanentemente">&times;</button>' +
+
         '</div>';
     }).join('');
 
@@ -7650,8 +7797,30 @@ function _toggleItemEv(evId, idx) {
 function _adicionarItemExtraEv(evId, texto) {
   var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
   if (!ev) return;
-  var extras = (ev.itens_extras || []).concat([texto]);
+  // Parseia quantidade e nome do texto digitado
+  var mNovo   = texto.match(/^(\d+)x\s+(.+)$/i);
+  var qtyNovo  = mNovo ? parseInt(mNovo[1]) : 1;
+  var nomeNovo = (mNovo ? mNovo[2] : texto).trim().toLowerCase();
+  // Procura item existente com mesmo nome para somar
+  var extras = (ev.itens_extras || []).slice();
+  var merged = false;
+  for (var i = 0; i < extras.length; i++) {
+    var mEx   = extras[i].match(/^(\d+)x\s+(.+)$/i);
+    var qtyEx  = mEx ? parseInt(mEx[1]) : 1;
+    var nomeEx = (mEx ? mEx[2] : extras[i]).trim().toLowerCase();
+    if (nomeEx === nomeNovo) {
+      var nomeOriginal = mEx ? mEx[2].trim() : extras[i].trim();
+      extras[i] = (qtyEx + qtyNovo) + 'x ' + nomeOriginal;
+      merged = true;
+      break;
+    }
+  }
+  if (!merged) extras.push(texto);
+  ev.itens_extras = extras;
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+  // Recalcula contagens imediatamente (prefixo 2x, 3x...)
+  _recalcularCargaEvento(evId);
+  renderEventosAndamento();
 }
 
 function _abrirCargaEvento(evId) {
@@ -7663,50 +7832,96 @@ function _abrirCargaEvento(evId) {
     var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
     if (nome) nomeToId[nome] = eqId;
   });
-  if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
-  // Aplica cada item do evento nos counts de equipamento
-  (ev.itens_extras || []).forEach(function(item) {
+  _evEqDragItems[evId] = {}; // reset antes de reconstruir
+  // Reconstrói a partir dos itens ativos (não riscados) do evento
+  var itensExtrasRem = ev.itens_extras_removidos || {};
+  var itensOrigRem   = ev.itens_removidos || {};
+  var afetados = {};
+
+  (ev.itens_extras || []).forEach(function(item, i) {
+    if (itensExtrasRem[i]) return; // riscado, ignora
     var m = item.match(/^(\d+)x\s+(.+)$/);
     var qty = m ? parseInt(m[1]) : 1;
     var nome = (m ? m[2] : item).trim();
     var eqId = nomeToId[nome.toLowerCase()];
-    if (!eqId) return;
-    var eqObj = _equipamentos[eqId];
-    if (!eqObj) return;
-    if (!_evEqOrigCounts[eqId]) {
-      _evEqOrigCounts[eqId] = { qtd_disponivel: eqObj.qtd_disponivel || 0, qtd_em_uso: eqObj.qtd_em_uso || 0 };
-    }
-    _evEqDragItems[evId][eqId] = { nome: nome, qty: qty };
-    // Recalcula total aplicado (pode ter drags da sessao atual tambem)
-    var totalApplied = 0;
-    Object.keys(_evEqDragItems).forEach(function(eid) {
-      if (_evEqDragItems[eid][eqId]) totalApplied += _evEqDragItems[eid][eqId].qty;
-    });
-    var origDisp = _evEqOrigCounts[eqId].qtd_disponivel;
-    var origUso  = _evEqOrigCounts[eqId].qtd_em_uso;
-    var aplicado = Math.min(totalApplied, origDisp);
-    eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
-    eqObj.qtd_em_uso     = origUso + aplicado;
-    _atualizarCardEqDOM(eqId);
+    if (!eqId || !_equipamentos[eqId]) return;
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
+    afetados[eqId] = true;
   });
+
+  (ev.servicos || []).forEach(function(item, i) {
+    if (itensOrigRem[i]) return; // riscado, ignora
+    var m = item.match(/^(\d+)x\s+(.+)$/);
+    var qty = m ? parseInt(m[1]) : 1;
+    var nome = (m ? m[2] : item).trim();
+    var eqId = nomeToId[nome.toLowerCase()];
+    if (!eqId || !_equipamentos[eqId]) return;
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
+    afetados[eqId] = true;
+  });
+
+  Object.keys(afetados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+}
+
+// Ajusta contagem de um equipamento pelo texto do item (ex: "2x Par LED RGB")
+// delta = +1 para alocar (riscar restaurado), -1 para liberar (riscar ativado)
+// Reconstrói _evEqDragItems[evId] a partir dos itens ATIVOS (não riscados)
+// e atualiza os cards via _atualizarCardEqDOM (que usa _getCargaTotalEq).
+// Não modifica _equipamentos nem escreve no Firestore.
+function _recalcularCargaEvento(evId) {
+  var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
+  if (!ev) return;
+
+  var nomeToId = {};
+  Object.keys(_equipamentos).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
+    if (nome) nomeToId[nome] = eqId;
+  });
+
+  var afetadosAntes = _evEqDragItems[evId] ? Object.keys(_evEqDragItems[evId]) : [];
+  var novasCounts = {};
+  var itensExtrasRem = ev.itens_extras_removidos || {};
+  var itensOrigRem   = ev.itens_removidos || {};
+
+  (ev.itens_extras || []).forEach(function(s, i) {
+    if (itensExtrasRem[i]) return;
+    var m = s.match(/^(\d+)x\s+(.+)$/);
+    var qty = m ? parseInt(m[1]) : 1;
+    var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
+    if (!eqId) return;
+    novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
+  });
+
+  (ev.servicos || []).forEach(function(s, i) {
+    if (itensOrigRem[i]) return;
+    var m = s.match(/^(\d+)x\s+(.+)$/);
+    var qty = m ? parseInt(m[1]) : 1;
+    var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
+    if (!eqId) return;
+    novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
+  });
+
+  _evEqDragItems[evId] = {};
+  Object.keys(novasCounts).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: novasCounts[eqId] };
+  });
+
+  var afetados = {};
+  afetadosAntes.forEach(function(id) { afetados[id] = true; });
+  Object.keys(novasCounts).forEach(function(id) { afetados[id] = true; });
+  Object.keys(afetados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
 }
 
 function _fecharCargaEvento(evId) {
-  // Restaura counts de todos equipamentos afetados por este evento
+  // Coleta eqIds afetados antes de limpar
   var dragItems = _evEqDragItems[evId];
-  if (dragItems) {
-    Object.keys(dragItems).forEach(function(eqId) {
-      var orig = _evEqOrigCounts[eqId];
-      var eq   = _equipamentos[eqId];
-      if (eq && orig) {
-        eq.qtd_disponivel = orig.qtd_disponivel;
-        eq.qtd_em_uso     = orig.qtd_em_uso;
-        _atualizarCardEqDOM(eqId);
-        delete _evEqOrigCounts[eqId];
-      }
-    });
-    delete _evEqDragItems[evId];
-  }
+  var afetados = dragItems ? Object.keys(dragItems) : [];
+  // Limpa alocações deste evento
+  delete _evEqDragItems[evId];
+  delete _evEqOrigCounts[evId]; // não é mais usado mas limpa por segurança
+  // Atualiza cards — _getCargaTotalEq agora retornará menos, mostrando os itens liberados
+  afetados.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
   _resetarCargaEvento(evId);
 }
 
@@ -7719,7 +7934,7 @@ function _bindEvAndamentoCards() {
       if (e.target.closest('.item-check') || e.target.closest('.veiculo-icon-btn') ||
           e.target.closest('.btn-add-item') || e.target.closest('.btn-add-item-ok') ||
           e.target.closest('.btn-wa-painel') || e.target.closest('.item-rem-ev-btn') ||
-          e.target.closest('.item-del-ev-btn') || e.target.closest('.card-carga-del')) return;
+          e.target.closest('.card-carga-del')) return;
       var card = summary.closest('.evento-card');
       if (!card) return;
       var wasExpanded = card.classList.contains('expanded');
@@ -7781,21 +7996,29 @@ function _bindEvAndamentoCards() {
       var tipo = btn.getAttribute('data-tipo');
       var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
       if (!evObj) return;
+
+      var isNowRemoved;
+
       if (tipo === 'orig') {
         var rem = Object.assign({}, evObj.itens_removidos || {});
         rem[idx] = !rem[idx];
         evObj.itens_removidos = rem;
+        isNowRemoved = rem[idx];
         db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
       } else {
         var remE = Object.assign({}, evObj.itens_extras_removidos || {});
         remE[idx] = !remE[idx];
         evObj.itens_extras_removidos = remE;
+        isNowRemoved = remE[idx];
         db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
       }
+
+      // Recalcula contagens a partir dos itens ativos (não riscados) do evento
+      _recalcularCargaEvento(evId);
+
       // Update UI immediately
       var item = btn.closest('.card-item');
       if (item) {
-        var isNowRemoved = (tipo === 'orig') ? evObj.itens_removidos[idx] : evObj.itens_extras_removidos[idx];
         item.classList.toggle('item-removido', !!isNowRemoved);
         btn.style.color = isNowRemoved ? '#4AC87A' : '#555';
         btn.title = isNowRemoved ? 'Restaurar' : 'Riscar';
@@ -7808,18 +8031,26 @@ function _bindEvAndamentoCards() {
   scroll.querySelectorAll('.card-item[draggable]').forEach(function(item) {
     item.addEventListener('dragstart', function(e) {
       var txt = item.getAttribute('data-item-txt') || '';
-      e.dataTransfer.setData('text/plain', txt);
-      e.dataTransfer.setData('tipo', 'item_ev');
-      e.dataTransfer.effectAllowed = 'copy';
-      var delBtn = item.querySelector('.item-del-ev-btn');
-      if (delBtn) {
+      e.dataTransfer.effectAllowed = 'all';
+      // Captura dados pelo botão de riscar (item-rem-ev-btn), que sempre existe
+      var remBtn = item.querySelector('.item-rem-ev-btn');
+      if (remBtn) {
+        var evId   = remBtn.getAttribute('data-evid');
+        var rawIdx = remBtn.getAttribute('data-idx');
+        var tipo   = remBtn.getAttribute('data-tipo');
+        // Grava no dataTransfer para sobreviver ao dragend
+        e.dataTransfer.setData('text/plain', evId + '|' + rawIdx + '|' + tipo + '|' + txt);
+        e.dataTransfer.setData('tipo', 'item_ev');
         _draggingItemData = {
-          evId: delBtn.getAttribute('data-evid'),
-          idx:  parseInt(delBtn.getAttribute('data-idx'), 10),
-          tipo: delBtn.getAttribute('data-tipo'),
+          evId: evId,
+          idx:  parseInt(rawIdx, 10),
+          tipo: tipo,
           txt:  txt,
           el:   item
         };
+      } else {
+        e.dataTransfer.setData('text/plain', txt);
+        e.dataTransfer.setData('tipo', 'item_ev');
       }
     });
     item.addEventListener('dragend', function() {
@@ -7838,61 +8069,7 @@ function _bindEvAndamentoCards() {
     });
   });
 
-  // Botão X vermelho: excluir item permanentemente do Firebase
-  scroll.querySelectorAll('.item-del-ev-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var evId = btn.getAttribute('data-evid');
-      var idx  = parseInt(btn.getAttribute('data-idx'), 10);
-      var tipo = btn.getAttribute('data-tipo');
-      var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
-      if (!evObj) return;
-      if (!confirm('Excluir este item permanentemente?')) return;
 
-      function _restaurarEqCount(itemStr) {
-        if (!itemStr) return;
-        var _dm = itemStr.match(/^(\d+)x\s+(.+)$/);
-        var _nome = (_dm ? _dm[2] : itemStr).trim().toLowerCase();
-        var _qty  = _dm ? parseInt(_dm[1]) : 1;
-        Object.keys(_equipamentos).forEach(function(eqId) {
-          if ((_equipamentos[eqId].nome || '').trim().toLowerCase() !== _nome) return;
-          if (_evEqDragItems[evId] && _evEqDragItems[evId][eqId]) {
-            _evEqDragItems[evId][eqId].qty = Math.max(0, _evEqDragItems[evId][eqId].qty - _qty);
-            if (_evEqDragItems[evId][eqId].qty === 0) delete _evEqDragItems[evId][eqId];
-          }
-          var orig = _evEqOrigCounts[eqId];
-          var eqO  = _equipamentos[eqId];
-          if (eqO && orig) {
-            var totalLeft = 0;
-            Object.keys(_evEqDragItems).forEach(function(eid) {
-              if (_evEqDragItems[eid] && _evEqDragItems[eid][eqId]) totalLeft += _evEqDragItems[eid][eqId].qty;
-            });
-            eqO.qtd_disponivel = Math.max(0, orig.qtd_disponivel - Math.min(totalLeft, orig.qtd_disponivel));
-            eqO.qtd_em_uso     = orig.qtd_em_uso + Math.min(totalLeft, orig.qtd_disponivel);
-            _atualizarCardEqDOM(eqId);
-          }
-        });
-      }
-
-      if (tipo === 'orig') {
-        var srvs = (evObj.servicos || []).slice();
-        srvs.splice(idx, 1);
-        evObj.servicos = srvs;
-        db.collection('eventos_campo').doc(evId).update({ servicos: srvs })
-          .catch(function(err) { toast('Erro: ' + err.message, true); });
-      } else {
-        var extras = (evObj.itens_extras || []).slice();
-        var deletedItem = extras[idx];
-        extras.splice(idx, 1);
-        evObj.itens_extras = extras;
-        _restaurarEqCount(deletedItem);
-        db.collection('eventos_campo').doc(evId).update({ itens_extras: extras })
-          .catch(function(err) { toast('Erro: ' + err.message, true); });
-      }
-      var itemEl = btn.closest('.card-item');
-      if (itemEl) itemEl.remove();
-    });
-  });
 }
 
 function renderEventosAndamento() {
@@ -7988,7 +8165,7 @@ function _fmtEvData(d) {
 var _draggingParaEvento = null; // {tipo: 'kit'|'eq', id}
 
 function evCardOver(ev, evId) {
-  if (!_draggingParaEvento && !_draggingEqId && !_draggingKitId && !_draggingStagingId) return;
+  if (!_draggingParaEvento && !_draggingEqId && !_draggingKitId && !_draggingStagingId && !_draggingKitSlot) return;
   ev.preventDefault();
   var el = document.getElementById('ev-card-' + evId);
   if (el) el.classList.add('drag-target-ev');
@@ -8004,8 +8181,47 @@ function evCardDrop(ev, evId) {
   if (el) el.classList.remove('drag-target-ev');
 
   var itemId = ev.dataTransfer.getData('text/plain') || _draggingEqId || _draggingKitId || _draggingAcessorioId || _draggingStagingId;
-  var tipo = ev.dataTransfer.getData('tipo') || (_draggingKitId ? 'kit' : _draggingEqId ? 'eq' : _draggingAcessorioId ? 'acessorio' : _draggingStagingId ? 'staging' : null);
-  if (!itemId || !tipo) return;
+  var tipo = ev.dataTransfer.getData('tipo') || (_draggingKitSlot ? 'kit-slot' : _draggingKitId ? 'kit' : _draggingEqId ? 'eq' : _draggingAcessorioId ? 'acessorio' : _draggingStagingId ? 'staging' : null);
+  if (!tipo) return;
+
+  // Equipamento individual vindo de slot de kit → tratar como 'eq'
+  if (tipo === 'kit-slot') {
+    var slotData = _draggingKitSlot;
+    _draggingKitSlot = null;
+    if (!slotData || !slotData.equipId) return;
+    var eqIdSlot = slotData.equipId;
+    var eqNomeSlot = (_equipamentos[eqIdSlot] && _equipamentos[eqIdSlot].nome) || eqIdSlot;
+    if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
+    if (!_evEqDragItems[evId][eqIdSlot]) _evEqDragItems[evId][eqIdSlot] = { nome: eqNomeSlot, qty: 0 };
+    var eqObjSlot = _equipamentos[eqIdSlot];
+    if (eqObjSlot) {
+      var totalJaAlocSlot = _getCargaTotalEq(eqIdSlot);
+      var dispRealSlot = Math.max(0, (eqObjSlot.qtd_disponivel || 0) - totalJaAlocSlot);
+      if (dispRealSlot <= 0) { toast('Sem unidades disponíveis', true); return; }
+    }
+    _evEqDragItems[evId][eqIdSlot].qty++;
+    var qtySlot = _evEqDragItems[evId][eqIdSlot].qty;
+    var labelSlot = qtySlot > 1 ? qtySlot + 'x ' + eqNomeSlot : eqNomeSlot;
+    var evObjSlot = _eventosAndamento[evId] || _eventosStagingCarga[evId];
+    if (evObjSlot) {
+      var extrasSlot = (evObjSlot.itens_extras || []).filter(function(s) {
+        return s.replace(/^\d+x\s+/, '') !== eqNomeSlot;
+      });
+      extrasSlot.push(labelSlot);
+      evObjSlot.itens_extras = extrasSlot;
+      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasSlot });
+    }
+    _atualizarCardEqDOM(eqIdSlot);
+    renderEventosAndamento();
+    setTimeout(function() {
+      var evCardElSlot = document.getElementById('ev-card-' + evId);
+      if (evCardElSlot && !evCardElSlot.classList.contains('expanded')) evCardElSlot.classList.add('expanded');
+    }, 0);
+    toast(labelSlot + ' adicionado ao evento');
+    return;
+  }
+
+  if (!itemId) return;
   // Kit (normal ou temporário) → expandir itens na carga local
   if (tipo === 'kit') {
     var kitItens = [];
@@ -8031,9 +8247,9 @@ function evCardDrop(ev, evId) {
       var qtd = it.qtd || 1;
       if (!eqId) return;
       var eqNome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
-      var _origDK = (_evEqOrigCounts[eqId] ? _evEqOrigCounts[eqId].qtd_disponivel : (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0));
-      var _alreadyDK = (_evEqDragItems[evId] && _evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty : 0);
-      var qtdCap = Math.min(qtd, Math.max(0, _origDK - _alreadyDK));
+      var _dispFir = (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0);
+      var _jaAlocado = _getCargaTotalEq(eqId);
+      var qtdCap = Math.min(qtd, Math.max(0, _dispFir - _jaAlocado));
       if (qtdCap <= 0) { return; }
       // Deduplica no array de extras
       var existIdx = -1;
@@ -8050,21 +8266,15 @@ function evCardDrop(ev, evId) {
       // Tracking para restaurar contagens
       if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
       _evEqDragItems[evId][eqId].qty += qtdCap;
-      var eqObjK = _equipamentos[eqId];
-      if (eqObjK) {
-        if (!_evEqOrigCounts[eqId]) _evEqOrigCounts[eqId] = { qtd_disponivel: eqObjK.qtd_disponivel || 0, qtd_em_uso: eqObjK.qtd_em_uso || 0 };
-        var origDispK = _evEqOrigCounts[eqId].qtd_disponivel;
-        var origUsoK  = _evEqOrigCounts[eqId].qtd_em_uso;
-        var aplicadoK = Math.min(_evEqDragItems[evId][eqId].qty, origDispK);
-        eqObjK.qtd_disponivel = Math.max(0, origDispK - aplicadoK);
-        eqObjK.qtd_em_uso     = origUsoK + aplicadoK;
-        _atualizarCardEqDOM(eqId);
-      }
+      _atualizarCardEqDOM(eqId);
     });
     if (evObjKit) {
       evObjKit.itens_extras = extrasKit;
       if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasKit });
     }
+    // Restaura visual do card do kit (opacidade reduzida no dragstart)
+    var _kitCardEl2 = document.getElementById('kit-card-' + itemId);
+    if (_kitCardEl2) _kitCardEl2.style.opacity = '';
     _draggingKitId = null;
     renderEventosAndamento();
     setTimeout(function() {
@@ -8089,12 +8299,10 @@ function evCardDrop(ev, evId) {
     // Verificar cap ANTES de incrementar
     var eqObjCap = _equipamentos[itemId];
     if (eqObjCap) {
-      if (!_evEqOrigCounts[itemId]) {
-        _evEqOrigCounts[itemId] = { qtd_disponivel: eqObjCap.qtd_disponivel || 0, qtd_em_uso: eqObjCap.qtd_em_uso || 0 };
-      }
-      var origDispCap = _evEqOrigCounts[itemId].qtd_disponivel;
-      var alreadyUsed = _evEqDragItems[evId][itemId].qty;
-      if (alreadyUsed >= origDispCap) { toast('Limite atingido: ' + origDispCap + ' unidade' + (origDispCap !== 1 ? 's' : ''), true); return; }
+      // Disponível real = do Firestore menos o já alocado em TODOS os eventos abertos
+      var totalJaAlocado = _getCargaTotalEq(itemId);
+      var dispReal = Math.max(0, (eqObjCap.qtd_disponivel || 0) - totalJaAlocado);
+      if (dispReal <= 0) { toast('Sem unidades disponíveis', true); return; }
     }
     _evEqDragItems[evId][itemId].qty++;
     var qty = _evEqDragItems[evId][itemId].qty;
@@ -8110,15 +8318,7 @@ function evCardDrop(ev, evId) {
       if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
     }
     // Atualiza contagem do card do equipamento
-    var eqObj = _equipamentos[itemId];
-    if (eqObj) {
-      var origDisp = _evEqOrigCounts[itemId].qtd_disponivel;
-      var origUso  = _evEqOrigCounts[itemId].qtd_em_uso;
-      var aplicado = Math.min(qty, origDisp);
-      eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
-      eqObj.qtd_em_uso     = origUso + aplicado;
-      _atualizarCardEqDOM(itemId);
-    }
+    _atualizarCardEqDOM(itemId);
     renderEventosAndamento();
     setTimeout(function() {
       var evCardEl = document.getElementById('ev-card-' + evId);
@@ -8172,7 +8372,7 @@ function _kitDragStart(ev, kitId) {
   _draggingKitId = kitId;
   ev.dataTransfer.setData('text/plain', kitId);
   ev.dataTransfer.setData('tipo', 'kit');
-  ev.dataTransfer.effectAllowed = 'copy';
+  ev.dataTransfer.effectAllowed = 'all';
   var el = document.getElementById('kit-card-' + kitId);
   if (el) setTimeout(function() { el.style.opacity = '0.5'; }, 0);
 }
@@ -8601,7 +8801,8 @@ var _draggingItemData = null; // { evId, idx, tipo, txt, el }
 function _kitSlotDragStart(el, ev) {
   var kitId   = el.dataset.kitId;
   var equipId = el.dataset.equipId;
-  _draggingKitSlot = { kitId: kitId, equipId: equipId };
+  var slotIdx = parseInt(el.dataset.slotIdx || '-1', 10);
+  _draggingKitSlot = { kitId: kitId, equipId: equipId, slotIdx: slotIdx };
   ev.dataTransfer.setData('text/plain', kitId + ':' + equipId);
   ev.dataTransfer.setData('tipo', 'kit-slot');
   ev.dataTransfer.effectAllowed = 'move';
@@ -8615,8 +8816,45 @@ function _kitSlotDragEnd(ev) {
   if (zone) zone.classList.remove('drag-over-remove');
 }
 
+function _kitSlotReorderOver(el, ev) {
+  if (!_draggingKitSlot) return;
+  var targetKitId = el.dataset.kitId;
+  if (!targetKitId || targetKitId !== _draggingKitSlot.kitId) return;
+  var targetEquipId = el.dataset.equipId || '';
+  if (targetEquipId && targetEquipId === _draggingKitSlot.equipId) return; // mesmo item
+  ev.preventDefault();
+  ev.stopPropagation();
+  el.style.borderColor = 'var(--gold)';
+}
+function _kitSlotReorderLeave(el) {
+  el.style.borderColor = '';
+}
+function _kitSlotReorderDrop(el, ev) {
+  el.style.borderColor = '';
+  if (!_draggingKitSlot) return;
+  var targetKitId = el.dataset.kitId;
+  if (!targetKitId || targetKitId !== _draggingKitSlot.kitId) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  var toIdx = parseInt(el.dataset.slotIdx || '-1', 10);
+  var fromIdx = _draggingKitSlot.slotIdx;
+  if (toIdx < 0 || fromIdx < 0 || toIdx === fromIdx) return;
+  var kit = _kits[targetKitId];
+  if (!kit || !Array.isArray(kit.itens)) return;
+  var itens = kit.itens.slice();
+  // Move item de fromIdx para toIdx
+  var moved = itens.splice(fromIdx, 1)[0];
+  itens.splice(toIdx, 0, moved);
+  kit.itens = itens;
+  _draggingKitSlot = null;
+  if (db) db.collection('kits').doc(targetKitId).update({ itens: itens })
+    .then(function() { renderKits(); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
 function _kitRemoveZoneOver(ev) {
-  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData) return;
+  var tipos = ev.dataTransfer.types || [];
+  var temTipo = tipos.indexOf('tipo') >= 0 || tipos.indexOf('text/plain') >= 0;
+  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData && !temTipo) return;
   ev.preventDefault();
   ev.dataTransfer.dropEffect = 'move';
   var zone = document.getElementById('kit-remove-zone');
@@ -8631,7 +8869,6 @@ function _kitRemoveZoneLeave(ev) {
 function _excluirItemEvDrop(data) {
   var evObj = _eventosAndamento[data.evId] || _eventosStagingCarga[data.evId];
   if (!evObj) return;
-
   var backup;
   if (data.tipo === 'orig') {
     var srvs = (evObj.servicos || []).slice();
@@ -8643,16 +8880,14 @@ function _excluirItemEvDrop(data) {
   } else {
     var extras = (evObj.itens_extras || []).slice();
     backup = { tipo: 'extra', lista: extras.slice(), evId: data.evId };
-    var deletedItem = extras[data.idx];
     extras.splice(data.idx, 1);
     evObj.itens_extras = extras;
-    // Restaura contagem de equipamento se aplicável
-    if (typeof _restaurarEqCount === 'function') _restaurarEqCount(deletedItem);
     db.collection('eventos_campo').doc(data.evId).update({ itens_extras: extras })
       .catch(function(err) { toast('Erro: ' + err.message, true); });
   }
   if (data.el && data.el.parentNode) data.el.remove();
-
+  _recalcularCargaEvento(data.evId); // libera contagem do item removido
+  renderEventosAndamento();
   toastUndo('Item excluído', function() {
     var evO = _eventosAndamento[backup.evId] || _eventosStagingCarga[backup.evId];
     if (!evO) return;
@@ -8665,7 +8900,8 @@ function _excluirItemEvDrop(data) {
       db.collection('eventos_campo').doc(backup.evId).update({ itens_extras: backup.lista })
         .catch(function(e) { toast('Erro ao desfazer: ' + e.message, true); });
     }
-    _renderEvAndamentoSidebar();
+    _recalcularCargaEvento(backup.evId); // restaura contagem ao desfazer
+    renderEventosAndamento();
   });
 }
 
@@ -8674,26 +8910,35 @@ function _kitRemoveZoneDrop(ev) {
   var zone = document.getElementById('kit-remove-zone');
   if (zone) zone.classList.remove('drag-over-remove');
 
+  var tipo = ev.dataTransfer.getData('tipo');
+
   if (_draggingKitSlot) {
-    // ── Item de slot de kit → remover do kit ──
+    // ── Item de slot de kit ──
     var kitId   = _draggingKitSlot.kitId;
     var equipId = _draggingKitSlot.equipId;
     _draggingKitSlot = null;
     removerItemDoKit(kitId, equipId);
 
-  } else if (_draggingKitId) {
-    // ── Kit inteiro → excluir kit ──
-    var kitId = _draggingKitId;
+  } else if (_draggingKitId || tipo === 'kit') {
+    // ── Kit inteiro ──
+    var kitId = _draggingKitId || ev.dataTransfer.getData('text/plain');
     _draggingKitId = null;
     var el = document.getElementById('kit-card-' + kitId);
     if (el) el.style.opacity = '';
-    excluirKitSemConfirm(kitId);
+    if (kitId) excluirKitSemConfirm(kitId);
 
-  } else if (_draggingItemData) {
-    // ── Item de checklist do evento → excluir permanentemente ──
+  } else if (tipo === 'item_ev') {
+    // ── Item de evento — usa variável global ou fallback do dataTransfer ──
     var data = _draggingItemData;
     _draggingItemData = null;
-    _excluirItemEvDrop(data);
+    if (!data) {
+      // Fallback: reconstruir dos dados gravados no dataTransfer
+      var raw = ev.dataTransfer.getData('text/plain').split('|');
+      if (raw.length >= 3) {
+        data = { evId: raw[0], idx: parseInt(raw[1], 10), tipo: raw[2], txt: raw[3] || '', el: null };
+      }
+    }
+    if (data) _excluirItemEvDrop(data);
   }
 }
 
