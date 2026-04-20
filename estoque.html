@@ -5228,15 +5228,23 @@ function kitFolderOver(ev, kitId) {
   if (_draggingKitId && _draggingKitId !== kitId) {
     ev.preventDefault();
     ev.dataTransfer.dropEffect = 'move';
-    var el = document.getElementById('kit-card-' + kitId);
-    if (el) el.classList.add('drag-reorder-target');
+    var elK = document.getElementById('kit-card-' + kitId);
+    if (elK) elK.classList.add('drag-reorder-target');
+    return;
+  }
+  // Slot de kit arrastado sobre um kit diferente (destacar kit destino)
+  if (_draggingKitSlot && _draggingKitSlot.kitId !== kitId) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = 'move';
+    var elK = document.getElementById('kit-card-' + kitId);
+    if (elK) elK.classList.add('drag-over-kit');
     return;
   }
   if (!_draggingEqId) return;
   ev.preventDefault();
   ev.dataTransfer.dropEffect = 'copy';
-  var el = document.getElementById('kit-card-' + kitId);
-  if (el) el.classList.add('drag-over-kit');
+  var elK = document.getElementById('kit-card-' + kitId);
+  if (elK) elK.classList.add('drag-over-kit');
 }
 function kitFolderLeave(ev, kitId) {
   var el = document.getElementById('kit-card-' + kitId);
@@ -5247,6 +5255,39 @@ function kitFolderDrop(ev, kitId) {
   ev.stopPropagation();
   var el = document.getElementById('kit-card-' + kitId);
   if (el) { el.classList.remove('drag-over-kit'); el.classList.remove('drag-reorder-target'); }
+
+  // Slot de um kit soltado sobre outro kit (drop no panel, não em slot específico)
+  if (_draggingKitSlot && _draggingKitSlot.kitId !== kitId) {
+    var srcKit  = _kits[_draggingKitSlot.kitId];
+    var dstKit  = _kits[kitId];
+    if (srcKit && dstKit) {
+      var srcItens = (srcKit.itens || []).slice();
+      var dstItens = (dstKit.itens || []).slice();
+      var movedItem = srcItens.splice(_draggingKitSlot.slotIdx, 1)[0];
+      if (movedItem) {
+        var existente = dstItens.find(function(it) { return it.equipId === _draggingKitSlot.equipId; });
+        if (existente) {
+          existente.qtd = (existente.qtd || 1) + (movedItem.qtd || 1);
+        } else {
+          dstItens.push(movedItem);
+        }
+        srcKit.itens = srcItens;
+        dstKit.itens = dstItens;
+        var dstNome = dstKit.nome || 'kit';
+        if (db) {
+          var batch = db.batch();
+          batch.update(db.collection('kits').doc(_draggingKitSlot.kitId), { itens: srcItens });
+          batch.update(db.collection('kits').doc(kitId), { itens: dstItens });
+          _draggingKitSlot = null;
+          batch.commit()
+            .then(function() { renderKits(); toast('Equipamento movido para "' + dstNome + '"!'); })
+            .catch(function(e) { toast('Erro: ' + e.message, true); });
+        }
+      }
+    }
+    _draggingKitSlot = null;
+    return;
+  }
 
   // Reordenação entre kits
   if (_draggingKitId && _draggingKitId !== kitId) {
@@ -8794,12 +8835,14 @@ function _kitSlotDragEnd(ev) {
 function _kitSlotReorderOver(el, ev) {
   if (!_draggingKitSlot) return;
   var targetKitId = el.dataset.kitId;
-  if (!targetKitId || targetKitId !== _draggingKitSlot.kitId) return;
+  if (!targetKitId) return;
   var targetEquipId = el.dataset.equipId || '';
-  if (targetEquipId && targetEquipId === _draggingKitSlot.equipId) return; // mesmo item
+  // Mesmo item no mesmo kit: ignorar
+  if (targetKitId === _draggingKitSlot.kitId && targetEquipId && targetEquipId === _draggingKitSlot.equipId) return;
   ev.preventDefault();
   ev.stopPropagation();
-  el.style.borderColor = 'var(--gold)';
+  // Indicar visualmente: azul = mesmo kit, âmbar = kit diferente
+  el.style.borderColor = targetKitId !== _draggingKitSlot.kitId ? 'var(--amber)' : 'var(--gold)';
 }
 function _kitSlotReorderLeave(el) {
   el.style.borderColor = '';
@@ -8808,20 +8851,62 @@ function _kitSlotReorderDrop(el, ev) {
   el.style.borderColor = '';
   if (!_draggingKitSlot) return;
   var targetKitId = el.dataset.kitId;
-  if (!targetKitId || targetKitId !== _draggingKitSlot.kitId) return;
+  if (!targetKitId) return;
   ev.preventDefault();
   ev.stopPropagation();
-  var toIdx = parseInt(el.dataset.slotIdx || '-1', 10);
-  var fromIdx = _draggingKitSlot.slotIdx;
+
+  var sourceKitId = _draggingKitSlot.kitId;
+  var equipId     = _draggingKitSlot.equipId;
+  var fromIdx     = _draggingKitSlot.slotIdx;
+  var toIdx       = parseInt(el.dataset.slotIdx || '-1', 10);
+
+  _draggingKitSlot = null;
+
+  // ── Mover ENTRE kits diferentes ──
+  if (targetKitId !== sourceKitId) {
+    var srcKit  = _kits[sourceKitId];
+    var dstKit  = _kits[targetKitId];
+    if (!srcKit || !dstKit) return;
+
+    var srcItens = (srcKit.itens || []).slice();
+    var dstItens = (dstKit.itens || []).slice();
+
+    // Remove do kit de origem
+    var movedItem = srcItens.splice(fromIdx, 1)[0];
+    if (!movedItem) return;
+
+    // Verifica se já existe no destino: soma qtd
+    var existente = dstItens.find(function(it) { return it.equipId === equipId; });
+    if (existente) {
+      existente.qtd = (existente.qtd || 1) + (movedItem.qtd || 1);
+    } else {
+      // Insere na posição do slot de destino (ou no final se slot vazio)
+      var insertAt = toIdx >= 0 && toIdx <= dstItens.length ? toIdx : dstItens.length;
+      dstItens.splice(insertAt, 0, movedItem);
+    }
+
+    srcKit.itens = srcItens;
+    dstKit.itens = dstItens;
+
+    if (!db) return;
+    var batch = db.batch();
+    batch.update(db.collection('kits').doc(sourceKitId), { itens: srcItens });
+    batch.update(db.collection('kits').doc(targetKitId), { itens: dstItens });
+    var dstNome = dstKit.nome || 'kit';
+    batch.commit()
+      .then(function() { renderKits(); toast('Equipamento movido para "' + dstNome + '"!'); })
+      .catch(function(e) { toast('Erro: ' + e.message, true); });
+    return;
+  }
+
+  // ── Reordenar DENTRO do mesmo kit ──
   if (toIdx < 0 || fromIdx < 0 || toIdx === fromIdx) return;
   var kit = _kits[targetKitId];
   if (!kit || !Array.isArray(kit.itens)) return;
   var itens = kit.itens.slice();
-  // Move item de fromIdx para toIdx
   var moved = itens.splice(fromIdx, 1)[0];
   itens.splice(toIdx, 0, moved);
   kit.itens = itens;
-  _draggingKitSlot = null;
   if (db) db.collection('kits').doc(targetKitId).update({ itens: itens })
     .then(function() { renderKits(); })
     .catch(function(e) { toast('Erro: ' + e.message, true); });
