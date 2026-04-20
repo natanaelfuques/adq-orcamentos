@@ -6613,14 +6613,24 @@ function _fecharCardEvento() {
 function _ativarMontaCarga(evId) {
   var ev = _eventosAgenda[evId];
   if (!ev) return;
-  // Pina ou despina o evento
+  // Se já estava na staging, remove (toggle off)
   if (_eventosStagingCarga[evId]) {
     delete _eventosStagingCarga[evId];
   } else {
+    // Se carga já foi finalizada, reseta para permitir remontar
+    if (ev.carga_finalizada) {
+      ev.carga_finalizada = false;
+      if (db) {
+        db.collection('eventos_campo').doc(evId).update({ carga_finalizada: false })
+          .catch(function(e) { console.warn('reset carga_finalizada:', e); });
+      }
+    }
     _eventosStagingCarga[evId] = ev;
   }
   _fecharCardEvento();
   renderEventosAndamento();
+  _renderAgendaCalendar();
+  _renderAgendaListaDia(_agDiaSelecionado);
   // Scroll suave para a seção de eventos em andamento
   setTimeout(function() {
     var sec = document.getElementById('eventos-andamento-section');
