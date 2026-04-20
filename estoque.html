@@ -5198,7 +5198,6 @@ function renderKits() {
     }
 
     var svgEdit = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-    var svgChevron = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
     html += '<div class="kit-slot-panel kit-folder" id="kit-card-' + esc(kit.id) + '" draggable="true"' +
 
@@ -5207,8 +5206,8 @@ function renderKits() {
       ' ondrop="kitFolderDrop(event,\'' + esc(kit.id) + '\')"' +
       ' ondragstart="_kitDragStart(event,\'' + esc(kit.id) + '\')" ondragend="_kitDragEnd()">' +
       '<div class="kit-slot-panel-header">' +
-        '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_toggleKitPanel(\'' + esc(kit.id) + '\')">' +
-          svgChevron + esc(kit.nome || 'Kit') +
+        '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_editarNomeKit(\'' + esc(kit.id) + '\')" style="cursor:text" title="Clique para editar o nome">' +
+          esc(kit.nome || 'Kit') +
         '</div>' +
         '<div class="kit-slot-panel-actions">' +
           '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="Editar">' + svgEdit + '</button>' +
@@ -5221,7 +5220,7 @@ function renderKits() {
     '</div>';
   });
 
-  html += '<div class="kit-novo-card" onclick="abrirModalNovoKit()">' +
+  html += '<div class="kit-novo-card" onclick="criarNovoKitDireto()">' +
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
     'Novo kit' +
   '</div>';
@@ -5366,18 +5365,61 @@ function _getKitBadgesForEq(eqId) {
 }
 
 // ── Modal Kit ──
-function abrirModalNovoKit() {
-  _kitEditandoId = null;
-  _kitItensAtual = [];
-  _kitMovAberto = false;
-  document.getElementById('kit-modal-title').textContent = 'Novo Kit';
-  document.getElementById('kit-nome').value = '';
-  document.getElementById('kit-desc').value = '';
-  document.getElementById('kit-search-eq').value = '';
-  _renderKitMovSection();
-  renderKitDropZone();
-  renderKitSearchResults();
-  document.getElementById('kit-modal-overlay').style.display = 'flex';
+function criarNovoKitDireto() {
+  var existentes = Object.values(_kits).map(function(k) { return k.nome || ''; });
+  var n = 1;
+  while (existentes.indexOf('Kit #' + n) >= 0) n++;
+  var nome = 'Kit #' + n;
+  if (!db) return;
+  db.collection('kits').add({ nome: nome, descricao: '', itens: [], _criado: Date.now(), _atualizado: Date.now() })
+    .then(function() { toast('Kit criado: ' + nome); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+function _editarNomeKit(kitId) {
+  var titleEl = document.querySelector('#kit-card-' + kitId + ' .kit-slot-panel-title');
+  if (!titleEl || titleEl.querySelector('input')) return;
+  var kit = _kits[kitId];
+  var nomeAtual = kit ? (kit.nome || '') : '';
+  titleEl.innerHTML = '';
+  var inp = document.createElement('input');
+  inp.value = nomeAtual;
+  inp.style.cssText = 'flex:1;min-width:0;background:#1a1a1a;border:1px solid var(--gold);border-radius:4px;color:var(--text);font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:2px 6px;outline:none';
+  var btnOk = document.createElement('button');
+  btnOk.textContent = 'OK';
+  btnOk.style.cssText = 'background:var(--gold);color:#111;border:none;border-radius:4px;padding:2px 8px;font-weight:700;font-size:0.7rem;cursor:pointer;flex-shrink:0';
+  var btnX = document.createElement('button');
+  btnX.textContent = '✕';
+  btnX.style.cssText = 'background:none;border:1px solid #555;color:#888;border-radius:4px;padding:2px 6px;font-size:0.7rem;cursor:pointer;flex-shrink:0';
+  function _salvarNomeKit() {
+    var nome = inp.value.trim();
+    if (!nome) { _cancelarNomeKit(); return; }
+    if (kit) kit.nome = nome;
+    if (db) db.collection('kits').doc(kitId).update({ nome: nome })
+      .then(function() { renderKits(); }).catch(function(e) { toast('Erro: ' + e.message, true); });
+  }
+  function _cancelarNomeKit() { renderKits(); }
+  btnOk.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  btnOk.addEventListener('click', function(e) { e.stopPropagation(); _salvarNomeKit(); });
+  btnX.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  btnX.addEventListener('click', function(e) { e.stopPropagation(); _cancelarNomeKit(); });
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') _salvarNomeKit();
+    if (e.key === 'Escape') _cancelarNomeKit();
+  });
+  inp.addEventListener('blur', function() {
+    setTimeout(function() {
+      if (document.activeElement !== btnOk && document.activeElement !== btnX) _cancelarNomeKit();
+    }, 120);
+  });
+  titleEl.style.display = 'flex';
+  titleEl.style.alignItems = 'center';
+  titleEl.style.gap = '4px';
+  titleEl.appendChild(inp);
+  titleEl.appendChild(btnOk);
+  titleEl.appendChild(btnX);
+  inp.focus();
+  inp.select();
 }
 
 function abrirModalEditarKit(kitId) {
