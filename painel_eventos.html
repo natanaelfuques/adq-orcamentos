@@ -1272,6 +1272,10 @@ header {
       <div class="periodo-toggle-opt active" id="periodo-30dias">30 dias</div>
       <div class="periodo-toggle-opt" id="periodo-todos">Todos</div>
     </div>
+    <a href="https://natanaelfuques.github.io/adq-orcamentos/estoque.html" target="_self" id="btn-ir-estoque" title="Abrir Estoque" style="display:none;align-items:center;gap:7px;text-decoration:none;background:rgba(74,144,217,0.08);border:1px solid rgba(74,144,217,0.35);border-radius:20px;padding:4px 14px;color:#4A90D9;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-left:10px;transition:background 0.18s,border-color 0.18s" onmouseover="this.style.background='rgba(74,144,217,0.2)';this.style.borderColor='rgba(74,144,217,0.7)'" onmouseout="this.style.background='rgba(74,144,217,0.08)';this.style.borderColor='rgba(74,144,217,0.35)'">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Estoque
+    </a>
   </div>
   <div class="board-container" ondragover="onDragOverBoard(event)" ondrop="onDropBoard(event)">
     <div class="board">
@@ -1426,6 +1430,11 @@ auth.onAuthStateChanged(function(user) {
         if (btnAdmin) {
           btnAdmin.style.display = _nivelUsuarioAtual === 'adm' ? 'flex' : 'none';
         }
+        // Botão estoque: adm e gerente
+        var btnEstoque = document.getElementById('btn-ir-estoque');
+        if (btnEstoque) {
+          btnEstoque.style.display = (_nivelUsuarioAtual === 'adm' || _nivelUsuarioAtual === 'gerente') ? 'flex' : 'none';
+        }
 
         // Aplicar todas as permissões baseadas no nível
         _aplicarTodasPermissoesDoNivel(user.email);
@@ -1438,6 +1447,8 @@ auth.onAuthStateChanged(function(user) {
         _nivelUsuarioAtual = user.email === 'natanael.fuques@gmail.com' ? 'adm' : 'colaborador';
         var btnAdmin = document.getElementById('btn-admin-painel');
         if (btnAdmin) btnAdmin.style.display = _nivelUsuarioAtual === 'adm' ? 'flex' : 'none';
+        var btnEstoque2 = document.getElementById('btn-ir-estoque');
+        if (btnEstoque2) btnEstoque2.style.display = (_nivelUsuarioAtual === 'adm' || _nivelUsuarioAtual === 'gerente') ? 'flex' : 'none';
         _aplicarTodasPermissoesDoNivel(user.email);
         registrarAcesso(user);
         iniciarBoard();
