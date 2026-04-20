@@ -1300,9 +1300,20 @@
   .btn-novo-kit:hover { border-color: var(--gold); color: var(--gold); }
 
   .kits-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 16px;
+    align-items: flex-start;
+  }
+  .kit-slot-panel {
+    width: 280px;
+    flex-shrink: 0;
+  }
+  .kit-remove-zone {
+    width: 100%;
+  }
+  .kit-novo-card {
+    width: 280px;
   }
 
 
@@ -2176,6 +2187,9 @@
   }
   .kit-slot-panel:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.4); }
   .kit-slot-panel.drag-over-kit { border-color: var(--amber); background: rgba(245,166,35,0.06); }
+  .kit-slot-panel.drag-reorder-target { border-color: var(--gold); background: rgba(74,144,217,0.08); box-shadow: 0 0 0 2px rgba(74,144,217,0.3); transform: scale(1.02); }
+  .kit-slot-panel[draggable="true"] { cursor: grab; }
+  .kit-slot-panel[draggable="true"]:active { cursor: grabbing; }
 .kit-temp-panel { border-color: rgba(74,144,217,0.45); }
 .kit-temp-panel::before { content: "CARGA"; position: absolute; top: 3px; right: 8px; font-size: 0.45rem; font-family: "Barlow Condensed", sans-serif; font-weight: 800; letter-spacing: 0.1em; color: #4A90D9; opacity: 0.7; }
 .kit-temp-panel .kit-slot-panel-title { color: #4A90D9 !important; }
@@ -5125,8 +5139,32 @@ function _executarDeleteAcessorio(id) {
     .catch(function() { toast('Erro ao excluir.', true); });
 }
 
+// ── KITS: Ordem de exibição (persistida em localStorage) ──
+var _kitOrdem = []; // array de IDs na ordem desejada
+
+function _kitOrdemCarregar() {
+  try {
+    var raw = localStorage.getItem('kit_ordem');
+    _kitOrdem = raw ? JSON.parse(raw) : [];
+  } catch(e) { _kitOrdem = []; }
+}
+
+function _kitOrdemSalvar() {
+  try { localStorage.setItem('kit_ordem', JSON.stringify(_kitOrdem)); } catch(e) {}
+}
+
+function _kitOrdemGetArr(kitsArr) {
+  // Ordena kitsArr respeitando _kitOrdem; kits sem posição vão ao final
+  var ordenados = _kitOrdem
+    .map(function(id) { return kitsArr.find(function(k) { return k.id === id; }); })
+    .filter(Boolean);
+  var restantes = kitsArr.filter(function(k) { return _kitOrdem.indexOf(k.id) === -1; });
+  return ordenados.concat(restantes);
+}
+
 // ── KITS: Firestore listener ──
 function iniciarKits() {
+  _kitOrdemCarregar();
   iniciarAgenda();
   db.collection('kits').onSnapshot(function(snap) {
     _kits = {};
@@ -5145,7 +5183,7 @@ function renderKits() {
   var grid = document.getElementById('kits-grid');
   if (!grid) return;
 
-  var kitsArr = Object.values(_kits);
+  var kitsArr = _kitOrdemGetArr(Object.values(_kits));
   var svgRemove = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
   var html = '<div class="kit-remove-zone" id="kit-remove-zone"' +
     ' ondragover="_kitRemoveZoneOver(event)"' +
@@ -5266,6 +5304,14 @@ function setupAcCardDrag(cardEl, acId) {
 }
 
 function kitFolderOver(ev, kitId) {
+  // Reordenação: kit arrastado sobre outro kit
+  if (_draggingKitId && _draggingKitId !== kitId) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = 'move';
+    var el = document.getElementById('kit-card-' + kitId);
+    if (el) el.classList.add('drag-reorder-target');
+    return;
+  }
   if (!_draggingEqId) return;
   ev.preventDefault();
   ev.dataTransfer.dropEffect = 'copy';
@@ -5274,13 +5320,30 @@ function kitFolderOver(ev, kitId) {
 }
 function kitFolderLeave(ev, kitId) {
   var el = document.getElementById('kit-card-' + kitId);
-  if (el) el.classList.remove('drag-over-kit');
+  if (el) { el.classList.remove('drag-over-kit'); el.classList.remove('drag-reorder-target'); }
 }
 function kitFolderDrop(ev, kitId) {
   ev.preventDefault();
   ev.stopPropagation();
   var el = document.getElementById('kit-card-' + kitId);
-  if (el) el.classList.remove('drag-over-kit');
+  if (el) { el.classList.remove('drag-over-kit'); el.classList.remove('drag-reorder-target'); }
+
+  // Reordenação entre kits
+  if (_draggingKitId && _draggingKitId !== kitId) {
+    var allIds = _kitOrdemGetArr(Object.values(_kits)).map(function(k) { return k.id; });
+    var fromIdx = allIds.indexOf(_draggingKitId);
+    var toIdx = allIds.indexOf(kitId);
+    if (fromIdx !== -1 && toIdx !== -1) {
+      allIds.splice(fromIdx, 1);
+      allIds.splice(toIdx, 0, _draggingKitId);
+      _kitOrdem = allIds;
+      _kitOrdemSalvar();
+      renderKits();
+    }
+    _draggingKitId = null;
+    return;
+  }
+
   if (!_draggingEqId) return;
 
   if (kitId.indexOf('temp_') === 0) {
@@ -8387,6 +8450,7 @@ function _kitDragEnd() {
   if (_zoneEl) _zoneEl.classList.remove('drag-over-remove');
   document.querySelectorAll('.ev-card.drag-target-ev').forEach(function(el) { el.classList.remove('drag-target-ev'); });
   document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
+  document.querySelectorAll('.kit-slot-panel.drag-reorder-target').forEach(function(el) { el.classList.remove('drag-reorder-target'); });
 }
 
 function _stagingDragStart(ev, evId) {
