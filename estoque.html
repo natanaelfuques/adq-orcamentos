@@ -3247,9 +3247,40 @@ function filtrarCategoriaAba(cat, el) {
   filtrarCategoria(cat, el);
 }
 
+function _setFiltroAndamentoVisual(ativo) {
+  _filtroAndamento = ativo;
+  var iconOn   = document.getElementById('ev-andamento-filtro-icon');
+  var iconOff  = document.getElementById('ev-andamento-filtro-off-icon');
+  var pulse    = document.getElementById('ev-andamento-pulse');
+  var titleBtn = document.getElementById('ev-andamento-title-btn');
+  var badgeAnd = document.getElementById('andamento-filtro-badge');
+  if (ativo) {
+    if (iconOn)   iconOn.style.display   = 'inline';
+    if (iconOff)  iconOff.style.display  = 'none';
+    if (pulse)    { pulse.style.background = '#4A90D9'; pulse.style.boxShadow = '0 0 0 0 rgba(74,144,217,0.6)'; }
+    if (titleBtn) titleBtn.classList.add('filtro-ativo');
+    if (badgeAnd) badgeAnd.style.display = 'flex';
+  } else {
+    if (iconOn)   iconOn.style.display   = 'none';
+    if (iconOff)  iconOff.style.display  = 'inline';
+    if (pulse)    { pulse.style.background = '#F5A623'; pulse.style.boxShadow = ''; }
+    if (titleBtn) titleBtn.classList.remove('filtro-ativo');
+    if (badgeAnd) badgeAnd.style.display = 'none';
+  }
+}
+
 function filtrarStat(tipo) {
   // toggle: clicar no mesmo desativa
   _filtroStat = (_filtroStat === tipo) ? null : tipo;
+
+  // ao ativar 'em-uso', liga automaticamente o filtro de andamento
+  // ao desativar (ou trocar para outro), desliga o andamento (se não foi ligado manualmente)
+  if (_filtroStat === 'em-uso') {
+    _setFiltroAndamentoVisual(true);
+  } else if (!_filtroAndamento) {
+    // só desliga o visual se o andamento não estava ativo antes
+    _setFiltroAndamentoVisual(false);
+  }
 
   // atualizar visual dos stat-items
   ['total', 'disponivel', 'em-uso', 'manutencao'].forEach(function(id) {
@@ -3354,32 +3385,18 @@ function _getFiltroAndamentoIds() {
 }
 
 function toggleFiltroAndamento() {
-  _filtroAndamento = !_filtroAndamento;
-
-  // Ícones
-  var iconOn   = document.getElementById('ev-andamento-filtro-icon');
-  var iconOff  = document.getElementById('ev-andamento-filtro-off-icon');
-  var pulse    = document.getElementById('ev-andamento-pulse');
-  var titleBtn = document.getElementById('ev-andamento-title-btn');
-
-  if (_filtroAndamento) {
-    if (iconOn)  iconOn.style.display  = 'inline';
-    if (iconOff) iconOff.style.display = 'none';
-    if (pulse)   { pulse.style.background = '#4A90D9'; pulse.style.boxShadow = '0 0 0 0 rgba(74,144,217,0.6)'; }
-    if (titleBtn) titleBtn.classList.add('filtro-ativo');
-    toast('Estoque filtrado pelos itens em uso hoje');
-  } else {
-    if (iconOn)  iconOn.style.display  = 'none';
-    if (iconOff) iconOff.style.display = 'inline';
-    if (pulse)   { pulse.style.background = '#F5A623'; pulse.style.boxShadow = ''; }
-    if (titleBtn) titleBtn.classList.remove('filtro-ativo');
-    toast('Filtro de andamento removido');
+  _setFiltroAndamentoVisual(!_filtroAndamento);
+  // se desligou o andamento e o stat era 'em-uso', desliga o stat também
+  if (!_filtroAndamento && _filtroStat === 'em-uso') {
+    _filtroStat = null;
+    ['total', 'disponivel', 'em-uso', 'manutencao'].forEach(function(id) {
+      var el = document.getElementById('stat-btn-' + id);
+      if (el) el.classList.remove('stat-active');
+    });
+    var badge = document.getElementById('stat-filtro-badge');
+    if (badge) badge.style.display = 'none';
   }
-
-  // Badge de filtro andamento na toolbar
-  var badge = document.getElementById('andamento-filtro-badge');
-  if (badge) badge.style.display = _filtroAndamento ? 'flex' : 'none';
-
+  toast(_filtroAndamento ? 'Estoque filtrado pelos itens em uso hoje' : 'Filtro de andamento removido');
   renderEquipamentos();
 }
 
@@ -3394,17 +3411,8 @@ function renderEquipamentos() {
       (e.modelo || '').toLowerCase().includes(busca) ||
       (e.tags || '').toLowerCase().includes(busca);
     var matchStat = true;
-    if (_filtroStat === 'em-uso' || _filtroStat === 'disponivel') {
-      var _cargaAndStat = _getFiltroAndamentoIds();
-      if (_filtroStat === 'em-uso') {
-        var _usoEfetivo = Math.min((e.qtd_total || 0), (e.qtd_em_uso || 0) + (_cargaAndStat[e.id] || 0));
-        matchStat = _usoEfetivo > 0;
-      }
-      if (_filtroStat === 'disponivel') {
-        var _dispEfetivo = Math.max(0, (e.qtd_disponivel || 0) - (_cargaAndStat[e.id] || 0));
-        matchStat = _dispEfetivo > 0;
-      }
-    }
+    if (_filtroStat === 'disponivel') matchStat = (e.qtd_disponivel || 0) > 0;
+    if (_filtroStat === 'em-uso')     matchStat = (e.qtd_em_uso || 0) > 0;
     if (_filtroStat === 'manutencao') matchStat = (e.qtd_manutencao || 0) > 0;
 
     var matchTag = true;
