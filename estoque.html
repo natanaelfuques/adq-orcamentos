@@ -5167,11 +5167,14 @@ function renderKits() {
           var svgStr = _getEqSvg(eq.emoji, 18);
           slots += '<div class="kit-slot-item filled" draggable="true" ' +
           'style="position:relative;cursor:grab" ' +
-          'data-kit-id="' + esc(kit.id) + '" data-equip-id="' + esc(it.equipId) + '" ' +
+          'data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '" data-equip-id="' + esc(it.equipId) + '" ' +
           'onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" ' +
           'onclick="event.stopPropagation();abrirModalEditarKit(this.dataset.kitId)" ' +
           'ondragstart="_kitSlotDragStart(this,event)" ' +
           'ondragend="_kitSlotDragEnd(event)" ' +
+          'ondragover="_kitSlotReorderOver(this,event)" ' +
+          'ondragleave="_kitSlotReorderLeave(this)" ' +
+          'ondrop="_kitSlotReorderDrop(this,event)" ' +
           'title="' + esc(eq.nome || '') + '">'+
             '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
             '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
@@ -5179,10 +5182,18 @@ function renderKits() {
 
           '</div>';
         } else {
-          slots += '<div class="kit-slot-item empty"></div>';
+          slots += '<div class="kit-slot-item empty"' +
+            ' data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '"' +
+            ' ondragover="_kitSlotReorderOver(this,event)"' +
+            ' ondragleave="_kitSlotReorderLeave(this)"' +
+            ' ondrop="_kitSlotReorderDrop(this,event)"></div>';
         }
       } else {
-        slots += '<div class="kit-slot-item empty"></div>';
+        slots += '<div class="kit-slot-item empty"' +
+            ' data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '"' +
+            ' ondragover="_kitSlotReorderOver(this,event)"' +
+            ' ondragleave="_kitSlotReorderLeave(this)"' +
+            ' ondrop="_kitSlotReorderDrop(this,event)"></div>';
       }
     }
 
@@ -8180,6 +8191,9 @@ function evCardDrop(ev, evId) {
       evObjKit.itens_extras = extrasKit;
       if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasKit });
     }
+    // Restaura visual do card do kit (opacidade reduzida no dragstart)
+    var _kitCardEl2 = document.getElementById('kit-card-' + itemId);
+    if (_kitCardEl2) _kitCardEl2.style.opacity = '';
     _draggingKitId = null;
     renderEventosAndamento();
     setTimeout(function() {
@@ -8706,7 +8720,8 @@ var _draggingItemData = null; // { evId, idx, tipo, txt, el }
 function _kitSlotDragStart(el, ev) {
   var kitId   = el.dataset.kitId;
   var equipId = el.dataset.equipId;
-  _draggingKitSlot = { kitId: kitId, equipId: equipId };
+  var slotIdx = parseInt(el.dataset.slotIdx || '-1', 10);
+  _draggingKitSlot = { kitId: kitId, equipId: equipId, slotIdx: slotIdx };
   ev.dataTransfer.setData('text/plain', kitId + ':' + equipId);
   ev.dataTransfer.setData('tipo', 'kit-slot');
   ev.dataTransfer.effectAllowed = 'move';
@@ -8720,6 +8735,41 @@ function _kitSlotDragEnd(ev) {
   if (zone) zone.classList.remove('drag-over-remove');
 }
 
+function _kitSlotReorderOver(el, ev) {
+  if (!_draggingKitSlot) return;
+  var targetKitId = el.dataset.kitId;
+  if (!targetKitId || targetKitId !== _draggingKitSlot.kitId) return;
+  var targetEquipId = el.dataset.equipId || '';
+  if (targetEquipId && targetEquipId === _draggingKitSlot.equipId) return; // mesmo item
+  ev.preventDefault();
+  ev.stopPropagation();
+  el.style.borderColor = 'var(--gold)';
+}
+function _kitSlotReorderLeave(el) {
+  el.style.borderColor = '';
+}
+function _kitSlotReorderDrop(el, ev) {
+  el.style.borderColor = '';
+  if (!_draggingKitSlot) return;
+  var targetKitId = el.dataset.kitId;
+  if (!targetKitId || targetKitId !== _draggingKitSlot.kitId) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  var toIdx = parseInt(el.dataset.slotIdx || '-1', 10);
+  var fromIdx = _draggingKitSlot.slotIdx;
+  if (toIdx < 0 || fromIdx < 0 || toIdx === fromIdx) return;
+  var kit = _kits[targetKitId];
+  if (!kit || !Array.isArray(kit.itens)) return;
+  var itens = kit.itens.slice();
+  // Move item de fromIdx para toIdx
+  var moved = itens.splice(fromIdx, 1)[0];
+  itens.splice(toIdx, 0, moved);
+  kit.itens = itens;
+  _draggingKitSlot = null;
+  if (db) db.collection('kits').doc(targetKitId).update({ itens: itens })
+    .then(function() { renderKits(); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
 function _kitRemoveZoneOver(ev) {
   var tipos = ev.dataTransfer.types || [];
   var temTipo = tipos.indexOf('tipo') >= 0 || tipos.indexOf('text/plain') >= 0;
