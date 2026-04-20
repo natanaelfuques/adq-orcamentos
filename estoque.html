@@ -7593,6 +7593,8 @@ function _mergeEventosSnaps() {
     }
   });
   renderEventosAndamento();
+  // Atualiza estoque em tempo real quando filtro de andamento está ativo
+  if (typeof _filtroAndamento !== 'undefined' && _filtroAndamento) renderEquipamentos();
 }
 
 function iniciarEventosAndamento() {
