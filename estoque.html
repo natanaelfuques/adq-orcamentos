@@ -1154,7 +1154,8 @@
   .view-btn.active { background: var(--gold); color: #fff; }
 
   /* ── LIST VIEW ── */
-  .equip-list { display: none; flex-direction: column; gap: 6px; padding: 0 24px 32px; }
+  .equip-list { display: none; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 6px; padding: 0 24px 32px; align-content: start; }
+  .equip-list.view-active { display: grid; }
   .eq-list-item {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -1181,7 +1182,6 @@
     font-size: 0.92rem;
     font-weight: 700;
     color: var(--text);
-    flex: 1;
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -1216,7 +1216,7 @@
     border-color: rgba(224,92,92,0.25);
     color: var(--red);
   }
-  .eq-list-actions { display: flex; gap: 4px; }
+  .eq-list-actions { display: flex; gap: 4px; margin-left: auto; flex-shrink: 0; }
 
   /* ── CONFIRM MODAL ── */
   .confirm-box {
@@ -3446,7 +3446,7 @@ function renderList(equips) {
     var dispClass = disp <= 0 ? ' zero' : '';
     return '<div class="eq-list-item" onclick="abrirDetalhe(\'' + e.id + '\')">' +
       '<div class="eq-list-icon">' + _getEqSvg(e.emoji, 16) + '</div>' +
-      '<div>' +
+      '<div style="flex:1;min-width:0">' +
         '<div class="eq-list-name">' + esc(e.nome || 'Sem nome') + '</div>' +
         '<div style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-top:1px">' + esc(e.modelo || '') + '</div>' +
       '</div>' +
@@ -4379,7 +4379,7 @@ function setView(view) {
     btnList.classList.remove('active');
   } else {
     grid.style.display = 'none';
-    list.style.display = 'flex';
+    list.style.display = 'grid';
     btnGrid.classList.remove('active');
     btnList.classList.add('active');
   }
@@ -4815,9 +4815,9 @@ function toggleSecaoEquipamentos() {
   var hint = document.getElementById('equip-section-hint');
   if (grid) grid.style.display = _equipSecaoAberta ? '' : 'none';
   if (list) {
-    var isListView = list.style.display === 'flex';
+    var isListView = list.style.display === 'grid';
     if (!_equipSecaoAberta) list.style.display = 'none';
-    else if (_viewAtual === 'list') list.style.display = 'flex';
+    else if (_viewAtual === 'list') list.style.display = 'grid';
   }
   if (icon) icon.style.transform = _equipSecaoAberta ? '' : 'rotate(-90deg)';
   if (hint) hint.style.display = _equipSecaoAberta ? '' : 'none';
