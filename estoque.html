@@ -312,6 +312,8 @@
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 8px;
     padding: 16px 24px 32px;
+    min-height: 60vh;
+    align-content: start;
   }
 
   /* ── EQUIPMENT CARD ── */
@@ -1154,7 +1156,7 @@
   .view-btn.active { background: var(--gold); color: #fff; }
 
   /* ── LIST VIEW ── */
-  .equip-list { display: none; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 6px; padding: 16px 24px 32px; align-content: start; }
+  .equip-list { display: none; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 6px; padding: 16px 24px 32px; align-content: start; min-height: 60vh; }
   .equip-list.view-active { display: grid; }
   .eq-list-item {
     background: var(--surface);
@@ -1726,6 +1728,8 @@ body.kit-dragging .kit-remove-zone { display: flex; }
     gap: 6px;
     transition: max-height 0.3s ease, opacity 0.3s ease;
     overflow: hidden;
+    min-height: 60vh;
+    align-content: start;
   }
 
   /* Card de acessório — meia altura do card de equipamento */
