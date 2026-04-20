@@ -263,7 +263,7 @@
 
   .btn-add-eq {
     background: var(--gold);
-    color: #fff;
+    color: #111;
     border: none;
     border-radius: 5px;
     padding: 9px 18px;
@@ -3960,7 +3960,7 @@ function abrirModalForm(e) {
             '<select class="form-select" id="f-cat"><option value="">Selecione</option>' + catOptions + '</select>' +
           '</div>' +
           '<div class="form-group" id="f-grupo-modelo">' +
-            '<label class="form-label">Modelo / Marca</label>' +
+            '<label class="form-label">Descrição</label>' +
             '<input class="form-input" id="f-modelo" value="' + esc(e.modelo || '') + '" placeholder="Ex: JBL SRX 815" />' +
           '</div>' +
         '</div>' +
@@ -4000,14 +4000,8 @@ function abrirModalForm(e) {
           '<label class="form-label">Localização Física</label>' +
           '<input class="form-input" id="f-localizacao" value="' + esc(e.localizacao || '') + '" placeholder="Ex: Rack B / Prateleira 2" />' +
         '</div>' +
-        '<div class="form-group">' +
-          '<label class="form-label">Tags (separadas por vírgula)</label>' +
-          '<input class="form-input" id="f-tags" value="' + esc(e.tags || '') + '" placeholder="Ex: ativo, grave, pesado" />' +
-        '</div>' +
-        '<div class="form-group">' +
-          '<label class="form-label">Observações</label>' +
-          '<textarea class="form-textarea" id="f-obs" placeholder="Notas, detalhes técnicos...">' + esc(e.obs || '') + '</textarea>' +
-        '</div>' +
+
+
       '</div>' +
       '<div class="modal-footer">' +
         '<button class="btn-modal-cancel" onclick="fecharTodosModais()" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancelar</button>' +
