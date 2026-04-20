@@ -5587,37 +5587,8 @@ renderGrid = function(equips) {
     var eqId = card.getAttribute('data-eq-id');
     if (!eqId) return;
     setupEqCardDrag(card, eqId);
-    var kitBadges = _getKitBadgesForEq(eqId);
-    if (kitBadges) {
-      var body = card.querySelector('.eq-card-body');
-      if (body) {
-        var footerRow = body.querySelector('.eq-footer-row');
-        if (footerRow) {
-          var tmp = document.createElement('div');
-          tmp.innerHTML = kitBadges;
-          while (tmp.firstChild) { footerRow.appendChild(tmp.firstChild); }
-        } else {
-          var badgeDiv = document.createElement('div');
-          badgeDiv.className = 'eq-kit-badges';
-          badgeDiv.innerHTML = kitBadges;
-          body.appendChild(badgeDiv);
-        }
-      }
-    }
   });
 };
-
-function _getKitBadgesForEq(eqId) {
-  var html = '';
-  Object.values(_kits).forEach(function(kit) {
-    if (!Array.isArray(kit.itens)) return;
-    var found = kit.itens.some(function(it) { return it.equipId === eqId; });
-    if (found) {
-      html += '<span class="eq-kit-badge" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</span>';
-    }
-  });
-  return html;
-}
 
 // ── Modal Kit ──
 function criarNovoKitDireto() {
