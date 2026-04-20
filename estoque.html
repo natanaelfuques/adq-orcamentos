@@ -2571,6 +2571,7 @@ var _emojiSelecionado = 'mixer';
 var _filtroStat = null; // 'disponivel' | 'em-uso' | 'manutencao' | null
 var _filtroTag = null;  // tag personalizada selecionada
 var _filtroAndamento = false; // true quando filtrando por equipamentos em andamento
+var _andamentoAtivadoPorStat = false; // true quando andamento foi ativado automaticamente pelo stat 'em-uso'
 var _acessorios = {};   // estado acessórios
 var _acessoriosCollapsed = false;
 
@@ -3247,7 +3248,7 @@ function filtrarCategoriaAba(cat, el) {
   filtrarCategoria(cat, el);
 }
 
-function _setFiltroAndamentoVisual(ativo) {
+function _aplicarVisualAndamento(ativo) {
   _filtroAndamento = ativo;
   var iconOn   = document.getElementById('ev-andamento-filtro-icon');
   var iconOff  = document.getElementById('ev-andamento-filtro-off-icon');
@@ -3273,13 +3274,19 @@ function filtrarStat(tipo) {
   // toggle: clicar no mesmo desativa
   _filtroStat = (_filtroStat === tipo) ? null : tipo;
 
-  // ao ativar 'em-uso', liga automaticamente o filtro de andamento
-  // ao desativar (ou trocar para outro), desliga o andamento (se não foi ligado manualmente)
+  // orquestrar botão "eventos em andamento":
+  // — ao ativar 'em-uso': liga andamento automaticamente e marca que foi automático
+  // — ao sair de 'em-uso' (qualquer outro clique): só desliga andamento se foi ativado automaticamente
   if (_filtroStat === 'em-uso') {
-    _setFiltroAndamentoVisual(true);
-  } else if (!_filtroAndamento) {
-    // só desliga o visual se o andamento não estava ativo antes
-    _setFiltroAndamentoVisual(false);
+    if (!_filtroAndamento) {
+      _aplicarVisualAndamento(true);
+      _andamentoAtivadoPorStat = true;
+    }
+  } else {
+    if (_andamentoAtivadoPorStat) {
+      _aplicarVisualAndamento(false);
+      _andamentoAtivadoPorStat = false;
+    }
   }
 
   // atualizar visual dos stat-items
@@ -3385,18 +3392,28 @@ function _getFiltroAndamentoIds() {
 }
 
 function toggleFiltroAndamento() {
-  _setFiltroAndamentoVisual(!_filtroAndamento);
-  // se desligou o andamento e o stat era 'em-uso', desliga o stat também
-  if (!_filtroAndamento && _filtroStat === 'em-uso') {
-    _filtroStat = null;
-    ['total', 'disponivel', 'em-uso', 'manutencao'].forEach(function(id) {
-      var el = document.getElementById('stat-btn-' + id);
-      if (el) el.classList.remove('stat-active');
-    });
-    var badge = document.getElementById('stat-filtro-badge');
-    if (badge) badge.style.display = 'none';
+  var novoEstado = !_filtroAndamento;
+  _aplicarVisualAndamento(novoEstado);
+
+  if (novoEstado) {
+    // ativado manualmente: não é automático
+    _andamentoAtivadoPorStat = false;
+    toast('Estoque filtrado pelos itens em uso hoje');
+  } else {
+    // desativado manualmente: limpa também o stat 'em-uso' se estiver ativo
+    _andamentoAtivadoPorStat = false;
+    if (_filtroStat === 'em-uso') {
+      _filtroStat = null;
+      ['total', 'disponivel', 'em-uso', 'manutencao'].forEach(function(id) {
+        var el = document.getElementById('stat-btn-' + id);
+        if (el) el.classList.remove('stat-active');
+      });
+      var badge = document.getElementById('stat-filtro-badge');
+      if (badge) badge.style.display = 'none';
+    }
+    toast('Filtro de andamento removido');
   }
-  toast(_filtroAndamento ? 'Estoque filtrado pelos itens em uso hoje' : 'Filtro de andamento removido');
+
   renderEquipamentos();
 }
 
@@ -3411,8 +3428,13 @@ function renderEquipamentos() {
       (e.modelo || '').toLowerCase().includes(busca) ||
       (e.tags || '').toLowerCase().includes(busca);
     var matchStat = true;
+    if (_filtroStat === 'em-uso') {
+      // sempre considera carga virtual dos eventos em andamento
+      var _cargaUso = _getFiltroAndamentoIds();
+      var _usoEfetivo = Math.min((e.qtd_total || 0), (e.qtd_em_uso || 0) + (_cargaUso[e.id] || 0));
+      matchStat = _usoEfetivo > 0;
+    }
     if (_filtroStat === 'disponivel') matchStat = (e.qtd_disponivel || 0) > 0;
-    if (_filtroStat === 'em-uso')     matchStat = (e.qtd_em_uso || 0) > 0;
     if (_filtroStat === 'manutencao') matchStat = (e.qtd_manutencao || 0) > 0;
 
     var matchTag = true;
