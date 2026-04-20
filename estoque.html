@@ -2362,7 +2362,8 @@
     border-bottom: 1px solid var(--border2);
     margin-top: 20px;
     position: relative;
-    z-index: 91;
+    z-index: 91 !important;
+    background: var(--dark);
   }
   .section-tabs-right { margin-left: auto; }
   /* drag das abas de categoria */
@@ -2602,7 +2603,7 @@
   </div>
 
   <!-- SECTION TABS (Equipamentos / Acessórios / Categorias) -->
-  <div class="section-tabs-bar" style="overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap">
+  <div class="section-tabs-bar" style="overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;position:relative;z-index:91;background:var(--dark)">
     <div class="section-tabs-left" style="flex-shrink:0">
       <button class="section-tab-btn primary-tab active" id="tab-btn-equipamentos" onclick="switchTabSecao('equipamentos')">Equipamentos <span class="tab-count" id="cnt-primary-equipamentos"></span></button>
       <button class="section-tab-btn primary-tab" id="tab-btn-acessorios" onclick="switchTabSecao('acessorios')">Acessórios <span class="tab-count" id="cnt-primary-acessorios"></span></button>
@@ -3277,9 +3278,7 @@ function renderCatTabs() {
     btn.setAttribute('data-cat', cat);
     btn.setAttribute('draggable', 'true');
     if (count === 0) btn.style.opacity = '0.35';
-    var svgIcon = (typeof CATEGORIAS_SVG !== 'undefined' && CATEGORIAS_SVG[cat])
-      ? '<span class="cat-svg-icon" style="margin-right:3px">' + CATEGORIAS_SVG[cat] + '</span>' : '';
-    btn.innerHTML = svgIcon + cat.replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+    btn.innerHTML = cat.replace(/</g,'&lt;').replace(/>/g,'&gt;') +
       '<span class="tab-count">' + count + '</span>';
     btn.onclick = function() { filtrarCategoriaAba(cat, this); };
 
