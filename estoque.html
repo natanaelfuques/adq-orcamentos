@@ -318,7 +318,7 @@
   /* ── GRID ── */
   .equip-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 8px;
     padding: 16px 24px 32px;
     min-height: 60vh;
@@ -351,7 +351,7 @@
   .status-bar-manutencao { background: linear-gradient(90deg, #5BA8E8, rgba(91,168,232,0.4)); }
   .status-bar-indisponivel { background: linear-gradient(90deg, #555, rgba(85,85,85,0.4)); }
 
-  .eq-card-body { padding: 8px 10px; }
+  .eq-card-body { padding: 6px 8px; }
 
   .eq-top {
     display: flex;
@@ -899,7 +899,7 @@
   .btn-modal-save {
     flex: 1;
     background: var(--gold);
-    color: #fff;
+    color: #111;
     border: none;
     border-radius: 5px;
     padding: 11px;
@@ -1630,10 +1630,10 @@
   .kit-item-qty-btn:hover { border-color: var(--gold); color: var(--gold); }
   .kit-item-qty-num {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.82rem;
+    font-size: 1.1rem;
     font-weight: 800;
     color: var(--text);
-    min-width: 18px;
+    min-width: 22px;
     text-align: center;
   }
   .kit-item-qty-label {
@@ -4082,8 +4082,8 @@ function salvarEquipamento() {
     valor_unitario: parseFloat(document.getElementById('f-valor').value) || 0,
     serie: (document.getElementById('f-serie').value || '').trim(),
     localizacao: (document.getElementById('f-localizacao').value || '').trim(),
-    tags: (document.getElementById('f-tags').value || '').trim(),
-    obs: (document.getElementById('f-obs').value || '').trim(),
+    tags: '',
+    obs: '',
     _atualizado: Date.now()
   };
 
