@@ -6797,6 +6797,11 @@ function _ativarMontaCarga(evId) {
       }
     }
     _eventosStagingCarga[evId] = ev;
+    // Garante que _evKitGrupos está populado mesmo que o evento
+    // estivesse fora do listener (ex: carga_finalizada era true)
+    if (!_evKitGrupos[evId] && Array.isArray(ev.kits_grupos_ev) && ev.kits_grupos_ev.length) {
+      _evKitGrupos[evId] = ev.kits_grupos_ev;
+    }
   }
   _fecharCardEvento();
   renderEventosAndamento();
