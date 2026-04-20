@@ -2075,6 +2075,32 @@ body.kit-dragging .kit-remove-zone { display: flex; }
   .agev-material-placeholder {
     font-size: 0.72rem; color: #444; font-style: italic; margin-top: 5px;
   }
+  /* Agenda card: espelha estilos do card lateral */
+  .agenda-ev-card-body .card-data-badge { font-size: 0.65rem; font-weight: 700; padding: 3px 7px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; letter-spacing: 0.06em; font-family: 'Barlow Condensed', sans-serif; }
+  .agenda-ev-card-body .card-horario-block { font-size: 0.78rem; font-weight: 600; margin-bottom: 4px; line-height: 1.5; }
+  .agenda-ev-card-body .card-local { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .agenda-ev-card-body .card-itens { border-top: 1px solid var(--border2); padding-top: 8px; }
+  .agenda-ev-card-body .veiculo-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 8px; }
+  .agenda-ev-card-body .card-itens-title { font-size: 0.62rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'Barlow Condensed', sans-serif; }
+  .agenda-ev-card-body .card-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.8rem; color: var(--text); }
+  .agenda-ev-card-body .card-item:last-child { border-bottom: none; }
+  .agenda-ev-card-body .card-item.item-removido .item-text { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
+  .agenda-ev-card-body .item-check { width: 16px; height: 16px; min-width: 16px; border: 1.5px solid var(--border2); border-radius: 3px; cursor: default; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .agenda-ev-card-body .item-check.checked { background: var(--concluido); border-color: var(--concluido); }
+  .agenda-ev-card-body .item-check.checked::after { content: ''; width: 9px; height: 5px; border-left: 2px solid #111; border-bottom: 2px solid #111; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .agenda-ev-card-body .item-text { flex: 1; }
+  .agenda-ev-card-body .item-extra-tag { font-size: 0.85rem; font-weight: 700; color: #4A90C8; flex-shrink: 0; line-height: 1; }
+  .agenda-ev-card-body .ev-kit-grupo { border: 1px solid rgba(200,169,74,0.22); border-radius: 5px; margin-bottom: 6px; overflow: hidden; }
+  .agenda-ev-card-body .ev-kit-grupo-header { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: rgba(200,169,74,0.05); user-select: none; cursor: default; }
+  .agenda-ev-card-body .ev-kit-grupo-arrow { font-size: 0.6rem; color: var(--muted); flex-shrink: 0; transform: rotate(90deg); }
+  .agenda-ev-card-body .ev-kit-grupo-check { width: 15px; height: 15px; min-width: 15px; border: 1.5px solid var(--border2); border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .agenda-ev-card-body .ev-kit-grupo-check.checked { background: var(--concluido); border-color: var(--concluido); }
+  .agenda-ev-card-body .ev-kit-grupo-check.checked::after { content: ''; width: 8px; height: 4px; border-left: 2px solid #111; border-bottom: 2px solid #111; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .agenda-ev-card-body .ev-kit-grupo-nome { flex: 1; font-size: 0.75rem; font-weight: 700; color: var(--andamento, #C8A94A); letter-spacing: 0.04em; text-transform: uppercase; }
+  .agenda-ev-card-body .ev-kit-grupo-body { border-top: 1px solid rgba(200,169,74,0.12); padding: 4px 8px; display: block; }
+  .agenda-ev-card-body .ev-kit-grupo-body .card-item { padding: 4px 0; font-size: 0.78rem; }
+  .agenda-ev-card-body .btn-finalizar-carga { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 10px; background: rgba(74,144,217,0.08); border: 1px solid rgba(74,144,217,0.4); color: #4A90D9; border-radius: 4px; padding: 7px 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; width: 100%; transition: all 0.15s; box-sizing: border-box; }
+  .agenda-ev-card-body .btn-finalizar-carga:hover { background: rgba(74,144,217,0.16); border-color: #4A90D9; }
   /* Eventos na lista do dia (painel direito) */
   .agev-lista-card {
     padding: 8px 14px; border-bottom: 1px solid var(--border2);
@@ -6430,30 +6456,25 @@ function _abrirCardEvento(id) {
   if (!ev) return;
   _fecharCardEvento();
 
+  var esc = _escEv;
   var cor = _corBadgeEvento(ev);
-  var dataFmt    = ev.ev_data     ? fmtData(ev.ev_data)     : '—';
-  var dataFimFmt = ev.ev_data_fim ? fmtData(ev.ev_data_fim) : '';
+  var corBadge = _corBadgeData(ev);
+  var dataFmt    = ev.ev_data     ? ev.ev_data.split('-').reverse().join('/') : '';
+  var dataFimFmt = ev.ev_data_fim ? ev.ev_data_fim.split('-').reverse().join('/') : '';
 
-  // Horários
-  var horariosArr = [];
-  if (ev.ev_montagem)    horariosArr.push('Mont. '  + ev.ev_montagem);
-  if (ev.ev_inicio)      horariosArr.push('Iníc. '  + ev.ev_inicio);
-  if (ev.ev_fim)         horariosArr.push('Fim '    + ev.ev_fim);
-  if (ev.ev_desmontagem) horariosArr.push('Desm. '  + ev.ev_desmontagem);
-  var horariosHtml = horariosArr.length
-    ? '<div class="agev-horarios">' + horariosArr.join(' <span class="agev-sep">•</span> ') + '</div>'
-    : '';
-
-  // Local + WhatsApp
-  var localHtml = '';
-  if (ev.ev_local) {
-    var localInner = ev.ev_maps
-      ? '<a href="' + esc(ev.ev_maps) + '" target="_blank" class="agev-local-link">' + esc(ev.ev_local) + '</a>'
-      : '<span>' + esc(ev.ev_local) + '</span>';
-    localHtml = '<div class="agev-local">' +
-      '<svg width="9" height="11" viewBox="0 0 10 13" fill="none"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>' +
-      localInner + '</div>';
+  // Horários — mesmo formato do card lateral
+  var temHorario = ev.ev_montagem || ev.ev_inicio || ev.ev_fim || ev.ev_desmontagem;
+  var horarioBlock = '';
+  if (temHorario) {
+    var l1 = [], l2 = [];
+    if (ev.ev_montagem)    l1.push('Mont. '  + _fmtHoraEv(ev.ev_montagem));
+    if (ev.ev_inicio)      l1.push('Iníc. '  + _fmtHoraEv(ev.ev_inicio));
+    if (ev.ev_fim)         l2.push('Fim '    + _fmtHoraEv(ev.ev_fim));
+    if (ev.ev_desmontagem) l2.push('Desm. '  + _fmtHoraEv(ev.ev_desmontagem));
+    horarioBlock = [l1.join(' · '), l2.join(' · ')].filter(Boolean).join('<br>');
   }
+
+  // Local + WhatsApp — mesmos elementos do card lateral
   var waHtml = '';
   if (ev.cli_fone) {
     var fone = ev.cli_fone.replace(/\D/g,'');
@@ -6462,84 +6483,101 @@ function _abrirCardEvento(id) {
     '</a>';
   }
 
-  // Itens / serviços
+  // Itens / serviços — usando as mesmas classes do card lateral (card-item, item-check)
   var servicos = ev.servicos || [];
   var itensOk  = ev.itens_ok  || {};
   var itensRem = ev.itens_removidos || {};
   var extras   = ev.itens_extras || [];
   var itensHtml = '';
   if (servicos.length > 0 || extras.length > 0) {
-    var itemsStr = servicos.map(function(s, idx) {
-      if (itensRem[idx]) return '';
-      var done = !!itensOk[idx];
-      var txt  = typeof s === 'object' ? (s.descricao || s.item || s.texto || '') : String(s);
-      return '<div class="agev-item' + (done ? ' done' : '') + '">' +
-        '<div class="agev-item-check' + (done ? ' checked' : '') + '"></div>' +
-        '<span class="agev-item-text">' + esc(txt) + '</span>' +
+    var servicosExpandidos = [];
+    servicos.forEach(function(s, origIdx) {
+      if (s && s.indexOf('\u2022') >= 0) {
+        s.split('\u2022').forEach(function(parte) { var p = parte.trim(); if (p) servicosExpandidos.push({ texto: p, idx: origIdx }); });
+      } else { servicosExpandidos.push({ texto: s, idx: origIdx }); }
+    });
+    var rowsHtml = servicosExpandidos.map(function(item) {
+      var done = !!itensOk[item.idx];
+      var removido = !!itensRem[item.idx];
+      return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '">' +
+        '<div class="item-check' + (done && !removido ? ' checked' : '') + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
+        '<span class="item-text">' + esc(item.texto) + '</span>' +
       '</div>';
     }).join('');
-    itemsStr += extras.map(function(ex) {
+    rowsHtml += extras.map(function(ex) {
       var txt = typeof ex === 'object' ? (ex.texto || ex.item || '') : String(ex);
-      return '<div class="agev-item">' +
-        '<div class="agev-item-check"></div>' +
-        '<span class="agev-item-text">' + esc(txt) + '</span>' +
-        '<span class="agev-item-extra">+</span>' +
+      return '<div class="card-item">' +
+        '<div class="item-check"></div>' +
+        '<span class="item-text">' + esc(txt) + '</span>' +
+        '<span class="item-extra-tag" style="flex-shrink:0">+</span>' +
       '</div>';
     }).join('');
-    itensHtml = '<div class="agev-itens">' +
-      '<div class="agev-section-title">Itens / Serviços</div>' + itemsStr + '</div>';
+    itensHtml = '<div class="card-itens" style="margin-top:8px">' +
+      '<div class="veiculo-row"><div class="card-itens-title">Itens / Serviços</div></div>' +
+      rowsHtml +
+    '</div>';
   }
 
-  // Material (indicador) — kits da carga se finalizada/concluida, botao de montar carga caso contrario
-  var jaStagiada = !!_eventosStagingCarga[id];
+  // Kits da carga — usando as mesmas classes ev-kit-grupo do card lateral
   var cargaFinalizada = !!ev.carga_finalizada;
   var etapaEv = ev.etapa || 'eventos';
+  var jaStagiada = !!_eventosStagingCarga[id];
   var gruposCarga = ev.kits_grupos_ev || _evKitGrupos[id] || [];
-  var materialHtml;
-  if (cargaFinalizada || etapaEv === 'concluido') {
-    var kitsListHtml = '';
-    if (gruposCarga.length > 0) {
-      kitsListHtml = '<div style="display:flex;flex-direction:column;gap:4px;margin-top:5px">' +
-        gruposCarga.map(function(g) {
-          var itensStr = (g.itens || []).map(function(it) {
-            return '<span style="font-size:0.68rem;color:var(--muted)">' + esc((it.qty > 1 ? it.qty + 'x ' : '') + it.eqNome) + '</span>';
-          }).join(', ');
-          return '<div style="background:rgba(255,255,255,0.04);border-radius:5px;padding:5px 8px;border:1px solid rgba(255,255,255,0.06)">' +
-            '<div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:2px">' + esc(g.kitNome || g.kitId || 'Kit') + '</div>' +
-            (itensStr ? '<div style="line-height:1.5">' + itensStr + '</div>' : '') +
-          '</div>';
-        }).join('') +
+
+  var kitGruposHtml = '';
+  if (gruposCarga.length > 0) {
+    kitGruposHtml = gruposCarga.map(function(grupo) {
+      var todosChecked = grupo.itens.length > 0 && grupo.itens.every(function(it) { return it.checked || it.riscado; });
+      var itensHtmlGrupo = grupo.itens.map(function(it) {
+        var label = (it.qty > 1 ? it.qty + 'x ' : '') + esc(it.eqNome);
+        return '<div class="card-item' + (it.checked && !it.riscado ? ' item-done' : '') + (it.riscado ? ' item-removido' : '') + '">' +
+          '<div class="item-check' + ((it.checked && !it.riscado) ? ' checked' : '') + '"></div>' +
+          '<span class="item-text">' + label + '</span>' +
+        '</div>';
+      }).join('');
+      return '<div class="ev-kit-grupo expanded">' +
+        '<div class="ev-kit-grupo-header">' +
+          '<span class="ev-kit-grupo-arrow">&#9654;</span>' +
+          '<div class="ev-kit-grupo-check' + (todosChecked ? ' checked' : '') + '"></div>' +
+          '<span class="ev-kit-grupo-nome' + (grupo.riscado ? ' riscado' : '') + '">' + esc(grupo.kitNome) + '</span>' +
+        '</div>' +
+        '<div class="ev-kit-grupo-body">' + itensHtmlGrupo + '</div>' +
       '</div>';
-    } else {
-      kitsListHtml = '<div style="font-size:0.72rem;color:var(--muted);margin-top:4px;font-style:italic">Nenhum kit na carga</div>';
-    }
-    materialHtml = '<div class="agev-material">' +
-      '<div class="agev-section-title" style="display:flex;align-items:center;gap:7px">' +
-        'Carga / Equipamentos' +
-        '<span style="font-size:0.62rem;background:rgba(74,200,122,0.12);color:#4AC87A;border:1px solid rgba(74,200,122,0.25);border-radius:4px;padding:1px 6px;font-weight:700">v Finalizada</span>' +
-      '</div>' +
-      kitsListHtml +
-      '<button class="agev-montar-carga-btn" style="margin-top:7px;opacity:0.6" onclick="event.stopPropagation();_ativarMontaCarga(\'' + id + '\')">' +
+    }).join('');
+  }
+
+  // Bloco de carga: kits + botão finalizar/remontar
+  var cargaBlockHtml = '';
+  if (kitGruposHtml || cargaFinalizada || etapaEv === 'concluido' || jaStagiada) {
+    var btnCarga = '';
+    if (cargaFinalizada || etapaEv === 'concluido') {
+      btnCarga = '<button class="agev-montar-carga-btn" style="margin-top:8px;opacity:0.6" onclick="event.stopPropagation();_ativarMontaCarga(\'' + id + '\')">' +
         '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Remontar carga' +
-      '</button>' +
+      '</button>';
+    } else {
+      btnCarga = '<button class="btn-finalizar-carga" onclick="event.stopPropagation();_finalizarCargaEvento(\'' + id + '\')">' +
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+        'Finalizar carga' +
+      '</button>';
+    }
+    var tituloCarga = 'Itens / Veículos';
+    var badgeFinalizada = (cargaFinalizada || etapaEv === 'concluido')
+      ? '<span style="font-size:0.62rem;background:rgba(74,200,122,0.12);color:#4AC87A;border:1px solid rgba(74,200,122,0.25);border-radius:4px;padding:1px 6px;font-weight:700;font-family:Barlow Condensed,sans-serif;letter-spacing:0.05em">&#10003; Finalizada</span>'
+      : '';
+    cargaBlockHtml = '<div class="card-itens" style="margin-top:8px">' +
+      '<div class="veiculo-row"><div class="card-itens-title">' + tituloCarga + '</div>' + badgeFinalizada + '</div>' +
+      (kitGruposHtml || '<div style="font-size:0.72rem;color:var(--muted);font-style:italic;padding:4px 0">Nenhum kit na carga</div>') +
+      btnCarga +
     '</div>';
   } else {
-    materialHtml = '<div class="agev-material">' +
-      '<div class="agev-section-title" style="display:flex;align-items:center;gap:7px">' +
-        'Carga / Equipamentos' +
-      '</div>' +
+    // Sem carga ainda — botão montar
+    cargaBlockHtml = '<div style="margin-top:8px">' +
       '<button class="agev-montar-carga-btn' + (jaStagiada ? ' ativa' : '') + '" onclick="event.stopPropagation();_ativarMontaCarga(\'' + id + '\')">' +
         (jaStagiada
-          ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><polyline points="20 6 9 17 4 12"/></svg>Em preparacao'
+          ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><polyline points="20 6 9 17 4 12"/></svg>Em preparação'
           : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 5-5 5V8z"/></svg>Montar carga') +
       '</button>' +
     '</div>';
-  }
-
-  // Badge de data final
-  var datasBadge = '<span class="agev-data-badge" style="background:' + cor + '22;color:' + cor + '">' + dataFmt + '</span>';
-  if (dataFimFmt && dataFimFmt !== dataFmt) {
-    datasBadge += ' <span style="color:var(--muted);font-size:0.7rem">→</span> <span class="agev-data-badge" style="background:' + cor + '22;color:' + cor + '">' + dataFimFmt + '</span>';
   }
 
   var overlay = document.createElement('div');
@@ -6547,23 +6585,43 @@ function _abrirCardEvento(id) {
   overlay.className = 'agenda-ev-card-overlay';
   overlay.addEventListener('click', function(e) { if (e.target === overlay) _fecharCardEvento(); });
 
+  // Header: data badge + nome cliente na mesma linha (igual ao card lateral)
+  var dataBadgeHtml = dataFmt
+    ? '<div class="card-data-badge" style="color:' + corBadge.color + ';background:' + corBadge.bg + '">' + dataFmt + '</div>'
+    : '';
+  if (dataFimFmt && dataFimFmt !== dataFmt) {
+    dataBadgeHtml += '<div class="card-data-badge" style="color:' + corBadge.color + ';background:' + corBadge.bg + ';margin-left:3px">' + dataFimFmt + '</div>';
+  }
+
   overlay.innerHTML =
     '<div class="agenda-ev-card">' +
       '<div style="height:3px;background:' + cor + ';border-radius:8px 8px 0 0;flex-shrink:0"></div>' +
       '<div class="agenda-ev-card-header">' +
-        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' + datasBadge + '</div>' +
-        '<button onclick="_fecharCardEvento()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:2px 6px;line-height:1;flex-shrink:0">✕</button>' +
+        '<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">' +
+          dataBadgeHtml +
+          '<span style="font-family:Barlow Condensed,sans-serif;font-size:0.9rem;font-weight:800;color:var(--text);letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
+            esc(ev.cli_nome || ev.ev_nome || '—') +
+          '</span>' +
+        '</div>' +
+        '<button onclick="_fecharCardEvento()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:2px 6px;line-height:1;flex-shrink:0">&#x2715;</button>' +
       '</div>' +
       '<div class="agenda-ev-card-body">' +
-        '<div>' +
-          '<div class="agev-cliente">' + esc(ev.cli_nome || ev.ev_nome || '—') + '</div>' +
-          (ev.cli_nome && ev.ev_nome ? '<div class="agev-evnome">' + esc(ev.ev_nome) + '</div>' : '') +
-        '</div>' +
-        horariosHtml +
-        ((waHtml || localHtml) ? '<div style="display:flex;align-items:center;gap:7px">' + waHtml + localHtml + '</div>' : '') +
+        (ev.cli_nome && ev.ev_nome ? '<div class="agev-evnome" style="margin-top:-4px">' + esc(ev.ev_nome) + '</div>' : '') +
+        (horarioBlock
+          ? '<div class="card-horario-block" style="font-size:0.78rem;color:' + corBadge.color + ';font-weight:600">' + horarioBlock + '</div>'
+          : '') +
+        (ev.ev_local
+          ? '<div class="card-local">' +
+              '<svg width="10" height="13" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>' +
+              (ev.ev_maps
+                ? '<a href="' + esc(ev.ev_maps) + '" target="_blank" class="agev-local-link" onclick="event.stopPropagation()">' + esc(ev.ev_local) + '</a>'
+                : '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(ev.ev_local) + '</span>') +
+            '</div>'
+          : '') +
+        (waHtml ? '<div style="margin-top:2px">' + waHtml + '</div>' : '') +
         (ev.ev_resp ? '<div class="agev-resp">Resp: <span>' + esc(ev.ev_resp) + '</span></div>' : '') +
         itensHtml +
-        materialHtml +
+        cargaBlockHtml +
       '</div>' +
     '</div>';
 
