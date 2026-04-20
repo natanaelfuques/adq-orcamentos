@@ -7367,9 +7367,11 @@ body.has-ev-sidebar header { margin-right: -272px; }
 
 /* ── KIT GRUPOS NO EVENTO ── */
 .ev-kit-grupo { border: 1px solid rgba(200,169,74,0.22); border-radius: 5px; margin-bottom: 6px; overflow: hidden; }
-.ev-kit-grupo-header { display: flex; align-items: center; gap: 6px; padding: 6px 8px; cursor: grab; background: rgba(200,169,74,0.05); transition: background 0.15s; user-select: none; }
-.ev-kit-grupo-header:active { cursor: grabbing; }
+.ev-kit-grupo-header { display: flex; align-items: center; gap: 6px; padding: 6px 8px; cursor: pointer; background: rgba(200,169,74,0.05); transition: background 0.15s; user-select: none; }
 .ev-kit-grupo-header:hover { background: rgba(200,169,74,0.1); }
+.ev-kit-grupo-drag-handle { cursor: grab; font-size: 0.7rem; color: #555; letter-spacing: -2px; line-height: 1; flex-shrink: 0; padding: 0 2px; }
+.ev-kit-grupo-drag-handle:active { cursor: grabbing; }
+.ev-kit-grupo-drag-handle:hover { color: #888; }
 .ev-kit-grupo-arrow { font-size: 0.6rem; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
 .ev-kit-grupo.expanded .ev-kit-grupo-arrow { transform: rotate(90deg); }
 .ev-kit-grupo-check { width: 15px; height: 15px; min-width: 15px; border: 1.5px solid var(--border2); border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
@@ -8033,8 +8035,10 @@ function _buildKitGruposHTML(evId) {
 
     return '<div class="ev-kit-grupo" id="ev-kit-grupo-' + esc(grupo.grupoId) + '"' +
       ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '">' +
-      '<div class="ev-kit-grupo-header" draggable="true"' +
-        ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '">' +
+      '<div class="ev-kit-grupo-header">' +
+        '<span class="ev-kit-grupo-drag-handle" draggable="true"' +
+          ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '"' +
+          ' title="Arrastar para remover">&#8942;&#8942;</span>' +
         '<span class="ev-kit-grupo-arrow">&#9654;</span>' +
         '<div class="ev-kit-grupo-check' + (todosChecked ? ' checked' : '') + '"' +
           ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '">' +
@@ -8209,28 +8213,32 @@ function _bindEvAndamentoCards() {
 
   // ── Kit Grupos handlers ──
 
-  // Toggle colapso/expande grupo
+  // Toggle colapso/expande grupo (click no header)
   scroll.querySelectorAll('.ev-kit-grupo-header').forEach(function(header) {
     header.addEventListener('click', function(e) {
-      if (e.target.closest('.ev-kit-grupo-check') || e.target.closest('.ev-kit-grupo-rem')) return;
+      e.stopPropagation();
+      if (e.target.closest('.ev-kit-grupo-check') || e.target.closest('.ev-kit-grupo-rem') || e.target.closest('.ev-kit-grupo-drag-handle')) return;
       var grupo = header.closest('.ev-kit-grupo');
       if (grupo) grupo.classList.toggle('expanded');
     });
-    header.addEventListener('dragstart', function(e) {
-      var evId = header.getAttribute('data-evid');
-      var grupoId = header.getAttribute('data-grupo-id');
+  });
+
+  // Drag handle do kit grupo → arrastar para zona de remoção
+  scroll.querySelectorAll('.ev-kit-grupo-drag-handle').forEach(function(handle) {
+    handle.addEventListener('dragstart', function(e) {
+      e.stopPropagation();
+      var evId = handle.getAttribute('data-evid');
+      var grupoId = handle.getAttribute('data-grupo-id');
       _draggingKitGrupoData = { evId: evId, grupoId: grupoId };
       e.dataTransfer.setData('tipo', 'ev_kit_grupo');
       e.dataTransfer.setData('text/plain', evId + '|' + grupoId);
       e.dataTransfer.effectAllowed = 'move';
-      // Fade visual do grupo
-      var grupoEl = header.closest('.ev-kit-grupo');
+      var grupoEl = handle.closest('.ev-kit-grupo');
       if (grupoEl) setTimeout(function() { grupoEl.style.opacity = '0.4'; }, 0);
     });
-    header.addEventListener('dragend', function() {
+    handle.addEventListener('dragend', function() {
       _draggingKitGrupoData = null;
-      // Restaura opacidade
-      var grupoEl = header.closest('.ev-kit-grupo');
+      var grupoEl = handle.closest('.ev-kit-grupo');
       if (grupoEl) grupoEl.style.opacity = '';
     });
   });
@@ -8458,6 +8466,12 @@ function renderEventosAndamento() {
     var id2 = c2.id.replace('ev-card-', '');
     if (id2) _expandedIds.push(id2);
   });
+  // Salvar grupos de kit expandidos
+  var _expandedGrupos = [];
+  scroll.querySelectorAll('.ev-kit-grupo.expanded').forEach(function(g) {
+    var gId = g.getAttribute('data-grupo-id');
+    if (gId) _expandedGrupos.push(gId);
+  });
 
   sec.style.display = 'block';
   document.body.classList.add('has-ev-sidebar');
@@ -8498,6 +8512,11 @@ function renderEventosAndamento() {
         _abrirCargaEvento(id2);
       }
     }
+  });
+  // Restaurar grupos de kit expandidos
+  _expandedGrupos.forEach(function(gId) {
+    var grupoEl = document.getElementById('ev-kit-grupo-' + gId);
+    if (grupoEl) grupoEl.classList.add('expanded');
   });
   // Restaurar carga local nos cards re-renderizados
   Object.keys(_cargaEvento).forEach(function(evId) {
