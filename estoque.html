@@ -389,7 +389,6 @@
   }
   .eq-cat-pill {
     display: inline-block;
-    margin-top: 5px;
     font-size: 0.55rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -1436,12 +1435,16 @@
   .kit-item-chip-remove:hover { color: var(--red); }
 
 
-  /* kit badge no card de equipamento */
-  .eq-kit-badges {
+  /* linha inferior do card: categoria + badges de kit */
+  .eq-footer-row {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 4px;
-    margin-bottom: 6px;
+    margin-top: 5px;
+  }
+  .eq-kit-badges {
+    display: contents; /* badges vivem dentro de eq-footer-row */
   }
   .eq-kit-badge {
     font-size: 0.58rem;
@@ -3453,7 +3456,7 @@ function buildCard(e) {
       '<div class="avail-bar">' +
         '<div class="avail-fill" style="width:' + pct + '%;background:' + barColor + '"></div>' +
       '</div>' +
-      (e.categoria ? '<span class="eq-cat-pill">' + esc(e.categoria) + '</span>' : '') +
+      '<div class="eq-footer-row">' + (e.categoria ? '<span class="eq-cat-pill">' + esc(e.categoria) + '</span>' : '') + '</div>' +
 
     '</div>' +
   '</div>';
@@ -5323,14 +5326,17 @@ renderGrid = function(equips) {
     if (kitBadges) {
       var body = card.querySelector('.eq-card-body');
       if (body) {
-        var badgeDiv = document.createElement('div');
-        badgeDiv.className = 'eq-kit-badges';
-        badgeDiv.innerHTML = kitBadges;
-        var tagsEl = body.querySelector('.eq-tags');
-        var obsEl = body.querySelector('.eq-obs');
-        if (tagsEl) { body.insertBefore(badgeDiv, tagsEl); }
-        else if (obsEl) { body.insertBefore(badgeDiv, obsEl); }
-        else { body.appendChild(badgeDiv); }
+        var footerRow = body.querySelector('.eq-footer-row');
+        if (footerRow) {
+          var tmp = document.createElement('div');
+          tmp.innerHTML = kitBadges;
+          while (tmp.firstChild) { footerRow.appendChild(tmp.firstChild); }
+        } else {
+          var badgeDiv = document.createElement('div');
+          badgeDiv.className = 'eq-kit-badges';
+          badgeDiv.innerHTML = kitBadges;
+          body.appendChild(badgeDiv);
+        }
       }
     }
   });
