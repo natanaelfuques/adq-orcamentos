@@ -58,20 +58,20 @@
 
   .hd-back {
     display: flex; align-items: center; justify-content: center;
-    background: var(--gold-dim);
-    border: 1px solid rgba(74,144,217,0.35);
+    background: rgba(245,166,35,0.08);
+    border: 1px solid rgba(245,166,35,0.45);
     border-radius: 5px;
     width: 28px; height: 36px;
-    color: var(--gold);
+    color: #F5A623;
     cursor: pointer;
     text-decoration: none;
     transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
     flex-shrink: 0;
   }
   .hd-back:hover {
-    background: rgba(74,144,217,0.22);
-    border-color: rgba(74,144,217,0.75);
-    box-shadow: 0 0 10px rgba(74,144,217,0.35);
+    background: rgba(245,166,35,0.18);
+    border-color: rgba(245,166,35,0.85);
+    box-shadow: 0 0 10px rgba(245,166,35,0.3);
   }
 
   .hd-title {
@@ -2308,7 +2308,7 @@
     justify-content: space-between;
     padding: 0 24px;
     border-bottom: 1px solid var(--border2);
-    margin-top: 6px;
+    margin-top: 20px;
   }
   .section-tabs-left { display: flex; gap: 0; }
   .section-tab-btn {
@@ -2348,8 +2348,9 @@
     width: 1px;
     height: 16px;
     background: var(--border2);
-    margin: 0 4px;
+    margin: 0 8px;
     flex-shrink: 0;
+    align-self: center;
   }
   .section-tab-btn .tab-count {
     display: inline-flex;
@@ -2423,7 +2424,7 @@
       <button id="btn-novo-item" class="btn-hd" title="Novo equipamento / acessório / veículo" style="display:flex;align-items:center;gap:5px;border-color:rgba(80,200,120,0.5);color:#50C878" onclick="_abrirDropdownNovo(this)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo</button>
       <button class="btn-hd" onclick="abrirModalCategorias()" title="Gerenciar categorias" style="display:flex;align-items:center;gap:5px;border-color:rgba(74,144,217,0.5);color:var(--gold)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Categorias</button>
       <button class="btn-hd" onclick="abrirAgenda()" title="Agenda de eventos" id="btn-agenda" style="display:flex;align-items:center;justify-content:center;border-color:rgba(245,166,35,0.5);color:#F5A623;position:relative;padding:0;width:26px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span id="agenda-badge" style="display:none;background:#F5A623;color:#111;border-radius:9px;padding:0 4px;font-size:0.5rem;font-weight:800;line-height:14px;position:absolute;top:-5px;right:-5px">0</span></button>
-      <button id="btn-ev-carga-hd" class="btn-hd" onclick="_toggleSidebar()" title="Eventos em andamento" style="display:none">
+      <button id="btn-ev-carga-hd" class="btn-hd" onclick="_toggleSidebar()" title="Eventos em andamento" style="display:flex">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
         Carga
         <span id="btn-ev-carga-count" class="carga-badge">0</span>
@@ -7649,6 +7650,26 @@ function _buildRespBarEvHTML(responsaveis) {
   return '<div class="card-resp-bar"><div class="card-resp-bar-track"></div><div class="card-resp-bar-colors">' + colorSegs + '</div></div>';
 }
 
+function _corBadgeData(ev) {
+  var etapa = ev.etapa || 'eventos';
+  if (etapa === 'andamento') {
+    return { color: '#C8A94A', bg: 'rgba(200,169,74,0.15)' };
+  }
+  if (etapa === 'concluido') {
+    return { color: '#4AC87A', bg: 'rgba(74,200,122,0.12)' };
+  }
+  // etapa === 'eventos' — cor por proximidade
+  if (!ev.ev_data) return { color: '#aaa', bg: 'rgba(170,170,170,0.12)' };
+  var parts = ev.ev_data.split('-');
+  var evDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var diff = Math.round((evDate - hoje) / 86400000);
+  if (diff < 0)  return { color: '#555',    bg: 'rgba(85,85,85,0.15)' };
+  if (diff <= 1) return { color: '#e05c5c', bg: 'rgba(224,92,92,0.15)' };
+  if (diff < 7)  return { color: '#4A90D9', bg: 'rgba(74,144,217,0.15)' };
+  return { color: '#4A90D9', bg: 'rgba(74,144,217,0.12)' };
+}
+
 function _buildEvAndamentoCard(ev) {
   var esc = _escEv;
   var dataFmt = ev.ev_data ? ev.ev_data.split('-').reverse().join('/') : '';
@@ -7762,8 +7783,8 @@ function _buildEvAndamentoCard(ev) {
     '<div class="card-summary">' +
       '<div class="card-summary-left">' +
         '<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start">' +
-          (dataFmt ? '<div class="card-data-badge">' + dataFmt + '</div>' : '') +
-          (dataFimFmt ? '<div class="card-data-badge">' + dataFimFmt + '</div>' : '') +
+          (dataFmt ? '<div class="card-data-badge" style="color:' + _corBadgeData(ev).color + ';background:' + _corBadgeData(ev).bg + '">' + dataFmt + '</div>' : '') +
+          (dataFimFmt ? '<div class="card-data-badge" style="color:' + _corBadgeData(ev).color + ';background:' + _corBadgeData(ev).bg + '">' + dataFimFmt + '</div>' : '') +
         '</div>' +
         '<div>' +
           (ev.cli_nome ? '<div class="card-cliente">' + esc(ev.cli_nome) + '</div>' : '') +
@@ -8502,10 +8523,8 @@ function renderEventosAndamento() {
     sec.style.display = 'none';
     document.body.classList.remove('has-ev-sidebar');
     document.body.style.paddingRight = '';
-    if (hdBtn) hdBtn.style.display = 'none';
     return;
   }
-  if (hdBtn) { hdBtn.style.display = 'flex'; }
   if (hdCount) { hdCount.textContent = todos.length; }
 
   // Salvar cards expandidos antes de re-renderizar
