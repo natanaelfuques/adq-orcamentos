@@ -1862,11 +1862,8 @@
   .agenda-layout { display: flex; flex: 1; overflow: hidden; min-height: 0; }
   .agenda-cal-panel {
     flex: 1; display: flex; flex-direction: column; min-width: 0;
-    border-right: 1px solid var(--border2);
   }
-  .agenda-right-panel {
-    width: 280px; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden;
-  }
+
   /* Navegação de mês */
   .agenda-cal-nav {
     display: flex; align-items: center; justify-content: space-between;
@@ -1931,33 +1928,6 @@
   .agenda-cal-ev-bar:hover { filter: brightness(1.25); }
   .agenda-cal-more { font-size: 0.52rem; color: var(--muted); padding: 0 3px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; }
   /* Painel direito — cabeçalho e form */
-  .agenda-right-header {
-    padding: 9px 14px; border-bottom: 1px solid var(--border2);
-    font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem;
-    font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
-    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-  }
-  .agenda-form {
-    padding: 10px 14px; display: flex; flex-direction: column; gap: 7px; flex-shrink: 0;
-    border-bottom: 1px solid var(--border2);
-  }
-  .agenda-btn-save {
-    background: #F5A623; color: #111; border: none; border-radius: 5px;
-    padding: 0 14px; height: 30px; font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 0.08em; cursor: pointer; transition: opacity 0.15s;
-  }
-  .agenda-btn-save:hover { opacity: 0.85; }
-  .agenda-action-btn {
-    background: none; border: 1px solid var(--border2); color: var(--muted);
-    border-radius: 4px; padding: 0 10px; height: 28px;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem;
-    font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: 0.15s;
-  }
-  .agenda-action-btn:hover { border-color: var(--gold); color: var(--gold); }
-  .agenda-action-btn.del:hover { border-color: var(--red); color: var(--red); }
-  /* Painel direito — lista do dia */
-  .agenda-dia-lista { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
   .agenda-dia-lista-header {
     padding: 7px 14px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.62rem;
     font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
@@ -1997,24 +1967,11 @@
     font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem;
     text-transform: uppercase; letter-spacing: 0.08em;
   }
-  .agenda-kit-select-list {
-    display: flex; flex-direction: column; gap: 2px; max-height: 110px;
-    overflow-y: auto; background: var(--darker); border: 1px solid var(--border2);
-    border-radius: 6px; padding: 4px;
-  }
-  .agenda-kit-select-item {
-    display: flex; align-items: center; gap: 6px; padding: 4px 6px;
-    border-radius: 4px; cursor: pointer; transition: background 0.12s;
-    font-size: 0.75rem; color: var(--text); user-select: none;
-  }
-  .agenda-kit-select-item:hover { background: var(--surface); }
-  .agenda-kit-select-item input[type=checkbox] { accent-color: #F5A623; width: 13px; height: 13px; }
   @media (max-width: 640px) {
     .agenda-modal { max-height: 95vh; }
     .agenda-layout { flex-direction: column; }
     .agenda-cal-panel { border-right: none; border-bottom: 1px solid var(--border2); max-height: 55vh; }
-    .agenda-right-panel { width: 100%; }
-    .agenda-cal-grid { grid-template-rows: repeat(6, 1fr); }
+      .agenda-cal-grid { grid-template-rows: repeat(6, 1fr); }
   }
   /* ── Pills de eventos (eventos_campo) no calendário ── */
   .agenda-ev-pill {
@@ -6720,37 +6677,7 @@ function _atualizarConflitosNosKits() {
           <div class="agenda-cal-grid" id="agenda-cal-grid"></div>
         </div>
 
-        <!-- ── Painel direito: form + lista do dia ── -->
-        <div class="agenda-right-panel">
-          <!-- Cabeçalho do form -->
-          <div class="agenda-right-header">
-            <span id="agenda-form-label">+ Nova Reserva</span>
-            <button id="ag-cancelar-btn" class="agenda-action-btn" onclick="cancelarEdicaoAgenda()" style="display:none">Cancelar</button>
-          </div>
-          <!-- Formulário -->
-          <div class="agenda-form">
-            <input type="text" class="form-input" id="ag-nome" placeholder="Nome do evento" style="font-size:0.82rem" />
-            <div style="display:grid;grid-template-columns:1fr 82px;gap:4px">
-              <input type="date" class="form-input" id="ag-data-inicio" title="Data de início" style="font-size:0.75rem" />
-              <input type="time" class="form-input" id="ag-hora-inicio" value="08:00" title="Hora de início" style="font-size:0.75rem" />
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 82px;gap:4px">
-              <input type="date" class="form-input" id="ag-data-fim" title="Data de retorno" style="font-size:0.75rem" />
-              <input type="time" class="form-input" id="ag-hora-fim" value="20:00" title="Hora de retorno" style="font-size:0.75rem" />
-            </div>
-            <div style="font-family:Barlow Condensed,sans-serif;font-size:0.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:700">Kits reservados</div>
-            <div class="agenda-kit-select-list" id="agenda-kit-checklist">
-              <div style="color:var(--muted);font-size:0.72rem;padding:4px">Nenhum kit disponível</div>
-            </div>
-            <input type="text" class="form-input" id="ag-obs" placeholder="Observação (opcional)" style="font-size:0.75rem" />
-            <button class="agenda-btn-save" onclick="salvarReserva()">Salvar Reserva</button>
-          </div>
-          <!-- Lista de reservas do dia selecionado -->
-          <div class="agenda-dia-lista" id="agenda-dia-lista">
-            <div class="agenda-dia-lista-header" id="agenda-dia-lista-header">Todas as reservas</div>
-            <div id="agenda-lista"><div class="agenda-empty-dia">Nenhuma reserva</div></div>
-          </div>
-        </div>
+
       </div>
     </div>
   </div>
