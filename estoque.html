@@ -6130,6 +6130,16 @@ function _renderAgendaListaDia(dateStr) {
       var temMaterial = !!ev.material_reservado;
       var cor = _corBadgeEvento(ev);
       var dataFmt = ev.ev_data ? fmtData(ev.ev_data) : '';
+      // Kits da carga: prioritiza kits_grupos_ev do Firestore, com fallback para cache local
+      var grupos = ev.kits_grupos_ev || _evKitGrupos[ev.id] || [];
+      var kitsHtml = '';
+      if (grupos.length > 0) {
+        kitsHtml = '<div class="agenda-dia-card-kits" style="margin-top:4px">' +
+          grupos.map(function(g) {
+            return '<span class="agenda-kit-chip">' + esc(g.kitNome || g.kitId || '') + '</span>';
+          }).join('') +
+        '</div>';
+      }
       return '<div class="agev-lista-card" onclick="_abrirCardEvento(\'' + ev.id + '\')">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px">' +
           '<div style="display:flex;align-items:center;gap:6px">' +
@@ -6141,6 +6151,7 @@ function _renderAgendaListaDia(dateStr) {
         '<div class="agev-lista-card-nome">' + esc(ev.cli_nome || ev.ev_nome || 'Evento') + '</div>' +
         (ev.cli_nome && ev.ev_nome ? '<div class="agev-lista-card-sub">' + esc(ev.ev_nome) + '</div>' : '') +
         (ev.ev_local ? '<div class="agev-lista-card-sub">' + esc(ev.ev_local) + '</div>' : '') +
+        kitsHtml +
       '</div>';
     }).join('');
   }
