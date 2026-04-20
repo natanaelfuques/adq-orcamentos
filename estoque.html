@@ -274,8 +274,13 @@
   .btn-add-eq:active { transform: translateY(0); }
 
   /* ── CATEGORY TABS ── */
-  /* cat-tabs agora é inline na section-tabs-bar */
-  .cat-tabs { display: contents; }
+  .cat-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 0 24px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
   .cat-tabs::-webkit-scrollbar { display: none; }
 
   .cat-tab {
@@ -311,7 +316,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 8px;
-    padding: 16px 24px 32px;
+    padding: 0 24px 32px;
   }
 
   /* ── EQUIPMENT CARD ── */
@@ -379,26 +384,11 @@
   }
 
   .eq-cat {
-    font-size: 0.65rem;
-    font-weight: 500;
-    color: #666;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 130px;
-  }
-  .eq-cat-pill {
-    display: inline-block;
-    font-size: 0.55rem;
+    font-size: 0.62rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.09em;
-    color: #777;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 20px;
-    padding: 2px 7px;
-    line-height: 1.5;
+    letter-spacing: 0.1em;
+    color: var(--muted);
   }
 
   .eq-actions {
@@ -940,7 +930,6 @@
     white-space: nowrap;
   }
   .toast.error { background: #1a0a0a; border-color: var(--red); color: var(--red); }
-  .toast.has-undo { pointer-events: auto; }
   @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
   /* ── SECTION TITLE ── */
@@ -1344,7 +1333,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s;
   grid-column: 1 / -1;
   min-height: 52px;
   user-select: none;
@@ -1435,16 +1424,12 @@
   .kit-item-chip-remove:hover { color: var(--red); }
 
 
-  /* linha inferior do card: categoria + badges de kit */
-  .eq-footer-row {
+  /* kit badge no card de equipamento */
+  .eq-kit-badges {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
     gap: 4px;
-    margin-top: 5px;
-  }
-  .eq-kit-badges {
-    display: contents; /* badges vivem dentro de eq-footer-row */
+    margin-bottom: 6px;
   }
   .eq-kit-badge {
     font-size: 0.58rem;
@@ -2168,7 +2153,7 @@
   /* ── KIT SLOT PANELS ── */
   .kit-slot-panel {
     background: var(--surface);
-    border: 1px solid rgba(74,144,217,0.45);
+    border: 1px solid var(--gold);
     border-radius: 8px;
     overflow: hidden;
     position: relative;
@@ -2254,7 +2239,6 @@
     cursor: pointer;
   }
   .kit-slot-item.filled:hover { border-color: var(--gold); }
-  .kit-slot-item.slot-drag-over { border-color: var(--gold) !important; background: rgba(212,175,55,0.15) !important; }
   .kit-slot-item.empty {
     border-style: dashed;
     border-color: rgba(255,255,255,0.06);
@@ -2317,20 +2301,10 @@
     text-transform: uppercase;
     cursor: pointer;
     padding: 10px 16px 8px;
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    transition: color 0.15s, border-color 0.15s;
     margin-bottom: -1px;
-    white-space: nowrap;
-    flex-shrink: 0;
   }
   .section-tab-btn:hover { color: #ccc; }
-  /* Abas primárias (Equipamentos / Acessórios) */
-  .section-tab-btn.primary-tab.active {
-    color: #fff;
-    border-bottom-color: rgba(74,144,217,0.9);
-    background: rgba(74,144,217,0.08);
-  }
-  .section-tab-btn.primary-tab:hover { color: #ccc; background: rgba(74,144,217,0.04); }
-  /* Abas de categoria — mais sutis */
   .section-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
   .section-tabs-right {
     display: flex;
@@ -2338,24 +2312,6 @@
     gap: 6px;
     padding: 6px 0;
   }
-  .section-tabs-sep {
-    width: 1px;
-    height: 16px;
-    background: var(--border2);
-    margin: 0 4px;
-    flex-shrink: 0;
-  }
-  .section-tab-btn .tab-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.07);
-    border-radius: 10px;
-    padding: 0 6px;
-    font-size: 0.62rem;
-    margin-left: 5px;
-  }
-  .section-tab-btn.active .tab-count { background: rgba(200,169,74,0.18); }
   @media (max-width: 600px) {
     .section-tabs-bar { padding: 0 12px; }
     .kit-slot-grid-3x3 { gap: 4px; }
@@ -2497,6 +2453,13 @@
     </select>
   </div>
 
+  <!-- CATEGORY TABS -->
+  <div class="cat-tabs" id="cat-tabs">
+    <button class="cat-tab active" data-cat="todos" onclick="filtrarCategoria('todos', this)">
+      Todos <span class="cat-count" id="cnt-todos">0</span>
+    </button>
+  </div>
+
   <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
     <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
@@ -2512,14 +2475,12 @@
     </div>
   </div>
 
-  <!-- SECTION TABS (Equipamentos / Acessórios / Categorias) -->
-  <div class="section-tabs-bar" style="overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap">
-    <div class="section-tabs-left" style="flex-shrink:0">
-      <button class="section-tab-btn primary-tab active" id="tab-btn-equipamentos" onclick="switchTabSecao('equipamentos')">Equipamentos <span class="tab-count" id="cnt-primary-equipamentos"></span></button>
-      <button class="section-tab-btn primary-tab" id="tab-btn-acessorios" onclick="switchTabSecao('acessorios')">Acessórios <span class="tab-count" id="cnt-primary-acessorios"></span></button>
+  <!-- SECTION TABS (Equipamentos / Acessórios) -->
+  <div class="section-tabs-bar">
+    <div class="section-tabs-left">
+      <button class="section-tab-btn active" id="tab-btn-equipamentos" onclick="switchTabSecao('equipamentos')">Equipamentos</button>
+      <button class="section-tab-btn" id="tab-btn-acessorios" onclick="switchTabSecao('acessorios')">Acessórios</button>
     </div>
-    <div class="section-tabs-sep" id="cat-tabs-sep" style="display:none"></div>
-    <div id="cat-tabs" style="display:flex;align-items:stretch;gap:0;overflow:visible;flex-shrink:0"></div>
     <div class="section-tabs-right"></div>
   </div>
 
@@ -2532,7 +2493,7 @@
   </div>
 
   <!-- TAB PANEL: Acessórios -->
-  <div id="tab-panel-acessorios" style="display:none;padding:16px 24px 24px">
+  <div id="tab-panel-acessorios" style="display:none;padding:0 24px 24px">
     <div class="acessorios-grid" id="acessorios-grid">
       <!-- renderizado por JS -->
     </div>
@@ -3154,80 +3115,30 @@ function _renderStatsAjustados() {
 
 function renderCatTabs() {
   var equips = Object.values(_equipamentos);
-  var acessorios = Object.values(_acessorios);
-  var isAcessorios = _tabSecaoAtiva === 'acessorios';
-
-  // Contagem por categoria para a aba ATIVA
-  var catCountEq = {};
+  var catCount = {};
   equips.forEach(function(e) {
-    if (e.categoria) catCountEq[e.categoria] = (catCountEq[e.categoria] || 0) + 1;
+    if (e.categoria) {
+      catCount[e.categoria] = (catCount[e.categoria] || 0) + 1;
+    }
   });
-  var catCountAc = {};
-  acessorios.forEach(function(a) {
-    if (a.categoria) catCountAc[a.categoria] = (catCountAc[a.categoria] || 0) + 1;
-  });
-
-  // União de todas as categorias (de ambos)
-  var todasCats = Array.from(new Set(
-    Object.keys(catCountEq).concat(Object.keys(catCountAc))
-  )).sort();
 
   var container = document.getElementById('cat-tabs');
-  var sep = document.getElementById('cat-tabs-sep');
-
-  if (!todasCats.length) {
-    if (container) container.innerHTML = '';
-    if (sep) sep.style.display = 'none';
-    return;
-  }
-
-  if (sep) sep.style.display = '';
-
-  // Total visível na aba ativa
-  var totalAtivo = isAcessorios ? acessorios.length : equips.length;
-
-  var totalBtn = '<button class="section-tab-btn' + (_catAtual === 'todos' ? ' active' : '') +
-    '" data-cat="todos" onclick="filtrarCategoria(\'todos\', this)">' +
-    'Todos <span class="tab-count" id="cnt-todos">' + totalAtivo + '</span></button>';
-
-  // Atualizar contadores primários
-  var cntPrimEq = document.getElementById('cnt-primary-equipamentos');
-  if (cntPrimEq) cntPrimEq.textContent = equips.length;
-  var cntPrimAc = document.getElementById('cnt-primary-acessorios');
-  if (cntPrimAc) cntPrimAc.textContent = acessorios.length;
-
-  var catBtns = todasCats.map(function(cat) {
+  var totalBtn = '<button class="cat-tab' + (_catAtual === 'todos' ? ' active' : '') + '" data-cat="todos" onclick="filtrarCategoria(\'todos\', this)">Todos <span class="cat-count" id="cnt-todos">' + equips.length + '</span></button>';
+  var catBtns = Object.keys(catCount).sort().map(function(cat) {
     var ativo = _catAtual === cat ? ' active' : '';
-    var svgIcon = CATEGORIAS_SVG[cat] ? '<span class="cat-svg-icon" style="margin-right:3px">' + CATEGORIAS_SVG[cat] + '</span>' : '';
-    // Contagem conforme aba ativa; zero = não tem nada nessa cat para esta aba
-    var count = isAcessorios ? (catCountAc[cat] || 0) : (catCountEq[cat] || 0);
-    var zeroStyle = count === 0 ? ' style="opacity:0.35"' : '';
-    return '<button class="section-tab-btn' + ativo + '"' + zeroStyle + ' data-cat="' + esc(cat) +
-      '" onclick="filtrarCategoriaAba(\'' + esc(cat) + '\', this)">' +
+    var svgIcon = CATEGORIAS_SVG[cat] ? '<span class="cat-svg-icon">' + CATEGORIAS_SVG[cat] + '</span>' : '';
+    return '<button class="cat-tab' + ativo + '" data-cat="' + esc(cat) + '" onclick="filtrarCategoria(\'' + esc(cat) + '\', this)">' +
       svgIcon + esc(cat) +
-      '<span class="tab-count">' + count + '</span></button>';
+      ' <span class="cat-count">' + catCount[cat] + '</span></button>';
   }).join('');
-
   container.innerHTML = totalBtn + catBtns;
 }
 
 function filtrarCategoria(cat, el) {
   _catAtual = cat;
-  // Limpa active só nos botões de categoria (dentro do #cat-tabs)
-  var catContainer = document.getElementById('cat-tabs');
-  if (catContainer) catContainer.querySelectorAll('.section-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.cat-tab').forEach(function(b) { b.classList.remove('active'); });
   if (el) el.classList.add('active');
-  if (_tabSecaoAtiva === 'acessorios') {
-    renderAcessorios();
-  } else {
-    renderEquipamentos();
-  }
-}
-
-// Filtra categoria no painel ativo (Equipamentos ou Acessórios)
-function filtrarCategoriaAba(cat, el) {
-  // filtrarCategoria já renderiza o painel correto conforme _tabSecaoAtiva
-  filtrarCategoria(cat, el);
+  renderEquipamentos();
 }
 
 function filtrarStat(tipo) {
@@ -3424,7 +3335,7 @@ function buildCard(e) {
         '<div class="eq-icon">' + _getEqSvg(e.emoji, 18) + '</div>' +
         '<div class="eq-info">' +
           '<div class="eq-name" title="' + esc(e.nome || '') + '">' + esc(e.nome || 'Sem nome') + '</div>' +
-          '<div class="eq-cat">' + esc(e.modelo || '') + '</div>' +
+          '<div class="eq-cat">' + esc(e.categoria || 'Sem categoria') + '</div>' +
         '</div>' +
         '<div class="eq-actions">' +
           '<button class="eq-action-btn" onclick="event.stopPropagation();abrirModalEdit(\'' + e.id + '\')" title="Editar">' +
@@ -3457,7 +3368,6 @@ function buildCard(e) {
       '<div class="avail-bar">' +
         '<div class="avail-fill" style="width:' + pct + '%;background:' + barColor + '"></div>' +
       '</div>' +
-      '<div class="eq-footer-row">' + (e.categoria ? '<span class="eq-cat-pill">' + esc(e.categoria) + '</span>' : '') + '</div>' +
 
     '</div>' +
   '</div>';
@@ -4330,13 +4240,15 @@ function toastUndo(msg, undoFn) {
   span.textContent = msg;
   t.appendChild(span);
   if (undoFn) {
-    t.classList.add('has-undo');
     var btn = document.createElement('button');
     btn.textContent = 'Desfazer';
-    btn.style.cssText = "background:transparent;border:1px solid rgba(80,200,120,0.55);color:#50C878;border-radius:3px;padding:2px 9px;font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;flex-shrink:0;transition:background 0.15s";
+    btn.style.cssText = 'background:transparent;border:1px solid rgba(80,200,120,0.55);color:#50C878;border-radius:3px;padding:2px 9px;font-family:Barlow Condensed,sans-serif;font-size:0.65rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;flex-shrink:0;transition:background 0.15s';
     btn.onmouseover = function() { btn.style.background = 'rgba(80,200,120,0.12)'; };
     btn.onmouseout  = function() { btn.style.background = 'transparent'; };
-    btn.addEventListener('click', function() { undoFn(); t.remove(); });
+    btn.addEventListener('click', function() {
+      undoFn();
+      t.remove();
+    });
     t.appendChild(btn);
   }
   document.body.appendChild(t);
@@ -4711,12 +4623,85 @@ function instalarApp() {
 })();
 </script>
 <!-- ───── MODAL: KIT ───── -->
+<div id="kit-modal-overlay" class="modal-overlay" data-modal-static="1" style="display:none" onclick="fecharModalKit(event)">
+  <div class="kit-modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="kit-modal-title">Novo Kit</div>
+      <button class="btn-modal-close" onclick="fecharModalKit(null)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Seção colapsável: Nome e Descrição -->
+      <div class="kit-collapsible-section">
+        <div class="kit-collapsible-header" onclick="toggleKitSection('nome-desc', this)" data-open="0">
+          <div class="kit-collapsible-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Nome do kit e descrição
+          </div>
+          <svg class="kit-collapsible-arrow" style="" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="kit-collapsible-body" id="kit-section-nome-desc">
+          <div class="form-group" style="margin-bottom:10px">
+            <label class="form-label">Nome do kit *</label>
+            <input type="text" class="form-input" id="kit-nome" placeholder="Ex: Kit de Som #1" />
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Descrição (opcional)</label>
+            <input type="text" class="form-input" id="kit-desc" placeholder="PA completo, shows médios..." />
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção colapsável: Equipamentos no Kit -->
+      <div class="kit-collapsible-section">
+        <div class="kit-collapsible-header" onclick="toggleKitSection('equip-no-kit', this)" data-open="1">
+          <div class="kit-collapsible-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Equipamentos no kit
+          </div>
+          <svg class="kit-collapsible-arrow" style="transform:rotate(180deg)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="kit-collapsible-body open" id="kit-section-equip-no-kit">
+          <div class="kit-modal-drop" id="kit-drop-zone"
+            ondragover="kitDropZoneOver(event)"
+            ondragleave="kitDropZoneLeave(event)"
+            ondrop="kitDropZoneDrop(event)">
+            <div class="kit-modal-drop-empty" id="kit-drop-empty">Arraste equipamentos para cá ou clique em + abaixo</div>
+          </div>
+          <div style="margin-top:12px">
+            <div style="font-family:Barlow Condensed,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#555;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Adicionar equipamento (clique ou arraste)
+            </div>
+            <input type="text" class="form-input" id="kit-search-eq" placeholder="Buscar equipamento..." oninput="renderKitSearchResults()" style="margin-bottom:6px" />
+            <div id="kit-search-results" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção de movimentação do kit (só aparece ao editar) -->
+      <div id="kit-mov-section-container"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="fecharModalKit(null)">Cancelar</button>
+      <button class="btn-modal-save" onclick="salvarKit()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvar kit
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── KITS: Estado ──
 var _kits = {};
+var _kitEditandoId = null;
+var _kitItensAtual = []; // [{equipId, qtd, acessorios}]
 var _draggingEqId = null;
 var _draggingAcessorioId = null;
+var _kitMovAberto = false;
 
 // ── Colapso de seções ──
 var _equipSecaoAberta = true;
@@ -4798,15 +4783,11 @@ function switchTabSecao(tab) {
     if (btnEq) btnEq.classList.add('active');
     if (btnAc) btnAc.classList.remove('active');
     if (tabContainer) tabContainer.style.minHeight = '';
-    renderCatTabs();
-    renderEquipamentos();
   } else {
     if (panelEq) panelEq.style.display = 'none';
     if (panelAc) panelAc.style.display = '';
     if (btnEq) btnEq.classList.remove('active');
     if (btnAc) btnAc.classList.add('active');
-    renderCatTabs();
-    renderAcessorios();
   }
 }
 
@@ -4819,13 +4800,8 @@ function renderAcessorios() {
     return (a.nome || '').localeCompare(b.nome || '');
   });
 
-  // Filtrar por categoria ativa
-  if (_catAtual && _catAtual !== 'todos') {
-    lista = lista.filter(function(a) { return a.categoria === _catAtual; });
-  }
-
   if (!lista.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:28px 24px;color:#444;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em">Nenhum acessório nesta categoria</div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:28px 24px;color:#444;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em">Nenhum acessório cadastrado</div>';
     return;
   }
 
@@ -4896,7 +4872,7 @@ function _abrirModalFormAcessorio(a) {
       return '<option value="' + esc(e.nome) + '"' + (a.equipamento === e.nome ? ' selected' : '') + '>' + esc(e.nome) + '</option>';
     }).join('');
 
-  var catOptions = _todasCategorias().map(function(c) {
+  var catOptions = ['Som', 'Iluminação', 'Microfone', 'Cabeamento', 'Estrutura', 'Vídeo', 'Potência', 'Periférico', 'Veículo', 'Outros'].map(function(c) {
     return '<option value="' + c + '"' + (a.categoria === c ? ' selected' : '') + '>' + c + '</option>';
   }).join('');
 
@@ -5085,6 +5061,16 @@ function renderKits() {
 
   kitsArr.forEach(function(kit) {
     var itens = Array.isArray(kit.itens) ? kit.itens : [];
+    var temZero = itens.some(function(it) {
+      var eq = _equipamentos[it.equipId];
+      return eq && (eq.qtd_disponivel || 0) < (it.qtd || 1);
+    });
+    var temWarn = itens.some(function(it) {
+      var eq = _equipamentos[it.equipId];
+      return eq && (eq.qtd_manutencao || 0) > 0;
+    });
+    var borderStyle = temZero ? 'border-color:var(--red)' : (temWarn ? 'border-color:var(--amber)' : '');
+
     // 9 slots 3×3
     var slots = '';
     for (var s = 0; s < 9; s++) {
@@ -5095,47 +5081,50 @@ function renderKits() {
           var svgStr = _getEqSvg(eq.emoji, 18);
           slots += '<div class="kit-slot-item filled" draggable="true" ' +
           'style="position:relative;cursor:grab" ' +
-          'data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '" data-equip-id="' + esc(it.equipId) + '" ' +
+          'data-kit-id="' + esc(kit.id) + '" data-equip-id="' + esc(it.equipId) + '" ' +
           'onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" ' +
-                    'ondragstart="_kitSlotDragStart(this,event)" ' +
+          'onclick="event.stopPropagation();abrirModalEditarKit(this.dataset.kitId)" ' +
+          'ondragstart="_kitSlotDragStart(this,event)" ' +
           'ondragend="_kitSlotDragEnd(event)" ' +
           'title="' + esc(eq.nome || '') + '">'+
             '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
             '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
             '<div class="kit-slot-item-name">' + esc(eq.nome || '') + '</div>' +
-
+            '<button class="kit-item-del-btn" onclick="event.stopPropagation();removerItemDoKit(\\\'' + esc(kit.id) + '\\\',\\\'' + esc(it.equipId) + '\\\')" title="Remover item" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);border:none;color:#e05c5c;cursor:pointer;border-radius:3px;width:16px;height:16px;font-size:0.75rem;line-height:16px;text-align:center;padding:0;opacity:0;transition:opacity 0.15s">&times;</button>' +
           '</div>';
         } else {
-          slots += '<div class="kit-slot-item empty" data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '"></div>';
+          slots += '<div class="kit-slot-item empty"></div>';
         }
       } else {
-        slots += '<div class="kit-slot-item empty" data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '"></div>';
+        slots += '<div class="kit-slot-item empty"></div>';
       }
     }
 
+    var svgEdit = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+    var svgChevron = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
     html += '<div class="kit-slot-panel kit-folder" id="kit-card-' + esc(kit.id) + '" draggable="true"' +
-
+      (borderStyle ? ' style="' + borderStyle + '"' : '') +
       ' ondragover="kitFolderOver(event,\'' + esc(kit.id) + '\')"' +
       ' ondragleave="kitFolderLeave(event,\'' + esc(kit.id) + '\')"' +
       ' ondrop="kitFolderDrop(event,\'' + esc(kit.id) + '\')"' +
       ' ondragstart="_kitDragStart(event,\'' + esc(kit.id) + '\')" ondragend="_kitDragEnd()">' +
       '<div class="kit-slot-panel-header">' +
-        '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_editarNomeKit(\'' + esc(kit.id) + '\')" style="cursor:text" title="Clique para editar o nome">' +
-          esc(kit.nome || 'Kit') +
+        '<div class="kit-slot-panel-title" onclick="event.stopPropagation();_toggleKitPanel(\'' + esc(kit.id) + '\')">' +
+          svgChevron + esc(kit.nome || 'Kit') +
         '</div>' +
         '<div class="kit-slot-panel-actions">' +
+          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="Editar">' + svgEdit + '</button>' +
+          '<button class="kit-slot-panel-btn" onclick="event.stopPropagation();excluirKit(\'' + esc(kit.id) + '\')" title="Excluir kit" style="color:var(--red);font-size:1.1rem;line-height:1;padding:0 3px">&times;</button>' +
         '</div>' +
       '</div>' +
       '<div class="kit-slot-panel-body">' +
-        '<div class="kit-slot-grid-3x3" id="kit-slot-grid-' + esc(kit.id) + '"' +
-        ' ondragover="_kitGridOver(event)" ondragleave="_kitGridLeave(event)" ondrop="_kitGridDrop(event)">' +
-        slots + '</div>' +
+        '<div class="kit-slot-grid-3x3">' + slots + '</div>' +
       '</div>' +
     '</div>';
   });
 
-  html += '<div class="kit-novo-card" onclick="criarNovoKitDireto()">' +
+  html += '<div class="kit-novo-card" onclick="abrirModalNovoKit()">' +
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
     'Novo kit' +
   '</div>';
@@ -5251,17 +5240,14 @@ renderGrid = function(equips) {
     if (kitBadges) {
       var body = card.querySelector('.eq-card-body');
       if (body) {
-        var footerRow = body.querySelector('.eq-footer-row');
-        if (footerRow) {
-          var tmp = document.createElement('div');
-          tmp.innerHTML = kitBadges;
-          while (tmp.firstChild) { footerRow.appendChild(tmp.firstChild); }
-        } else {
-          var badgeDiv = document.createElement('div');
-          badgeDiv.className = 'eq-kit-badges';
-          badgeDiv.innerHTML = kitBadges;
-          body.appendChild(badgeDiv);
-        }
+        var badgeDiv = document.createElement('div');
+        badgeDiv.className = 'eq-kit-badges';
+        badgeDiv.innerHTML = kitBadges;
+        var tagsEl = body.querySelector('.eq-tags');
+        var obsEl = body.querySelector('.eq-obs');
+        if (tagsEl) { body.insertBefore(badgeDiv, tagsEl); }
+        else if (obsEl) { body.insertBefore(badgeDiv, obsEl); }
+        else { body.appendChild(badgeDiv); }
       }
     }
   });
@@ -5273,74 +5259,150 @@ function _getKitBadgesForEq(eqId) {
     if (!Array.isArray(kit.itens)) return;
     var found = kit.itens.some(function(it) { return it.equipId === eqId; });
     if (found) {
-      html += '<span class="eq-kit-badge" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</span>';
+      html += '<span class="eq-kit-badge" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</span>';
     }
   });
   return html;
 }
 
 // ── Modal Kit ──
-function criarNovoKitDireto() {
-  var existentes = Object.values(_kits).map(function(k) { return k.nome || ''; });
-  var n = 1;
-  while (existentes.indexOf('Kit #' + n) >= 0) n++;
-  var nome = 'Kit #' + n;
-  if (!db) return;
-  db.collection('kits').add({ nome: nome, descricao: '', itens: [], _criado: Date.now(), _atualizado: Date.now() })
-    .then(function() { toast('Kit criado: ' + nome); })
-    .catch(function(e) { toast('Erro: ' + e.message, true); });
+function abrirModalNovoKit() {
+  _kitEditandoId = null;
+  _kitItensAtual = [];
+  _kitMovAberto = false;
+  document.getElementById('kit-modal-title').textContent = 'Novo Kit';
+  document.getElementById('kit-nome').value = '';
+  document.getElementById('kit-desc').value = '';
+  document.getElementById('kit-search-eq').value = '';
+  _renderKitMovSection();
+  renderKitDropZone();
+  renderKitSearchResults();
+  document.getElementById('kit-modal-overlay').style.display = 'flex';
 }
 
-function _editarNomeKit(kitId) {
-  var titleEl = document.querySelector('#kit-card-' + kitId + ' .kit-slot-panel-title');
-  if (!titleEl || titleEl.querySelector('input')) return;
+function abrirModalEditarKit(kitId) {
   var kit = _kits[kitId];
-  var nomeAtual = kit ? (kit.nome || '') : '';
-  titleEl.innerHTML = '';
-  var inp = document.createElement('input');
-  inp.value = nomeAtual;
-  inp.style.cssText = 'flex:1;min-width:0;background:#1a1a1a;border:1px solid var(--gold);border-radius:4px;color:var(--text);font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:2px 6px;outline:none';
-  var btnOk = document.createElement('button');
-  btnOk.textContent = 'OK';
-  btnOk.style.cssText = 'background:var(--gold);color:#111;border:none;border-radius:4px;padding:2px 8px;font-weight:700;font-size:0.7rem;cursor:pointer;flex-shrink:0';
-  var btnX = document.createElement('button');
-  btnX.textContent = '✕';
-  btnX.style.cssText = 'background:none;border:1px solid #555;color:#888;border-radius:4px;padding:2px 6px;font-size:0.7rem;cursor:pointer;flex-shrink:0';
-  function _salvarNomeKit() {
-    var nome = inp.value.trim();
-    if (!nome) { _cancelarNomeKit(); return; }
-    if (kit) kit.nome = nome;
-    if (db) db.collection('kits').doc(kitId).update({ nome: nome })
-      .then(function() { renderKits(); }).catch(function(e) { toast('Erro: ' + e.message, true); });
-  }
-  function _cancelarNomeKit() { renderKits(); }
-  btnOk.addEventListener('mousedown', function(e) { e.preventDefault(); });
-  btnOk.addEventListener('click', function(e) { e.stopPropagation(); _salvarNomeKit(); });
-  btnX.addEventListener('mousedown', function(e) { e.preventDefault(); });
-  btnX.addEventListener('click', function(e) { e.stopPropagation(); _cancelarNomeKit(); });
-  inp.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') _salvarNomeKit();
-    if (e.key === 'Escape') _cancelarNomeKit();
-  });
-  inp.addEventListener('blur', function() {
-    setTimeout(function() {
-      if (document.activeElement !== btnOk && document.activeElement !== btnX) _cancelarNomeKit();
-    }, 120);
-  });
-  titleEl.style.display = 'flex';
-  titleEl.style.alignItems = 'center';
-  titleEl.style.gap = '4px';
-  titleEl.appendChild(inp);
-  titleEl.appendChild(btnOk);
-  titleEl.appendChild(btnX);
-  inp.focus();
-  inp.select();
+  if (!kit) return;
+  _kitEditandoId = kitId;
+  _kitItensAtual = Array.isArray(kit.itens) ? kit.itens.map(function(it) {
+    return { equipId: it.equipId, qtd: it.qtd || 1, acessorios: it.acessorios || '' };
+  }) : [];
+  _kitMovAberto = false;
+  document.getElementById('kit-modal-title').textContent = esc(kit.nome || 'Kit');
+  document.getElementById('kit-nome').value = kit.nome || '';
+  document.getElementById('kit-desc').value = kit.descricao || '';
+  document.getElementById('kit-search-eq').value = '';
+  _renderKitMovSection();
+  renderKitDropZone();
+  renderKitSearchResults();
+  document.getElementById('kit-modal-overlay').style.display = 'flex';
 }
 
+function fecharModalKit(ev) {
+  if (ev && ev.target !== document.getElementById('kit-modal-overlay')) return;
+  // Clique no overlay (fora do modal): salva automaticamente se tiver nome
+  if (ev) {
+    var nome = (document.getElementById('kit-nome') ? document.getElementById('kit-nome').value : '').trim();
+    if (nome) { salvarKitSilencioso(); return; }
+  }
+  document.getElementById('kit-modal-overlay').style.display = 'none';
+}
 
-
+function salvarKitSilencioso() {
+  var nome = (document.getElementById('kit-nome').value || '').trim();
+  if (!nome) { document.getElementById('kit-modal-overlay').style.display = 'none'; return; }
+  var itensParaSalvar = _kitItensAtual.map(function(it) {
+    return { equipId: it.equipId, qtd: it.qtd || 1, acessorios: it.acessorios || '' };
+  });
+  var dados = {
+    nome: nome,
+    descricao: (document.getElementById('kit-desc').value || '').trim(),
+    itens: itensParaSalvar,
+    _atualizado: Date.now()
+  };
+  var promise;
+  if (_kitEditandoId) {
+    promise = db.collection('kits').doc(_kitEditandoId).update(dados);
+  } else {
+    dados._criado = Date.now();
+    promise = db.collection('kits').add(dados);
+  }
+  document.getElementById('kit-modal-overlay').style.display = 'none';
+  promise.then(function() {
+    toast(_kitEditandoId ? 'Kit salvo!' : 'Kit criado!');
+  }).catch(function(e) { toast('Erro ao salvar: ' + e.message, true); });
+}
 
 // ── Movimentação do Kit ──
+function _renderKitMovSection() {
+  var container = document.getElementById('kit-mov-section-container');
+  if (!container) return;
+  // Só mostra movimentação se estiver editando um kit existente
+  if (!_kitEditandoId) {
+    container.innerHTML = '';
+    return;
+  }
+  var kit = _kits[_kitEditandoId];
+  if (!kit || !Array.isArray(kit.itens) || kit.itens.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML =
+    '<div class="kit-mov-section">' +
+      '<div class="kit-mov-header" onclick="toggleKitMov()">' +
+        '<div class="kit-mov-title">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>' +
+          'Movimentar Kit' +
+        '</div>' +
+        '<svg id="kit-mov-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg>' +
+      '</div>' +
+      '<div id="kit-mov-body" class="kit-mov-body' + (_kitMovAberto ? ' open' : '') + '">' +
+        '<p class="kit-mov-info">Ao movimentar o kit, todos os equipamentos dentro serão deslocados juntos, respeitando as quantidades definidas.</p>' +
+        '<div class="kit-mov-transitions">' +
+          '<button class="mov-tr-btn disponivel-uso" onclick="movimentarKit(\'disponivel-uso\')">' +
+            '<div class="mov-tr-label">' +
+              '<span class="state-pill disp">Disp.</span>' +
+              '<span class="tr-arrow">→</span>' +
+              '<span class="state-pill uso">Em Uso</span>' +
+            '</div>' +
+            '<div class="mov-tr-desc">Dar saída — colocar kit em uso</div>' +
+          '</button>' +
+          '<button class="mov-tr-btn uso-disponivel" onclick="movimentarKit(\'uso-disponivel\')">' +
+            '<div class="mov-tr-label">' +
+              '<span class="state-pill uso">Em Uso</span>' +
+              '<span class="tr-arrow">→</span>' +
+              '<span class="state-pill disp">Disp.</span>' +
+            '</div>' +
+            '<div class="mov-tr-desc">Retorno — devolver kit ao estoque</div>' +
+          '</button>' +
+          '<button class="mov-tr-btn disponivel-manut" onclick="movimentarKit(\'disponivel-manut\')">' +
+            '<div class="mov-tr-label">' +
+              '<span class="state-pill disp">Disp.</span>' +
+              '<span class="tr-arrow">→</span>' +
+              '<span class="state-pill manut">Manut.</span>' +
+            '</div>' +
+            '<div class="mov-tr-desc">Enviar kit para manutenção</div>' +
+          '</button>' +
+          '<button class="mov-tr-btn manut-disponivel" onclick="movimentarKit(\'manut-disponivel\')">' +
+            '<div class="mov-tr-label">' +
+              '<span class="state-pill manut">Manut.</span>' +
+              '<span class="tr-arrow">→</span>' +
+              '<span class="state-pill disp">Disp.</span>' +
+            '</div>' +
+            '<div class="mov-tr-desc">Retorno da manutenção</div>' +
+          '</button>' +
+        '</div>' +
+        '<div class="form-group" style="margin-bottom:0">' +
+          '<label class="form-label">Observação (opcional)</label>' +
+          '<input type="text" id="kit-mov-obs" class="form-input" placeholder="Ex: Evento tal, responsável..." />' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  if (_kitMovAberto) {
+    var icon = document.getElementById('kit-mov-toggle-icon');
+    if (icon) icon.style.transform = 'rotate(180deg)';
+  }
+}
 
 function toggleKitMov() {
   _kitMovAberto = !_kitMovAberto;
@@ -5432,6 +5494,55 @@ function movimentarKit(tipo) {
 }
 
 // ── Drop Zone de Itens do Kit ──
+function renderKitDropZone() {
+  var zone = document.getElementById('kit-drop-zone');
+  var emptyMsg = document.getElementById('kit-drop-empty');
+  if (!zone) return;
+  zone.querySelectorAll('.kit-item-chip').forEach(function(el) { el.remove(); });
+  if (_kitItensAtual.length === 0) {
+    if (emptyMsg) emptyMsg.style.display = 'block';
+  } else {
+    if (emptyMsg) emptyMsg.style.display = 'none';
+    _kitItensAtual.forEach(function(it, idx) {
+      var eq = _equipamentos[it.equipId];
+      if (!eq) return;
+      var chip = document.createElement('div');
+      chip.className = 'kit-item-chip';
+      chip.setAttribute('data-id', it.equipId);
+      chip.setAttribute('style', 'width:100%;flex-direction:column;gap:0;padding:0;cursor:default');
+      var qtd = it.qtd || 1;
+      var acessorios = it.acessorios || '';
+      chip.innerHTML =
+        '<div class="kit-item-chip-top">' +
+          '<div class="kit-item-chip-icon">' + _getEqSvg(eq.emoji, 13) + '</div>' +
+          '<span class="kit-item-chip-name" title="' + esc(eq.nome || '') + '">' + esc(eq.nome || 'Equip.') + '</span>' +
+          '<div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0">' +
+            '<span style="font-size:0.62rem;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Qtd</span>' +
+            '<button class="kit-item-qty-btn" onclick="alterarQtdItemKit(\'' + esc(it.equipId) + '\',-1)" title="Diminuir">−</button>' +
+            '<span class="kit-item-qty-num" id="kit-qty-' + esc(it.equipId) + '">' + qtd + '</span>' +
+            '<button class="kit-item-qty-btn" onclick="alterarQtdItemKit(\'' + esc(it.equipId) + '\',1)" title="Aumentar">+</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="kit-item-chip-actions">' +
+          '<div class="kit-item-qty-row"></div>' +
+          '<button class="kit-item-action-btn" onclick="toggleAcessorioInput(\'' + esc(it.equipId) + '\')" title="Adicionar acessório">' +
+            '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:3px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Acessório' +
+          '</button>' +
+          '<button class="kit-item-action-btn del" onclick="removerItemKit(\'' + esc(it.equipId) + '\')" title="Remover do kit">' +
+            '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:inline;vertical-align:middle;margin-right:3px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Remover' +
+          '</button>' +
+        '</div>' +
+        '<input type="text" class="kit-item-acessorio-input" id="acs-' + esc(it.equipId) + '"' +
+          ' placeholder="Acessório (ex: cabo, suporte...)" value="' + esc(acessorios) + '"' +
+          ' oninput="atualizarAcessorioItem(\'' + esc(it.equipId) + '\',this.value)"' +
+          (acessorios ? ' style="display:block"' : '') + ' />' +
+        (acessorios ? '<div class="kit-item-acessorio-text" id="acs-text-' + esc(it.equipId) + '" style="display:block">' + esc(acessorios) + '</div>' : '<div class="kit-item-acessorio-text" id="acs-text-' + esc(it.equipId) + '"></div>');
+      zone.appendChild(chip);
+    });
+  }
+  // Re-render movimentação se necessário
+  _renderKitMovSection();
+}
 
 function alterarQtdItemKit(eqId, delta) {
   var item = _kitItensAtual.find(function(it) { return it.equipId === eqId; });
@@ -5496,12 +5607,104 @@ function _kitSlotHover(el, show) {
   var btn = el.querySelector('.kit-item-del-btn');
   if (btn) btn.style.opacity = show ? '1' : '0';
 }
+function removerItemKit(eqId) {
+  _kitItensAtual = _kitItensAtual.filter(function(it) { return it.equipId !== eqId; });
+  renderKitDropZone();
+}
 
+function renderKitSearchResults() {
+  var busca = (document.getElementById('kit-search-eq').value || '').toLowerCase().trim();
+  var container = document.getElementById('kit-search-results');
+  if (!container) return;
+  var equips = Object.values(_equipamentos).filter(function(e) {
+    if (!busca) return true;
+    return (e.nome || '').toLowerCase().includes(busca) ||
+           (e.categoria || '').toLowerCase().includes(busca);
+  });
+  if (equips.length === 0 && busca) {
+    container.innerHTML = '<div style="font-size:0.72rem;color:#444;padding:8px 0;text-align:center;font-family:Barlow Condensed,sans-serif;text-transform:uppercase;letter-spacing:0.06em">Nenhum equipamento encontrado</div>';
+    return;
+  }
+  container.innerHTML = equips.slice(0, 12).map(function(e) {
+    var itemNoKit = _kitItensAtual.find(function(it) { return it.equipId === e.id; });
+    var jaNoKit = !!itemNoKit;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:5px;cursor:' + (jaNoKit ? 'default' : 'pointer') + ';opacity:' + (jaNoKit ? '0.5' : '1') + '"' +
+      (jaNoKit ? '' : ' onclick="adicionarItemKit(\'' + esc(e.id) + '\')"') + '>' +
+      '<div style="width:28px;height:28px;background:var(--gold-dim);border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0">' + _getEqSvg(e.emoji, 14) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-family:Barlow Condensed,sans-serif;font-size:0.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(e.nome || 'Equip.') + '</div>' +
+        '<div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">' + esc(e.categoria || '') + '</div>' +
+      '</div>' +
+      (jaNoKit
+        ? '<div style="font-family:Barlow Condensed,sans-serif;font-size:0.6rem;color:#444;text-transform:uppercase;letter-spacing:0.06em">× ' + (itemNoKit.qtd || 1) + '</div>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+      ) +
+    '</div>';
+  }).join('');
+}
 
+function adicionarItemKit(eqId) {
+  var jaNoKit = _kitItensAtual.some(function(it) { return it.equipId === eqId; });
+  if (jaNoKit) return;
+  _kitItensAtual.push({ equipId: eqId, qtd: 1, acessorios: '' });
+  renderKitDropZone();
+  renderKitSearchResults();
+}
 
 // Drop zone: allow dragover inside modal
+document.addEventListener('DOMContentLoaded', function() {
+  var zone = document.getElementById('kit-drop-zone');
+  if (zone) {
+    zone.addEventListener('dragover', function(ev) { ev.preventDefault(); });
+    zone.addEventListener('drop', function(ev) {
+      ev.preventDefault();
+      if (_draggingEqId) adicionarItemKit(_draggingEqId);
+    });
+  }
+});
 
+function salvarKit() {
+  var nome = (document.getElementById('kit-nome').value || '').trim();
+  if (!nome) { toast('Informe um nome para o kit.', true); return; }
+  var itensParaSalvar = _kitItensAtual.map(function(it) {
+    return { equipId: it.equipId, qtd: it.qtd || 1, acessorios: it.acessorios || '' };
+  });
+  var dados = {
+    nome: nome,
+    descricao: (document.getElementById('kit-desc').value || '').trim(),
+    itens: itensParaSalvar,
+    _atualizado: Date.now()
+  };
+  var promise;
+  if (_kitEditandoId) {
+    promise = db.collection('kits').doc(_kitEditandoId).update(dados);
+  } else {
+    dados._criado = Date.now();
+    promise = db.collection('kits').add(dados);
+  }
+  promise.then(function() {
+    document.getElementById('kit-modal-overlay').style.display = 'none';
+    toast(_kitEditandoId ? 'Kit atualizado!' : 'Kit criado!');
+  }).catch(function(e) { toast('Erro: ' + e.message, true); });
+}
 
+function kitDropZoneOver(ev) {
+  ev.preventDefault();
+  var zone = document.getElementById('kit-drop-zone');
+  if (zone) zone.classList.add('drag-over');
+}
+function kitDropZoneLeave(ev) {
+  var zone = document.getElementById('kit-drop-zone');
+  if (zone) zone.classList.remove('drag-over');
+}
+function kitDropZoneDrop(ev) {
+  ev.preventDefault();
+  var zone = document.getElementById('kit-drop-zone');
+  if (zone) zone.classList.remove('drag-over');
+  // Pega o id do drag (pode vir de eq-cards externos ou de search results)
+  var eqId = _draggingEqId || ev.dataTransfer.getData('text/plain');
+  if (eqId) adicionarItemKit(eqId);
+}
 
 // ── Iniciar kits junto com estoque ──
 var _iniciarEstoqueOrigKit = iniciarEstoque;
@@ -7038,12 +7241,7 @@ var _evEqOrigCounts = {};    // { eqId: {qtd_disponivel,qtd_em_uso} } — antes 
 
 function _getCargaTotalEq(eqId) {
   var total = 0;
-  // Itens arrastados visualmente (sistema de carga local)
   Object.values(_cargaEvento).forEach(function(c) { total += (c[eqId] || 0); });
-  // Itens dos eventos abertos (itens_extras / servicos não riscados)
-  Object.values(_evEqDragItems).forEach(function(ev) {
-    if (ev[eqId]) total += ev[eqId].qty;
-  });
   return total;
 }
 function _atualizarCardEqDOM(eqId) {
@@ -7271,7 +7469,7 @@ function _buildEvAndamentoCard(ev) {
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-
+        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="orig" title="Excluir item permanentemente">&times;</button>' +
         '</div>';
     }).join('');
     var extrasRowHtml = (ev.itens_extras || []).map(function(s, i) {
@@ -7281,7 +7479,7 @@ function _buildEvAndamentoCard(ev) {
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
-
+        '<button class="item-del-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Excluir item permanentemente">&times;</button>' +
         '</div>';
     }).join('');
 
@@ -7452,30 +7650,8 @@ function _toggleItemEv(evId, idx) {
 function _adicionarItemExtraEv(evId, texto) {
   var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
   if (!ev) return;
-  // Parseia quantidade e nome do texto digitado
-  var mNovo   = texto.match(/^(\d+)x\s+(.+)$/i);
-  var qtyNovo  = mNovo ? parseInt(mNovo[1]) : 1;
-  var nomeNovo = (mNovo ? mNovo[2] : texto).trim().toLowerCase();
-  // Procura item existente com mesmo nome para somar
-  var extras = (ev.itens_extras || []).slice();
-  var merged = false;
-  for (var i = 0; i < extras.length; i++) {
-    var mEx   = extras[i].match(/^(\d+)x\s+(.+)$/i);
-    var qtyEx  = mEx ? parseInt(mEx[1]) : 1;
-    var nomeEx = (mEx ? mEx[2] : extras[i]).trim().toLowerCase();
-    if (nomeEx === nomeNovo) {
-      var nomeOriginal = mEx ? mEx[2].trim() : extras[i].trim();
-      extras[i] = (qtyEx + qtyNovo) + 'x ' + nomeOriginal;
-      merged = true;
-      break;
-    }
-  }
-  if (!merged) extras.push(texto);
-  ev.itens_extras = extras;
+  var extras = (ev.itens_extras || []).concat([texto]);
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
-  // Recalcula contagens imediatamente (prefixo 2x, 3x...)
-  _recalcularCargaEvento(evId);
-  renderEventosAndamento();
 }
 
 function _abrirCargaEvento(evId) {
@@ -7487,96 +7663,50 @@ function _abrirCargaEvento(evId) {
     var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
     if (nome) nomeToId[nome] = eqId;
   });
-  _evEqDragItems[evId] = {}; // reset antes de reconstruir
-  // Reconstrói a partir dos itens ativos (não riscados) do evento
-  var itensExtrasRem = ev.itens_extras_removidos || {};
-  var itensOrigRem   = ev.itens_removidos || {};
-  var afetados = {};
-
-  (ev.itens_extras || []).forEach(function(item, i) {
-    if (itensExtrasRem[i]) return; // riscado, ignora
+  if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
+  // Aplica cada item do evento nos counts de equipamento
+  (ev.itens_extras || []).forEach(function(item) {
     var m = item.match(/^(\d+)x\s+(.+)$/);
     var qty = m ? parseInt(m[1]) : 1;
     var nome = (m ? m[2] : item).trim();
     var eqId = nomeToId[nome.toLowerCase()];
-    if (!eqId || !_equipamentos[eqId]) return;
-    _evEqDragItems[evId][eqId] = { nome: nome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
-    afetados[eqId] = true;
-  });
-
-  (ev.servicos || []).forEach(function(item, i) {
-    if (itensOrigRem[i]) return; // riscado, ignora
-    var m = item.match(/^(\d+)x\s+(.+)$/);
-    var qty = m ? parseInt(m[1]) : 1;
-    var nome = (m ? m[2] : item).trim();
-    var eqId = nomeToId[nome.toLowerCase()];
-    if (!eqId || !_equipamentos[eqId]) return;
-    _evEqDragItems[evId][eqId] = { nome: nome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
-    afetados[eqId] = true;
-  });
-
-  Object.keys(afetados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
-}
-
-// Ajusta contagem de um equipamento pelo texto do item (ex: "2x Par LED RGB")
-// delta = +1 para alocar (riscar restaurado), -1 para liberar (riscar ativado)
-// Reconstrói _evEqDragItems[evId] a partir dos itens ATIVOS (não riscados)
-// e atualiza os cards via _atualizarCardEqDOM (que usa _getCargaTotalEq).
-// Não modifica _equipamentos nem escreve no Firestore.
-function _recalcularCargaEvento(evId) {
-  var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
-  if (!ev) return;
-
-  var nomeToId = {};
-  Object.keys(_equipamentos).forEach(function(eqId) {
-    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
-    if (nome) nomeToId[nome] = eqId;
-  });
-
-  var afetadosAntes = _evEqDragItems[evId] ? Object.keys(_evEqDragItems[evId]) : [];
-  var novasCounts = {};
-  var itensExtrasRem = ev.itens_extras_removidos || {};
-  var itensOrigRem   = ev.itens_removidos || {};
-
-  (ev.itens_extras || []).forEach(function(s, i) {
-    if (itensExtrasRem[i]) return;
-    var m = s.match(/^(\d+)x\s+(.+)$/);
-    var qty = m ? parseInt(m[1]) : 1;
-    var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
     if (!eqId) return;
-    novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
+    var eqObj = _equipamentos[eqId];
+    if (!eqObj) return;
+    if (!_evEqOrigCounts[eqId]) {
+      _evEqOrigCounts[eqId] = { qtd_disponivel: eqObj.qtd_disponivel || 0, qtd_em_uso: eqObj.qtd_em_uso || 0 };
+    }
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: qty };
+    // Recalcula total aplicado (pode ter drags da sessao atual tambem)
+    var totalApplied = 0;
+    Object.keys(_evEqDragItems).forEach(function(eid) {
+      if (_evEqDragItems[eid][eqId]) totalApplied += _evEqDragItems[eid][eqId].qty;
+    });
+    var origDisp = _evEqOrigCounts[eqId].qtd_disponivel;
+    var origUso  = _evEqOrigCounts[eqId].qtd_em_uso;
+    var aplicado = Math.min(totalApplied, origDisp);
+    eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
+    eqObj.qtd_em_uso     = origUso + aplicado;
+    _atualizarCardEqDOM(eqId);
   });
-
-  (ev.servicos || []).forEach(function(s, i) {
-    if (itensOrigRem[i]) return;
-    var m = s.match(/^(\d+)x\s+(.+)$/);
-    var qty = m ? parseInt(m[1]) : 1;
-    var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
-    if (!eqId) return;
-    novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
-  });
-
-  _evEqDragItems[evId] = {};
-  Object.keys(novasCounts).forEach(function(eqId) {
-    var nome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
-    _evEqDragItems[evId][eqId] = { nome: nome, qty: novasCounts[eqId] };
-  });
-
-  var afetados = {};
-  afetadosAntes.forEach(function(id) { afetados[id] = true; });
-  Object.keys(novasCounts).forEach(function(id) { afetados[id] = true; });
-  Object.keys(afetados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
 }
 
 function _fecharCargaEvento(evId) {
-  // Coleta eqIds afetados antes de limpar
+  // Restaura counts de todos equipamentos afetados por este evento
   var dragItems = _evEqDragItems[evId];
-  var afetados = dragItems ? Object.keys(dragItems) : [];
-  // Limpa alocações deste evento
-  delete _evEqDragItems[evId];
-  delete _evEqOrigCounts[evId]; // não é mais usado mas limpa por segurança
-  // Atualiza cards — _getCargaTotalEq agora retornará menos, mostrando os itens liberados
-  afetados.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+  if (dragItems) {
+    Object.keys(dragItems).forEach(function(eqId) {
+      var orig = _evEqOrigCounts[eqId];
+      var eq   = _equipamentos[eqId];
+      if (eq && orig) {
+        eq.qtd_disponivel = orig.qtd_disponivel;
+        eq.qtd_em_uso     = orig.qtd_em_uso;
+        _atualizarCardEqDOM(eqId);
+        delete _evEqOrigCounts[eqId];
+      }
+    });
+    delete _evEqDragItems[evId];
+  }
   _resetarCargaEvento(evId);
 }
 
@@ -7589,7 +7719,7 @@ function _bindEvAndamentoCards() {
       if (e.target.closest('.item-check') || e.target.closest('.veiculo-icon-btn') ||
           e.target.closest('.btn-add-item') || e.target.closest('.btn-add-item-ok') ||
           e.target.closest('.btn-wa-painel') || e.target.closest('.item-rem-ev-btn') ||
-          e.target.closest('.card-carga-del')) return;
+          e.target.closest('.item-del-ev-btn') || e.target.closest('.card-carga-del')) return;
       var card = summary.closest('.evento-card');
       if (!card) return;
       var wasExpanded = card.classList.contains('expanded');
@@ -7651,29 +7781,21 @@ function _bindEvAndamentoCards() {
       var tipo = btn.getAttribute('data-tipo');
       var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
       if (!evObj) return;
-
-      var isNowRemoved;
-
       if (tipo === 'orig') {
         var rem = Object.assign({}, evObj.itens_removidos || {});
         rem[idx] = !rem[idx];
         evObj.itens_removidos = rem;
-        isNowRemoved = rem[idx];
         db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
       } else {
         var remE = Object.assign({}, evObj.itens_extras_removidos || {});
         remE[idx] = !remE[idx];
         evObj.itens_extras_removidos = remE;
-        isNowRemoved = remE[idx];
         db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
       }
-
-      // Recalcula contagens a partir dos itens ativos (não riscados) do evento
-      _recalcularCargaEvento(evId);
-
       // Update UI immediately
       var item = btn.closest('.card-item');
       if (item) {
+        var isNowRemoved = (tipo === 'orig') ? evObj.itens_removidos[idx] : evObj.itens_extras_removidos[idx];
         item.classList.toggle('item-removido', !!isNowRemoved);
         btn.style.color = isNowRemoved ? '#4AC87A' : '#555';
         btn.title = isNowRemoved ? 'Restaurar' : 'Riscar';
@@ -7686,26 +7808,18 @@ function _bindEvAndamentoCards() {
   scroll.querySelectorAll('.card-item[draggable]').forEach(function(item) {
     item.addEventListener('dragstart', function(e) {
       var txt = item.getAttribute('data-item-txt') || '';
-      e.dataTransfer.effectAllowed = 'all';
-      // Captura dados pelo botão de riscar (item-rem-ev-btn), que sempre existe
-      var remBtn = item.querySelector('.item-rem-ev-btn');
-      if (remBtn) {
-        var evId   = remBtn.getAttribute('data-evid');
-        var rawIdx = remBtn.getAttribute('data-idx');
-        var tipo   = remBtn.getAttribute('data-tipo');
-        // Grava no dataTransfer para sobreviver ao dragend
-        e.dataTransfer.setData('text/plain', evId + '|' + rawIdx + '|' + tipo + '|' + txt);
-        e.dataTransfer.setData('tipo', 'item_ev');
+      e.dataTransfer.setData('text/plain', txt);
+      e.dataTransfer.setData('tipo', 'item_ev');
+      e.dataTransfer.effectAllowed = 'copy';
+      var delBtn = item.querySelector('.item-del-ev-btn');
+      if (delBtn) {
         _draggingItemData = {
-          evId: evId,
-          idx:  parseInt(rawIdx, 10),
-          tipo: tipo,
+          evId: delBtn.getAttribute('data-evid'),
+          idx:  parseInt(delBtn.getAttribute('data-idx'), 10),
+          tipo: delBtn.getAttribute('data-tipo'),
           txt:  txt,
           el:   item
         };
-      } else {
-        e.dataTransfer.setData('text/plain', txt);
-        e.dataTransfer.setData('tipo', 'item_ev');
       }
     });
     item.addEventListener('dragend', function() {
@@ -7724,7 +7838,61 @@ function _bindEvAndamentoCards() {
     });
   });
 
+  // Botão X vermelho: excluir item permanentemente do Firebase
+  scroll.querySelectorAll('.item-del-ev-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var evId = btn.getAttribute('data-evid');
+      var idx  = parseInt(btn.getAttribute('data-idx'), 10);
+      var tipo = btn.getAttribute('data-tipo');
+      var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
+      if (!evObj) return;
+      if (!confirm('Excluir este item permanentemente?')) return;
 
+      function _restaurarEqCount(itemStr) {
+        if (!itemStr) return;
+        var _dm = itemStr.match(/^(\d+)x\s+(.+)$/);
+        var _nome = (_dm ? _dm[2] : itemStr).trim().toLowerCase();
+        var _qty  = _dm ? parseInt(_dm[1]) : 1;
+        Object.keys(_equipamentos).forEach(function(eqId) {
+          if ((_equipamentos[eqId].nome || '').trim().toLowerCase() !== _nome) return;
+          if (_evEqDragItems[evId] && _evEqDragItems[evId][eqId]) {
+            _evEqDragItems[evId][eqId].qty = Math.max(0, _evEqDragItems[evId][eqId].qty - _qty);
+            if (_evEqDragItems[evId][eqId].qty === 0) delete _evEqDragItems[evId][eqId];
+          }
+          var orig = _evEqOrigCounts[eqId];
+          var eqO  = _equipamentos[eqId];
+          if (eqO && orig) {
+            var totalLeft = 0;
+            Object.keys(_evEqDragItems).forEach(function(eid) {
+              if (_evEqDragItems[eid] && _evEqDragItems[eid][eqId]) totalLeft += _evEqDragItems[eid][eqId].qty;
+            });
+            eqO.qtd_disponivel = Math.max(0, orig.qtd_disponivel - Math.min(totalLeft, orig.qtd_disponivel));
+            eqO.qtd_em_uso     = orig.qtd_em_uso + Math.min(totalLeft, orig.qtd_disponivel);
+            _atualizarCardEqDOM(eqId);
+          }
+        });
+      }
+
+      if (tipo === 'orig') {
+        var srvs = (evObj.servicos || []).slice();
+        srvs.splice(idx, 1);
+        evObj.servicos = srvs;
+        db.collection('eventos_campo').doc(evId).update({ servicos: srvs })
+          .catch(function(err) { toast('Erro: ' + err.message, true); });
+      } else {
+        var extras = (evObj.itens_extras || []).slice();
+        var deletedItem = extras[idx];
+        extras.splice(idx, 1);
+        evObj.itens_extras = extras;
+        _restaurarEqCount(deletedItem);
+        db.collection('eventos_campo').doc(evId).update({ itens_extras: extras })
+          .catch(function(err) { toast('Erro: ' + err.message, true); });
+      }
+      var itemEl = btn.closest('.card-item');
+      if (itemEl) itemEl.remove();
+    });
+  });
 }
 
 function renderEventosAndamento() {
@@ -7863,9 +8031,9 @@ function evCardDrop(ev, evId) {
       var qtd = it.qtd || 1;
       if (!eqId) return;
       var eqNome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
-      var _dispFir = (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0);
-      var _jaAlocado = _getCargaTotalEq(eqId);
-      var qtdCap = Math.min(qtd, Math.max(0, _dispFir - _jaAlocado));
+      var _origDK = (_evEqOrigCounts[eqId] ? _evEqOrigCounts[eqId].qtd_disponivel : (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0));
+      var _alreadyDK = (_evEqDragItems[evId] && _evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty : 0);
+      var qtdCap = Math.min(qtd, Math.max(0, _origDK - _alreadyDK));
       if (qtdCap <= 0) { return; }
       // Deduplica no array de extras
       var existIdx = -1;
@@ -7882,15 +8050,21 @@ function evCardDrop(ev, evId) {
       // Tracking para restaurar contagens
       if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
       _evEqDragItems[evId][eqId].qty += qtdCap;
-      _atualizarCardEqDOM(eqId);
+      var eqObjK = _equipamentos[eqId];
+      if (eqObjK) {
+        if (!_evEqOrigCounts[eqId]) _evEqOrigCounts[eqId] = { qtd_disponivel: eqObjK.qtd_disponivel || 0, qtd_em_uso: eqObjK.qtd_em_uso || 0 };
+        var origDispK = _evEqOrigCounts[eqId].qtd_disponivel;
+        var origUsoK  = _evEqOrigCounts[eqId].qtd_em_uso;
+        var aplicadoK = Math.min(_evEqDragItems[evId][eqId].qty, origDispK);
+        eqObjK.qtd_disponivel = Math.max(0, origDispK - aplicadoK);
+        eqObjK.qtd_em_uso     = origUsoK + aplicadoK;
+        _atualizarCardEqDOM(eqId);
+      }
     });
     if (evObjKit) {
       evObjKit.itens_extras = extrasKit;
       if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasKit });
     }
-    // Restaura visual do card do kit (opacidade reduzida no dragstart)
-    var _kitCardEl2 = document.getElementById('kit-card-' + itemId);
-    if (_kitCardEl2) _kitCardEl2.style.opacity = '';
     _draggingKitId = null;
     renderEventosAndamento();
     setTimeout(function() {
@@ -7915,10 +8089,12 @@ function evCardDrop(ev, evId) {
     // Verificar cap ANTES de incrementar
     var eqObjCap = _equipamentos[itemId];
     if (eqObjCap) {
-      // Disponível real = do Firestore menos o já alocado em TODOS os eventos abertos
-      var totalJaAlocado = _getCargaTotalEq(itemId);
-      var dispReal = Math.max(0, (eqObjCap.qtd_disponivel || 0) - totalJaAlocado);
-      if (dispReal <= 0) { toast('Sem unidades disponíveis', true); return; }
+      if (!_evEqOrigCounts[itemId]) {
+        _evEqOrigCounts[itemId] = { qtd_disponivel: eqObjCap.qtd_disponivel || 0, qtd_em_uso: eqObjCap.qtd_em_uso || 0 };
+      }
+      var origDispCap = _evEqOrigCounts[itemId].qtd_disponivel;
+      var alreadyUsed = _evEqDragItems[evId][itemId].qty;
+      if (alreadyUsed >= origDispCap) { toast('Limite atingido: ' + origDispCap + ' unidade' + (origDispCap !== 1 ? 's' : ''), true); return; }
     }
     _evEqDragItems[evId][itemId].qty++;
     var qty = _evEqDragItems[evId][itemId].qty;
@@ -7934,7 +8110,15 @@ function evCardDrop(ev, evId) {
       if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
     }
     // Atualiza contagem do card do equipamento
-    _atualizarCardEqDOM(itemId);
+    var eqObj = _equipamentos[itemId];
+    if (eqObj) {
+      var origDisp = _evEqOrigCounts[itemId].qtd_disponivel;
+      var origUso  = _evEqOrigCounts[itemId].qtd_em_uso;
+      var aplicado = Math.min(qty, origDisp);
+      eqObj.qtd_disponivel = Math.max(0, origDisp - aplicado);
+      eqObj.qtd_em_uso     = origUso + aplicado;
+      _atualizarCardEqDOM(itemId);
+    }
     renderEventosAndamento();
     setTimeout(function() {
       var evCardEl = document.getElementById('ev-card-' + evId);
@@ -7988,7 +8172,7 @@ function _kitDragStart(ev, kitId) {
   _draggingKitId = kitId;
   ev.dataTransfer.setData('text/plain', kitId);
   ev.dataTransfer.setData('tipo', 'kit');
-  ev.dataTransfer.effectAllowed = 'all';
+  ev.dataTransfer.effectAllowed = 'copy';
   var el = document.getElementById('kit-card-' + kitId);
   if (el) setTimeout(function() { el.style.opacity = '0.5'; }, 0);
 }
@@ -8417,8 +8601,7 @@ var _draggingItemData = null; // { evId, idx, tipo, txt, el }
 function _kitSlotDragStart(el, ev) {
   var kitId   = el.dataset.kitId;
   var equipId = el.dataset.equipId;
-  var slotIdx = parseInt(el.dataset.slotIdx || '-1', 10);
-  _draggingKitSlot = { kitId: kitId, equipId: equipId, slotIdx: slotIdx };
+  _draggingKitSlot = { kitId: kitId, equipId: equipId };
   ev.dataTransfer.setData('text/plain', kitId + ':' + equipId);
   ev.dataTransfer.setData('tipo', 'kit-slot');
   ev.dataTransfer.effectAllowed = 'move';
@@ -8432,48 +8615,8 @@ function _kitSlotDragEnd(ev) {
   if (zone) zone.classList.remove('drag-over-remove');
 }
 
-function _kitGridOver(ev) {
-  if (!_draggingKitSlot) return;
-  var slot = ev.target.closest('.kit-slot-item');
-  if (!slot || slot.dataset.kitId !== _draggingKitSlot.kitId) return;
-  if (slot.dataset.equipId && slot.dataset.equipId === _draggingKitSlot.equipId) return;
-  ev.preventDefault();
-  ev.stopPropagation();
-  document.querySelectorAll('.kit-slot-item.slot-drag-over').forEach(function(el) { el.classList.remove('slot-drag-over'); });
-  slot.classList.add('slot-drag-over');
-}
-function _kitGridLeave(ev) {
-  if (!ev.relatedTarget || !ev.relatedTarget.closest('.kit-slot-grid-3x3')) {
-    document.querySelectorAll('.kit-slot-item.slot-drag-over').forEach(function(el) { el.classList.remove('slot-drag-over'); });
-  }
-}
-function _kitGridDrop(ev) {
-  document.querySelectorAll('.kit-slot-item.slot-drag-over').forEach(function(el) { el.classList.remove('slot-drag-over'); });
-  if (!_draggingKitSlot) return;
-  var slot = ev.target.closest('.kit-slot-item');
-  if (!slot || slot.dataset.kitId !== _draggingKitSlot.kitId) return;
-  ev.preventDefault();
-  ev.stopPropagation();
-  var toIdx = parseInt(slot.dataset.slotIdx || '-1', 10);
-  var fromIdx = _draggingKitSlot.slotIdx;
-  if (toIdx < 0 || fromIdx < 0 || toIdx === fromIdx) return;
-  var kitId = _draggingKitSlot.kitId;
-  var kit = _kits[kitId];
-  if (!kit || !Array.isArray(kit.itens)) return;
-  var itens = kit.itens.slice();
-  var moved = itens.splice(fromIdx, 1)[0];
-  var insertAt = Math.min(toIdx, itens.length);
-  itens.splice(insertAt, 0, moved);
-  kit.itens = itens;
-  _draggingKitSlot = null;
-  if (db) db.collection('kits').doc(kitId).update({ itens: itens })
-    .then(function() { renderKits(); })
-    .catch(function(e) { toast('Erro: ' + e.message, true); });
-}
 function _kitRemoveZoneOver(ev) {
-  var tipos = ev.dataTransfer.types || [];
-  var temTipo = tipos.indexOf('tipo') >= 0 || tipos.indexOf('text/plain') >= 0;
-  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData && !temTipo) return;
+  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData) return;
   ev.preventDefault();
   ev.dataTransfer.dropEffect = 'move';
   var zone = document.getElementById('kit-remove-zone');
@@ -8488,6 +8631,7 @@ function _kitRemoveZoneLeave(ev) {
 function _excluirItemEvDrop(data) {
   var evObj = _eventosAndamento[data.evId] || _eventosStagingCarga[data.evId];
   if (!evObj) return;
+
   var backup;
   if (data.tipo === 'orig') {
     var srvs = (evObj.servicos || []).slice();
@@ -8499,14 +8643,16 @@ function _excluirItemEvDrop(data) {
   } else {
     var extras = (evObj.itens_extras || []).slice();
     backup = { tipo: 'extra', lista: extras.slice(), evId: data.evId };
+    var deletedItem = extras[data.idx];
     extras.splice(data.idx, 1);
     evObj.itens_extras = extras;
+    // Restaura contagem de equipamento se aplicável
+    if (typeof _restaurarEqCount === 'function') _restaurarEqCount(deletedItem);
     db.collection('eventos_campo').doc(data.evId).update({ itens_extras: extras })
       .catch(function(err) { toast('Erro: ' + err.message, true); });
   }
   if (data.el && data.el.parentNode) data.el.remove();
-  _recalcularCargaEvento(data.evId); // libera contagem do item removido
-  renderEventosAndamento();
+
   toastUndo('Item excluído', function() {
     var evO = _eventosAndamento[backup.evId] || _eventosStagingCarga[backup.evId];
     if (!evO) return;
@@ -8519,8 +8665,7 @@ function _excluirItemEvDrop(data) {
       db.collection('eventos_campo').doc(backup.evId).update({ itens_extras: backup.lista })
         .catch(function(e) { toast('Erro ao desfazer: ' + e.message, true); });
     }
-    _recalcularCargaEvento(backup.evId); // restaura contagem ao desfazer
-    renderEventosAndamento();
+    _renderEvAndamentoSidebar();
   });
 }
 
@@ -8529,35 +8674,26 @@ function _kitRemoveZoneDrop(ev) {
   var zone = document.getElementById('kit-remove-zone');
   if (zone) zone.classList.remove('drag-over-remove');
 
-  var tipo = ev.dataTransfer.getData('tipo');
-
   if (_draggingKitSlot) {
-    // ── Item de slot de kit ──
+    // ── Item de slot de kit → remover do kit ──
     var kitId   = _draggingKitSlot.kitId;
     var equipId = _draggingKitSlot.equipId;
     _draggingKitSlot = null;
     removerItemDoKit(kitId, equipId);
 
-  } else if (_draggingKitId || tipo === 'kit') {
-    // ── Kit inteiro ──
-    var kitId = _draggingKitId || ev.dataTransfer.getData('text/plain');
+  } else if (_draggingKitId) {
+    // ── Kit inteiro → excluir kit ──
+    var kitId = _draggingKitId;
     _draggingKitId = null;
     var el = document.getElementById('kit-card-' + kitId);
     if (el) el.style.opacity = '';
-    if (kitId) excluirKitSemConfirm(kitId);
+    excluirKitSemConfirm(kitId);
 
-  } else if (tipo === 'item_ev') {
-    // ── Item de evento — usa variável global ou fallback do dataTransfer ──
+  } else if (_draggingItemData) {
+    // ── Item de checklist do evento → excluir permanentemente ──
     var data = _draggingItemData;
     _draggingItemData = null;
-    if (!data) {
-      // Fallback: reconstruir dos dados gravados no dataTransfer
-      var raw = ev.dataTransfer.getData('text/plain').split('|');
-      if (raw.length >= 3) {
-        data = { evId: raw[0], idx: parseInt(raw[1], 10), tipo: raw[2], txt: raw[3] || '', el: null };
-      }
-    }
-    if (data) _excluirItemEvDrop(data);
+    _excluirItemEvDrop(data);
   }
 }
 
