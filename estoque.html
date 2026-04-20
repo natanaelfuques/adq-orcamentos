@@ -5175,6 +5175,82 @@ function iniciarKits() {
 }
 
 // ── KITS: Render grid ──
+// ── Modal de edição de quantidade de item no kit ──
+function _kitSlotEditarQtd(el) {
+  var kitId  = el.getAttribute('data-kit-id');
+  var slotIdx = parseInt(el.getAttribute('data-slot-idx'));
+  var equipId = el.getAttribute('data-equip-id');
+  var kit = _kits[kitId];
+  var eq  = _equipamentos[equipId];
+  if (!kit || !eq) return;
+  var item = (kit.itens || [])[slotIdx];
+  if (!item) return;
+  var qtdAtual = item.qtd || 1;
+
+  // Remove modal anterior se existir
+  var old = document.getElementById('modal-kit-qtd');
+  if (old) old.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'modal-kit-qtd';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:2000;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML =
+    '<div style="background:var(--dark);border:1px solid var(--border2);border-radius:10px;padding:22px 24px;width:280px;box-shadow:0 8px 40px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:14px">' +
+      '<div style="font-family:Barlow Condensed,sans-serif;font-size:1rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em">' +
+        esc(eq.nome || 'Item') +
+      '</div>' +
+      '<div style="font-size:0.72rem;color:var(--muted)">Quantidade no kit</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;justify-content:center">' +
+        '<button onclick="_kitQtdStep(-1)" style="background:none;border:1px solid var(--border2);color:var(--text);border-radius:5px;width:34px;height:34px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>' +
+        '<input id="kit-qtd-input" type="number" min="1" max="99" value="' + qtdAtual + '" ' +
+          'style="width:60px;text-align:center;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:6px 4px;font-size:1.1rem;font-family:Barlow Condensed,sans-serif;font-weight:700" ' +
+          'oninput="this.value=Math.max(1,Math.min(99,parseInt(this.value)||1))" ' +
+          'onkeydown="if(event.key==&quot;Enter&quot;)_kitQtdSalvar()" />' +
+        '<button onclick="_kitQtdStep(+1)" style="background:none;border:1px solid var(--border2);color:var(--text);border-radius:5px;width:34px;height:34px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end">' +
+        '<button onclick="_fecharKitQtdModal()" style="background:none;border:1px solid var(--border2);color:var(--muted);border-radius:5px;padding:5px 14px;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Cancelar</button>' +
+        '<button onclick="_kitQtdSalvar()" style="background:var(--gold);border:none;color:#111;border-radius:5px;padding:5px 16px;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em">Salvar</button>' +
+      '</div>' +
+    '</div>';
+
+  // Guarda referência para salvar
+  modal._kitId   = kitId;
+  modal._slotIdx = slotIdx;
+
+  // Fecha ao clicar no overlay
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+  setTimeout(function() { var inp = document.getElementById('kit-qtd-input'); if (inp) { inp.focus(); inp.select(); } }, 50);
+}
+
+function _fecharKitQtdModal() {
+  var m = document.getElementById('modal-kit-qtd');
+  if (m) m.remove();
+}
+
+function _kitQtdStep(delta) {
+  var inp = document.getElementById('kit-qtd-input');
+  if (!inp) return;
+  inp.value = Math.max(1, Math.min(99, (parseInt(inp.value) || 1) + delta));
+}
+
+function _kitQtdSalvar() {
+  var modal = document.getElementById('modal-kit-qtd');
+  if (!modal) return;
+  var kitId   = modal._kitId;
+  var slotIdx = modal._slotIdx;
+  var inp = document.getElementById('kit-qtd-input');
+  var novaQtd = Math.max(1, parseInt(inp ? inp.value : 1) || 1);
+  var kit = _kits[kitId];
+  if (!kit || !kit.itens || !kit.itens[slotIdx]) { modal.remove(); return; }
+  kit.itens[slotIdx].qtd = novaQtd;
+  db.collection('kits').doc(kitId).update({ itens: kit.itens, _atualizado: Date.now() })
+    .then(function() { toast('Quantidade atualizada'); })
+    .catch(function(e) { toast('Erro ao salvar', true); console.error(e); });
+  modal.remove();
+}
+
 function renderKits() {
   var grid = document.getElementById('kits-grid');
   if (!grid) return;
@@ -5204,6 +5280,7 @@ function renderKits() {
           'data-kit-id="' + esc(kit.id) + '" data-slot-idx="' + s + '" data-equip-id="' + esc(it.equipId) + '" ' +
           'onmouseenter="_kitSlotHover(this,true)" onmouseleave="_kitSlotHover(this,false)" ' +
 
+          'onclick="_kitSlotEditarQtd(this)" ' +
           'ondragstart="_kitSlotDragStart(this,event)" ' +
           'ondragend="_kitSlotDragEnd(event)" ' +
           'ondragover="_kitSlotReorderOver(this,event)" ' +
