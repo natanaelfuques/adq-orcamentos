@@ -7365,6 +7365,26 @@ body.has-ev-sidebar header { margin-right: -272px; }
 .ev-andamento-scroll .veiculo-icon-btn .veiculo-label { font-size: 0.6rem; color: #888; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
 .ev-andamento-scroll .veiculo-icon-btn.tem-veiculo .veiculo-label { color: #bbb; }
 
+/* ── KIT GRUPOS NO EVENTO ── */
+.ev-kit-grupo { border: 1px solid rgba(200,169,74,0.22); border-radius: 5px; margin-bottom: 6px; overflow: hidden; }
+.ev-kit-grupo-header { display: flex; align-items: center; gap: 6px; padding: 6px 8px; cursor: pointer; background: rgba(200,169,74,0.05); transition: background 0.15s; user-select: none; }
+.ev-kit-grupo-header:hover { background: rgba(200,169,74,0.1); }
+.ev-kit-grupo-arrow { font-size: 0.6rem; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+.ev-kit-grupo.expanded .ev-kit-grupo-arrow { transform: rotate(90deg); }
+.ev-kit-grupo-check { width: 15px; height: 15px; min-width: 15px; border: 1.5px solid var(--border2); border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+.ev-kit-grupo-check.checked { background: var(--concluido); border-color: var(--concluido); }
+.ev-kit-grupo-check.checked::after { content: ''; width: 8px; height: 4px; border-left: 2px solid #111; border-bottom: 2px solid #111; transform: rotate(-45deg) translateY(-1px); display: block; }
+.ev-kit-grupo-nome { flex: 1; font-size: 0.75rem; font-weight: 700; color: var(--andamento, #C8A94A); letter-spacing: 0.04em; text-transform: uppercase; }
+.ev-kit-grupo-nome.riscado { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
+.ev-kit-grupo-rem { background: none; border: none; cursor: pointer; padding: 0 2px; font-size: 1rem; color: #888; line-height: 1; flex-shrink: 0; transition: color 0.15s; }
+.ev-kit-grupo-rem:hover { color: #4AC87A; }
+.ev-kit-grupo-rem.riscado { color: #4AC87A; }
+.ev-kit-grupo-body { display: none; border-top: 1px solid rgba(200,169,74,0.12); padding: 4px 8px; }
+.ev-kit-grupo.expanded .ev-kit-grupo-body { display: block; }
+.ev-kit-grupo-body .card-item { padding: 4px 0; font-size: 0.78rem; }
+.ev-kit-grupo-dropzone { min-height: 12px; }
+.ev-kit-grupo-dropzone.drag-over-kit-grupo { background: rgba(200,169,74,0.08); border-radius: 4px; }
+
 </style>
 
 <!-- HTML: Eventos em andamento (inserido logo após o header no app-screen via JS) -->
@@ -7394,6 +7414,7 @@ var _reservasEventos = {};      // estoque_id → [{evento, qtd, status}]
 var _cargaEvento = {};          // { evId: { eqId: qtd } } — local, não vai ao Firebase
 var _evEqDragItems = {};     // { evId: { eqId: {nome,qty} } } — eq arrastados (temporário)
 var _evEqOrigCounts = {};    // { eqId: {qtd_disponivel,qtd_em_uso} } — antes do drag
+var _evKitGrupos = {};       // { evId: [ { grupoId, kitId, kitNome, itens:[{eqId,eqNome,qty,checked,riscado}] } ] }
 
 function _getCargaTotalEq(eqId) {
   var total = 0;
@@ -7489,8 +7510,14 @@ function iniciarEventosAndamento() {
   try {
     db.collection('eventos_campo').where('etapa', '==', 'andamento').onSnapshot(function(snap) {
       _eventosAndamento = {};
+      _evKitGrupos = {};
       snap.forEach(function(doc) {
-        _eventosAndamento[doc.id] = Object.assign({ id: doc.id }, doc.data());
+        var data = Object.assign({ id: doc.id }, doc.data());
+        _eventosAndamento[doc.id] = data;
+        // Carregar grupos de kit salvos
+        if (Array.isArray(data.kits_grupos_ev) && data.kits_grupos_ev.length) {
+          _evKitGrupos[doc.id] = data.kits_grupos_ev;
+        }
       });
       renderEventosAndamento();
       // (sincronizacao feita ao abrir card do evento)
@@ -7608,7 +7635,8 @@ function _buildEvAndamentoCard(ev) {
   }
 
   var itensHtml = '';
-  if ((ev.servicos && ev.servicos.length) || (ev.itens_extras && ev.itens_extras.length)) {
+  var kitGruposHtml = _buildKitGruposHTML(ev.id);
+  if (kitGruposHtml || (ev.servicos && ev.servicos.length) || (ev.itens_extras && ev.itens_extras.length)) {
     var removidos = ev.itens_removidos || {};
     var servicosExpandidos = [];
     (ev.servicos || []).forEach(function(s, origIdx) {
@@ -7663,6 +7691,7 @@ function _buildEvAndamentoCard(ev) {
 
     itensHtml = '<div class="card-itens">' +
       '<div class="veiculo-row"><div class="card-itens-title">Itens / Ve\u00EDculos</div>' + veiculoBtn + '</div>' +
+      kitGruposHtml +
       itensRowHtml + extrasRowHtml +
       '<div id="card-carga-' + esc(ev.id) + '" class="card-carga-inline"></div>' +
       '<div id="add-form-ev-' + esc(ev.id) + '" style="display:none" class="add-item-form">' +
@@ -7874,6 +7903,19 @@ function _abrirCargaEvento(evId) {
     afetados[eqId] = true;
   });
 
+  // Incluir itens dos grupos de kit
+  (_evKitGrupos[evId] || []).forEach(function(grupo) {
+    if (grupo.riscado) return;
+    (grupo.itens || []).forEach(function(it) {
+      if (it.riscado) return;
+      var eqId = it.eqId;
+      if (!eqId || !_equipamentos[eqId]) return;
+      var qty = it.qty || 1;
+      _evEqDragItems[evId][eqId] = { nome: it.eqNome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
+      afetados[eqId] = true;
+    });
+  });
+
   Object.keys(afetados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
 }
 
@@ -7915,6 +7957,17 @@ function _recalcularCargaEvento(evId) {
     novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
   });
 
+  // Incluir itens dos grupos de kit
+  (_evKitGrupos[evId] || []).forEach(function(grupo) {
+    if (grupo.riscado) return;
+    (grupo.itens || []).forEach(function(it) {
+      if (it.riscado) return;
+      var eqId = it.eqId;
+      if (!eqId) return;
+      novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
+    });
+  });
+
   _evEqDragItems[evId] = {};
   Object.keys(novasCounts).forEach(function(eqId) {
     var nome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
@@ -7925,6 +7978,75 @@ function _recalcularCargaEvento(evId) {
   afetadosAntes.forEach(function(id) { afetados[id] = true; });
   Object.keys(novasCounts).forEach(function(id) { afetados[id] = true; });
   Object.keys(afetados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+}
+
+function _salvarKitGruposFirestore(evId) {
+  if (!db) return;
+  var grupos = (_evKitGrupos[evId] || []).map(function(g) {
+    return {
+      grupoId: g.grupoId,
+      kitId: g.kitId,
+      kitNome: g.kitNome,
+      riscado: g.riscado || false,
+      itens: (g.itens || []).map(function(it) {
+        return { eqId: it.eqId, eqNome: it.eqNome, qty: it.qty, checked: it.checked || false, riscado: it.riscado || false };
+      })
+    };
+  });
+  db.collection('eventos_campo').doc(evId).update({ kits_grupos_ev: grupos }).catch(function(e) {
+    console.warn('[KitGrupos] Erro ao salvar:', e.message);
+  });
+}
+
+function _buildKitGruposHTML(evId) {
+  var grupos = _evKitGrupos[evId] || [];
+  if (!grupos.length) return '';
+  var esc = _escEv;
+  return grupos.map(function(grupo) {
+    var todosChecked = grupo.itens.length > 0 && grupo.itens.every(function(it) { return it.checked || it.riscado; });
+    var itensHtml = grupo.itens.map(function(it, itIdx) {
+      var label = (it.qty > 1 ? it.qty + 'x ' : '') + esc(it.eqNome);
+      return '<div class="card-item' + (it.checked && !it.riscado ? ' item-done' : '') + (it.riscado ? ' item-removido' : '') + '"' +
+        ' draggable="true"' +
+        ' data-kit-grupo-id="' + esc(grupo.grupoId) + '"' +
+        ' data-kit-item-idx="' + itIdx + '"' +
+        ' data-item-ev="' + esc(evId) + '"' +
+        ' data-item-txt="' + label + '">' +
+        '<div class="item-check' + ((it.checked && !it.riscado) ? ' checked' : '') + '"' +
+          ' data-kit-grupo-id="' + esc(grupo.grupoId) + '"' +
+          ' data-kit-item-idx="' + itIdx + '"' +
+          ' data-evid="' + esc(evId) + '"' +
+          ' style="' + (it.riscado ? 'pointer-events:none;opacity:0.3' : '') + '">' +
+        '</div>' +
+        '<span class="item-text">' + label + '</span>' +
+        '<button class="item-rem-ev-btn item-rem-kit-item"' +
+          ' data-kit-grupo-id="' + esc(grupo.grupoId) + '"' +
+          ' data-kit-item-idx="' + itIdx + '"' +
+          ' data-evid="' + esc(evId) + '"' +
+          ' title="Riscar"' +
+          ' style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (it.riscado ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">' +
+          '&times;' +
+        '</button>' +
+      '</div>';
+    }).join('');
+
+    return '<div class="ev-kit-grupo" id="ev-kit-grupo-' + esc(grupo.grupoId) + '"' +
+      ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '">' +
+      '<div class="ev-kit-grupo-header">' +
+        '<span class="ev-kit-grupo-arrow">&#9654;</span>' +
+        '<div class="ev-kit-grupo-check' + (todosChecked ? ' checked' : '') + '"' +
+          ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '">' +
+        '</div>' +
+        '<span class="ev-kit-grupo-nome' + (grupo.riscado ? ' riscado' : '') + '">' + esc(grupo.kitNome) + '</span>' +
+        '<button class="ev-kit-grupo-rem' + (grupo.riscado ? ' riscado' : '') + '"' +
+          ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '"' +
+          ' title="' + (grupo.riscado ? 'Restaurar kit' : 'Riscar kit inteiro') + '">&times;</button>' +
+      '</div>' +
+      '<div class="ev-kit-grupo-body ev-kit-grupo-dropzone">' +
+        itensHtml +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 function _fecharCargaEvento(evId) {
@@ -8083,6 +8205,207 @@ function _bindEvAndamentoCards() {
     });
   });
 
+  // ── Kit Grupos handlers ──
+
+  // Toggle colapso/expande grupo
+  scroll.querySelectorAll('.ev-kit-grupo-header').forEach(function(header) {
+    header.addEventListener('click', function(e) {
+      if (e.target.closest('.ev-kit-grupo-check') || e.target.closest('.ev-kit-grupo-rem')) return;
+      var grupo = header.closest('.ev-kit-grupo');
+      if (grupo) grupo.classList.toggle('expanded');
+    });
+  });
+
+  // Checkbox do kit → marca/desmarca todos os itens do grupo
+  scroll.querySelectorAll('.ev-kit-grupo-check').forEach(function(chk) {
+    chk.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var evId = chk.getAttribute('data-evid');
+      var grupoId = chk.getAttribute('data-grupo-id');
+      var grupos = _evKitGrupos[evId] || [];
+      var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
+      if (!grupo) return;
+      var todosChecked = grupo.itens.length > 0 && grupo.itens.every(function(it) { return it.checked || it.riscado; });
+      var novoEstado = !todosChecked;
+      grupo.itens.forEach(function(it) { if (!it.riscado) it.checked = novoEstado; });
+      _salvarKitGruposFirestore(evId);
+      // Atualiza UI do grupo sem re-render total
+      var grupoEl = document.getElementById('ev-kit-grupo-' + grupoId);
+      if (grupoEl) {
+        var novoChecked = grupo.itens.every(function(it) { return it.checked || it.riscado; });
+        chk.classList.toggle('checked', novoChecked);
+        grupoEl.querySelectorAll('.item-check[data-kit-grupo-id="' + grupoId + '"]').forEach(function(ic, idx) {
+          var it = grupo.itens[idx];
+          if (it && !it.riscado) ic.classList.toggle('checked', it.checked);
+        });
+        grupoEl.querySelectorAll('.card-item[data-kit-grupo-id="' + grupoId + '"]').forEach(function(itemEl, idx) {
+          var it = grupo.itens[idx];
+          if (it && !it.riscado) itemEl.classList.toggle('item-done', it.checked);
+        });
+      }
+    });
+  });
+
+  // Checkbox individual dentro do kit
+  scroll.querySelectorAll('.item-check[data-kit-grupo-id]').forEach(function(chk) {
+    chk.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var evId = chk.getAttribute('data-evid');
+      var grupoId = chk.getAttribute('data-kit-grupo-id');
+      var itIdx = parseInt(chk.getAttribute('data-kit-item-idx'), 10);
+      var grupos = _evKitGrupos[evId] || [];
+      var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
+      if (!grupo || !grupo.itens[itIdx]) return;
+      grupo.itens[itIdx].checked = !grupo.itens[itIdx].checked;
+      _salvarKitGruposFirestore(evId);
+      // Atualiza UI imediatamente
+      var it = grupo.itens[itIdx];
+      chk.classList.toggle('checked', it.checked);
+      var itemEl = chk.closest('.card-item');
+      if (itemEl) itemEl.classList.toggle('item-done', it.checked);
+      // Atualiza checkbox do grupo pai
+      var grupoEl = document.getElementById('ev-kit-grupo-' + grupoId);
+      if (grupoEl) {
+        var todosChecked = grupo.itens.every(function(x) { return x.checked || x.riscado; });
+        var grupoChk = grupoEl.querySelector('.ev-kit-grupo-check');
+        if (grupoChk) grupoChk.classList.toggle('checked', todosChecked);
+      }
+    });
+  });
+
+  // Botão × do kit grupo → risca/restaura todos os itens e devolve ao estoque
+  scroll.querySelectorAll('.ev-kit-grupo-rem').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var evId = btn.getAttribute('data-evid');
+      var grupoId = btn.getAttribute('data-grupo-id');
+      var grupos = _evKitGrupos[evId] || [];
+      var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
+      if (!grupo) return;
+      grupo.riscado = !grupo.riscado;
+      grupo.itens.forEach(function(it) { it.riscado = grupo.riscado; if (grupo.riscado) it.checked = false; });
+      _salvarKitGruposFirestore(evId);
+      _recalcularCargaEvento(evId);
+      // Atualiza UI imediatamente
+      var grupoEl = document.getElementById('ev-kit-grupo-' + grupoId);
+      if (grupoEl) {
+        var nomeEl = grupoEl.querySelector('.ev-kit-grupo-nome');
+        if (nomeEl) nomeEl.classList.toggle('riscado', grupo.riscado);
+        btn.classList.toggle('riscado', grupo.riscado);
+        btn.title = grupo.riscado ? 'Restaurar kit' : 'Riscar kit inteiro';
+        grupoEl.querySelectorAll('.card-item[data-kit-grupo-id]').forEach(function(itemEl) {
+          itemEl.classList.toggle('item-removido', grupo.riscado);
+          var ic = itemEl.querySelector('.item-check');
+          if (ic) { ic.style.pointerEvents = grupo.riscado ? 'none' : ''; ic.style.opacity = grupo.riscado ? '0.3' : ''; ic.classList.remove('checked'); }
+          var remBtn = itemEl.querySelector('.item-rem-kit-item');
+          if (remBtn) remBtn.style.color = grupo.riscado ? '#4AC87A' : '#888';
+        });
+        var grupoChk = grupoEl.querySelector('.ev-kit-grupo-check');
+        if (grupoChk) grupoChk.classList.remove('checked');
+      }
+    });
+  });
+
+  // Botão × individual de item dentro do kit
+  scroll.querySelectorAll('.item-rem-kit-item').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var evId = btn.getAttribute('data-evid');
+      var grupoId = btn.getAttribute('data-kit-grupo-id');
+      var itIdx = parseInt(btn.getAttribute('data-kit-item-idx'), 10);
+      var grupos = _evKitGrupos[evId] || [];
+      var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
+      if (!grupo || !grupo.itens[itIdx]) return;
+      var it = grupo.itens[itIdx];
+      it.riscado = !it.riscado;
+      if (it.riscado) it.checked = false;
+      _salvarKitGruposFirestore(evId);
+      _recalcularCargaEvento(evId);
+      // Atualiza UI imediatamente
+      var itemEl = btn.closest('.card-item');
+      if (itemEl) {
+        itemEl.classList.toggle('item-removido', it.riscado);
+        btn.style.color = it.riscado ? '#4AC87A' : '#888';
+        btn.title = it.riscado ? 'Restaurar' : 'Riscar';
+        var chk = itemEl.querySelector('.item-check');
+        if (chk) { chk.style.pointerEvents = it.riscado ? 'none' : ''; chk.style.opacity = it.riscado ? '0.3' : ''; chk.classList.remove('checked'); }
+      }
+      // Atualiza checkbox do grupo pai
+      var grupoEl = document.getElementById('ev-kit-grupo-' + grupoId);
+      if (grupoEl) {
+        var todosChecked = grupo.itens.every(function(x) { return x.checked || x.riscado; });
+        var grupoChk = grupoEl.querySelector('.ev-kit-grupo-check');
+        if (grupoChk) grupoChk.classList.toggle('checked', todosChecked && grupo.itens.length > 0);
+      }
+    });
+  });
+
+  // Drag de itens de kit grupo para fora → torna-se item extra solto
+  scroll.querySelectorAll('.card-item[data-kit-grupo-id]').forEach(function(item) {
+    item.addEventListener('dragstart', function(e) {
+      var grupoId = item.getAttribute('data-kit-grupo-id');
+      var itIdx = parseInt(item.getAttribute('data-kit-item-idx'), 10);
+      var evId = item.getAttribute('data-item-ev');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('tipo', 'kit_grupo_item');
+      e.dataTransfer.setData('text/plain', evId + '|' + grupoId + '|' + itIdx);
+      _draggingItemData = { evId: evId, grupoId: grupoId, itIdx: itIdx, tipo: 'kit_grupo_item', el: item };
+    });
+    item.addEventListener('dragend', function() { _draggingItemData = null; });
+  });
+
+  // Drop zone dos kit grupos (para aceitar itens soltos vindos de fora do grupo)
+  scroll.querySelectorAll('.ev-kit-grupo-dropzone').forEach(function(zone) {
+    zone.addEventListener('dragover', function(e) {
+      if (!_draggingItemData || _draggingItemData.tipo !== 'item_ev') return;
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.add('drag-over-kit-grupo');
+    });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over-kit-grupo'); });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      zone.classList.remove('drag-over-kit-grupo');
+      var data = _draggingItemData;
+      if (!data || data.tipo !== 'item_ev') return;
+      var grupoEl = zone.closest('.ev-kit-grupo');
+      if (!grupoEl) return;
+      var evId = grupoEl.getAttribute('data-evid');
+      var grupoId = grupoEl.getAttribute('data-grupo-id');
+      var grupos = _evKitGrupos[evId] || [];
+      var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
+      if (!grupo) return;
+      // Pegar texto do item arrastado
+      var txt = data.txt || '';
+      var m = txt.match(/^(\d+)x\s+(.+)$/);
+      var qty = m ? parseInt(m[1]) : 1;
+      var eqNome = m ? m[2] : txt;
+      // Encontrar eqId
+      var eqId = null;
+      Object.keys(_equipamentos).forEach(function(id) {
+        if ((_equipamentos[id].nome || '').trim().toLowerCase() === eqNome.trim().toLowerCase()) eqId = id;
+      });
+      // Remover do evento original
+      var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
+      if (data.tipo === 'item_ev' && evObj) {
+        if (data.tipo_item === 'orig') {
+          var rem = Object.assign({}, evObj.itens_removidos || {});
+          rem[data.idx] = true;
+          evObj.itens_removidos = rem;
+          db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem }).catch(function(){});
+        } else {
+          var extrasArr = (evObj.itens_extras || []).slice();
+          extrasArr.splice(data.idx, 1);
+          evObj.itens_extras = extrasArr;
+          db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasArr }).catch(function(){});
+        }
+      }
+      // Adicionar ao grupo
+      grupo.itens.push({ eqId: eqId || '', eqNome: eqNome, qty: qty, checked: false, riscado: false });
+      _salvarKitGruposFirestore(evId);
+      _recalcularCargaEvento(evId);
+      renderEventosAndamento();
+    });
+  });
 
 }
 
@@ -8236,7 +8559,34 @@ function evCardDrop(ev, evId) {
   }
 
   if (!itemId) return;
-  // Kit (normal ou temporário) → expandir itens na carga local
+  // Item vindo de dentro de um kit grupo → move para itens soltos
+  if (tipo === 'kit_grupo_item' || (_draggingItemData && _draggingItemData.tipo === 'kit_grupo_item')) {
+    var kgData = _draggingItemData;
+    _draggingItemData = null;
+    if (!kgData) return;
+    var srcEvId = kgData.evId;
+    var srcGrupoId = kgData.grupoId;
+    var srcItIdx = kgData.itIdx;
+    var srcGrupos = _evKitGrupos[srcEvId] || [];
+    var srcGrupo = srcGrupos.find(function(g) { return g.grupoId === srcGrupoId; });
+    if (!srcGrupo || !srcGrupo.itens[srcItIdx]) return;
+    var itMovido = srcGrupo.itens.splice(srcItIdx, 1)[0];
+    _salvarKitGruposFirestore(srcEvId);
+    // Adicionar como item extra no evento destino (pode ser o mesmo ou diferente)
+    var evDestObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
+    if (evDestObj) {
+      var labelMovido = (itMovido.qty > 1 ? itMovido.qty + 'x ' : '') + itMovido.eqNome;
+      var extrasMovido = (evDestObj.itens_extras || []).concat([labelMovido]);
+      evDestObj.itens_extras = extrasMovido;
+      db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasMovido }).catch(function(){});
+    }
+    _recalcularCargaEvento(srcEvId);
+    if (srcEvId !== evId) _recalcularCargaEvento(evId);
+    renderEventosAndamento();
+    return;
+  }
+
+  // Kit (normal ou temporário) → criar grupo de kit no evento
   if (tipo === 'kit') {
     var kitItens = [];
     var kitNome = itemId;
@@ -8252,41 +8602,34 @@ function evCardDrop(ev, evId) {
       kitItens = kit.itens;
       kitNome = kit.nome || 'Kit';
     }
-    // Salvar itens do kit em itens_extras (Firestore) + atualizar contagens
-    var evObjKit = _eventosAndamento[evId] || _eventosStagingCarga[evId];
-    var extrasKit = evObjKit ? (evObjKit.itens_extras || []).slice() : [];
+
+    if (!_evKitGrupos[evId]) _evKitGrupos[evId] = [];
     if (!_evEqDragItems[evId]) _evEqDragItems[evId] = {};
+
+    var grupoItens = [];
+    var itensAdicionados = 0;
     kitItens.forEach(function(it) {
       var eqId = it.equipId;
       var qtd = it.qtd || 1;
       if (!eqId) return;
       var eqNome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
-      var _dispFir = (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0);
-      var _jaAlocado = _getCargaTotalEq(eqId);
-      var qtdCap = Math.min(qtd, Math.max(0, _dispFir - _jaAlocado));
-      if (qtdCap <= 0) { return; }
-      // Deduplica no array de extras
-      var existIdx = -1;
-      for (var xi = 0; xi < extrasKit.length; xi++) {
-        if (extrasKit[xi].replace(/^\d+x\s+/, '') === eqNome) { existIdx = xi; break; }
-      }
-      if (existIdx >= 0) {
-        var m = extrasKit[existIdx].match(/^(\d+)x\s+/);
-        var prevQty = m ? parseInt(m[1]) : 1;
-        extrasKit[existIdx] = (prevQty + qtdCap) + 'x ' + eqNome;
-      } else {
-        extrasKit.push(qtdCap > 1 ? qtdCap + 'x ' + eqNome : eqNome);
-      }
-      // Tracking para restaurar contagens
+      var dispFir = (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0);
+      var jaAlocado = _getCargaTotalEq(eqId);
+      var qtdCap = Math.min(qtd, Math.max(0, dispFir - jaAlocado));
+      if (qtdCap <= 0) return;
+      grupoItens.push({ eqId: eqId, eqNome: eqNome, qty: qtdCap, checked: false, riscado: false });
       if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
       _evEqDragItems[evId][eqId].qty += qtdCap;
       _atualizarCardEqDOM(eqId);
+      itensAdicionados++;
     });
-    if (evObjKit) {
-      evObjKit.itens_extras = extrasKit;
-      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasKit });
-    }
-    // Restaura visual do card do kit (opacidade reduzida no dragstart)
+
+    if (!itensAdicionados) { toast('Nenhum item disponível no kit', true); return; }
+
+    var grupoId = 'kg_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    _evKitGrupos[evId].push({ grupoId: grupoId, kitId: itemId, kitNome: kitNome, itens: grupoItens, riscado: false });
+    _salvarKitGruposFirestore(evId);
+
     var _kitCardEl2 = document.getElementById('kit-card-' + itemId);
     if (_kitCardEl2) _kitCardEl2.style.opacity = '';
     _draggingKitId = null;
@@ -8295,7 +8638,7 @@ function evCardDrop(ev, evId) {
       var evCardEl2 = document.getElementById('ev-card-' + evId);
       if (evCardEl2 && !evCardEl2.classList.contains('expanded')) evCardEl2.classList.add('expanded');
     }, 0);
-    toast(kitNome + ' adicionado (' + kitItens.length + ' itens)');
+    toast(kitNome + ' adicionado (' + itensAdicionados + ' itens)');
     return;
   }
   if (tipo === 'staging') {
@@ -8998,6 +9341,21 @@ function _kitRemoveZoneDrop(ev) {
       }
     }
     if (data) _excluirItemEvDrop(data);
+  } else if (tipo === 'kit_grupo_item' || (_draggingItemData && _draggingItemData.tipo === 'kit_grupo_item')) {
+    // ── Item de dentro de um kit grupo — remove do grupo e devolve ao estoque ──
+    var kgData = _draggingItemData;
+    _draggingItemData = null;
+    if (kgData && kgData.grupoId !== undefined) {
+      var srcGrupos = _evKitGrupos[kgData.evId] || [];
+      var srcGrupo = srcGrupos.find(function(g) { return g.grupoId === kgData.grupoId; });
+      if (srcGrupo && srcGrupo.itens[kgData.itIdx]) {
+        var removedIt = srcGrupo.itens.splice(kgData.itIdx, 1)[0];
+        _salvarKitGruposFirestore(kgData.evId);
+        _recalcularCargaEvento(kgData.evId);
+        renderEventosAndamento();
+        toast((removedIt.eqNome || 'Item') + ' removido do kit');
+      }
+    }
   }
 }
 
