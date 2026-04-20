@@ -2444,6 +2444,12 @@
       <span class="tbf-x">×</span>
     </div>
 
+    <div id="andamento-filtro-badge" onclick="toggleFiltroAndamento()" title="Remover filtro: itens em uso hoje" style="display:none;align-items:center;gap:5px;background:rgba(74,144,217,0.14);border:1px solid rgba(74,144,217,0.45);border-radius:14px;padding:4px 10px;font-family:Barlow Condensed,sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#4A90D9;cursor:pointer;white-space:nowrap">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Em andamento
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+
     <div class="view-toggle">
       <button class="view-btn active" id="btn-view-grid" onclick="setView('grid')" title="Grade">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -2518,6 +2524,7 @@ var _editandoId = null;
 var _emojiSelecionado = 'mixer';
 var _filtroStat = null; // 'disponivel' | 'em-uso' | 'manutencao' | null
 var _filtroTag = null;  // tag personalizada selecionada
+var _filtroAndamento = false; // true quando filtrando por equipamentos em andamento
 var _acessorios = {};   // estado acessórios
 var _acessoriosCollapsed = false;
 
@@ -3247,6 +3254,71 @@ function filtrarTag(tag) {
 }
 
 
+// ── Filtro "Eventos em andamento" — retorna mapa eqId→qtdEmUso pelos cards em andamento ──
+function _getFiltroAndamentoIds() {
+  var nomeToId = {};
+  Object.keys(_equipamentos).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
+    if (nome) nomeToId[nome] = eqId;
+  });
+  var uso = {};
+  var allEvs = Object.assign({}, _eventosAndamento, _eventosStagingCarga);
+  Object.values(allEvs).forEach(function(ev) {
+    // itens_extras: strings "Nx Nome"
+    (ev.itens_extras || []).forEach(function(item) {
+      var m = item.match(/^(\d+)x\s+(.+)$/);
+      var qty  = m ? parseInt(m[1]) : 1;
+      var nome = (m ? m[2] : item).trim().toLowerCase();
+      var eqId = nomeToId[nome];
+      if (eqId) uso[eqId] = (uso[eqId] || 0) + qty;
+    });
+    // itens do _cargaEvento (drag local ainda não salvo)
+    if (_cargaEvento[ev.id]) {
+      Object.keys(_cargaEvento[ev.id]).forEach(function(eqId) {
+        uso[eqId] = (uso[eqId] || 0) + (_cargaEvento[ev.id][eqId] || 0);
+      });
+    }
+    // itens arrastados (_evEqDragItems)
+    if (_evEqDragItems[ev.id]) {
+      Object.keys(_evEqDragItems[ev.id]).forEach(function(eqId) {
+        var q = (_evEqDragItems[ev.id][eqId] || {}).qty || 0;
+        uso[eqId] = (uso[eqId] || 0) + q;
+      });
+    }
+  });
+  return uso;
+}
+
+function toggleFiltroAndamento() {
+  _filtroAndamento = !_filtroAndamento;
+
+  // Ícones
+  var iconOn   = document.getElementById('ev-andamento-filtro-icon');
+  var iconOff  = document.getElementById('ev-andamento-filtro-off-icon');
+  var pulse    = document.getElementById('ev-andamento-pulse');
+  var titleBtn = document.getElementById('ev-andamento-title-btn');
+
+  if (_filtroAndamento) {
+    if (iconOn)  iconOn.style.display  = 'inline';
+    if (iconOff) iconOff.style.display = 'none';
+    if (pulse)   { pulse.style.background = '#4A90D9'; pulse.style.boxShadow = '0 0 0 0 rgba(74,144,217,0.6)'; }
+    if (titleBtn) titleBtn.classList.add('filtro-ativo');
+    toast('Estoque filtrado pelos itens em uso hoje');
+  } else {
+    if (iconOn)  iconOn.style.display  = 'none';
+    if (iconOff) iconOff.style.display = 'inline';
+    if (pulse)   { pulse.style.background = '#F5A623'; pulse.style.boxShadow = ''; }
+    if (titleBtn) titleBtn.classList.remove('filtro-ativo');
+    toast('Filtro de andamento removido');
+  }
+
+  // Badge de filtro andamento na toolbar
+  var badge = document.getElementById('andamento-filtro-badge');
+  if (badge) badge.style.display = _filtroAndamento ? 'flex' : 'none';
+
+  renderEquipamentos();
+}
+
 function renderEquipamentos() {
   var busca = (document.getElementById('search-input').value || '').toLowerCase().trim();
   var sort = document.getElementById('sort-select').value;
@@ -3278,7 +3350,13 @@ function renderEquipamentos() {
       }
     }
 
-    return matchCat && matchBusca && matchStat && matchTag;
+    var matchAndamento = true;
+    if (_filtroAndamento) {
+      var _andamentoIds = _getFiltroAndamentoIds();
+      matchAndamento = !!_andamentoIds[e.id];
+    }
+
+    return matchCat && matchBusca && matchStat && matchTag && matchAndamento;
   });
 
   // Sort
@@ -6744,6 +6822,19 @@ body.has-ev-sidebar header { margin-right: -340px; }
   display: flex;
   align-items: center;
   gap: 6px;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  transition: background 0.15s, color 0.15s;
+}
+.ev-andamento-title:hover {
+  background: rgba(245,166,35,0.08);
+}
+.ev-andamento-title.filtro-ativo {
+  color: #4A90D9;
+}
+.ev-andamento-title.filtro-ativo:hover {
+  background: rgba(74,144,217,0.08);
 }
 .ev-andamento-pulse {
   width: 7px; height: 7px;
@@ -7335,9 +7426,17 @@ body.has-ev-sidebar header { margin-right: -340px; }
 <!-- HTML: Eventos em andamento (inserido logo após o header no app-screen via JS) -->
 <div id="eventos-andamento-section">
   <div class="ev-andamento-header">
-    <div class="ev-andamento-title">
-      <div class="ev-andamento-pulse"></div>
-      Eventos em andamento
+    <div class="ev-andamento-title" id="ev-andamento-title-btn" onclick="toggleFiltroAndamento()" title="Clique para ver equipamentos em uso hoje no estoque" style="cursor:pointer;user-select:none;transition:opacity 0.15s">
+      <div class="ev-andamento-pulse" id="ev-andamento-pulse"></div>
+      <span id="ev-andamento-title-text">Eventos em andamento</span>
+      <span id="ev-andamento-filtro-icon" title="Filtro de estoque ativo" style="display:none;margin-left:4px">
+        <!-- ícone "olho" — filtro ativo -->
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </span>
+      <span id="ev-andamento-filtro-off-icon" title="Clique para filtrar estoque pelos itens em uso" style="margin-left:4px;opacity:0.35">
+        <!-- ícone "olho fechado" — filtro inativo -->
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+      </span>
     </div>
     <span id="ev-andamento-count" style="font-family:Barlow Condensed,sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.08em;color:#777;text-transform:uppercase"></span>
   </div>
