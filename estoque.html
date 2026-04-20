@@ -3267,7 +3267,8 @@ function _getFiltroAndamentoIds() {
 
   var uso = {}; // eqId -> qtd total em carga nos eventos do dia
 
-  var allEvs = Object.assign({}, _eventosAndamento, _eventosStagingCarga);
+  // USA APENAS _eventosAndamentoSnap (etapa === 'andamento') — exclui 'eventos' e 'concluido'
+  var allEvs = Object.assign({}, _eventosAndamentoSnap, _eventosStagingCarga);
   Object.values(allEvs).forEach(function(ev) {
     var itensExtrasRem = ev.itens_extras_removidos || {};
     var itensOrigRem   = ev.itens_removidos || {};
