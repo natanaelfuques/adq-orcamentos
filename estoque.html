@@ -1839,10 +1839,11 @@
   }
   .agenda-modal {
     background: var(--dark); border: 1px solid var(--border);
-    border-radius: 10px; width: 100%; max-width: 980px;
+    border-radius: 10px; width: 100%; max-width: 1100px;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6); flex-shrink: 0;
     margin: auto 0; display: flex; flex-direction: column;
-    max-height: calc(100vh - 24px); overflow: hidden;
+    height: calc(100vh - 48px); min-height: 580px; max-height: 860px;
+    overflow: hidden;
   }
   .agenda-modal-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -1902,7 +1903,7 @@
   .agenda-cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(6, 1fr);
+    grid-template-rows: repeat(6, minmax(80px, 1fr));
     flex: 1; overflow: hidden;
   }
   .agenda-cal-cell {
@@ -1975,8 +1976,8 @@
   }
   /* ── Pills de eventos (eventos_campo) no calendário ── */
   .agenda-ev-pill {
-    font-size: 0.55rem; font-weight: 700; font-family: 'Barlow Condensed', sans-serif;
-    border-radius: 9px; padding: 1px 5px; margin-bottom: 2px;
+    font-size: 0.68rem; font-weight: 700; font-family: 'Barlow Condensed', sans-serif;
+    border-radius: 4px; padding: 2px 6px; margin-bottom: 2px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     cursor: pointer; display: block; transition: filter 0.15s;
     border: 1px dashed rgba(255,255,255,0.18);
@@ -6178,19 +6179,20 @@ function _renderAgendaCalendar() {
     }).sort(function(a,b) { return (a.ev_data||'') < (b.ev_data||'') ? -1 : 1; });
 
     var pills = evDia.map(function(ev) {
-      var temMaterial = !!ev.material_reservado;
+      var etapa = ev.etapa || 'eventos';
       var cargaFinalizada = !!ev.carga_finalizada;
-      var cor = _corBadgeEvento(ev);
-      var estilo;
-      if (cargaFinalizada) {
-        estilo = 'color:#50C878;border-color:rgba(80,200,120,0.5);background:rgba(80,200,120,0.1);border-style:solid';
-      } else if (temMaterial) {
-        estilo = 'color:var(--green);border-color:rgba(37,211,102,0.4);background:rgba(37,211,102,0.08);border-style:solid';
+      // Cor por etapa do painel
+      var cor, bg;
+      if (cargaFinalizada || etapa === 'concluido') {
+        cor = '#4AC87A'; bg = 'rgba(74,200,122,0.1)';
+      } else if (etapa === 'andamento') {
+        cor = '#F5A623'; bg = 'rgba(245,166,35,0.1)';
       } else {
-        estilo = 'color:' + cor + ';border-color:' + cor + '44';
+        cor = '#4A90D9'; bg = 'rgba(74,144,217,0.08)';
       }
-      var prefixo = cargaFinalizada ? '\u2713 ' : '';
-      var label = esc(prefixo + (ev.cli_nome || ev.ev_nome || 'Evento').substring(0,13));
+      var estilo = 'color:' + cor + ';border-color:' + cor + '88;background:' + bg + ';border-style:solid';
+      var prefixo = (cargaFinalizada || etapa === 'concluido') ? '\u2713 ' : '';
+      var label = esc(prefixo + (ev.cli_nome || ev.ev_nome || 'Evento').substring(0,16));
       return '<div class="agenda-ev-pill" style="' + estilo + '"'
         + ' onclick="event.stopPropagation();_abrirCardEvento(\'' + ev.id + '\')"'
         + ' title="' + esc(ev.cli_nome||ev.ev_nome||'') + '">' + label + '</div>';
