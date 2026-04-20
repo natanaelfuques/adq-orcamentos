@@ -2327,6 +2327,10 @@
     .kit-slot-item { min-height: 60px; }
   }
 
+
+  #kit-qtd-input::-webkit-outer-spin-button,
+  #kit-qtd-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  #kit-qtd-input { -moz-appearance: textfield; }
 </style>
 <body>
 
@@ -5199,17 +5203,16 @@ function _kitSlotEditarQtd(el) {
       '<div style="font-family:Barlow Condensed,sans-serif;font-size:1rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em">' +
         esc(eq.nome || 'Item') +
       '</div>' +
-      '<div style="font-size:0.72rem;color:var(--muted)">Quantidade no kit</div>' +
       '<div style="display:flex;align-items:center;gap:10px;justify-content:center">' +
         '<button onclick="_kitQtdStep(-1)" style="background:none;border:1px solid var(--border2);color:var(--text);border-radius:5px;width:34px;height:34px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center">−</button>' +
         '<input id="kit-qtd-input" type="number" min="1" max="99" value="' + qtdAtual + '" ' +
-          'style="width:60px;text-align:center;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:6px 4px;font-size:1.1rem;font-family:Barlow Condensed,sans-serif;font-weight:700" ' +
+          'style="width:60px;text-align:center;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:5px;padding:6px 4px;font-size:1.1rem;font-family:Barlow Condensed,sans-serif;font-weight:700;-moz-appearance:textfield;appearance:textfield" ' +
           'oninput="this.value=Math.max(1,Math.min(99,parseInt(this.value)||1))" ' +
           'onkeydown="if(event.key==&quot;Enter&quot;)_kitQtdSalvar()" />' +
         '<button onclick="_kitQtdStep(+1)" style="background:none;border:1px solid var(--border2);color:var(--text);border-radius:5px;width:34px;height:34px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center">+</button>' +
       '</div>' +
-      '<div style="display:flex;gap:8px;justify-content:flex-end">' +
-        '<button onclick="_fecharKitQtdModal()" style="background:none;border:1px solid var(--border2);color:var(--muted);border-radius:5px;padding:5px 14px;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Cancelar</button>' +
+      '<div style="display:flex;gap:8px;justify-content:center">' +
+        '<button onclick="_fecharKitQtdModal()" style="background:none;border:1px solid var(--border2);color:var(--muted);border-radius:5px;padding:6px 18px;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Cancelar</button>' +
         '<button onclick="_kitQtdSalvar()" style="background:var(--gold);border:none;color:#111;border-radius:5px;padding:5px 16px;cursor:pointer;font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em">Salvar</button>' +
       '</div>' +
     '</div>';
