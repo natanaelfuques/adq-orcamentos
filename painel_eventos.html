@@ -2805,7 +2805,7 @@ function buildKitGruposHTML(evId) {
         '<button class="kit-item-rem-btn"' +
           ' data-kit-grupo-id="' + escFn(grupo.grupoId) + '" data-kit-item-idx="' + itIdx + '" data-evid="' + escFn(evId) + '"' +
           ' title="' + (it.riscado ? 'Restaurar' : 'Riscar') + '"' +
-          ' style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (it.riscado ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
+          ' style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1.1rem;color:' + (it.riscado ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
       '</div>';
     }).join('');
     return '<div class="ev-kit-grupo" id="painel-kit-grupo-' + escFn(grupo.grupoId) + '">' +
