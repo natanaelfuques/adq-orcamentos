@@ -128,7 +128,7 @@
   .btn-hd.hv-cat:hover  { border-color: #4A90D9; color: #4A90D9; }
   .btn-hd.hv-blue:hover  { border-color: #4A90D9; color: #4A90D9; }
   #btn-ev-carga-hd.sidebar-ativo { border-color: #F5A623; color: #F5A623; background: rgba(245,166,35,0.08); }
-  #btn-ev-carga-hd.sidebar-ativo .carga-badge { background: #F5A623; }
+  #btn-ev-carga-hd.sidebar-ativo .carga-badge { background: #F5A623; color: #111; }
   #btn-ev-carga-hd:hover { border-color: #F5A623; color: #F5A623; }
 
   /* ── STATS BAR ── */
@@ -1129,10 +1129,14 @@
     .stats-bar::-webkit-scrollbar { display: none; }
     .stat-sep { flex-shrink: 0; }
     .stat-item { flex-shrink: 0; }
-    header { padding: 4px 10px; gap: 6px; }
+    header { padding: 4px 8px; gap: 4px; flex-wrap: nowrap; overflow: hidden; width: 100%; max-width: 100vw; box-sizing: border-box; }
+    .hd-left { flex-shrink: 0; min-width: 0; max-width: 40vw; }
     .hd-left .hd-title { font-size: 1rem; }
+    .hd-left > div > div { display: none; }
     .hd-sub { display: none; }
     .hd-user { display: none; }
+    .hd-right { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; flex-shrink: 1; min-width: 0; max-width: 100%; }
+    .hd-right::-webkit-scrollbar { display: none; }
     .form-grid { grid-template-columns: 1fr; }
     .form-grid-3 { grid-template-columns: 1fr 1fr; }
     .btn-hd { padding: 0 7px; font-size: 0.65rem; height: 24px; }
@@ -7501,8 +7505,8 @@ body.has-ev-sidebar header { margin-right: -340px; }
 .card-carga-inline { }
 .card-carga-del { background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:#e05c5c;flex-shrink:0;line-height:1;opacity:0.7;transition:opacity 0.15s; }
 .card-carga-del:hover { opacity:1; }
-#btn-ev-carga-hd { display:flex;align-items:center;gap:5px;border-color:rgba(245,166,35,0.6);color:#F5A623; }
-#btn-ev-carga-hd .carga-badge { background:#F5A623;color:#111;border-radius:9px;padding:0 5px;font-size:0.55rem;font-weight:800;line-height:15px;min-width:15px;text-align:center; }
+#btn-ev-carga-hd { display:flex;align-items:center;gap:5px; }
+#btn-ev-carga-hd .carga-badge { background:#777;color:#111;border-radius:9px;padding:0 5px;font-size:0.55rem;font-weight:800;line-height:15px;min-width:15px;text-align:center; }
 .ev-andamento-scroll .card-item:last-child { border-bottom: none; }
 .ev-andamento-scroll .card-item:active { cursor: grabbing; }
 .ev-andamento-scroll .item-check { width: 16px; height: 16px; min-width: 16px; border: 1.5px solid var(--border2); border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
