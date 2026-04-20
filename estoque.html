@@ -7743,7 +7743,7 @@ function _toggleItemEv(evId, idx) {
 
 function _adicionarItemExtraEv(evId, texto) {
   var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
-  if (\!ev) return;
+  if (!ev) return;
   // Parseia quantidade e nome do texto digitado
   var mNovo   = texto.match(/^(\d+)x\s+(.+)$/i);
   var qtyNovo  = mNovo ? parseInt(mNovo[1]) : 1;
@@ -7762,7 +7762,7 @@ function _adicionarItemExtraEv(evId, texto) {
       break;
     }
   }
-  if (\!merged) extras.push(texto);
+  if (!merged) extras.push(texto);
   ev.itens_extras = extras;
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
   // Recalcula contagens imediatamente (prefixo 2x, 3x...)
