@@ -5812,7 +5812,7 @@ function movimentarKit(tipo) {
 
     if (Object.keys(updates).length > 0) {
       updates.historico = hist.slice(0, 50);
-      batch.update(db.collection('equipamentos').doc(eqId), updates);
+      batch.update(db.collection('estoque').doc(eqId), updates);
       processados++;
     }
   });
