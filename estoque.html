@@ -379,11 +379,27 @@
   }
 
   .eq-cat {
-    font-size: 0.62rem;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+  }
+  .eq-cat-pill {
+    display: inline-block;
+    margin-top: 5px;
+    font-size: 0.55rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
+    letter-spacing: 0.09em;
+    color: #777;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 2px 7px;
+    line-height: 1.5;
   }
 
   .eq-actions {
@@ -2503,21 +2519,18 @@
     <div class="section-tabs-right"></div>
   </div>
 
-  <\!-- TAB PANELS WRAPPER -->
-  <div id="tabs-content-wrap" style="position:relative">
-    <\!-- TAB PANEL: Equipamentos -->
-    <div id="tab-panel-equipamentos">
-      <div class="equip-grid" id="equip-grid">
-        <div class="loading-state">Carregando estoque...</div>
-      </div>
-      <div class="equip-list" id="equip-list"></div>
+  <!-- TAB PANEL: Equipamentos -->
+  <div id="tab-panel-equipamentos">
+    <div class="equip-grid" id="equip-grid">
+      <div class="loading-state">Carregando estoque...</div>
     </div>
+    <div class="equip-list" id="equip-list"></div>
+  </div>
 
-    <\!-- TAB PANEL: Acessórios (absolute para não colapsar wrapper) -->
-    <div id="tab-panel-acessorios" style="position:absolute;top:0;left:0;right:0;visibility:hidden;pointer-events:none;padding:16px 24px 24px">
-      <div class="acessorios-grid" id="acessorios-grid">
-        <\!-- renderizado por JS -->
-      </div>
+  <!-- TAB PANEL: Acessórios -->
+  <div id="tab-panel-acessorios" style="display:none;padding:16px 24px 24px">
+    <div class="acessorios-grid" id="acessorios-grid">
+      <!-- renderizado por JS -->
     </div>
   </div>
 
@@ -3407,7 +3420,7 @@ function buildCard(e) {
         '<div class="eq-icon">' + _getEqSvg(e.emoji, 18) + '</div>' +
         '<div class="eq-info">' +
           '<div class="eq-name" title="' + esc(e.nome || '') + '">' + esc(e.nome || 'Sem nome') + '</div>' +
-          '<div class="eq-cat">' + esc(e.categoria || 'Sem categoria') + '</div>' +
+          '<div class="eq-cat">' + esc(e.modelo || '') + '</div>' +
         '</div>' +
         '<div class="eq-actions">' +
           '<button class="eq-action-btn" onclick="event.stopPropagation();abrirModalEdit(\'' + e.id + '\')" title="Editar">' +
@@ -3440,6 +3453,7 @@ function buildCard(e) {
       '<div class="avail-bar">' +
         '<div class="avail-fill" style="width:' + pct + '%;background:' + barColor + '"></div>' +
       '</div>' +
+      (e.categoria ? '<span class="eq-cat-pill">' + esc(e.categoria) + '</span>' : '') +
 
     '</div>' +
   '</div>';
@@ -4842,18 +4856,22 @@ function switchTabSecao(tab) {
   var panelAc = document.getElementById('tab-panel-acessorios');
   var btnEq   = document.getElementById('tab-btn-equipamentos');
   var btnAc   = document.getElementById('tab-btn-acessorios');
-  // panelEq fica sempre no fluxo (define altura do wrapper).
-  // panelAc e' position:absolute — apenas visibility e pointer-events alternam.
+  // Trava a altura mínima no container para evitar recolhimento ao trocar abas
+  var tabContainer = panelEq && panelEq.parentElement;
+  if (tabContainer && panelEq && panelEq.style.display !== 'none') {
+    tabContainer.style.minHeight = panelEq.offsetHeight + 'px';
+  }
   if (tab === 'equipamentos') {
-    if (panelEq) { panelEq.style.visibility = ''; panelEq.style.pointerEvents = ''; }
-    if (panelAc) { panelAc.style.visibility = 'hidden'; panelAc.style.pointerEvents = 'none'; }
+    if (panelEq) panelEq.style.display = '';
+    if (panelAc) panelAc.style.display = 'none';
     if (btnEq) btnEq.classList.add('active');
     if (btnAc) btnAc.classList.remove('active');
+    if (tabContainer) tabContainer.style.minHeight = '';
     renderCatTabs();
     renderEquipamentos();
   } else {
-    if (panelEq) { panelEq.style.visibility = 'hidden'; panelEq.style.pointerEvents = 'none'; }
-    if (panelAc) { panelAc.style.visibility = ''; panelAc.style.pointerEvents = 'auto'; }
+    if (panelEq) panelEq.style.display = 'none';
+    if (panelAc) panelAc.style.display = '';
     if (btnEq) btnEq.classList.remove('active');
     if (btnAc) btnAc.classList.add('active');
     renderCatTabs();
@@ -7230,8 +7248,6 @@ body.has-ev-sidebar header { margin-right: -272px; }
 .ev-andamento-scroll .card-item.item-done .item-text { }
 .ev-andamento-scroll .card-item.item-removido .item-text { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
 .ev-andamento-scroll .item-extra-tag { font-size: 0.85rem; font-weight: 700; color: #4A90C8; flex-shrink: 0; line-height: 1; }
-  .card-item.drag-reorder-over-top { border-top: 2px solid #4A90C8 !important; }
-  .card-item.drag-reorder-over-bottom { border-bottom: 2px solid #4A90C8 !important; }
 .ev-andamento-scroll .btn-add-item { display: flex; align-items: center; gap: 5px; margin-top: 8px; background: transparent; border: 1px dashed var(--border); color: var(--muted); border-radius: 4px; padding: 5px 10px; font-family: 'Barlow', sans-serif; font-size: 0.72rem; cursor: pointer; width: 100%; text-align: left; transition: all 0.15s; }
 .ev-andamento-scroll .btn-add-item:hover { border-color: var(--andamento, #C8A94A); color: var(--andamento, #C8A94A); }
 .ev-andamento-scroll .btn-finalizar-carga { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 10px; background: rgba(74,144,217,0.08); border: 1px solid rgba(74,144,217,0.4); color: #4A90D9; border-radius: 4px; padding: 6px 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; width: 100%; transition: all 0.15s; }
@@ -7550,7 +7566,6 @@ function _buildEvAndamentoCard(ev) {
       return '<div class="card-item' + (done ? ' item-done' : '') + (removido ? ' item-removido' : '') + '" draggable="true" data-item-ev="' + esc(ev.id) + '" data-item-txt="' + esc(s) + '">' +
         '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="extra_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' +
         '<span class="item-text">' + esc(s) + '</span>' +
-        '<span class="item-extra-tag">+</span>' +
         '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="extra" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
 
         '</div>';
@@ -7726,9 +7741,6 @@ function _adicionarItemExtraEv(evId, texto) {
   var extras = (ev.itens_extras || []).concat([texto]);
   ev.itens_extras = extras; // atualiza localmente para evitar dessincronização
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
-  // Recalcula contagens imediatamente (prefixo 2x, 3x...)
-  _recalcularCargaEvento(evId);
-  renderEventosAndamento();
 }
 
 function _abrirCargaEvento(evId) {
@@ -7963,61 +7975,6 @@ function _bindEvAndamentoCards() {
     });
     item.addEventListener('dragend', function() {
       _draggingItemData = null;
-    });
-
-    // Reorder: dragover sobre outro card-item do mesmo evento
-    item.addEventListener('dragover', function(e) {
-      if (!_draggingItemData || _draggingItemData.tipo !== 'extra') return;
-      var remBtn = item.querySelector('.item-rem-ev-btn');
-      if (!remBtn) return;
-      var targetEvId = remBtn.getAttribute('data-evid');
-      if (targetEvId !== _draggingItemData.evId) return;
-      if (item === _draggingItemData.el) return;
-      e.preventDefault();
-      e.stopPropagation();
-      // Indicador visual: acima ou abaixo
-      var rect = item.getBoundingClientRect();
-      var mid  = rect.top + rect.height / 2;
-      item.classList.remove('drag-reorder-over-top', 'drag-reorder-over-bottom');
-      item.classList.add(e.clientY < mid ? 'drag-reorder-over-top' : 'drag-reorder-over-bottom');
-    });
-    item.addEventListener('dragleave', function() {
-      item.classList.remove('drag-reorder-over-top', 'drag-reorder-over-bottom');
-    });
-    item.addEventListener('drop', function(e) {
-      item.classList.remove('drag-reorder-over-top', 'drag-reorder-over-bottom');
-      if (!_draggingItemData || _draggingItemData.tipo !== 'extra') return;
-      var remBtn = item.querySelector('.item-rem-ev-btn');
-      if (!remBtn) return;
-      var targetEvId = remBtn.getAttribute('data-evid');
-      if (targetEvId !== _draggingItemData.evId) return;
-      var targetIdx = parseInt(remBtn.getAttribute('data-idx'), 10);
-      var fromIdx   = _draggingItemData.idx;
-      if (isNaN(targetIdx) || isNaN(fromIdx) || targetIdx === fromIdx) return;
-      e.preventDefault();
-      e.stopPropagation();
-      // Determina se inserir antes ou depois do alvo
-      var rect = item.getBoundingClientRect();
-      var insertBefore = e.clientY < rect.top + rect.height / 2;
-      var evId = _draggingItemData.evId;
-      var ev   = _eventosAndamento[evId] || _eventosStagingCarga[evId];
-      if (!ev) return;
-      var extras = (ev.itens_extras || []).slice();
-      var moved  = extras.splice(fromIdx, 1)[0];
-      var insertAt = targetIdx > fromIdx ? targetIdx - 1 : targetIdx;
-      if (!insertBefore) insertAt++;
-      insertAt = Math.max(0, Math.min(insertAt, extras.length));
-      extras.splice(insertAt, 0, moved);
-      // Reajusta removidos e ok para seguirem os indices
-      ev.itens_extras = extras;
-      ev.itens_extras_removidos = {};
-      if (db) db.collection('eventos_campo').doc(evId).update({
-        itens_extras: extras,
-        itens_extras_removidos: {}
-      });
-      _draggingItemData = null;
-      _recalcularCargaEvento(evId);
-      renderEventosAndamento();
     });
   });
 
