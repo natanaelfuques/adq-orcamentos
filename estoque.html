@@ -2582,8 +2582,8 @@
   <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
     <div class="kits-section-inner">
-      <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
-        <div class="kits-section-title">
+      <div class="kits-section-header">
+        <div class="kits-section-title" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:6px">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           Kits
           <svg id="kits-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;margin-left:4px"><polyline points="6 9 12 15 18 9"/></svg>
@@ -3848,7 +3848,7 @@ function buildCard(e) {
       '<div class="avail-bar">' +
         '<div class="avail-fill" style="width:' + pct + '%;background:' + barColor + '"></div>' +
       '</div>' +
-      '<div class="eq-footer-row">' + (e.categoria ? '<span class="eq-cat-pill">' + esc(e.categoria) + '</span>' : '') + '</div>' +
+      '' +
 
     '</div>' +
   '</div>';
