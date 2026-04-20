@@ -3961,10 +3961,6 @@ function abrirModalForm(e) {
           '</label>' +
           '<span style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.05em">Aparece na aba Acessórios</span>' +
         '</div>' +
-        '<div class="form-group" id="f-grupo-eq-pai"' + (e.isAcessorio ? '' : ' style="display:none"') + '>' +
-          '<label class="form-label">Equipamento vinculado</label>' +
-          '<select class="form-select" id="f-eq-pai"><option value="">— Sem vínculo —</option>' + Object.values(_equipamentos).filter(function(x){return !x.isAcessorio;}).sort(function(a,b){return(a.nome||'').localeCompare(b.nome||'');}).map(function(x){return'<option value="'+esc(x.id)+'"'+(e.equipamentoPai===x.id?' selected':'')+'>'+esc(x.nome)+'</option>';}).join('') + '</select>' +
-        '</div>' +
         '<div class="form-grid">' +
           '<div class="form-group">' +
             '<label class="form-label">Categoria</label>' +
@@ -3977,14 +3973,10 @@ function abrirModalForm(e) {
         '</div>' +
 
         '<div class="section-title">Quantidades</div>' +
-        '<div class="form-grid-3">' +
+        '<div class="form-grid">' +
           '<div class="form-group">' +
             '<label class="form-label">Total</label>' +
             '<input class="form-input" id="f-total" type="number" min="0" value="' + (e.qtd_total || 0) + '" oninput="_calcDisponivel()" />' +
-          '</div>' +
-          '<div class="form-group">' +
-            '<label class="form-label">Em uso</label>' +
-            '<input class="form-input" id="f-uso" type="number" min="0" value="' + (e.qtd_em_uso || 0) + '" oninput="_calcDisponivel()" />' +
           '</div>' +
           '<div class="form-group">' +
             '<label class="form-label">Manutenção</label>' +
@@ -4034,9 +4026,8 @@ function _selecionarEmoji(el, emoji) {
 
 function _calcDisponivel() {
   var total = parseInt(document.getElementById('f-total').value) || 0;
-  var uso = parseInt(document.getElementById('f-uso').value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - uso - manut);
+  var disp = Math.max(0, total - manut);
   var el = document.getElementById('f-disp-calc');
   if (el) {
     el.textContent = disp;
@@ -4047,13 +4038,10 @@ function _calcDisponivel() {
 
 function _toggleTipoItem() {
   var chk = document.getElementById('f-is-acessorio');
-  var grupoEqPai = document.getElementById('f-grupo-eq-pai');
   var grupoModelo = document.getElementById('f-grupo-modelo');
   var nomeLabel = document.getElementById('f-nome-label');
   if (!chk) return;
-  var isAc = chk.checked;
-  if (grupoEqPai) grupoEqPai.style.display = isAc ? '' : 'none';
-  if (nomeLabel) nomeLabel.textContent = isAc ? 'Nome do Acessório *' : 'Nome do Equipamento *';
+  if (nomeLabel) nomeLabel.textContent = chk.checked ? 'Nome do Acessório *' : 'Nome do Equipamento *';
 }
 
 function abrirModalAddAcessorioRapido() {
@@ -4072,23 +4060,20 @@ function salvarEquipamento() {
   if (!nome) { toast('Informe o nome do equipamento.', true); return; }
 
   var total = parseInt(document.getElementById('f-total').value) || 0;
-  var emUso = parseInt(document.getElementById('f-uso').value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - emUso - manut);
+  var disp = Math.max(0, total - manut);
 
   var isAcessorioChk = document.getElementById('f-is-acessorio');
   var isAcessorio = isAcessorioChk ? isAcessorioChk.checked : false;
-  var eqPaiEl = document.getElementById('f-eq-pai');
   var dados = {
     nome: nome,
     emoji: _emojiSelecionado,
     categoria: document.getElementById('f-cat').value || 'Outros',
     modelo: (document.getElementById('f-modelo').value || '').trim(),
     isAcessorio: isAcessorio,
-    equipamentoPai: isAcessorio && eqPaiEl ? (eqPaiEl.value || '') : '',
+    equipamentoPai: '',
     qtd_total: total,
     qtd_disponivel: disp,
-    qtd_em_uso: emUso,
     qtd_manutencao: manut,
     valor_unitario: parseFloat(document.getElementById('f-valor').value) || 0,
     serie: (document.getElementById('f-serie').value || '').trim(),
