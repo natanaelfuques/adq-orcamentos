@@ -1899,6 +1899,11 @@
   .kit-search-draggable:hover { border-color: rgba(74,144,217,0.4); }
   .kit-item-chip { cursor: default; }
 
+  /* ── TESTE DE DISPONIBILIDADE ── */
+  .ev-teste-card { border-color: rgba(74,144,217,0.6) !important; background: rgba(74,144,217,0.05) !important; }
+  .ev-teste-badge { display:inline-block;font-size:0.48rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#4A90D9;background:rgba(74,144,217,0.15);border:1px solid rgba(74,144,217,0.4);border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle; }
+  #btn-testar-disp.disp-ativa { background:rgba(74,144,217,0.25) !important; border-color:#4A90D9 !important; box-shadow:0 0 8px rgba(74,144,217,0.3); }
+
   /* ── AGENDA CALENDAR ── */
   .agenda-modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 999;
@@ -6150,6 +6155,7 @@ var _agEditandoId = null;
 var _agMes = new Date().getMonth();
 var _agAno = new Date().getFullYear();
 var _agDiaSelecionado = null;
+var _TESTE_DISP_ID = '__teste_disponibilidade__';
 
 // ── Abrir/fechar ──────────────────────────────────────────
 function abrirAgenda() {
@@ -6892,6 +6898,72 @@ function _abrirCardEvento(id) {
   document.body.appendChild(overlay);
 }
 
+// ── TESTE DE DISPONIBILIDADE ──────────────────────────────
+
+function _testarDisponibilidade() {
+  // Se já existe um card de teste, remove (toggle)
+  if (_eventosStagingCarga[_TESTE_DISP_ID]) {
+    delete _eventosStagingCarga[_TESTE_DISP_ID];
+    if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
+    renderEventosAndamento();
+    var btn = document.getElementById('btn-testar-disp');
+    if (btn) btn.classList.remove('disp-ativa');
+    return;
+  }
+
+  // Precisa de uma data selecionada
+  if (!_agDiaSelecionado) {
+    toast('Selecione um dia no calendário primeiro.', true);
+    return;
+  }
+
+  var dataFmt = _agDiaSelecionado; // formato YYYY-MM-DD
+  var dataLabel = dataFmt.split('-').reverse().join('/');
+
+  // Cria evento fake apenas em memória
+  var evTeste = {
+    id: _TESTE_DISP_ID,
+    ev_nome: 'Teste de Disponibilidade',
+    ev_data: dataFmt,
+    etapa: 'eventos',
+    _isTeste: true,
+    servicos: [],
+    itens_extras: [],
+    itens_ok: {},
+    itens_removidos: {},
+    kits_grupos_ev: []
+  };
+
+  _eventosStagingCarga[_TESTE_DISP_ID] = evTeste;
+  _evKitGrupos[_TESTE_DISP_ID] = [];
+
+  renderEventosAndamento();
+
+  var btn = document.getElementById('btn-testar-disp');
+  if (btn) btn.classList.add('disp-ativa');
+
+  // Fecha a agenda e abre a sidebar
+  fecharAgenda();
+  var sec = document.getElementById('eventos-andamento-section');
+  if (sec) {
+    sec.style.display = 'block';
+    document.body.classList.add('has-ev-sidebar');
+    setTimeout(function() { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+  }
+
+  toast('Card de teste criado para ' + dataLabel + ' — arraste kits e equipamentos para testar!');
+}
+
+function _removerTesteDisponibilidade() {
+  delete _eventosStagingCarga[_TESTE_DISP_ID];
+  if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
+  renderEventosAndamento();
+  var btn = document.getElementById('btn-testar-disp');
+  if (btn) btn.classList.remove('disp-ativa');
+}
+
+// ── Fim TESTE DE DISPONIBILIDADE ──────────────────────────
+
 function _fecharCardEvento() {
   var el = document.getElementById('agenda-ev-overlay');
   if (el) el.remove();
@@ -6981,7 +7053,13 @@ function _atualizarConflitosNosKits() {
           </div>
           <div style="font-size:0.6rem;color:var(--muted);margin-top:2px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase">Reserve kits por data &bull; Detecta conflitos automaticamente</div>
         </div>
-        <button class="agenda-modal-close" onclick="fecharAgenda()">✕</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="btn-testar-disp" onclick="_testarDisponibilidade()" style="display:flex;align-items:center;gap:6px;background:rgba(74,144,217,0.1);border:1px solid rgba(74,144,217,0.35);color:#4A90D9;border-radius:5px;padding:0 12px;height:28px;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;white-space:nowrap" onmouseover="this.style.background='rgba(74,144,217,0.2)';this.style.borderColor='rgba(74,144,217,0.7)'" onmouseout="this.style.background='rgba(74,144,217,0.1)';this.style.borderColor='rgba(74,144,217,0.35)'">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Testar Disponibilidade
+          </button>
+          <button class="agenda-modal-close" onclick="fecharAgenda()">✕</button>
+        </div>
       </div>
 
       <!-- Layout principal: calendário + painel direito -->
@@ -8917,9 +8995,12 @@ function renderEventosAndamento() {
   }
 
   var stagingHtml = '';
-  if (eventosStaging.length) {
+  var stagingNormal = eventosStaging.filter(function(ev) { return ev.id !== _TESTE_DISP_ID; });
+  var stagingTeste  = eventosStaging.filter(function(ev) { return ev.id === _TESTE_DISP_ID; });
+
+  if (stagingNormal.length) {
     var separador = '<div class="ev-section-separator"><div class="ev-section-separator-pulse"></div>Montando carga</div>';
-    stagingHtml = separador + eventosStaging.map(function(ev) {
+    stagingHtml = separador + stagingNormal.map(function(ev) {
       var cardHtml = _buildEvAndamentoCard(ev);
       cardHtml = cardHtml.replace(
         'class="evento-card"',
@@ -8932,7 +9013,27 @@ function renderEventosAndamento() {
     }).join('');
   }
 
-  scroll.innerHTML = andamentoHtml + stagingHtml + eventosHtml;
+  var testeHtml = '';
+  if (stagingTeste.length) {
+    var evTeste = stagingTeste[0];
+    var dataTesteLabel = evTeste.ev_data ? evTeste.ev_data.split('-').reverse().join('/') : '';
+    var separadorTeste = '<div class="ev-section-separator" style="color:#4A90D9;border-color:rgba(74,144,217,0.25)"><div class="ev-section-separator-pulse" style="background:#4A90D9;box-shadow:0 0 0 0 rgba(74,144,217,0.6)"></div>Teste de Disponibilidade</div>';
+    var cardHtml = _buildEvAndamentoCard(evTeste);
+    cardHtml = cardHtml.replace(
+      'class="evento-card"',
+      'class="evento-card ev-teste-card"'
+    ).replace(
+      '<div class="card-summary">',
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 6px 0;margin-bottom:2px">' +
+        '<span style="font-size:0.5rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#4A90D9;background:rgba(74,144,217,0.15);border:1px solid rgba(74,144,217,0.35);border-radius:3px;padding:1px 6px">🧪 Simulação · ' + dataTesteLabel + '</span>' +
+        '<button onclick="event.stopPropagation();_removerTesteDisponibilidade()" style="background:none;border:none;color:#555;cursor:pointer;font-size:0.75rem;padding:1px 4px;line-height:1;border-radius:3px;transition:color 0.15s" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'" title="Descartar teste">✕ Descartar</button>' +
+      '</div>' +
+      '<div class="card-summary">'
+    );
+    testeHtml = separadorTeste + cardHtml;
+  }
+
+  scroll.innerHTML = andamentoHtml + stagingHtml + testeHtml + eventosHtml;
 
   _bindEvAndamentoCards();
 
