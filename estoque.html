@@ -6142,11 +6142,14 @@ function fecharAgendaSeBackground(ev) {
 }
 
 function _preencherDatasHoje() {
-  if (document.getElementById('ag-data-inicio').value) return;
+  var ini = document.getElementById('ag-data-inicio');
+  var fim = document.getElementById('ag-data-fim');
+  if (!ini || !fim) return;
+  if (ini.value) return;
   var hoje = new Date();
   var iso = hoje.toISOString().slice(0,10);
-  document.getElementById('ag-data-inicio').value = iso;
-  document.getElementById('ag-data-fim').value = iso;
+  ini.value = iso;
+  fim.value = iso;
 }
 
 // ── Carregar reservas e eventos do Firestore ─────────────
@@ -6489,6 +6492,12 @@ function salvarReserva() {
 function editarReserva(id) {
   var r = _reservas[id];
   if (!r) return;
+  // Se a agenda não está aberta, abre primeiro e reagenda
+  if (!document.getElementById('ag-nome')) {
+    abrirAgenda();
+    setTimeout(function() { editarReserva(id); }, 120);
+    return;
+  }
   _agEditandoId = id;
   document.getElementById('ag-nome').value = r.nome || '';
   var ini = r.dataInicio || '', fim = r.dataFim || '';
