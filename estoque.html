@@ -9335,6 +9335,13 @@ function _excluirItemEvDrop(data) {
     evObj.servicos = srvs;
     db.collection('eventos_campo').doc(data.evId).update({ servicos: srvs })
       .catch(function(err) { toast('Erro: ' + err.message, true); });
+  } else if (data.tipo === 'painel') {
+    var painel = (evObj.itens_painel || []).slice();
+    backup = { tipo: 'painel', lista: painel.slice(), evId: data.evId };
+    painel.splice(data.idx, 1);
+    evObj.itens_painel = painel;
+    db.collection('eventos_campo').doc(data.evId).update({ itens_painel: painel })
+      .catch(function(err) { toast('Erro: ' + err.message, true); });
   } else {
     var extras = (evObj.itens_extras || []).slice();
     backup = { tipo: 'extra', lista: extras.slice(), evId: data.evId };
@@ -9352,6 +9359,10 @@ function _excluirItemEvDrop(data) {
     if (backup.tipo === 'orig') {
       evO.servicos = backup.lista;
       db.collection('eventos_campo').doc(backup.evId).update({ servicos: backup.lista })
+        .catch(function(e) { toast('Erro ao desfazer: ' + e.message, true); });
+    } else if (backup.tipo === 'painel') {
+      evO.itens_painel = backup.lista;
+      db.collection('eventos_campo').doc(backup.evId).update({ itens_painel: backup.lista })
         .catch(function(e) { toast('Erro ao desfazer: ' + e.message, true); });
     } else {
       evO.itens_extras = backup.lista;
