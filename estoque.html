@@ -3255,38 +3255,55 @@ function filtrarTag(tag) {
 
 
 // ── Filtro "Eventos em andamento" — retorna mapa eqId→qtdEmUso pelos cards em andamento ──
+// Retorna mapa eqId -> cargaQtd somando todos os eventos em andamento/staging,
+// usando a MESMA logica de _abrirCargaEvento (itens_extras + servicos + kitGrupos,
+// respeitando riscados), identico ao que acontece ao abrir cada card manualmente.
 function _getFiltroAndamentoIds() {
   var nomeToId = {};
   Object.keys(_equipamentos).forEach(function(eqId) {
     var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
     if (nome) nomeToId[nome] = eqId;
   });
-  var uso = {};
+
+  var uso = {}; // eqId -> qtd total em carga nos eventos do dia
+
   var allEvs = Object.assign({}, _eventosAndamento, _eventosStagingCarga);
   Object.values(allEvs).forEach(function(ev) {
-    // itens_extras: strings "Nx Nome"
-    (ev.itens_extras || []).forEach(function(item) {
+    var itensExtrasRem = ev.itens_extras_removidos || {};
+    var itensOrigRem   = ev.itens_removidos || {};
+
+    // itens_extras (nao riscados)
+    (ev.itens_extras || []).forEach(function(item, i) {
+      if (itensExtrasRem[i]) return;
       var m = item.match(/^(\d+)x\s+(.+)$/);
       var qty  = m ? parseInt(m[1]) : 1;
       var nome = (m ? m[2] : item).trim().toLowerCase();
       var eqId = nomeToId[nome];
       if (eqId) uso[eqId] = (uso[eqId] || 0) + qty;
     });
-    // itens do _cargaEvento (drag local ainda não salvo)
-    if (_cargaEvento[ev.id]) {
-      Object.keys(_cargaEvento[ev.id]).forEach(function(eqId) {
-        uso[eqId] = (uso[eqId] || 0) + (_cargaEvento[ev.id][eqId] || 0);
+
+    // servicos (nao riscados)
+    (ev.servicos || []).forEach(function(item, i) {
+      if (itensOrigRem[i]) return;
+      var m = item.match(/^(\d+)x\s+(.+)$/);
+      var qty  = m ? parseInt(m[1]) : 1;
+      var nome = (m ? m[2] : item).trim().toLowerCase();
+      var eqId = nomeToId[nome];
+      if (eqId) uso[eqId] = (uso[eqId] || 0) + qty;
+    });
+
+    // grupos de kit (nao riscados)
+    (_evKitGrupos[ev.id] || []).forEach(function(grupo) {
+      if (grupo.riscado) return;
+      (grupo.itens || []).forEach(function(it) {
+        if (it.riscado) return;
+        var eqId = it.eqId;
+        if (eqId) uso[eqId] = (uso[eqId] || 0) + (it.qty || 1);
       });
-    }
-    // itens arrastados (_evEqDragItems)
-    if (_evEqDragItems[ev.id]) {
-      Object.keys(_evEqDragItems[ev.id]).forEach(function(eqId) {
-        var q = (_evEqDragItems[ev.id][eqId] || {}).qty || 0;
-        uso[eqId] = (uso[eqId] || 0) + q;
-      });
-    }
+    });
   });
-  return uso;
+
+  return uso; // eqId -> qtd total alocada
 }
 
 function toggleFiltroAndamento() {
@@ -3367,6 +3384,21 @@ function renderEquipamentos() {
     if (sort === 'recente') return (b._criado || 0) - (a._criado || 0);
     return 0;
   });
+
+  // Quando filtro andamento ativo: aplica carga virtual de todos os eventos
+  // para que os cards mostrem qtd ajustada (mesmo comportamento de abrir os cards)
+  if (_filtroAndamento) {
+    var cargaAndamento = _getFiltroAndamentoIds(); // eqId -> qtdAlocada
+    equips = equips.map(function(e) {
+      var cargaQtd = cargaAndamento[e.id] || 0;
+      if (!cargaQtd) return e;
+      // Cria cópia com quantidades ajustadas (não altera _equipamentos)
+      var clone = Object.assign({}, e);
+      clone.qtd_disponivel = Math.max(0, (e.qtd_disponivel || 0) - cargaQtd);
+      clone.qtd_em_uso     = Math.min(e.qtd_total || 0, (e.qtd_em_uso || 0) + cargaQtd);
+      return clone;
+    });
+  }
 
   if (_viewAtual === 'grid') {
     renderGrid(equips);
