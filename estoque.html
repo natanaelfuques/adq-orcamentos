@@ -7010,8 +7010,8 @@ body.has-ev-sidebar header { margin-right: -340px; }
   color: #4A90D9;
 }
 .ev-section-separator.aguardando {
-  color: #666;
-  border-top-color: rgba(255,255,255,0.07);
+  color: #4A90D9;
+  border-top-color: rgba(74,144,217,0.18);
 }
 .ev-section-separator-pulse {
   width: 7px; height: 7px;
@@ -8744,7 +8744,7 @@ function renderEventosAndamento() {
 
   var eventosHtml = '';
   if (eventosEmEventos.length) {
-    var sepEventos = '<div class="ev-section-separator aguardando">Montar carga</div>';
+    var sepEventos = '<div class="ev-section-separator aguardando"><div class="ev-section-separator-pulse" style="background:#4A90D9;box-shadow:0 0 0 0 rgba(74,144,217,0.6)"></div>Montar carga</div>';
     eventosHtml = sepEventos + eventosEmEventos.map(function(ev) {
       var cardHtml = _buildEvAndamentoCard(ev);
       cardHtml = cardHtml.replace(
