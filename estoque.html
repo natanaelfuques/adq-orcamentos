@@ -5292,12 +5292,16 @@ function setupEqCardDrag(cardEl, eqId) {
     document.body.classList.add('kit-dragging');
   });
   cardEl.addEventListener('dragend', function() {
-    document.body.classList.remove('kit-dragging');
-    _draggingEqId = null;
-    cardEl.classList.remove('dragging-eq');
-    document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) {
-      el.classList.remove('drag-over-kit');
-    });
+    setTimeout(function() {
+      document.body.classList.remove('kit-dragging');
+      _draggingEqId = null;
+      cardEl.classList.remove('dragging-eq');
+      document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) {
+        el.classList.remove('drag-over-kit');
+      });
+      var novoCard = document.getElementById('kit-novo-card');
+      if (novoCard) novoCard.classList.remove('drag-over-remove');
+    }, 200);
   });
 }
 
@@ -8439,8 +8443,12 @@ function _bindEvAndamentoCards() {
       }
     });
     item.addEventListener('dragend', function() {
-      document.body.classList.remove('kit-dragging');
-      _draggingItemData = null;
+      setTimeout(function() {
+        document.body.classList.remove('kit-dragging');
+        _draggingItemData = null;
+        var novoCard = document.getElementById('kit-novo-card');
+        if (novoCard) novoCard.classList.remove('drag-over-remove');
+      }, 200);
     });
   });
 
@@ -8482,10 +8490,14 @@ function _bindEvAndamentoCards() {
       if (grupoEl) setTimeout(function() { grupoEl.style.opacity = '0.4'; }, 0);
     });
     handle.addEventListener('dragend', function() {
-      document.body.classList.remove('kit-dragging');
-      _draggingKitGrupoData = null;
-      var grupoEl = handle.closest('.ev-kit-grupo');
-      if (grupoEl) grupoEl.style.opacity = '';
+      setTimeout(function() {
+        document.body.classList.remove('kit-dragging');
+        _draggingKitGrupoData = null;
+        var grupoEl = handle.closest('.ev-kit-grupo');
+        if (grupoEl) grupoEl.style.opacity = '';
+        var novoCard = document.getElementById('kit-novo-card');
+        if (novoCard) novoCard.classList.remove('drag-over-remove');
+      }, 200);
     });
   });
 
@@ -8626,8 +8638,12 @@ function _bindEvAndamentoCards() {
       document.body.classList.add('kit-dragging');
     });
     item.addEventListener('dragend', function() {
-      document.body.classList.remove('kit-dragging');
-      _draggingItemData = null;
+      setTimeout(function() {
+        document.body.classList.remove('kit-dragging');
+        _draggingItemData = null;
+        var novoCard = document.getElementById('kit-novo-card');
+        if (novoCard) novoCard.classList.remove('drag-over-remove');
+      }, 200);
     });
   });
 
@@ -9047,39 +9063,51 @@ function _kitDragStart(ev, kitId) {
   document.body.classList.add('kit-dragging');
 }
 function _kitDragEnd() {
-  document.body.classList.remove('kit-dragging');
-  if (_draggingKitId) {
-    var el = document.getElementById('kit-card-' + _draggingKitId);
-    if (el) el.style.opacity = '';
-  }
-  _draggingKitId = null;
-  _draggingItemData = null;
-  // Handlers do kit-novo-card no modo remoção (espelham kit-remove-zone)
-  function _kitNovoCardOver(ev) {
-    if (!document.body.classList.contains('kit-dragging')) return;
-    ev.preventDefault();
-    var el = document.getElementById('kit-novo-card');
-    if (el) el.classList.add('drag-over-remove');
-    // Delega para o handler original
-    _kitRemoveZoneOver(ev);
-  }
-  function _kitNovoCardLeave(ev) {
-    var el = document.getElementById('kit-novo-card');
-    if (el) el.classList.remove('drag-over-remove');
-    _kitRemoveZoneLeave(ev);
-  }
-  function _kitNovoCardDrop(ev) {
-    if (!document.body.classList.contains('kit-dragging')) { criarNovoKitDireto(); return; }
-    var el = document.getElementById('kit-novo-card');
-    if (el) el.classList.remove('drag-over-remove');
-    _kitRemoveZoneDrop(ev);
-  }
+  // Aguarda o evento 'drop' ser disparado antes de remover a classe kit-dragging,
+  // garantindo que _kitNovoCardDrop consiga detectar que estava arrastando.
+  setTimeout(function() {
+    document.body.classList.remove('kit-dragging');
+    if (_draggingKitId) {
+      var el = document.getElementById('kit-card-' + _draggingKitId);
+      if (el) el.style.opacity = '';
+    }
+    _draggingKitId = null;
+    _draggingItemData = null;
+    var _zoneEl = document.getElementById('kit-remove-zone');
+    if (_zoneEl) _zoneEl.classList.remove('drag-over-remove');
+    var _novoCard = document.getElementById('kit-novo-card');
+    if (_novoCard) _novoCard.classList.remove('drag-over-remove');
+    document.querySelectorAll('.ev-card.drag-target-ev').forEach(function(el) { el.classList.remove('drag-target-ev'); });
+    document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
+    document.querySelectorAll('.kit-slot-panel.drag-reorder-target').forEach(function(el) { el.classList.remove('drag-reorder-target'); });
+  }, 200);
+}
 
-  var _zoneEl = document.getElementById('kit-remove-zone');
-  if (_zoneEl) _zoneEl.classList.remove('drag-over-remove');
-  document.querySelectorAll('.ev-card.drag-target-ev').forEach(function(el) { el.classList.remove('drag-target-ev'); });
-  document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
-  document.querySelectorAll('.kit-slot-panel.drag-reorder-target').forEach(function(el) { el.classList.remove('drag-reorder-target'); });
+// Handlers do kit-novo-card no modo remoção (escopo global — devem ser acessíveis pelo HTML)
+function _kitNovoCardOver(ev) {
+  if (!document.body.classList.contains('kit-dragging')) return;
+  ev.preventDefault();
+  var el = document.getElementById('kit-novo-card');
+  if (el) el.classList.add('drag-over-remove');
+  _kitRemoveZoneOver(ev);
+}
+function _kitNovoCardLeave(ev) {
+  var el = document.getElementById('kit-novo-card');
+  if (el) el.classList.remove('drag-over-remove');
+  _kitRemoveZoneLeave(ev);
+}
+function _kitNovoCardDrop(ev) {
+  var el = document.getElementById('kit-novo-card');
+  if (el) el.classList.remove('drag-over-remove');
+  // Verifica se estava arrastando algo (classe presente OU variáveis de drag definidas)
+  var isDragging = document.body.classList.contains('kit-dragging') ||
+                   _draggingKitId || _draggingKitSlot || _draggingItemData || _draggingKitGrupoData;
+  if (!isDragging) {
+    // Nenhum drag ativo — comportamento normal: criar novo kit
+    criarNovoKitDireto();
+    return;
+  }
+  _kitRemoveZoneDrop(ev);
 }
 
 function _stagingDragStart(ev, evId) {
@@ -9530,11 +9558,15 @@ function _kitSlotDragStart(el, ev) {
 }
 
 function _kitSlotDragEnd(ev) {
-  document.body.classList.remove('kit-dragging');
-  _draggingKitSlot = null;
-  _draggingItemData = null;
-  var zone = document.getElementById('kit-remove-zone');
-  if (zone) zone.classList.remove('drag-over-remove');
+  setTimeout(function() {
+    document.body.classList.remove('kit-dragging');
+    _draggingKitSlot = null;
+    _draggingItemData = null;
+    var zone = document.getElementById('kit-remove-zone');
+    if (zone) zone.classList.remove('drag-over-remove');
+    var novoCard = document.getElementById('kit-novo-card');
+    if (novoCard) novoCard.classList.remove('drag-over-remove');
+  }, 200);
 }
 
 function _kitSlotReorderOver(el, ev) {
