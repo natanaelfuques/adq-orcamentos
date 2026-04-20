@@ -6490,18 +6490,51 @@ function _abrirCardEvento(id) {
       '<div class="agev-section-title">Itens / Serviços</div>' + itemsStr + '</div>';
   }
 
-  // Material (indicador) — botão para montar carga no banner de andamento
+  // Material (indicador) — kits da carga se finalizada/concluida, botao de montar carga caso contrario
   var jaStagiada = !!_eventosStagingCarga[id];
-  var materialHtml = '<div class="agev-material">' +
-    '<div class="agev-section-title" style="display:flex;align-items:center;gap:7px">' +
-      'Carga / Equipamentos' +
-    '</div>' +
-    '<button class="agev-montar-carga-btn' + (jaStagiada ? ' ativa' : '') + '" onclick="event.stopPropagation();_ativarMontaCarga(\'' + id + '\')">' +
-      (jaStagiada
-        ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><polyline points="20 6 9 17 4 12"/></svg>Em preparação'
-        : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 5-5 5V8z"/></svg>Montar carga') +
-    '</button>' +
-  '</div>';
+  var cargaFinalizada = !!ev.carga_finalizada;
+  var etapaEv = ev.etapa || 'eventos';
+  var gruposCarga = ev.kits_grupos_ev || _evKitGrupos[id] || [];
+  var materialHtml;
+  if (cargaFinalizada || etapaEv === 'concluido') {
+    var kitsListHtml = '';
+    if (gruposCarga.length > 0) {
+      kitsListHtml = '<div style="display:flex;flex-direction:column;gap:4px;margin-top:5px">' +
+        gruposCarga.map(function(g) {
+          var itensStr = (g.itens || []).map(function(it) {
+            return '<span style="font-size:0.68rem;color:var(--muted)">' + esc((it.qty > 1 ? it.qty + 'x ' : '') + it.eqNome) + '</span>';
+          }).join(', ');
+          return '<div style="background:rgba(255,255,255,0.04);border-radius:5px;padding:5px 8px;border:1px solid rgba(255,255,255,0.06)">' +
+            '<div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:2px">' + esc(g.kitNome || g.kitId || 'Kit') + '</div>' +
+            (itensStr ? '<div style="line-height:1.5">' + itensStr + '</div>' : '') +
+          '</div>';
+        }).join('') +
+      '</div>';
+    } else {
+      kitsListHtml = '<div style="font-size:0.72rem;color:var(--muted);margin-top:4px;font-style:italic">Nenhum kit na carga</div>';
+    }
+    materialHtml = '<div class="agev-material">' +
+      '<div class="agev-section-title" style="display:flex;align-items:center;gap:7px">' +
+        'Carga / Equipamentos' +
+        '<span style="font-size:0.62rem;background:rgba(74,200,122,0.12);color:#4AC87A;border:1px solid rgba(74,200,122,0.25);border-radius:4px;padding:1px 6px;font-weight:700">v Finalizada</span>' +
+      '</div>' +
+      kitsListHtml +
+      '<button class="agev-montar-carga-btn" style="margin-top:7px;opacity:0.6" onclick="event.stopPropagation();_ativarMontaCarga(\'' + id + '\')">' +
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Remontar carga' +
+      '</button>' +
+    '</div>';
+  } else {
+    materialHtml = '<div class="agev-material">' +
+      '<div class="agev-section-title" style="display:flex;align-items:center;gap:7px">' +
+        'Carga / Equipamentos' +
+      '</div>' +
+      '<button class="agev-montar-carga-btn' + (jaStagiada ? ' ativa' : '') + '" onclick="event.stopPropagation();_ativarMontaCarga(\'' + id + '\')">' +
+        (jaStagiada
+          ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><polyline points="20 6 9 17 4 12"/></svg>Em preparacao'
+          : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 5-5 5V8z"/></svg>Montar carga') +
+      '</button>' +
+    '</div>';
+  }
 
   // Badge de data final
   var datasBadge = '<span class="agev-data-badge" style="background:' + cor + '22;color:' + cor + '">' + dataFmt + '</span>';
@@ -9000,18 +9033,43 @@ function _adicionarItemReserva(evId, estoqueId, nome, tipo) {
 }
 
 function _finalizarCargaEvento(evId) {
+  // Captura os grupos ANTES de limpar o estado local (evita race condition)
+  var gruposParaSalvar = (_evKitGrupos[evId] || []).map(function(g) {
+    return {
+      grupoId: g.grupoId,
+      kitId: g.kitId,
+      kitNome: g.kitNome,
+      riscado: g.riscado || false,
+      itens: (g.itens || []).map(function(it) {
+        return { eqId: it.eqId, eqNome: it.eqNome, qty: it.qty, checked: it.checked || false, riscado: it.riscado || false };
+      })
+    };
+  });
+
   // Remove da sidebar (staging e aguardando) e restaura contagens
   _fecharCargaEvento(evId);
   delete _eventosStagingCarga[evId];
   delete _eventosEventosSnap[evId];
   _mergeEventosSnaps();
-  // Marca o evento com carga_finalizada no Firestore
+
+  // Persiste kits_grupos_ev + carga_finalizada em um único update atômico
+  // Garante que a agenda sempre encontre os kits no Firestore, mesmo para eventos concluídos
   if (db) {
-    db.collection('eventos_campo').doc(evId).update({ carga_finalizada: true })
+    var payload = { carga_finalizada: true };
+    if (gruposParaSalvar.length > 0) {
+      payload.kits_grupos_ev = gruposParaSalvar;
+    }
+    db.collection('eventos_campo').doc(evId).update(payload)
       .catch(function(e) { console.warn('carga_finalizada update:', e); });
   }
-  // Atualiza referência local na agenda
-  if (_eventosAgenda[evId]) _eventosAgenda[evId].carga_finalizada = true;
+
+  // Atualiza referência local na agenda com os kits para renderização imediata
+  if (_eventosAgenda[evId]) {
+    _eventosAgenda[evId].carga_finalizada = true;
+    if (gruposParaSalvar.length > 0) {
+      _eventosAgenda[evId].kits_grupos_ev = gruposParaSalvar;
+    }
+  }
   _renderAgendaCalendar();
   _renderAgendaListaDia(_agDiaSelecionado);
   toast('Carga finalizada!');
