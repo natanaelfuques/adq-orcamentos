@@ -9210,8 +9210,7 @@ function _kitNovoCardSplitDrop(ev, half) {
     var nomeKit = grupo.kitNome || ('Kit #' + n);
     var itensKit = [];
     (grupo.itens || []).forEach(function(it) {
-      var qty = it.qty || 1;
-      for (var i = 0; i < qty; i++) itensKit.push(it.eqId);
+      itensKit.push({ equipId: it.eqId, qtd: it.qty || 1, acessorios: '' });
     });
     db.collection('kits').add({ nome: nomeKit, descricao: '', itens: itensKit, _criado: Date.now(), _atualizado: Date.now() })
       .then(function(docRef) { _kitOrdem.push(docRef.id); _kitOrdemSalvar(); toast('Kit criado: ' + nomeKit); })
@@ -9244,8 +9243,7 @@ function _kitNovoCardDrop(ev) {
     var nomeKit = grupo.kitNome || ('Kit #' + n);
     var itensKit = [];
     (grupo.itens || []).forEach(function(it) {
-      var qty = it.qty || 1;
-      for (var i = 0; i < qty; i++) { itensKit.push(it.eqId); }
+      itensKit.push({ equipId: it.eqId, qtd: it.qty || 1, acessorios: '' });
     });
     db.collection('kits').add({ nome: nomeKit, descricao: '', itens: itensKit, _criado: Date.now(), _atualizado: Date.now() })
       .then(function(docRef) {
