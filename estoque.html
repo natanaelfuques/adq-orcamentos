@@ -1392,6 +1392,67 @@
     color: #e05c5c !important;
   }
   .kit-novo-card.drag-over-remove .knc-remove { color: #e05c5c; }
+  /* Modo dividido: kit grupo do evento arrastado */
+  .kit-novo-card .knc-split {
+    display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: row;
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  body.kit-grupo-dragging .kit-novo-card {
+    border-color: transparent;
+    background: transparent;
+    padding: 0;
+    cursor: default;
+  }
+  body.kit-grupo-dragging .kit-novo-card .knc-normal { display: none; }
+  body.kit-grupo-dragging .kit-novo-card .knc-remove  { display: none; }
+  body.kit-grupo-dragging .kit-novo-card .knc-split   { display: flex; }
+  .knc-split-create, .knc-split-remove {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: background 0.15s, color 0.15s;
+    cursor: copy;
+  }
+  .knc-split-create {
+    color: rgba(74,144,217,0.6);
+    background: rgba(74,144,217,0.05);
+    border: 1px dashed rgba(74,144,217,0.35);
+    border-radius: 7px 0 0 7px;
+  }
+  .knc-split-remove {
+    color: rgba(224,92,92,0.5);
+    background: rgba(224,92,92,0.04);
+    border: 1px dashed rgba(224,92,92,0.35);
+    border-radius: 0 7px 7px 0;
+    border-left: none;
+  }
+  .knc-split-divider {
+    width: 1px;
+    background: rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .knc-split-create.drag-over-half {
+    background: rgba(74,144,217,0.15);
+    color: #4A90D9;
+    border-color: #4A90D9;
+  }
+  .knc-split-remove.drag-over-half {
+    background: rgba(224,92,92,0.12);
+    color: #e05c5c;
+    border-color: #e05c5c;
+  }
 /* kit-remove-zone legado — oculto (substituído pelo kit-novo-card modo duplo) */
 .kit-remove-zone { display: none !important; }
 
@@ -5259,11 +5320,23 @@ function renderKits() {
       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
       'Novo kit' +
     '</span>' +
-    // Conteúdo modo remoção
+    // Conteúdo modo remoção (drag normal)
     '<span class="knc-remove">' +
       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
       'Remover' +
     '</span>' +
+    // Conteúdo modo dividido (drag de kit grupo do evento)
+    '<div class="knc-split">' +
+      '<div class="knc-split-create" id="knc-split-create" ondragover="_kitNovoCardSplitOver(event,\'create\')" ondragleave="_kitNovoCardSplitLeave(event,\'create\')" ondrop="_kitNovoCardSplitDrop(event,\'create\')">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        'Criar kit' +
+      '</div>' +
+      '<div class="knc-split-divider"></div>' +
+      '<div class="knc-split-remove" id="knc-split-remove" ondragover="_kitNovoCardSplitOver(event,\'remove\')" ondragleave="_kitNovoCardSplitLeave(event,\'remove\')" ondrop="_kitNovoCardSplitDrop(event,\'remove\')">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
+        'Remover' +
+      '</div>' +
+    '</div>' +
   '</div>';
   grid.innerHTML = html;
 
@@ -8491,12 +8564,14 @@ function _bindEvAndamentoCards() {
       e.dataTransfer.setData('text/plain', evId + '|' + grupoId);
       e.dataTransfer.effectAllowed = 'move';
       document.body.classList.add('kit-dragging');
+      document.body.classList.add('kit-grupo-dragging');
       var grupoEl = handle.closest('.ev-kit-grupo');
       if (grupoEl) setTimeout(function() { grupoEl.style.opacity = '0.4'; }, 0);
     });
     handle.addEventListener('dragend', function() {
       setTimeout(function() {
         document.body.classList.remove('kit-dragging');
+        document.body.classList.remove('kit-grupo-dragging');
         _draggingKitGrupoData = null;
         var grupoEl = handle.closest('.ev-kit-grupo');
         if (grupoEl) grupoEl.style.opacity = '';
@@ -9091,25 +9166,94 @@ function _kitDragEnd() {
 // Handlers do kit-novo-card no modo remoção (escopo global — devem ser acessíveis pelo HTML)
 function _kitNovoCardOver(ev) {
   if (!document.body.classList.contains('kit-dragging')) return;
+  if (document.body.classList.contains('kit-grupo-dragging')) { ev.preventDefault(); return; }
   ev.preventDefault();
   var el = document.getElementById('kit-novo-card');
   if (el) el.classList.add('drag-over-remove');
   _kitRemoveZoneOver(ev);
 }
 function _kitNovoCardLeave(ev) {
+  if (document.body.classList.contains('kit-grupo-dragging')) return;
   var el = document.getElementById('kit-novo-card');
   if (el) el.classList.remove('drag-over-remove');
   _kitRemoveZoneLeave(ev);
 }
+function _kitNovoCardSplitOver(ev, half) {
+  ev.preventDefault();
+  ev.stopPropagation();
+  var id = half === 'create' ? 'knc-split-create' : 'knc-split-remove';
+  var other = half === 'create' ? 'knc-split-remove' : 'knc-split-create';
+  var el = document.getElementById(id);
+  var el2 = document.getElementById(other);
+  if (el) el.classList.add('drag-over-half');
+  if (el2) el2.classList.remove('drag-over-half');
+}
+function _kitNovoCardSplitLeave(ev, half) {
+  var id = half === 'create' ? 'knc-split-create' : 'knc-split-remove';
+  var el = document.getElementById(id);
+  if (el) el.classList.remove('drag-over-half');
+}
+function _kitNovoCardSplitDrop(ev, half) {
+  ev.preventDefault();
+  ev.stopPropagation();
+  document.querySelectorAll('.drag-over-half').forEach(function(e) { e.classList.remove('drag-over-half'); });
+  if (half === 'create') {
+    // Criar novo kit com os itens do grupo
+    var kgd = _draggingKitGrupoData;
+    _draggingKitGrupoData = null;
+    if (!kgd || !db) return;
+    var grupos = _evKitGrupos[kgd.evId] || [];
+    var grupo = grupos.find(function(g) { return g.grupoId === kgd.grupoId; });
+    if (!grupo) return;
+    var existentes = Object.values(_kits).map(function(k) { return k.nome || ''; });
+    var n = 1; while (existentes.indexOf('Kit #' + n) >= 0) n++;
+    var nomeKit = grupo.kitNome || ('Kit #' + n);
+    var itensKit = [];
+    (grupo.itens || []).forEach(function(it) {
+      var qty = it.qty || 1;
+      for (var i = 0; i < qty; i++) itensKit.push(it.eqId);
+    });
+    db.collection('kits').add({ nome: nomeKit, descricao: '', itens: itensKit, _criado: Date.now(), _atualizado: Date.now() })
+      .then(function(docRef) { _kitOrdem.push(docRef.id); _kitOrdemSalvar(); toast('Kit criado: ' + nomeKit); })
+      .catch(function(e) { toast('Erro: ' + e.message, true); });
+  } else {
+    // Remover grupo do evento
+    _kitRemoveZoneDrop(ev);
+  }
+}
 function _kitNovoCardDrop(ev) {
   var el = document.getElementById('kit-novo-card');
   if (el) el.classList.remove('drag-over-remove');
-  // Verifica se estava arrastando algo (classe presente OU variáveis de drag definidas)
+  // Kit grupo: handled by split halves
+  if (document.body.classList.contains('kit-grupo-dragging')) return;
   var isDragging = document.body.classList.contains('kit-dragging') ||
                    _draggingKitId || _draggingKitSlot || _draggingItemData || _draggingKitGrupoData;
   if (!isDragging) {
-    // Nenhum drag ativo — comportamento normal: criar novo kit
     criarNovoKitDireto();
+    return;
+  }
+  if (_draggingKitGrupoData) {
+    var kgd = _draggingKitGrupoData;
+    _draggingKitGrupoData = null;
+    var grupos = _evKitGrupos[kgd.evId] || [];
+    var grupo = grupos.find(function(g) { return g.grupoId === kgd.grupoId; });
+    if (!grupo || !db) return;
+    var existentes = Object.values(_kits).map(function(k) { return k.nome || ''; });
+    var n = 1;
+    while (existentes.indexOf('Kit #' + n) >= 0) n++;
+    var nomeKit = grupo.kitNome || ('Kit #' + n);
+    var itensKit = [];
+    (grupo.itens || []).forEach(function(it) {
+      var qty = it.qty || 1;
+      for (var i = 0; i < qty; i++) { itensKit.push(it.eqId); }
+    });
+    db.collection('kits').add({ nome: nomeKit, descricao: '', itens: itensKit, _criado: Date.now(), _atualizado: Date.now() })
+      .then(function(docRef) {
+        _kitOrdem.push(docRef.id);
+        _kitOrdemSalvar();
+        toast('Kit criado: ' + nomeKit);
+      })
+      .catch(function(e) { toast('Erro: ' + e.message, true); });
     return;
   }
   _kitRemoveZoneDrop(ev);
