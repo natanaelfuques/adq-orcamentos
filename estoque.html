@@ -7743,10 +7743,31 @@ function _toggleItemEv(evId, idx) {
 
 function _adicionarItemExtraEv(evId, texto) {
   var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
-  if (!ev) return;
-  var extras = (ev.itens_extras || []).concat([texto]);
-  ev.itens_extras = extras; // atualiza localmente para evitar dessincronização
+  if (\!ev) return;
+  // Parseia quantidade e nome do texto digitado
+  var mNovo   = texto.match(/^(\d+)x\s+(.+)$/i);
+  var qtyNovo  = mNovo ? parseInt(mNovo[1]) : 1;
+  var nomeNovo = (mNovo ? mNovo[2] : texto).trim().toLowerCase();
+  // Procura item existente com mesmo nome para somar
+  var extras = (ev.itens_extras || []).slice();
+  var merged = false;
+  for (var i = 0; i < extras.length; i++) {
+    var mEx   = extras[i].match(/^(\d+)x\s+(.+)$/i);
+    var qtyEx  = mEx ? parseInt(mEx[1]) : 1;
+    var nomeEx = (mEx ? mEx[2] : extras[i]).trim().toLowerCase();
+    if (nomeEx === nomeNovo) {
+      var nomeOriginal = mEx ? mEx[2].trim() : extras[i].trim();
+      extras[i] = (qtyEx + qtyNovo) + 'x ' + nomeOriginal;
+      merged = true;
+      break;
+    }
+  }
+  if (\!merged) extras.push(texto);
+  ev.itens_extras = extras;
   if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+  // Recalcula contagens imediatamente (prefixo 2x, 3x...)
+  _recalcularCargaEvento(evId);
+  renderEventosAndamento();
 }
 
 function _abrirCargaEvento(evId) {
