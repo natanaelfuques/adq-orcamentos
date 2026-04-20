@@ -8266,7 +8266,7 @@ function _atualizarBotaoVeiculoEv(evId, sels) {
 }
 
 function _salvarVeiculosEv(evId, ids) {
-  if (db) db.collection('eventos_campo').doc(evId).update({ veiculos: ids }).catch(function(e){ console.error('[Ev] veiculo:', e); });
+  if (db && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ veiculos: ids }).catch(function(e){ console.error('[Ev] veiculo:', e); });
 }
 
 function _riscarCargaItem(btn) {
@@ -8283,7 +8283,7 @@ function _toggleItemEv(evId, idx) {
   var itensOk = Object.assign({}, ev.itens_ok || {});
   itensOk[idx] = !itensOk[idx];
   ev.itens_ok = itensOk;
-  if (db) db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
+  if (db && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
   var chk = document.querySelector('#ev-andamento-scroll .item-check[data-evid="' + evId + '"][data-idx="' + idx + '"]');
   if (chk) {
     var item = chk.closest('.card-item');
@@ -8315,7 +8315,7 @@ function _adicionarItemExtraEv(evId, texto) {
   }
   if (!merged) extras.push(texto);
   ev.itens_extras = extras;
-  if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+  if (db && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
   // Recalcula contagens imediatamente (prefixo 2x, 3x...)
   _recalcularCargaEvento(evId);
   renderEventosAndamento();
@@ -8436,7 +8436,7 @@ function _recalcularCargaEvento(evId) {
 }
 
 function _salvarKitGruposFirestore(evId) {
-  if (!db) return;
+  if (!db || evId === _TESTE_DISP_ID) return;
   var grupos = (_evKitGrupos[evId] || []).map(function(g) {
     return {
       grupoId: g.grupoId,
@@ -8596,19 +8596,19 @@ function _bindEvAndamentoCards() {
         rem[idx] = !rem[idx];
         evObj.itens_removidos = rem;
         isNowRemoved = rem[idx];
-        db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
+        if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
       } else if (tipo === 'painel') {
         var remP = Object.assign({}, evObj.itens_painel_removidos || {});
         remP[idx] = !remP[idx];
         evObj.itens_painel_removidos = remP;
         isNowRemoved = remP[idx];
-        db.collection('eventos_campo').doc(evId).update({ itens_painel_removidos: remP });
+        if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_painel_removidos: remP });
       } else {
         var remE = Object.assign({}, evObj.itens_extras_removidos || {});
         remE[idx] = !remE[idx];
         evObj.itens_extras_removidos = remE;
         isNowRemoved = remE[idx];
-        db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
+        if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
       }
 
       // Recalcula contagens a partir dos itens ativos (não riscados) do evento
@@ -8907,12 +8907,12 @@ function _bindEvAndamentoCards() {
           var rem = Object.assign({}, evObj.itens_removidos || {});
           rem[data.idx] = true;
           evObj.itens_removidos = rem;
-          db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem }).catch(function(){});
+          if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem }).catch(function(){});
         } else {
           var extrasArr = (evObj.itens_extras || []).slice();
           extrasArr.splice(data.idx, 1);
           evObj.itens_extras = extrasArr;
-          db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasArr }).catch(function(){});
+          if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasArr }).catch(function(){});
         }
       }
       // Adicionar ao grupo
@@ -9119,7 +9119,7 @@ function evCardDrop(ev, evId) {
       });
       extrasSlot.push(labelSlot);
       evObjSlot.itens_extras = extrasSlot;
-      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasSlot });
+      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId]) && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasSlot });
     }
     _atualizarCardEqDOM(eqIdSlot);
     renderEventosAndamento();
@@ -9151,7 +9151,7 @@ function evCardDrop(ev, evId) {
       var labelMovido = (itMovido.qty > 1 ? itMovido.qty + 'x ' : '') + itMovido.eqNome;
       var extrasMovido = (evDestObj.itens_extras || []).concat([labelMovido]);
       evDestObj.itens_extras = extrasMovido;
-      db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasMovido }).catch(function(){});
+      if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasMovido }).catch(function(){});
     }
     _recalcularCargaEvento(srcEvId);
     if (srcEvId !== evId) _recalcularCargaEvento(evId);
@@ -9245,7 +9245,7 @@ function evCardDrop(ev, evId) {
       });
       extras2.push(label);
       evObj2.itens_extras = extras2;
-      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
+      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId]) && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
     }
     // Atualiza contagem do card do equipamento
     _atualizarCardEqDOM(itemId);
@@ -9282,7 +9282,7 @@ function evCardDrop(ev, evId) {
   }).then(function() {
     if (nomeItem && ev2) {
       var extras = (ev2.itens_extras || []).concat([nomeItem]);
-      db.collection('eventos_campo').doc(evId).update({ itens_extras: extras }).catch(function(){});
+      if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras }).catch(function(){});
     }
     toast('Adicionado ao evento!');
   }).catch(function(e) { toast('Erro: ' + e.message, true); });
