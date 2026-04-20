@@ -6900,11 +6900,82 @@ function _abrirCardEvento(id) {
 
 // ── TESTE DE DISPONIBILIDADE ──────────────────────────────
 
+// Calcula e popula _evEqDragItems[_TESTE_DISP_ID] com a soma de todos
+// equipamentos já alocados em eventos cuja data coincide com a data do teste.
+function _calcularAlocacoesPorData(dataISO) {
+  var nomeToId = {};
+  Object.keys(_equipamentos).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
+    if (nome) nomeToId[nome] = eqId;
+  });
+
+  var counts = {}; // eqId -> qty total alocada nessa data
+
+  // Itera TODOS os eventos conhecidos (andamento + eventos + staging, exceto o próprio teste)
+  var todosEvs = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap, _eventosStagingCarga);
+  Object.values(todosEvs).forEach(function(ev) {
+    if (!ev || ev.id === _TESTE_DISP_ID) return;
+
+    // Verifica se o evento acontece na data do teste
+    var evIni = ev.ev_data || null;
+    var evFim = ev.ev_data_fim || evIni;
+    if (!evIni) return;
+    // O evento cobre a data do teste se dataISO está no intervalo [evIni, evFim]
+    if (dataISO < evIni || dataISO > evFim) return;
+
+    var itensExtrasRem = ev.itens_extras_removidos || {};
+    var itensOrigRem   = ev.itens_removidos || {};
+
+    // itens_extras não riscados
+    (ev.itens_extras || []).forEach(function(s, i) {
+      if (itensExtrasRem[i]) return;
+      var m = s.match(/^(\d+)x\s+(.+)$/);
+      var qty = m ? parseInt(m[1]) : 1;
+      var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
+      if (eqId) counts[eqId] = (counts[eqId] || 0) + qty;
+    });
+
+    // servicos não riscados
+    (ev.servicos || []).forEach(function(s, i) {
+      if (itensOrigRem[i]) return;
+      var m = s.match(/^(\d+)x\s+(.+)$/);
+      var qty = m ? parseInt(m[1]) : 1;
+      var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
+      if (eqId) counts[eqId] = (counts[eqId] || 0) + qty;
+    });
+
+    // kits_grupos_ev não riscados
+    var grupos = ev.kits_grupos_ev || _evKitGrupos[ev.id] || [];
+    grupos.forEach(function(grupo) {
+      if (grupo.riscado) return;
+      (grupo.itens || []).forEach(function(it) {
+        if (it.riscado) return;
+        var eqId = it.eqId;
+        if (!eqId) return;
+        counts[eqId] = (counts[eqId] || 0) + (it.qty || 1);
+      });
+    });
+  });
+
+  // Popula _evEqDragItems do teste com os totais calculados
+  _evEqDragItems[_TESTE_DISP_ID] = {};
+  Object.keys(counts).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
+    _evEqDragItems[_TESTE_DISP_ID][eqId] = { nome: nome, qty: counts[eqId] };
+  });
+
+  // Atualiza os cards visuais de todos os equipamentos afetados
+  Object.keys(counts).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+}
+
 function _testarDisponibilidade() {
   // Se já existe um card de teste, remove (toggle)
   if (_eventosStagingCarga[_TESTE_DISP_ID]) {
+    var afetadosToggle = _evEqDragItems[_TESTE_DISP_ID] ? Object.keys(_evEqDragItems[_TESTE_DISP_ID]) : [];
     delete _eventosStagingCarga[_TESTE_DISP_ID];
     if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
+    if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
+    afetadosToggle.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
     renderEventosAndamento();
     var btn = document.getElementById('btn-testar-disp');
     if (btn) btn.classList.remove('disp-ativa');
@@ -6937,6 +7008,9 @@ function _testarDisponibilidade() {
   _eventosStagingCarga[_TESTE_DISP_ID] = evTeste;
   _evKitGrupos[_TESTE_DISP_ID] = [];
 
+  // Pré-carrega alocações existentes na data selecionada
+  _calcularAlocacoesPorData(dataFmt);
+
   renderEventosAndamento();
 
   var btn = document.getElementById('btn-testar-disp');
@@ -6955,8 +7029,13 @@ function _testarDisponibilidade() {
 }
 
 function _removerTesteDisponibilidade() {
+  // Coleta equipamentos afetados antes de deletar
+  var afetados = _evEqDragItems[_TESTE_DISP_ID] ? Object.keys(_evEqDragItems[_TESTE_DISP_ID]) : [];
   delete _eventosStagingCarga[_TESTE_DISP_ID];
   if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
+  if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
+  // Atualiza cards que foram alterados
+  afetados.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
   renderEventosAndamento();
   var btn = document.getElementById('btn-testar-disp');
   if (btn) btn.classList.remove('disp-ativa');
