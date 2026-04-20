@@ -7639,7 +7639,7 @@ function _buildEvAndamentoCard(ev) {
 
   var itensHtml = '';
   var kitGruposHtml = _buildKitGruposHTML(ev.id);
-  if (kitGruposHtml || (ev.servicos && ev.servicos.length) || (ev.itens_extras && ev.itens_extras.length)) {
+  if (kitGruposHtml || (ev.servicos && ev.servicos.length) || (ev.itens_extras && ev.itens_extras.length) || (ev.itens_painel && ev.itens_painel.length)) {
     var removidos = ev.itens_removidos || {};
     var servicosExpandidos = [];
     (ev.servicos || []).forEach(function(s, origIdx) {
@@ -7674,6 +7674,17 @@ function _buildEvAndamentoCard(ev) {
 
         '</div>';
     }).join('');
+    var painelRowHtml = (ev.itens_painel || []).map(function(s, i) {
+      var done = ev.itens_ok && ev.itens_ok['painel_' + i];
+      var removido = ev.itens_painel_removidos && ev.itens_painel_removidos[i];
+      var isObs = s && (s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0);
+      return '<div class="card-item' + (done && !isObs ? ' item-done' : '') + (removido ? ' item-removido' : '') + '" draggable="true" data-item-ev="' + esc(ev.id) + '" data-item-txt="' + esc(s) + '">' +
+        (!isObs ? '<div class="item-check' + (done && !removido ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" data-idx="painel_' + i + '" style="' + (removido ? 'pointer-events:none;opacity:0.3' : '') + '"></div>' : '') +
+        '<span class="item-text"' + (isObs ? ' style="color:#FFD600;flex:1"' : '') + '>' + esc(s) + '</span>' +
+        (!isObs ? '<span class="item-extra-tag" style="flex-shrink:0">+</span>' : '') +
+        '<button class="item-rem-ev-btn" data-evid="' + esc(ev.id) + '" data-idx="' + i + '" data-tipo="painel" title="Riscar" style="background:none;border:none;cursor:pointer;padding:0 3px;font-size:1rem;color:' + (removido ? '#4AC87A' : '#888') + ';flex-shrink:0;line-height:1;">&times;</button>' +
+        '</div>';
+    }).join('');
 
     var sels = ev.veiculos && ev.veiculos.length ? ev.veiculos : (ev.veiculo ? [ev.veiculo] : []);
     var selObjs = sels.map(function(id) { return (_veiculosDisponiveisEv || []).find(function(x){ return x.id === id; }); }).filter(Boolean);
@@ -7695,7 +7706,7 @@ function _buildEvAndamentoCard(ev) {
     itensHtml = '<div class="card-itens">' +
       '<div class="veiculo-row"><div class="card-itens-title">Itens / Ve\u00EDculos</div>' + veiculoBtn + '</div>' +
       kitGruposHtml +
-      itensRowHtml + extrasRowHtml +
+      itensRowHtml + extrasRowHtml + painelRowHtml +
       '<div id="card-carga-' + esc(ev.id) + '" class="card-carga-inline"></div>' +
       '<div id="add-form-ev-' + esc(ev.id) + '" style="display:none" class="add-item-form">' +
         '<input class="add-item-input" placeholder="Item..." />' +
@@ -8147,6 +8158,12 @@ function _bindEvAndamentoCards() {
         evObj.itens_removidos = rem;
         isNowRemoved = rem[idx];
         db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
+      } else if (tipo === 'painel') {
+        var remP = Object.assign({}, evObj.itens_painel_removidos || {});
+        remP[idx] = !remP[idx];
+        evObj.itens_painel_removidos = remP;
+        isNowRemoved = remP[idx];
+        db.collection('eventos_campo').doc(evId).update({ itens_painel_removidos: remP });
       } else {
         var remE = Object.assign({}, evObj.itens_extras_removidos || {});
         remE[idx] = !remE[idx];
