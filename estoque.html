@@ -5236,8 +5236,7 @@ function kitFolderOver(ev, kitId) {
   if (_draggingKitSlot && _draggingKitSlot.kitId !== kitId) {
     ev.preventDefault();
     ev.dataTransfer.dropEffect = 'move';
-    var elK = document.getElementById('kit-card-' + kitId);
-    if (elK) elK.classList.add('drag-over-kit');
+    // Não adiciona destaque no painel — o destaque fica apenas no slot de destino
     return;
   }
   if (!_draggingEqId) return;
