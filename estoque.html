@@ -8090,7 +8090,7 @@ function _bindEvAndamentoCards() {
     });
   });
 
-  scroll.querySelectorAll('.item-check').forEach(function(chk) {
+  scroll.querySelectorAll('.item-check:not([data-kit-grupo-id])').forEach(function(chk) {
     chk.addEventListener('click', function(e) {
       e.stopPropagation();
       _toggleItemEv(chk.getAttribute('data-evid'), chk.getAttribute('data-idx'));
