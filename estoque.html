@@ -7367,7 +7367,8 @@ body.has-ev-sidebar header { margin-right: -272px; }
 
 /* ── KIT GRUPOS NO EVENTO ── */
 .ev-kit-grupo { border: 1px solid rgba(200,169,74,0.22); border-radius: 5px; margin-bottom: 6px; overflow: hidden; }
-.ev-kit-grupo-header { display: flex; align-items: center; gap: 6px; padding: 6px 8px; cursor: pointer; background: rgba(200,169,74,0.05); transition: background 0.15s; user-select: none; }
+.ev-kit-grupo-header { display: flex; align-items: center; gap: 6px; padding: 6px 8px; cursor: grab; background: rgba(200,169,74,0.05); transition: background 0.15s; user-select: none; }
+.ev-kit-grupo-header:active { cursor: grabbing; }
 .ev-kit-grupo-header:hover { background: rgba(200,169,74,0.1); }
 .ev-kit-grupo-arrow { font-size: 0.6rem; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
 .ev-kit-grupo.expanded .ev-kit-grupo-arrow { transform: rotate(90deg); }
@@ -8032,7 +8033,8 @@ function _buildKitGruposHTML(evId) {
 
     return '<div class="ev-kit-grupo" id="ev-kit-grupo-' + esc(grupo.grupoId) + '"' +
       ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '">' +
-      '<div class="ev-kit-grupo-header">' +
+      '<div class="ev-kit-grupo-header" draggable="true"' +
+        ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '">' +
         '<span class="ev-kit-grupo-arrow">&#9654;</span>' +
         '<div class="ev-kit-grupo-check' + (todosChecked ? ' checked' : '') + '"' +
           ' data-evid="' + esc(evId) + '" data-grupo-id="' + esc(grupo.grupoId) + '">' +
@@ -8213,6 +8215,23 @@ function _bindEvAndamentoCards() {
       if (e.target.closest('.ev-kit-grupo-check') || e.target.closest('.ev-kit-grupo-rem')) return;
       var grupo = header.closest('.ev-kit-grupo');
       if (grupo) grupo.classList.toggle('expanded');
+    });
+    header.addEventListener('dragstart', function(e) {
+      var evId = header.getAttribute('data-evid');
+      var grupoId = header.getAttribute('data-grupo-id');
+      _draggingKitGrupoData = { evId: evId, grupoId: grupoId };
+      e.dataTransfer.setData('tipo', 'ev_kit_grupo');
+      e.dataTransfer.setData('text/plain', evId + '|' + grupoId);
+      e.dataTransfer.effectAllowed = 'move';
+      // Fade visual do grupo
+      var grupoEl = header.closest('.ev-kit-grupo');
+      if (grupoEl) setTimeout(function() { grupoEl.style.opacity = '0.4'; }, 0);
+    });
+    header.addEventListener('dragend', function() {
+      _draggingKitGrupoData = null;
+      // Restaura opacidade
+      var grupoEl = header.closest('.ev-kit-grupo');
+      if (grupoEl) grupoEl.style.opacity = '';
     });
   });
 
@@ -8718,6 +8737,7 @@ function evCardDrop(ev, evId) {
 
 var _draggingKitId = null;
 var _draggingStagingId = null;
+var _draggingKitGrupoData = null; // { evId, grupoId } — kit grupo sendo arrastado do evento
 
 function _toggleKitPanel(kitId) {
   var panel = document.getElementById('kit-card-' + kitId);
@@ -9256,7 +9276,7 @@ function _kitSlotReorderDrop(el, ev) {
 function _kitRemoveZoneOver(ev) {
   var tipos = ev.dataTransfer.types || [];
   var temTipo = tipos.indexOf('tipo') >= 0 || tipos.indexOf('text/plain') >= 0;
-  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData && !temTipo) return;
+  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData && !_draggingKitGrupoData && !temTipo) return;
   ev.preventDefault();
   ev.dataTransfer.dropEffect = 'move';
   var zone = document.getElementById('kit-remove-zone');
@@ -9314,7 +9334,27 @@ function _kitRemoveZoneDrop(ev) {
 
   var tipo = ev.dataTransfer.getData('tipo');
 
-  if (_draggingKitSlot) {
+  if (_draggingKitGrupoData || tipo === 'ev_kit_grupo') {
+    // ── Kit grupo do evento → remove o grupo inteiro e devolve itens ao estoque ──
+    var kgd = _draggingKitGrupoData;
+    _draggingKitGrupoData = null;
+    if (!kgd) {
+      var raw = ev.dataTransfer.getData('text/plain').split('|');
+      if (raw.length >= 2) kgd = { evId: raw[0], grupoId: raw[1] };
+    }
+    if (kgd) {
+      var grupos = _evKitGrupos[kgd.evId] || [];
+      var idx = grupos.findIndex(function(g) { return g.grupoId === kgd.grupoId; });
+      if (idx >= 0) {
+        var removedGrupo = grupos.splice(idx, 1)[0];
+        _salvarKitGruposFirestore(kgd.evId);
+        _recalcularCargaEvento(kgd.evId);
+        renderEventosAndamento();
+        toast('Kit "' + removedGrupo.kitNome + '" removido do evento');
+      }
+    }
+
+  } else if (_draggingKitSlot) {
     // ── Item de slot de kit ──
     var kitId   = _draggingKitSlot.kitId;
     var equipId = _draggingKitSlot.equipId;
