@@ -1363,9 +1363,10 @@
 }
 body.kit-dragging .kit-remove-zone { display: flex; }
 .kit-remove-zone .krz-label {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  letter-spacing: 0.12em;
+  writing-mode: vertical-lr;
+  text-orientation: upright;
+  letter-spacing: -0.1em;
+  margin-top: 6px;
 }
 .kit-remove-zone.drag-over-remove { border-color: #e05c5c; background: rgba(224,92,92,0.07); color: #e05c5c; }
 
@@ -3294,8 +3295,8 @@ function _getFiltroAndamentoIds() {
 
   var uso = {}; // eqId -> qtd total em carga nos eventos do dia
 
-  // USA APENAS _eventosAndamentoSnap (etapa === 'andamento') — exclui 'eventos' e 'concluido'
-  var allEvs = Object.assign({}, _eventosAndamentoSnap, _eventosStagingCarga);
+  // USA APENAS _eventosAndamentoSnap (etapa === 'andamento') — exclui 'eventos', 'concluido' e staging
+  var allEvs = Object.assign({}, _eventosAndamentoSnap);
   Object.values(allEvs).forEach(function(ev) {
     var itensExtrasRem = ev.itens_extras_removidos || {};
     var itensOrigRem   = ev.itens_removidos || {};
