@@ -8253,15 +8253,17 @@ function _buildEvAndamentoCard(ev) {
         '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>' +
         'Adicionar item' +
       '</button>' +
-      ((_eventosStagingCarga[ev.id] || _eventosEventosSnap[ev.id]) ? (ev.id === _TESTE_DISP_ID
+      (ev.id === _TESTE_DISP_ID
         ? '<button class="btn-finalizar-carga" style="background:rgba(224,92,92,0.08);border-color:rgba(224,92,92,0.4);color:#e05c5c" onclick="event.stopPropagation();_removerTesteDisponibilidade()">' +
           '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
           'Descartar teste' +
           '</button>'
-        : '<button class="btn-finalizar-carga" onclick="event.stopPropagation();_finalizarCargaEvento(\'' + esc(ev.id) + '\')">' +
-          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
-          'Finalizar carga' +
-          '</button>') : '') +
+        : ((_eventosStagingCarga[ev.id] || _eventosEventosSnap[ev.id])
+          ? '<button class="btn-finalizar-carga" onclick="event.stopPropagation();_finalizarCargaEvento(\'' + esc(ev.id) + '\')">' +
+            '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+            'Finalizar carga' +
+            '</button>'
+          : '')) +
 
     '</div>';
   }
@@ -8632,6 +8634,7 @@ function _bindEvAndamentoCards() {
           e.target.closest('.btn-wa-painel') || e.target.closest('.item-rem-ev-btn') ||
           e.target.closest('.card-carga-del')) return;
       var card = summary.closest('.evento-card');
+      if (card && card.id === 'ev-card-' + _TESTE_DISP_ID) return;
       if (!card) return;
       var wasExpanded = card.classList.contains('expanded');
       // Recolhendo: resetar carga dos cards que serão fechados
@@ -9126,13 +9129,6 @@ function renderEventosAndamento() {
     cardHtml = cardHtml.replace(
       'class="evento-card"',
       'class="evento-card ev-teste-card"'
-    ).replace(
-      '<div class="card-summary">',
-      '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 6px 0;margin-bottom:2px">' +
-        '<span style="font-size:0.5rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#4A90D9;background:rgba(74,144,217,0.15);border:1px solid rgba(74,144,217,0.35);border-radius:3px;padding:1px 6px">🧪 Simulação · ' + dataTesteLabel + '</span>' +
-        '<button onclick="event.stopPropagation();_removerTesteDisponibilidade()" style="background:none;border:none;color:#555;cursor:pointer;font-size:0.75rem;padding:1px 4px;line-height:1;border-radius:3px;transition:color 0.15s" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'" title="Descartar teste">✕ Descartar</button>' +
-      '</div>' +
-      '<div class="card-summary">'
     );
     testeHtml = separadorTeste + cardHtml;
   }
@@ -9152,6 +9148,17 @@ function renderEventosAndamento() {
       }
     }
   });
+
+  // Garantir que o card de teste fique sempre expandido
+  if (stagingTeste.length) {
+    var testeCardEl = document.getElementById('ev-card-' + _TESTE_DISP_ID);
+    if (testeCardEl) {
+      testeCardEl.classList.add('expanded');
+      if (!_evEqDragItems[_TESTE_DISP_ID] || Object.keys(_evEqDragItems[_TESTE_DISP_ID]).length === 0) {
+        _abrirCargaEvento(_TESTE_DISP_ID);
+      }
+    }
+  }
   // Restaurar grupos de kit expandidos
   _expandedGrupos.forEach(function(gId) {
     var grupoEl = document.getElementById('ev-kit-grupo-' + gId);
