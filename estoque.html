@@ -6161,7 +6161,8 @@ var _TESTE_DISP_ID = '__teste_disponibilidade__';
 function abrirAgenda() {
   _agMes = new Date().getMonth();
   _agAno = new Date().getFullYear();
-  _agDiaSelecionado = null;
+  // Preserva a data selecionada se o teste de disponibilidade estiver ativo
+  if (!_eventosStagingCarga[_TESTE_DISP_ID]) _agDiaSelecionado = null;
   document.getElementById('agenda-modal-overlay').style.display = 'flex';
   _renderAgendaCalendar();
   _renderAgendaKitChecklist();
@@ -6902,6 +6903,7 @@ function _abrirCardEvento(id) {
 
 // Calcula e popula _evEqDragItems[_TESTE_DISP_ID] com a soma de todos
 // equipamentos já alocados em eventos cuja data coincide com a data do teste.
+// Busca do Firestore para cobrir todas etapas (andamento, concluido, etc).
 function _calcularAlocacoesPorData(dataISO) {
   var nomeToId = {};
   Object.keys(_equipamentos).forEach(function(eqId) {
@@ -6909,79 +6911,80 @@ function _calcularAlocacoesPorData(dataISO) {
     if (nome) nomeToId[nome] = eqId;
   });
 
-  var counts = {}; // eqId -> qty total alocada nessa data
-
-  // Itera TODOS os eventos conhecidos (andamento + eventos + staging, exceto o próprio teste)
-  var todosEvs = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap, _eventosStagingCarga);
-  Object.values(todosEvs).forEach(function(ev) {
+  function _somarEv(ev, counts) {
     if (!ev || ev.id === _TESTE_DISP_ID) return;
-
-    // Verifica se o evento acontece na data do teste
     var evIni = ev.ev_data || null;
     var evFim = ev.ev_data_fim || evIni;
-    if (!evIni) return;
-    // O evento cobre a data do teste se dataISO está no intervalo [evIni, evFim]
-    if (dataISO < evIni || dataISO > evFim) return;
+    if (!evIni || dataISO < evIni || dataISO > evFim) return;
 
-    var itensExtrasRem = ev.itens_extras_removidos || {};
-    var itensOrigRem   = ev.itens_removidos || {};
+    var extRem = ev.itens_extras_removidos || {};
+    var origRem = ev.itens_removidos || {};
 
-    // itens_extras não riscados
     (ev.itens_extras || []).forEach(function(s, i) {
-      if (itensExtrasRem[i]) return;
+      if (extRem[i]) return;
       var m = s.match(/^(\d+)x\s+(.+)$/);
-      var qty = m ? parseInt(m[1]) : 1;
       var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
-      if (eqId) counts[eqId] = (counts[eqId] || 0) + qty;
+      if (eqId) counts[eqId] = (counts[eqId] || 0) + (m ? parseInt(m[1]) : 1);
     });
 
-    // servicos não riscados
     (ev.servicos || []).forEach(function(s, i) {
-      if (itensOrigRem[i]) return;
+      if (origRem[i]) return;
       var m = s.match(/^(\d+)x\s+(.+)$/);
-      var qty = m ? parseInt(m[1]) : 1;
       var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
-      if (eqId) counts[eqId] = (counts[eqId] || 0) + qty;
+      if (eqId) counts[eqId] = (counts[eqId] || 0) + (m ? parseInt(m[1]) : 1);
     });
 
-    // kits_grupos_ev não riscados
     var grupos = ev.kits_grupos_ev || _evKitGrupos[ev.id] || [];
-    grupos.forEach(function(grupo) {
-      if (grupo.riscado) return;
-      (grupo.itens || []).forEach(function(it) {
-        if (it.riscado) return;
-        var eqId = it.eqId;
-        if (!eqId) return;
-        counts[eqId] = (counts[eqId] || 0) + (it.qty || 1);
+    grupos.forEach(function(g) {
+      if (g.riscado) return;
+      (g.itens || []).forEach(function(it) {
+        if (!it.riscado && it.eqId) counts[it.eqId] = (counts[it.eqId] || 0) + (it.qty || 1);
       });
     });
-  });
+  }
 
-  // Popula _evEqDragItems do teste com os totais calculados
-  _evEqDragItems[_TESTE_DISP_ID] = {};
-  Object.keys(counts).forEach(function(eqId) {
-    var nome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
-    _evEqDragItems[_TESTE_DISP_ID][eqId] = { nome: nome, qty: counts[eqId] };
-  });
+  function _aplicar(counts) {
+    _evEqDragItems[_TESTE_DISP_ID] = {};
+    Object.keys(counts).forEach(function(eqId) {
+      _evEqDragItems[_TESTE_DISP_ID][eqId] = {
+        nome: (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId,
+        qty: counts[eqId]
+      };
+    });
+    // Atualiza visualmente todos os cards
+    Object.keys(_equipamentos).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+  }
 
-  // Atualiza os cards visuais de todos os equipamentos afetados
-  Object.keys(counts).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+  var counts = {};
+
+  // Soma o que está em memória (andamento + eventos, com e sem carga_finalizada)
+  var emMemoria = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap);
+  var idsEmMemoria = Object.keys(emMemoria);
+  Object.values(emMemoria).forEach(function(ev) { _somarEv(ev, counts); });
+  // Staging (outros eventos pinados)
+  Object.values(_eventosStagingCarga).forEach(function(ev) { _somarEv(ev, counts); });
+
+  if (!db) { _aplicar(counts); return; }
+
+  // Busca no Firestore eventos com ev_data <= dataISO (cobre todas as etapas)
+  // Filtragem por ev_data_fim é feita no cliente dentro de _somarEv
+  db.collection('eventos_campo')
+    .where('ev_data', '<=', dataISO)
+    .get()
+    .then(function(snap) {
+      snap.forEach(function(doc) {
+        if (idsEmMemoria.indexOf(doc.id) !== -1) return; // já somado
+        _somarEv(Object.assign({ id: doc.id }, doc.data()), counts);
+      });
+      _aplicar(counts);
+    })
+    .catch(function(err) {
+      console.warn('[TesteDisp]', err.message);
+      _aplicar(counts); // aplica o que tem em memória
+    });
 }
 
 function _testarDisponibilidade() {
-  // Se já existe um card de teste, remove (toggle)
-  if (_eventosStagingCarga[_TESTE_DISP_ID]) {
-    var afetadosToggle = _evEqDragItems[_TESTE_DISP_ID] ? Object.keys(_evEqDragItems[_TESTE_DISP_ID]) : [];
-    delete _eventosStagingCarga[_TESTE_DISP_ID];
-    if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
-    if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
-    afetadosToggle.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
-    renderEventosAndamento();
-    var btn = document.getElementById('btn-testar-disp');
-    if (btn) btn.classList.remove('disp-ativa');
-    return;
-  }
-
   // Precisa de uma data selecionada
   if (!_agDiaSelecionado) {
     toast('Selecione um dia no calendário primeiro.', true);
@@ -6990,6 +6993,19 @@ function _testarDisponibilidade() {
 
   var dataFmt = _agDiaSelecionado; // formato YYYY-MM-DD
   var dataLabel = dataFmt.split('-').reverse().join('/');
+
+  // Se já existe um teste com a mesma data → toggle off
+  if (_eventosStagingCarga[_TESTE_DISP_ID] && _eventosStagingCarga[_TESTE_DISP_ID].ev_data === dataFmt) {
+    var afetadosToggle = _evEqDragItems[_TESTE_DISP_ID] ? Object.keys(_evEqDragItems[_TESTE_DISP_ID]) : [];
+    delete _eventosStagingCarga[_TESTE_DISP_ID];
+    if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
+    if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
+    Object.keys(_equipamentos).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+    renderEventosAndamento();
+    var btn = document.getElementById('btn-testar-disp');
+    if (btn) btn.classList.remove('disp-ativa');
+    return;
+  }
 
   // Cria evento fake apenas em memória
   var evTeste = {
