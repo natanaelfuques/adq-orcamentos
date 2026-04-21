@@ -6155,7 +6155,7 @@ var _agEditandoId = null;
 var _agMes = new Date().getMonth();
 var _agAno = new Date().getFullYear();
 var _agDiaSelecionado = null;
-var _TESTE_DISP_ID = 'teste-disponibilidade-local';
+var _TESTE_DISP_ID = '__teste_disponibilidade__';
 
 // ── Abrir/fechar ──────────────────────────────────────────
 function abrirAgenda() {
@@ -6913,9 +6913,6 @@ function _calcularAlocacoesPorData(dataISO) {
 
   function _somarEv(ev, counts) {
     if (!ev || ev.id === _TESTE_DISP_ID) return;
-    // Eventos concluídos ou com carga finalizada já têm o estoque devolvido
-    // — o qtd_disponivel do equipamento já os exclui, não devem ser somados
-    if (ev.etapa === 'concluido' || ev.carga_finalizada) return;
     var evIni = ev.ev_data || null;
     var evFim = ev.ev_data_fim || evIni;
     if (!evIni || dataISO < evIni || dataISO > evFim) return;
