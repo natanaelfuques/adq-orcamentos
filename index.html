@@ -521,7 +521,7 @@
   .adx-resp-bar-colors { display: flex; height: 100%; gap: 2px; }
   .adx-resp-bar-color { width: 18px; height: 100%; }
   .adx-summary { padding: 10px 14px 0; display: flex; flex-direction: column; gap: 5px; }
-  .adx-summary-dates { display: flex; flex-direction: row; gap: 4px; flex-wrap: wrap; }
+  .adx-summary-dates { display: flex; flex-direction: row; justify-content: flex-end; gap: 4px; flex-wrap: wrap; }
   .adx-badge { font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 3px; white-space: nowrap; letter-spacing: 0.06em; }
   .adx-names { min-width: 0; }
   .adx-cliente { font-family: 'Barlow Condensed', sans-serif; font-size: 0.92rem; font-weight: 700; color: var(--text); word-break: break-word; }
@@ -11952,27 +11952,33 @@ function _buildCardDetalheIdx(ev, usuarios) {
     var cls = 'adx-item' + (done && !isObs ? ' done' : '') + (removido ? ' removido' : '') + (isObs ? ' obs' : '');
     var checkHtml = isObs ? '' : '<div class="adx-check' + (done && !removido ? ' checked' : '') + '"></div>';
     itensHtml += '<div class="' + cls + '" style="display:flex;align-items:center;gap:7px">' +
-      '<span class="item-extra-tag" style="font-size:0.8rem;font-weight:700;color:#4A90C8;flex-shrink:0">+</span>' +
       checkHtml + '<span class="adx-item-txt">' + esc(s) + '</span></div>';
   });
 
   // Kit grupos
   var kitGruposHtml = '';
+  var semCarga = !ev.carga_finalizada;
+  var etapa = ev.etapa || 'eventos';
+  var corCarga = semCarga
+    ? '#9b59b6'
+    : etapa === 'concluido' ? '#4AC87A'
+    : etapa === 'andamento' ? 'rgba(200,169,74,0.85)'
+    : '#4A90C8';
   var grupos = ev.kits_grupos_ev || [];
   grupos.forEach(function(grupo) {
     var todosChecked = grupo.itens && grupo.itens.length > 0 && grupo.itens.every(function(it) { return it.checked || it.riscado; });
-    var itensKitHtml = (grupo.itens || []).map(function(it, itIdx) {
+    var itensKitHtml = (grupo.itens || []).map(function(it) {
       var label = (it.qty > 1 ? it.qty + 'x ' : '') + esc(it.eqNome || '');
       var cls = 'adx-item' + (it.checked && !it.riscado ? ' done' : '') + (it.riscado ? ' removido' : '');
       return '<div class="' + cls + '">' +
         '<div class="adx-check' + (it.checked && !it.riscado ? ' checked' : '') + '"></div>' +
-        '<span class="adx-item-txt">' + label + '</span></div>';
+        '<span class="adx-item-txt" style="' + (semCarga && !it.riscado ? 'color:#9b59b6' : '') + '">' + label + '</span></div>';
     }).join('');
     kitGruposHtml += '<div class="adx-kit-grupo">' +
       '<div class="adx-kit-header">' +
         '<span class="adx-kit-arrow">&#9654;</span>' +
         '<div class="adx-kit-check' + (todosChecked ? ' checked' : '') + '"></div>' +
-        '<span class="adx-kit-nome' + (grupo.riscado ? ' riscado' : '') + '">' + esc(grupo.kitNome || grupo.kitId || '') + '</span>' +
+        '<span class="adx-kit-nome' + (grupo.riscado ? ' riscado' : '') + '" style="color:' + (grupo.riscado ? '#bbb' : corCarga) + '">' + esc(grupo.kitNome || grupo.kitId || '') + '</span>' +
       '</div>' +
       '<div class="adx-kit-body">' + itensKitHtml + '</div>' +
     '</div>';
