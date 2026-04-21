@@ -6155,7 +6155,8 @@ var _agEditandoId = null;
 var _agMes = new Date().getMonth();
 var _agAno = new Date().getFullYear();
 var _agDiaSelecionado = null;
-var _TESTE_DISP_ID = '__teste_disponibilidade__';
+var _TESTE_DISP_ID = 'teste-disponibilidade-local';
+var _testeDispAdicionados = {}; // qtd adicionada manualmente no teste (separada das pré-alocações)
 
 // ── Abrir/fechar ──────────────────────────────────────────
 function abrirAgenda() {
@@ -7000,6 +7001,7 @@ function _testarDisponibilidade() {
     delete _eventosStagingCarga[_TESTE_DISP_ID];
     if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
     if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
+    _testeDispAdicionados = {};
     Object.keys(_equipamentos).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
     renderEventosAndamento();
     var btn = document.getElementById('btn-testar-disp');
@@ -7021,6 +7023,7 @@ function _testarDisponibilidade() {
     kits_grupos_ev: []
   };
 
+  _testeDispAdicionados = {};
   _eventosStagingCarga[_TESTE_DISP_ID] = evTeste;
   _evKitGrupos[_TESTE_DISP_ID] = [];
 
@@ -7050,6 +7053,7 @@ function _removerTesteDisponibilidade() {
   delete _eventosStagingCarga[_TESTE_DISP_ID];
   if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
   if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
+  _testeDispAdicionados = {};
   // Atualiza cards que foram alterados
   afetados.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
   renderEventosAndamento();
@@ -8249,10 +8253,15 @@ function _buildEvAndamentoCard(ev) {
         '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>' +
         'Adicionar item' +
       '</button>' +
-      ((_eventosStagingCarga[ev.id] || _eventosEventosSnap[ev.id]) ? '<button class="btn-finalizar-carga" onclick="event.stopPropagation();_finalizarCargaEvento(\'' + esc(ev.id) + '\')">' +
-        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
-        'Finalizar carga' +
-      '</button>' : '') +
+      ((_eventosStagingCarga[ev.id] || _eventosEventosSnap[ev.id]) ? (ev.id === _TESTE_DISP_ID
+        ? '<button class="btn-finalizar-carga" style="background:rgba(224,92,92,0.08);border-color:rgba(224,92,92,0.4);color:#e05c5c" onclick="event.stopPropagation();_removerTesteDisponibilidade()">' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          'Descartar teste' +
+          '</button>'
+        : '<button class="btn-finalizar-carga" onclick="event.stopPropagation();_finalizarCargaEvento(\'' + esc(ev.id) + '\')">' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+          'Finalizar carga' +
+          '</button>') : '') +
 
     '</div>';
   }
@@ -9330,8 +9339,17 @@ function evCardDrop(ev, evId) {
       if (dispReal <= 0) { toast('Sem unidades disponíveis', true); return; }
     }
     _evEqDragItems[evId][itemId].qty++;
-    var qty = _evEqDragItems[evId][itemId].qty;
-    var label = qty > 1 ? qty + 'x ' + eqNome : eqNome;
+    // Para o card de teste, qty em _evEqDragItems inclui pré-alocações de outros eventos.
+    // O label deve mostrar apenas o que foi adicionado nesta sessão de teste.
+    var qtyLabel;
+    if (evId === _TESTE_DISP_ID) {
+      if (!_testeDispAdicionados) _testeDispAdicionados = {};
+      _testeDispAdicionados[itemId] = (_testeDispAdicionados[itemId] || 0) + 1;
+      qtyLabel = _testeDispAdicionados[itemId];
+    } else {
+      qtyLabel = _evEqDragItems[evId][itemId].qty;
+    }
+    var label = qtyLabel > 1 ? qtyLabel + 'x ' + eqNome : eqNome;
     // Atualiza itens_extras (Firestore apenas para eventos em andamento)
     var evObj2 = _eventosAndamento[evId] || _eventosStagingCarga[evId];
     if (evObj2) {
@@ -9359,6 +9377,16 @@ function evCardDrop(ev, evId) {
 
   var novoItem = { estoque_id: itemId, nome: nomeItem, tipo: tipo, qtd: 1 };
   var ev2 = _eventosAndamento[evId] || _eventosStagingCarga[evId];
+
+  // Card de teste: apenas registra em memória, sem tocar no Firestore
+  if (evId === _TESTE_DISP_ID) {
+    if (nomeItem && ev2) {
+      ev2.itens_extras = (ev2.itens_extras || []).concat([nomeItem]);
+    }
+    toast(nomeItem || 'Acessório adicionado ao teste');
+    renderEventosAndamento();
+    return;
+  }
 
   db.collection('reservas_evento').doc(evId).get().then(function(snap) {
     var dados = snap.exists ? snap.data() : {};
