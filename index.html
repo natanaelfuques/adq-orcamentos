@@ -498,6 +498,64 @@
     font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem;
     text-transform: uppercase; letter-spacing: 0.08em;
   }
+  /* ── CARD DETALHE EVENTO NA AGENDA ── */
+  .agev-lista-card { cursor: pointer; }
+  .agev-lista-card:hover { background: rgba(255,255,255,0.03); }
+  .agev-lista-card.ativo { background: rgba(245,166,35,0.07); border-left: 2px solid #F5A623; }
+  .agenda-card-detalhe-sep {
+    display: none; padding: 6px 14px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem;
+    font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    background: var(--darker); flex-shrink: 0;
+  }
+  .agenda-card-detalhe-wrap {
+    display: none; overflow-y: auto; flex-shrink: 0; max-height: 340px;
+    background: var(--dark); border-top: none;
+  }
+  .agenda-card-detalhe-inner { padding: 12px 14px; }
+  /* Card styles adaptados do painel_eventos */
+  .adx-card { background: var(--surface2, #222); border: 1px solid var(--border2, #333); border-radius: 6px; overflow: hidden; }
+  .adx-resp-bar { height: 3px; display: flex; overflow: hidden; border-radius: 6px 6px 0 0; }
+  .adx-resp-bar-track { flex: 1; height: 100%; background: linear-gradient(to right, rgba(120,120,130,0.25), rgba(120,120,130,0.45)); }
+  .adx-resp-bar-colors { display: flex; height: 100%; gap: 2px; }
+  .adx-resp-bar-color { width: 18px; height: 100%; }
+  .adx-summary { padding: 10px 14px 0; display: flex; align-items: flex-start; gap: 10px; }
+  .adx-summary-dates { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+  .adx-badge { font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 3px; white-space: nowrap; letter-spacing: 0.06em; }
+  .adx-names { min-width: 0; flex: 1; }
+  .adx-cliente { font-family: 'Barlow Condensed', sans-serif; font-size: 0.92rem; font-weight: 700; color: var(--text); word-break: break-word; }
+  .adx-evento { font-size: 0.72rem; color: var(--muted); margin-top: 2px; word-break: break-word; }
+  .adx-body { padding: 10px 14px 12px; }
+  .adx-horario { font-size: 0.75rem; color: #9B5CE5; font-weight: 600; margin-bottom: 8px; }
+  .adx-local { font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+  .adx-local a { color: #4A90C8; text-decoration: none; }
+  .adx-local a:hover { text-decoration: underline; }
+  .adx-resp-txt { font-size: 0.7rem; color: var(--muted); margin-bottom: 8px; }
+  .adx-resp-txt span { color: var(--text); }
+  .adx-itens { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+  .adx-itens-title { font-size: 0.62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
+  .adx-item { display: flex; align-items: center; gap: 7px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.78rem; color: var(--text); }
+  .adx-item:last-child { border-bottom: none; }
+  .adx-item.done .adx-item-txt { opacity: 0.6; }
+  .adx-item.removido .adx-item-txt { text-decoration: line-through; opacity: 0.45; color: var(--muted); }
+  .adx-item.obs .adx-item-txt { color: #FFD600; }
+  .adx-check { width: 13px; height: 13px; min-width: 13px; border: 1.5px solid var(--border2, #444); border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .adx-check.checked { background: #4AC87A; border-color: #4AC87A; }
+  .adx-check.checked::after { content: ''; width: 7px; height: 3px; border-left: 2px solid #111; border-bottom: 2px solid #111; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .adx-kit-grupo { border: 1px solid rgba(255,255,255,0.07); border-radius: 5px; margin-bottom: 3px; overflow: hidden; }
+  .adx-kit-header { display: flex; align-items: center; gap: 5px; padding: 4px 8px; background: rgba(255,255,255,0.02); cursor: pointer; user-select: none; }
+  .adx-kit-arrow { font-size: 0.55rem; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+  .adx-kit-grupo.open .adx-kit-arrow { transform: rotate(90deg); }
+  .adx-kit-check { width: 13px; height: 13px; border: 1.5px solid #444; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .adx-kit-check.checked { background: #4AC87A; border-color: #4AC87A; }
+  .adx-kit-check.checked::after { content: ''; width: 7px; height: 3px; border-left: 2px solid #111; border-bottom: 2px solid #111; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .adx-kit-nome { font-size: 0.7rem; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; color: #bbb; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: 0.04em; }
+  .adx-kit-nome.riscado { text-decoration: line-through; opacity: 0.4; }
+  .adx-kit-body { display: none; padding: 2px 6px 5px; }
+  .adx-kit-grupo.open .adx-kit-body { display: block; }
+  .adx-loading { text-align: center; padding: 18px; color: var(--muted); font-size: 0.75rem; }
+  .adx-ref { font-size: 0.62rem; color: var(--muted); font-weight: 700; letter-spacing: 0.05em; flex-shrink: 0; }
   @media (max-width: 640px) {
     .agenda-modal { max-height: 95vh; }
     .agenda-layout { flex-direction: column; }
@@ -2516,6 +2574,10 @@ Revestimento</textarea>
         <div class="agenda-dia-lista-header" id="agenda-idx-dia-header">Todos os eventos</div>
         <div class="agenda-lista-scroll" id="agenda-idx-lista">
           <div class="agenda-empty-dia">Carregando...</div>
+        </div>
+        <div class="agenda-card-detalhe-sep" id="agenda-idx-detalhe-sep">Detalhes do evento</div>
+        <div class="agenda-card-detalhe-wrap" id="agenda-idx-detalhe-wrap">
+          <div class="agenda-card-detalhe-inner" id="agenda-idx-detalhe-inner"></div>
         </div>
       </div>
     </div>
@@ -11665,7 +11727,7 @@ function _renderAgendaListaDiaIdx(dateStr) {
     var kitsHtml = grupos.length > 0
       ? '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">' + grupos.map(function(g) { return '<span class="agenda-kit-chip">' + _escIdx(g.kitNome||g.kitId||'') + '</span>'; }).join('') + '</div>'
       : '';
-    return '<div class="agev-lista-card">' +
+    return '<div class="agev-lista-card" data-evid="' + _escIdx(ev.id) + '" onclick="_abrirCardEventoIdx(\'' + _escIdx(ev.id) + '\')">' +
       '<span class="agev-lista-card-tipo" style="color:' + cor + '">' + dataFmt + '</span>' +
       '<div class="agev-lista-card-nome">' + _escIdx(ev.cli_nome || ev.ev_nome || 'Evento') + '</div>' +
       (ev.cli_nome && ev.ev_nome ? '<div class="agev-lista-card-sub">' + _escIdx(ev.ev_nome) + '</div>' : '') +
@@ -11673,6 +11735,254 @@ function _renderAgendaListaDiaIdx(dateStr) {
       kitsHtml +
     '</div>';
   }).join('');
+
+  // Fechar detalhe ao re-renderizar lista
+  _fecharCardEventoIdx();
+}
+
+// ── VARIÁVEIS DO CARD DETALHE ──────────────────────────────────────────────────
+var _agendaIdxCardAberto = null;
+var _agendaIdxUsuarios = null; // cache de usuários para barra de responsáveis
+
+function _fecharCardEventoIdx() {
+  _agendaIdxCardAberto = null;
+  var sep  = document.getElementById('agenda-idx-detalhe-sep');
+  var wrap = document.getElementById('agenda-idx-detalhe-wrap');
+  if (sep)  sep.style.display  = 'none';
+  if (wrap) wrap.style.display = 'none';
+  // Remove highlight
+  var lista = document.getElementById('agenda-idx-lista');
+  if (lista) lista.querySelectorAll('.agev-lista-card').forEach(function(el) { el.classList.remove('ativo'); });
+}
+
+function _abrirCardEventoIdx(evId) {
+  // Toggle: clique no mesmo fecha
+  if (_agendaIdxCardAberto === evId) {
+    _fecharCardEventoIdx();
+    return;
+  }
+  _agendaIdxCardAberto = evId;
+
+  // Highlight o card da lista
+  var lista = document.getElementById('agenda-idx-lista');
+  if (lista) lista.querySelectorAll('.agev-lista-card').forEach(function(el) {
+    el.classList.toggle('ativo', el.getAttribute('data-evid') === evId);
+  });
+
+  // Mostrar painel com loading
+  var sep  = document.getElementById('agenda-idx-detalhe-sep');
+  var wrap = document.getElementById('agenda-idx-detalhe-wrap');
+  var inner = document.getElementById('agenda-idx-detalhe-inner');
+  if (!sep || !wrap || !inner) return;
+  sep.style.display  = 'block';
+  wrap.style.display = 'block';
+  inner.innerHTML    = '<div class="adx-loading">Carregando...</div>';
+
+  // Buscar dados frescos do Firestore
+  if (typeof db === 'undefined') {
+    inner.innerHTML = '<div class="adx-loading">Firestore não disponível.</div>';
+    return;
+  }
+
+  // Buscar evento + usuários em paralelo
+  var pEvento   = db.collection('eventos_campo').doc(evId).get();
+  var pUsuarios = _agendaIdxUsuarios
+    ? Promise.resolve(_agendaIdxUsuarios)
+    : db.collection('configuracoes').doc('usuarios_cadastrados').get()
+        .then(function(d) {
+          _agendaIdxUsuarios = d.exists && d.data().usuarios ? d.data().usuarios : [];
+          return _agendaIdxUsuarios;
+        })
+        .catch(function() { return []; });
+
+  Promise.all([pEvento, pUsuarios]).then(function(results) {
+    var doc = results[0];
+    var usuarios = results[1];
+    if (_agendaIdxCardAberto !== evId) return; // cancelado
+
+    if (!doc.exists) {
+      inner.innerHTML = '<div class="adx-loading">Evento não encontrado.</div>';
+      return;
+    }
+    var ev = Object.assign({ id: evId }, doc.data());
+    inner.innerHTML = _buildCardDetalheIdx(ev, usuarios);
+
+    // Expandir/colapsar kit grupos
+    inner.querySelectorAll('.adx-kit-header').forEach(function(hdr) {
+      hdr.addEventListener('click', function() {
+        var g = hdr.closest('.adx-kit-grupo');
+        if (g) g.classList.toggle('open');
+      });
+    });
+  }).catch(function(err) {
+    if (_agendaIdxCardAberto !== evId) return;
+    console.warn('Erro ao carregar evento:', err);
+    inner.innerHTML = '<div class="adx-loading">Erro ao carregar dados.</div>';
+  });
+}
+
+function _buildCardDetalheIdx(ev, usuarios) {
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // Barra de responsáveis
+  var respBarHtml = '';
+  if (ev.responsaveis && ev.responsaveis.length) {
+    var segs = ev.responsaveis.map(function(uid) {
+      var u = (usuarios||[]).find(function(x) { return x.uid === uid; });
+      var cor = u ? u.cor : '#888';
+      return '<div class="adx-resp-bar-color" style="background:' + cor + '"></div>';
+    }).join('');
+    respBarHtml = '<div class="adx-resp-bar"><div class="adx-resp-bar-track"></div><div class="adx-resp-bar-colors">' + segs + '</div></div>';
+  }
+
+  // Datas
+  var dataFmt    = ev.ev_data     ? ev.ev_data.split('-').reverse().join('/')     : '';
+  var dataFimFmt = ev.ev_data_fim ? ev.ev_data_fim.split('-').reverse().join('/') : '';
+  // Cor badge por proximidade
+  var badgeColor = '#aaa', badgeBg = 'rgba(170,170,170,0.12)';
+  if (ev.ev_data) {
+    var parts = ev.ev_data.split('-');
+    var evDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+    var hoje = new Date(); hoje.setHours(0,0,0,0);
+    var diff = Math.round((evDate - hoje) / 86400000);
+    if (diff < 0)      { badgeColor = '#555';    badgeBg = 'rgba(85,85,85,0.15)'; }
+    else if (diff <= 1){ badgeColor = '#e05c5c'; badgeBg = 'rgba(224,92,92,0.15)'; }
+    else if (diff < 7) { badgeColor = '#4A90C8'; badgeBg = 'rgba(74,144,200,0.12)'; }
+  }
+  var badgeStyle = 'color:' + badgeColor + ';background:' + badgeBg;
+
+  var datesHtml = (dataFmt
+    ? '<div class="adx-badge" style="' + badgeStyle + '">' + dataFmt + '</div>'
+    : '') +
+    (dataFimFmt
+    ? '<div class="adx-badge" style="' + badgeStyle + '">' + dataFimFmt + '</div>'
+    : '');
+
+  // Nomes
+  var nomeHtml = ev.nota_id
+    ? '<div class="adx-cliente">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>' +
+      (ev.cli_nome ? '<div class="adx-evento">' + esc(ev.cli_nome) + '</div>' : '')
+    : (ev.cli_nome ? '<div class="adx-cliente">' + esc(ev.cli_nome) + '</div>' : '') +
+      '<div class="adx-evento">' + esc(ev.ev_nome || ev.nome || 'Evento') + '</div>';
+
+  // Horários
+  function fmtHora(val) {
+    if (!val) return '';
+    var v = String(val).trim();
+    var digits = v.replace(/\D/g,'');
+    if (!digits) return v;
+    var h, m;
+    if (digits.length <= 2)      { h = digits; m = '00'; }
+    else if (digits.length === 3){ h = digits.slice(0,1); m = digits.slice(1); }
+    else                          { h = digits.slice(0,2); m = digits.slice(2,4); }
+    return h.padStart(2,'0') + ':' + (m||'00').padStart(2,'0');
+  }
+  var horarioParts = [];
+  if (ev.ev_montagem)   horarioParts.push('Mont. ' + fmtHora(ev.ev_montagem));
+  if (ev.ev_inicio)     horarioParts.push('Iníc. ' + fmtHora(ev.ev_inicio));
+  if (ev.ev_fim)        horarioParts.push('Fim ' + fmtHora(ev.ev_fim));
+  if (ev.ev_desmontagem)horarioParts.push('Desm. ' + fmtHora(ev.ev_desmontagem));
+  var horarioHtml = horarioParts.length
+    ? '<div class="adx-horario">' + horarioParts.join(' · ') + '</div>'
+    : '';
+
+  // Local
+  var localHtml = '';
+  if (ev.ev_local) {
+    var localContent = ev.ev_maps
+      ? '<a href="' + esc(ev.ev_maps) + '" target="_blank" rel="noopener">' + esc(ev.ev_local) + '</a>'
+      : esc(ev.ev_local);
+    localHtml = '<div class="adx-local"><svg width="9" height="12" viewBox="0 0 10 13" fill="none" style="flex-shrink:0;opacity:0.5"><path d="M5 0C2.24 0 0 2.24 0 5c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5A1.5 1.5 0 1 1 5 3.5a1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>' + localContent + '</div>';
+  }
+
+  // Responsável texto
+  var respTxtHtml = ev.ev_resp
+    ? '<div class="adx-resp-txt">Resp: <span>' + esc(ev.ev_resp) + '</span></div>'
+    : '';
+
+  // Ref
+  var refId = ev.contrato_id || ev.id;
+  var refHtml = '<div class="adx-ref"># ' + esc(refId.substring(0,8).toUpperCase()) + '</div>';
+
+  // Itens (serviços)
+  var itensHtml = '';
+  var removidos = ev.itens_removidos || {};
+  var servicosExpandidos = [];
+  (ev.servicos || []).forEach(function(s, origIdx) {
+    if (s && s.indexOf('•') >= 0) {
+      s.split('•').forEach(function(parte) {
+        var p = parte.trim();
+        if (p) servicosExpandidos.push({ texto: p, idx: origIdx });
+      });
+    } else {
+      servicosExpandidos.push({ texto: s, idx: origIdx });
+    }
+  });
+  servicosExpandidos.forEach(function(item) {
+    var s = item.texto; if (!s) return;
+    var i = item.idx;
+    var done = ev.itens_ok && ev.itens_ok[i];
+    var removido = removidos[i];
+    var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
+    var cls = 'adx-item' + (done && !isObs ? ' done' : '') + (removido ? ' removido' : '') + (isObs ? ' obs' : '');
+    var checkHtml = isObs ? '' : '<div class="adx-check' + (done && !removido ? ' checked' : '') + '"></div>';
+    itensHtml += '<div class="' + cls + '">' + checkHtml + '<span class="adx-item-txt">' + esc(s) + '</span></div>';
+  });
+
+  // Itens extras
+  (ev.itens_extras || []).forEach(function(s, i) {
+    if (!s) return;
+    var done = ev.itens_ok && ev.itens_ok['extra_' + i];
+    var removido = ev.itens_extras_removidos && ev.itens_extras_removidos[i];
+    var isObs = s.toLowerCase().indexOf('obs:') === 0 || s.toLowerCase().indexOf('obs.') === 0;
+    var cls = 'adx-item' + (done && !isObs ? ' done' : '') + (removido ? ' removido' : '') + (isObs ? ' obs' : '');
+    var checkHtml = isObs ? '' : '<div class="adx-check' + (done && !removido ? ' checked' : '') + '"></div>';
+    itensHtml += '<div class="' + cls + '" style="display:flex;align-items:center;gap:7px">' +
+      '<span class="item-extra-tag" style="font-size:0.8rem;font-weight:700;color:#4A90C8;flex-shrink:0">+</span>' +
+      checkHtml + '<span class="adx-item-txt">' + esc(s) + '</span></div>';
+  });
+
+  // Kit grupos
+  var kitGruposHtml = '';
+  var grupos = ev.kits_grupos_ev || [];
+  grupos.forEach(function(grupo) {
+    var todosChecked = grupo.itens && grupo.itens.length > 0 && grupo.itens.every(function(it) { return it.checked || it.riscado; });
+    var itensKitHtml = (grupo.itens || []).map(function(it, itIdx) {
+      var label = (it.qty > 1 ? it.qty + 'x ' : '') + esc(it.eqNome || '');
+      var cls = 'adx-item' + (it.checked && !it.riscado ? ' done' : '') + (it.riscado ? ' removido' : '');
+      return '<div class="' + cls + '">' +
+        '<div class="adx-check' + (it.checked && !it.riscado ? ' checked' : '') + '"></div>' +
+        '<span class="adx-item-txt">' + label + '</span></div>';
+    }).join('');
+    kitGruposHtml += '<div class="adx-kit-grupo">' +
+      '<div class="adx-kit-header">' +
+        '<span class="adx-kit-arrow">&#9654;</span>' +
+        '<div class="adx-kit-check' + (todosChecked ? ' checked' : '') + '"></div>' +
+        '<span class="adx-kit-nome' + (grupo.riscado ? ' riscado' : '') + '">' + esc(grupo.kitNome || grupo.kitId || '') + '</span>' +
+      '</div>' +
+      '<div class="adx-kit-body">' + itensKitHtml + '</div>' +
+    '</div>';
+  });
+
+  var temItens = itensHtml || kitGruposHtml || (ev.itens_painel && ev.itens_painel.length);
+  var secaoItens = temItens
+    ? '<div class="adx-itens"><div class="adx-itens-title">Itens</div>' + kitGruposHtml + itensHtml + '</div>'
+    : '';
+
+  return '<div class="adx-card">' +
+    respBarHtml +
+    '<div class="adx-summary">' +
+      (datesHtml ? '<div class="adx-summary-dates">' + datesHtml + '</div>' : '') +
+      '<div class="adx-names">' + nomeHtml + '</div>' +
+      refHtml +
+    '</div>' +
+    '<div class="adx-body">' +
+      horarioHtml +
+      localHtml +
+      respTxtHtml +
+      secaoItens +
+    '</div>' +
+  '</div>';
 }
 
 document.addEventListener('keydown', function(e) {
