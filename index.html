@@ -1741,6 +1741,36 @@ header {
 }
 
   #salvos-tab-not.active-sub-tab { color: #9B30D8 !important; border-bottom-color: #9B30D8 !important; }
+
+  /* ── BOTÃO GERAR PACOTE DO EVENTO ── */
+  .adx-btn-gerar-pacote {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 9px 14px;
+    background: transparent;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    color: var(--gold);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .adx-btn-gerar-pacote:hover {
+    background: var(--gold-dim);
+  }
+  .adx-btn-gerar-pacote.sucesso {
+    border-color: #25D366;
+    color: #25D366;
+    background: rgba(37,211,102,0.08);
+  }
 </style>
 
   <!-- PWA -->
@@ -12398,6 +12428,13 @@ function _buildCardDetalheIdx(ev, usuarios) {
     ? '<div class="adx-itens"><div class="adx-itens-title">Itens</div>' + kitGruposHtml + itensHtml + '</div>'
     : '';
 
+  // Botao gerar pacote (so mostra se ha itens)
+  var _evIdEsc = esc(ev.id || '');
+  var _btnPacoteHtml = '<button class="adx-btn-gerar-pacote" data-evid="' + _evIdEsc + '" onclick="gerarPacoteDoEvento(this.dataset.evid,this)">'
+    + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 2 16 8 22 8"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5z"/></svg>'
+    + ' Gerar Pacote Escolhido</button>';
+  var btnGerarPacote = temItens ? _btnPacoteHtml : '';
+
   return '<div class="adx-card">' +
     respBarHtml +
     '<div class="adx-summary">' +
@@ -12410,8 +12447,74 @@ function _buildCardDetalheIdx(ev, usuarios) {
       localHtml +
       respTxtHtml +
       secaoItens +
+      btnGerarPacote +
     '</div>' +
   '</div>';
+}
+
+// ── GERAR PACOTE DO EVENTO NA DESCRIÇÃO DO "MAIS ESCOLHIDO" ─────────────────
+function gerarPacoteDoEvento(evId, btnEl) {
+  if (!db || !evId) return;
+
+  db.collection('eventos_campo').doc(evId).get().then(function(doc) {
+    if (!doc.exists) return;
+    var ev = Object.assign({ id: evId }, doc.data());
+
+    // Coleta TODOS os itens (incluindo riscados/removidos)
+    var linhas = [];
+
+    // Serviços
+    (ev.servicos || []).forEach(function(s) {
+      if (!s || !s.trim()) return;
+      if (s.indexOf('•') >= 0) {
+        s.split('•').forEach(function(p) { var t = p.trim(); if (t) linhas.push(t); });
+      } else {
+        linhas.push(s.trim());
+      }
+    });
+
+    // Itens extras
+    (ev.itens_extras || []).forEach(function(s) {
+      if (!s || !s.trim()) return;
+      linhas.push(s.trim());
+    });
+
+    // Kit grupos — todos os itens, inclusive riscados
+    (ev.kits_grupos_ev || []).forEach(function(grupo) {
+      (grupo.itens || []).forEach(function(it) {
+        var label = (it.qty && it.qty > 1 ? it.qty + 'x ' : '') + (it.eqNome || '');
+        if (label.trim()) linhas.push(label.trim());
+      });
+    });
+
+    if (!linhas.length) return;
+
+    // Monta o texto final — uma linha por item
+    var texto = linhas.join('\n');
+
+    // Popula desc2 (pacote "Mais Escolhido") e value2 se tiver valor no evento
+    var ta = document.getElementById('desc2');
+    if (!ta) return;
+    ta.value = texto;
+    // Dispara autoResize e o highlight do estoque
+    if (typeof autoResize === 'function') autoResize(ta);
+    ta.dispatchEvent(new Event('input'));
+
+    // Navega até o campo desc2 suavemente
+    ta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Feedback visual no botão
+    if (btnEl) {
+      btnEl.classList.add('sucesso');
+      btnEl.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Colado no Pacote!';
+      setTimeout(function() {
+        btnEl.classList.remove('sucesso');
+        btnEl.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 2 16 8 22 8"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5z"/></svg> Gerar Pacote Escolhido';
+      }, 2500);
+    }
+  }).catch(function(err) {
+    console.warn('[gerarPacote] Erro:', err);
+  });
 }
 
 document.addEventListener('keydown', function(e) {
