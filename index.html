@@ -11960,7 +11960,7 @@ function _buildCardDetalheIdx(ev, usuarios) {
   var semCarga = !ev.carga_finalizada;
   var etapa = ev.etapa || 'eventos';
   var corCarga = semCarga
-    ? '#9b59b6'
+    ? '#bbb'
     : etapa === 'concluido' ? '#4AC87A'
     : etapa === 'andamento' ? 'rgba(200,169,74,0.85)'
     : '#4A90C8';
@@ -11972,7 +11972,7 @@ function _buildCardDetalheIdx(ev, usuarios) {
       var cls = 'adx-item' + (it.checked && !it.riscado ? ' done' : '') + (it.riscado ? ' removido' : '');
       return '<div class="' + cls + '">' +
         '<div class="adx-check' + (it.checked && !it.riscado ? ' checked' : '') + '"></div>' +
-        '<span class="adx-item-txt" style="' + (semCarga && !it.riscado ? 'color:#9b59b6' : '') + '">' + label + '</span></div>';
+        '<span class="adx-item-txt">' + label + '</span></div>';
     }).join('');
     kitGruposHtml += '<div class="adx-kit-grupo">' +
       '<div class="adx-kit-header">' +
