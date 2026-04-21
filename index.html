@@ -11611,79 +11611,150 @@ function fecharAgendaIndex() {
 (function() {
   var _tx0, _ty0, _lock = null;
   var _collapsed = false;
+  var _gridH = 0; // altura original do grid
 
-  function _getCalPanel() { return document.querySelector('#agenda-index-overlay .agenda-cal-panel'); }
+  function _getCP()   { return document.querySelector('#agenda-index-overlay .agenda-cal-panel'); }
+  function _getGrid() { return document.getElementById('agenda-idx-cal-grid'); }
 
-  // ── Slide horizontal (arraste ao vivo) ──
+  // ── Slide horizontal: usa um wrapper de dois grids ──
+  // Cria (ou obtém) o wrapper que envolve o grid para o efeito de slide
+  function _getWrapper() {
+    var grid = _getGrid(); if (!grid) return null;
+    var w = grid.parentNode;
+    if (w && w._isSlideWrapper) return w;
+    // Cria wrapper
+    var wrap = document.createElement('div');
+    wrap._isSlideWrapper = true;
+    wrap.style.cssText = 'position:relative;overflow:hidden;flex:1;display:flex;flex-direction:column;';
+    grid.parentNode.insertBefore(wrap, grid);
+    wrap.appendChild(grid);
+    return wrap;
+  }
+
+  // Clone do grid para o mês vizinho (aparece durante o arraste)
+  var _ghostGrid = null;
+
+  function _criarGhost(delta) {
+    var wrap = _getWrapper(); if (!wrap) return;
+    if (_ghostGrid) { _ghostGrid.remove(); _ghostGrid = null; }
+    var grid = _getGrid(); if (!grid) return;
+    var w = grid.offsetWidth;
+    _ghostGrid = document.createElement('div');
+    _ghostGrid.style.cssText = 'position:absolute;top:0;' + (delta > 0 ? 'left:' + w + 'px' : 'right:' + w + 'px') + ';width:' + w + 'px;height:100%;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(6,1fr);opacity:0.5;pointer-events:none;';
+    // Renderiza o mês vizinho
+    var mesViz = _agMesIdx + delta;
+    var anoViz = _agAnoIdx;
+    if (mesViz > 11) { mesViz = 0; anoViz++; }
+    if (mesViz < 0)  { mesViz = 11; anoViz--; }
+    var primeiro = new Date(anoViz, mesViz, 1).getDay();
+    var dias = new Date(anoViz, mesViz + 1, 0).getDate();
+    var cells = '';
+    for (var i = 0; i < 42; i++) {
+      var d = i - primeiro + 1;
+      var txt = (d > 0 && d <= dias) ? d : '';
+      cells += '<div style="border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 3px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:var(--text);opacity:' + (txt?'1':'0.25') + '">' + (txt||'') + '</div>';
+    }
+    _ghostGrid.innerHTML = cells;
+    wrap.appendChild(_ghostGrid);
+  }
+
+  function _removerGhost() {
+    if (_ghostGrid) { _ghostGrid.remove(); _ghostGrid = null; }
+  }
+
+  // Desliza o grid + ghost juntos
+  var _lastDelta = 0;
   function _slideH(px) {
-    var cp = _getCalPanel(); if (!cp) return;
-    cp.style.transition = 'none';
-    cp.style.transform  = 'translateX(' + px + 'px)';
-    cp.style.opacity    = String(1 - Math.min(Math.abs(px) / 320, 0.45));
+    var grid = _getGrid(); if (!grid) return;
+    var wrap = _getWrapper(); if (!wrap) return;
+    var w = wrap.offsetWidth;
+    // Cria ghost se mudou de direção ou não existe
+    var dir = px < 0 ? 1 : -1;
+    if (!_ghostGrid || dir !== _lastDelta) {
+      _criarGhost(dir);
+      _lastDelta = dir;
+    }
+    // Move o grid e o ghost juntos (como uma faixa contínua)
+    grid.style.transition = 'none';
+    grid.style.transform  = 'translateX(' + px + 'px)';
+    if (_ghostGrid) {
+      _ghostGrid.style.transition = 'none';
+      var ghostX = px + (dir > 0 ? w : -w);
+      _ghostGrid.style.transform = 'translateX(' + ghostX + 'px)';
+      _ghostGrid.style.left  = '0';
+      _ghostGrid.style.right = '0';
+      _ghostGrid.style.width = w + 'px';
+    }
   }
 
   function _resetH() {
-    var cp = _getCalPanel(); if (!cp) return;
-    cp.style.transition = 'transform 0.26s cubic-bezier(0.4,0,0.2,1), opacity 0.26s';
-    cp.style.transform  = 'translateX(0)';
-    cp.style.opacity    = '1';
+    var grid = _getGrid(); if (!grid) return;
+    grid.style.transition = 'transform 0.24s cubic-bezier(0.4,0,0.2,1)';
+    grid.style.transform  = 'translateX(0)';
+    _removerGhost();
   }
 
-  // ── Navega mês com animação ──
-  function _navComAnim(delta) {
-    var cp = _getCalPanel(); if (!cp) return;
-    var saida = delta > 0 ? -90 : 90;
-    cp.style.transition = 'transform 0.18s ease-in, opacity 0.18s';
-    cp.style.transform  = 'translateX(' + saida + 'px)';
-    cp.style.opacity    = '0';
+  // Confirma navegação: desliza grid para fora, mostra ghost, troca mês
+  function _confirmarNav(delta) {
+    var grid = _getGrid(); if (!grid) return;
+    var wrap = _getWrapper(); if (!wrap) return;
+    var w = wrap.offsetWidth;
+    var saida = delta > 0 ? -w : w;
+    grid.style.transition = 'transform 0.22s ease-in';
+    grid.style.transform  = 'translateX(' + saida + 'px)';
+    if (_ghostGrid) {
+      var ghostSaida = saida + (delta > 0 ? w : -w);
+      _ghostGrid.style.transition = 'transform 0.22s ease-in';
+      _ghostGrid.style.transform  = 'translateX(' + ghostSaida + 'px)';
+    }
     setTimeout(function() {
+      _removerGhost();
       _navMesIdx(delta);
-      var entrada = delta > 0 ? 90 : -90;
-      cp.style.transition = 'none';
-      cp.style.transform  = 'translateX(' + entrada + 'px)';
-      cp.style.opacity    = '0';
+      // O grid foi re-renderizado; reseta posição sem animação, depois anima entrada
+      grid.style.transition = 'none';
+      grid.style.transform  = 'translateX(' + (delta > 0 ? w : -w) + 'px)';
       requestAnimationFrame(function() {
         requestAnimationFrame(function() {
-          cp.style.transition = 'transform 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.22s';
-          cp.style.transform  = 'translateX(0)';
-          cp.style.opacity    = '1';
+          grid.style.transition = 'transform 0.22s cubic-bezier(0.4,0,0.2,1)';
+          grid.style.transform  = 'translateX(0)';
         });
       });
-    }, 180);
+    }, 220);
   }
 
-  // ── Recolhe/expande o cal-panel (altura) ──
+  // ── Recolhe/expande o cal-grid (só o grid, não o nav) ──
   function _recolher() {
-    var cp = _getCalPanel(); if (!cp) return;
-    var fullH = cp.offsetHeight;
-    cp.style.transition = 'max-height 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s';
-    cp.style.maxHeight  = fullH + 'px'; // força valor inicial explícito
+    var grid = _getGrid(); if (!grid) return;
+    _gridH = grid.offsetHeight;
+    grid.style.transition = 'height 0.30s cubic-bezier(0.4,0,0.2,1)';
+    grid.style.height     = _gridH + 'px';
+    grid.style.overflow   = 'hidden';
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
-        cp.style.maxHeight = Math.round(fullH / 3) + 'px';
-        cp.style.overflow  = 'hidden';
+        grid.style.height = Math.round(_gridH / 3) + 'px';
       });
     });
     _collapsed = true;
   }
 
   function _expandir() {
-    var cp = _getCalPanel(); if (!cp) return;
-    cp.style.transition = 'max-height 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s';
-    cp.style.maxHeight  = '800px';
+    var grid = _getGrid(); if (!grid) return;
+    grid.style.transition = 'height 0.30s cubic-bezier(0.4,0,0.2,1)';
+    grid.style.height     = (_gridH || 300) + 'px';
     setTimeout(function() {
-      cp.style.maxHeight = '';
-      cp.style.overflow  = '';
-    }, 340);
+      grid.style.height   = '';
+      grid.style.overflow = '';
+    }, 310);
     _collapsed = false;
   }
 
-  // ── Handlers de touch — registrados NO cal-panel ──
+  // ── Handlers ──
   function _onTouchStart(e) {
     if (e.touches.length !== 1) return;
     _tx0 = e.touches[0].clientX;
     _ty0 = e.touches[0].clientY;
     _lock = null;
+    _lastDelta = 0;
   }
 
   function _onTouchMove(e) {
@@ -11708,23 +11779,20 @@ function fecharAgendaIndex() {
     _tx0 = _ty0 = null;
 
     if (_lock === 'h') {
-      if (absDx > 50) _navComAnim(dx < 0 ? 1 : -1);
+      if (absDx > 50) _confirmarNav(dx < 0 ? 1 : -1);
       else _resetH();
     } else if (_lock === 'v') {
-      if (dy < -50 && absDy > absDx) {
-        // swipe para cima → recolhe (ou expande+fecha se já recolhido)
+      if (dy < -50) {
         if (_collapsed) { _expandir(); fecharAgendaIndex(); }
         else { _recolher(); }
       } else if (dy > 40 && _collapsed) {
-        // swipe para baixo → expande
         _expandir();
       }
     }
   }
 
   function _initAgendaGestos() {
-    // Registra no cal-panel (região do calendário visível na imagem)
-    var cp = _getCalPanel();
+    var cp = _getCP();
     if (!cp || cp._gestosInited) return;
     cp._gestosInited = true;
     cp.addEventListener('touchstart', _onTouchStart, { passive: true });
@@ -11732,21 +11800,22 @@ function fecharAgendaIndex() {
     cp.addEventListener('touchend',   _onTouchEnd,   { passive: true });
   }
 
-  // Reseta ao fechar
   var _origFechar = fecharAgendaIndex;
   fecharAgendaIndex = function() {
     _collapsed = false;
-    var cp = _getCalPanel();
-    if (cp) { cp.style.transition = 'none'; cp.style.maxHeight = ''; cp.style.overflow = ''; cp.style.transform = ''; cp.style.opacity = ''; cp._gestosInited = false; }
+    _removerGhost();
+    var grid = _getGrid();
+    if (grid) { grid.style.transition = 'none'; grid.style.height = ''; grid.style.overflow = ''; grid.style.transform = ''; }
+    var cp = _getCP();
+    if (cp) { cp._gestosInited = false; }
     _origFechar.apply(this, arguments);
   };
 
-  // Inicializa ao abrir
   var _origAbrir = abrirAgendaIndex;
   abrirAgendaIndex = function() {
     _origAbrir.apply(this, arguments);
     _collapsed = false;
-    setTimeout(_initAgendaGestos, 50);
+    setTimeout(_initAgendaGestos, 60);
   };
 })();
 
