@@ -12110,17 +12110,8 @@ function _buildCardDetalheIdx(ev, usuarios) {
   var dataFmt    = ev.ev_data     ? ev.ev_data.split('-').reverse().join('/')     : '';
   var dataFimFmt = ev.ev_data_fim ? ev.ev_data_fim.split('-').reverse().join('/') : '';
   // Cor badge por proximidade
-  var badgeColor = '#aaa', badgeBg = 'rgba(170,170,170,0.12)';
-  if (ev.ev_data) {
-    var parts = ev.ev_data.split('-');
-    var evDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
-    var hoje = new Date(); hoje.setHours(0,0,0,0);
-    var diff = Math.round((evDate - hoje) / 86400000);
-    if (diff < 0)      { badgeColor = '#555';    badgeBg = 'rgba(85,85,85,0.15)'; }
-    else if (diff <= 1){ badgeColor = '#e05c5c'; badgeBg = 'rgba(224,92,92,0.15)'; }
-    else if (diff < 7) { badgeColor = '#4A90C8'; badgeBg = 'rgba(74,144,200,0.12)'; }
-  }
-  var badgeStyle = 'color:' + badgeColor + ';background:' + badgeBg;
+  var badgeColor = _corBadgeIdx(ev);
+  var badgeStyle = 'color:' + badgeColor + ';background:' + badgeColor + '18';
 
   var datesHtml = (dataFmt
     ? '<div class="adx-badge" style="' + badgeStyle + '">' + dataFmt + '</div>'
