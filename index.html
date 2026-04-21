@@ -31,18 +31,17 @@
     box-sizing: border-box;
   }
   .est-match {
-    background: rgba(200,169,74,0.18);
-    border-radius: 3px;
-    outline: 1px solid rgba(200,169,74,0.35);
-    outline-offset: 1px;
+    background: transparent;
+    border-radius: 0;
+    outline: none;
+    border-bottom: 1.5px solid rgba(200,169,74,0.6);
     cursor: pointer;
     pointer-events: all;
     color: transparent;
-    transition: background 0.15s;
+    transition: border-color 0.15s;
   }
   .est-match:hover, .est-match.active {
-    background: rgba(200,169,74,0.32);
-    outline-color: rgba(200,169,74,0.7);
+    border-bottom-color: rgba(200,169,74,1);
   }
 
   /* ── PAINEL DE DISPONIBILIDADE ── */
@@ -12486,6 +12485,7 @@ function gerarPacoteDoEvento(evId, btnEl) {
       }).filter(function(s) { return s.trim(); });
       if (!itensKit.length) return;
       var titulo = (grupo.kitNome || grupo.kitId || 'Kit').trim();
+      titulo = titulo.charAt(0).toUpperCase() + titulo.slice(1);
       linhas.push(titulo + ': ' + itensKit.join(', ') + '.');
     });
 
