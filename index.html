@@ -99,24 +99,6 @@
     white-space: nowrap;
     letter-spacing: 0.03em;
   }
-  .est-disp-hint {
-    font-size: 0.64rem;
-    color: var(--muted);
-    font-style: italic;
-    white-space: nowrap;
-  }
-  .est-disp-close {
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 0.8rem;
-    line-height: 1;
-    padding: 2px 4px;
-    border-radius: 3px;
-    flex-shrink: 0;
-  }
-  .est-disp-close:hover { color: var(--text); }
 
   body {
     font-family: 'Barlow', sans-serif;
@@ -314,11 +296,18 @@
     justify-content: flex-end;
     gap: 8px;
     flex-wrap: nowrap;
+    position: relative;
   }
   .price-field .est-disp-panel {
-    margin-right: auto;
-    flex-shrink: 1;
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 12px;
+    white-space: nowrap;
+    pointer-events: all;
     min-width: 0;
+    max-width: 340px;
   }
 
   .price-prefix {
@@ -1976,7 +1965,7 @@ Técnica: montagem, desmontagem.</textarea>
         <div class="price-field">
           <span class="price-prefix">R$</span>
           <input type="text" id="valor1" value="2.800,00" style="max-width:160px" />
-              <div class="est-disp-panel" id="est-panel-desc1"><span class="est-disp-nome" id="est-panel-nome-desc1"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-desc1"></div></div><span class="est-disp-nums" id="est-nums-desc1"></span></div><span class="est-disp-hint" id="est-hint-desc1"></span><button class="est-disp-close" onclick="estFecharPanel('desc1')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-desc1"><span class="est-disp-nome" id="est-panel-nome-desc1"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-desc1"></div></div><span class="est-disp-nums" id="est-nums-desc1"></span></div></div>
         </div>
       </div>
 
@@ -2008,7 +1997,7 @@ Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
         <div class="price-field">
           <span class="price-prefix">R$</span>
           <input type="text" id="valor2" value="3.500,00" style="max-width:160px" />
-              <div class="est-disp-panel" id="est-panel-desc2"><span class="est-disp-nome" id="est-panel-nome-desc2"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-desc2"></div></div><span class="est-disp-nums" id="est-nums-desc2"></span></div><span class="est-disp-hint" id="est-hint-desc2"></span><button class="est-disp-close" onclick="estFecharPanel('desc2')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-desc2"><span class="est-disp-nome" id="est-panel-nome-desc2"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-desc2"></div></div><span class="est-disp-nums" id="est-nums-desc2"></span></div></div>
         </div>
       </div>
 
@@ -2040,7 +2029,7 @@ Técnica: montagem, desmontagem, suporte durante o evento, operação das luzes.
         <div class="price-field">
           <span class="price-prefix">R$</span>
           <input type="text" id="valor3" value="4.900,00" style="max-width:160px" />
-              <div class="est-disp-panel" id="est-panel-desc3"><span class="est-disp-nome" id="est-panel-nome-desc3"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-desc3"></div></div><span class="est-disp-nums" id="est-nums-desc3"></span></div><span class="est-disp-hint" id="est-hint-desc3"></span><button class="est-disp-close" onclick="estFecharPanel('desc3')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-desc3"><span class="est-disp-nome" id="est-panel-nome-desc3"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-desc3"></div></div><span class="est-disp-nums" id="est-nums-desc3"></span></div></div>
         </div>
       </div>
       </div>
@@ -2081,7 +2070,7 @@ Cabos e acessórios</textarea>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val1" value="800,00" oninput="recalcDetTotal()" style="max-width:140px" />
-              <div class="est-disp-panel" id="est-panel-det_desc1"><span class="est-disp-nome" id="est-panel-nome-det_desc1"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc1"></div></div><span class="est-disp-nums" id="est-nums-det_desc1"></span></div><span class="est-disp-hint" id="est-hint-det_desc1"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc1')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-det_desc1"><span class="est-disp-nome" id="est-panel-nome-det_desc1"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc1"></div></div><span class="est-disp-nums" id="est-nums-det_desc1"></span></div></div>
             </div>
           </div>
         </div>
@@ -2117,7 +2106,7 @@ Cabos e acessórios</textarea>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val2" value="800,00" oninput="recalcDetTotal()" style="max-width:140px" />
-              <div class="est-disp-panel" id="est-panel-det_desc2"><span class="est-disp-nome" id="est-panel-nome-det_desc2"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc2"></div></div><span class="est-disp-nums" id="est-nums-det_desc2"></span></div><span class="est-disp-hint" id="est-hint-det_desc2"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc2')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-det_desc2"><span class="est-disp-nome" id="est-panel-nome-det_desc2"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc2"></div></div><span class="est-disp-nums" id="est-nums-det_desc2"></span></div></div>
             </div>
           </div>
         </div>
@@ -2149,7 +2138,7 @@ Cabos e acessórios</textarea>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val3" value="1.600,00" oninput="recalcDetTotal()" style="max-width:140px" />
-              <div class="est-disp-panel" id="est-panel-det_desc3"><span class="est-disp-nome" id="est-panel-nome-det_desc3"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc3"></div></div><span class="est-disp-nums" id="est-nums-det_desc3"></span></div><span class="est-disp-hint" id="est-hint-det_desc3"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc3')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-det_desc3"><span class="est-disp-nome" id="est-panel-nome-det_desc3"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc3"></div></div><span class="est-disp-nums" id="est-nums-det_desc3"></span></div></div>
             </div>
           </div>
         </div>
@@ -2186,7 +2175,7 @@ Cabos e acessórios</textarea>
               <div class="price-field" style="margin-top:0">
                 <span class="price-prefix">R$</span>
                 <input type="text" id="det_val4" value="300,00" oninput="recalcDetTotal()" style="max-width:140px" />
-              <div class="est-disp-panel" id="est-panel-det_desc4"><span class="est-disp-nome" id="est-panel-nome-det_desc4"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc4"></div></div><span class="est-disp-nums" id="est-nums-det_desc4"></span></div><span class="est-disp-hint" id="est-hint-det_desc4"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc4')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-det_desc4"><span class="est-disp-nome" id="est-panel-nome-det_desc4"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc4"></div></div><span class="est-disp-nums" id="est-nums-det_desc4"></span></div></div>
               </div>
             </div>
           </div>
@@ -2222,7 +2211,7 @@ Suporte Técnico</textarea>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val5" value="1.800,00" oninput="recalcDetTotal()" style="max-width:140px" />
-              <div class="est-disp-panel" id="est-panel-det_desc5"><span class="est-disp-nome" id="est-panel-nome-det_desc5"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc5"></div></div><span class="est-disp-nums" id="est-nums-det_desc5"></span></div><span class="est-disp-hint" id="est-hint-det_desc5"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc5')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-det_desc5"><span class="est-disp-nome" id="est-panel-nome-det_desc5"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc5"></div></div><span class="est-disp-nums" id="est-nums-det_desc5"></span></div></div>
             </div>
           </div>
         </div>
@@ -2255,7 +2244,7 @@ Acionamento</textarea>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val6" value="600,00" oninput="recalcDetTotal()" style="max-width:140px" />
-              <div class="est-disp-panel" id="est-panel-det_desc6"><span class="est-disp-nome" id="est-panel-nome-det_desc6"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc6"></div></div><span class="est-disp-nums" id="est-nums-det_desc6"></span></div><span class="est-disp-hint" id="est-hint-det_desc6"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc6')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-det_desc6"><span class="est-disp-nome" id="est-panel-nome-det_desc6"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc6"></div></div><span class="est-disp-nums" id="est-nums-det_desc6"></span></div></div>
             </div>
           </div>
         </div>
@@ -2288,7 +2277,7 @@ Revestimento</textarea>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val7" value="600,00" oninput="recalcDetTotal()" style="max-width:140px" />
-              <div class="est-disp-panel" id="est-panel-det_desc7"><span class="est-disp-nome" id="est-panel-nome-det_desc7"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc7"></div></div><span class="est-disp-nums" id="est-nums-det_desc7"></span></div><span class="est-disp-hint" id="est-hint-det_desc7"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc7')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-det_desc7"><span class="est-disp-nome" id="est-panel-nome-det_desc7"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc7"></div></div><span class="est-disp-nums" id="est-nums-det_desc7"></span></div></div>
             </div>
           </div>
         </div>
@@ -2320,7 +2309,7 @@ Revestimento</textarea>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val8" value="0,00" oninput="recalcDetTotal()" style="max-width:140px" />
-              <div class="est-disp-panel" id="est-panel-det_desc8"><span class="est-disp-nome" id="est-panel-nome-det_desc8"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc8"></div></div><span class="est-disp-nums" id="est-nums-det_desc8"></span></div><span class="est-disp-hint" id="est-hint-det_desc8"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc8')" title="Fechar">×</button></div>
+              <div class="est-disp-panel" id="est-panel-det_desc8"><span class="est-disp-nome" id="est-panel-nome-det_desc8"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc8"></div></div><span class="est-disp-nums" id="est-nums-det_desc8"></span></div></div>
             </div>
           </div>
         </div>
@@ -2837,7 +2826,7 @@ function addDetItem() {
       <div class="price-field" style="margin-top:8px">
         <span class="price-prefix">R$</span>
         <input type="text" id="det_val${detCount}" value="0,00" oninput="recalcDetTotal()" style="max-width:140px" />
-        <div class="est-disp-panel" id="est-panel-det_desc${detCount}"><span class="est-disp-nome" id="est-panel-nome-det_desc${detCount}"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc${detCount}"></div></div><span class="est-disp-nums" id="est-nums-det_desc${detCount}"></span></div><span class="est-disp-hint" id="est-hint-det_desc${detCount}"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc${detCount}')" title="Fechar">×</button></div>
+        <div class="est-disp-panel" id="est-panel-det_desc${detCount}"><span class="est-disp-nome" id="est-panel-nome-det_desc${detCount}"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc${detCount}"></div></div><span class="est-disp-nums" id="est-nums-det_desc${detCount}"></span></div></div>
       </div>
     </div>`;
   wrap.appendChild(div);
@@ -12761,7 +12750,6 @@ function _montarNotaLivre(d) {
     var nomeEl   = document.getElementById('est-panel-nome-' + taId);
     var barEl    = document.getElementById('est-bar-' + taId);
     var numsEl   = document.getElementById('est-nums-' + taId);
-    var hintEl   = document.getElementById('est-hint-' + taId);
     if (!panel) return;
 
     // Valores base do estoque
@@ -12773,7 +12761,7 @@ function _montarNotaLivre(d) {
     // Checa se há data de evento definida no formulário
     var dataISO = (document.getElementById('data_evento') || {}).value || '';
 
-    function _renderPanel(dispFinal, hint) {
+    function _renderPanel(dispFinal) {
       nomeEl.textContent = eq.nome;
 
       var pct = total > 0 ? Math.max(0, Math.min(100, (dispFinal / total) * 100)) : 0;
@@ -12793,18 +12781,17 @@ function _montarNotaLivre(d) {
         numsEl.textContent = dispFinal + '/' + total + ' disp.';
       }
 
-      hintEl.textContent = hint || '';
       panel.classList.add('visible');
     }
 
     if (!dataISO) {
       // Sem data: mostra disponibilidade atual simples
-      _renderPanel(disp, 'estoque atual');
+      _renderPanel(disp);
       return;
     }
 
     // Com data: consulta eventos_campo para alocações nesse dia
-    _renderPanel(disp, 'verificando…');
+    _renderPanel(disp);
 
     // Mapa nome→id
     var nomeToId = {};
@@ -12848,11 +12835,10 @@ function _montarNotaLivre(d) {
 
         var dispNoDia = Math.max(0, total - uso - manut - alocado);
         var dataFmt   = dataISO.split('-').reverse().join('/');
-        var hint      = 'em ' + dataFmt + (alocado > 0 ? ' · ' + alocado + ' aloc.' : '');
-        _renderPanel(dispNoDia, hint);
+        _renderPanel(dispNoDia);
       })
       .catch(function() {
-        _renderPanel(disp, 'estoque atual');
+        _renderPanel(disp);
       });
   }
 
@@ -12912,6 +12898,14 @@ function _montarNotaLivre(d) {
     // Aguarda Firebase e auth estarem prontos
     setTimeout(_init, 800);
   }
+
+  // ── Fecha painel ao clicar fora de um token destacado ────
+  document.addEventListener('click', function(e) {
+    if (!_panelAberto) return;
+    // Se clicou num .est-match, deixa o próprio handler cuidar
+    if (e.target && e.target.classList && e.target.classList.contains('est-match')) return;
+    estFecharPanel(_panelAberto.taId);
+  }, true);
 
 })();
 
