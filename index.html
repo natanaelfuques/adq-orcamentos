@@ -299,15 +299,15 @@
     position: relative;
   }
   .price-field .est-disp-panel {
+    /* Flutua sobre o lado esquerdo do price-field, sem empurrar o R$ */
     position: absolute;
-    right: 100%;
+    left: 0;
     top: 50%;
     transform: translateY(-50%);
-    margin-right: 12px;
-    white-space: nowrap;
     pointer-events: all;
     min-width: 0;
-    max-width: 340px;
+    max-width: calc(100% - 180px); /* garante que não sobrepõe o input */
+    overflow: hidden;
   }
 
   .price-prefix {
