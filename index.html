@@ -9,6 +9,115 @@
   /* Cor principal: amarelo/dourado */
   :root { --gold: #C8A94A; --gold-dim: rgba(200,169,74,0.13); }
 
+  /* ── ESTOQUE HIGHLIGHT ── */
+  .est-token-wrap {
+    position: relative;
+    display: block;
+  }
+  .est-desc-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    padding: 8px 10px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: transparent;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  .est-match {
+    background: rgba(200,169,74,0.18);
+    border-radius: 3px;
+    outline: 1px solid rgba(200,169,74,0.35);
+    outline-offset: 1px;
+    cursor: pointer;
+    pointer-events: all;
+    color: transparent;
+    transition: background 0.15s;
+  }
+  .est-match:hover, .est-match.active {
+    background: rgba(200,169,74,0.32);
+    outline-color: rgba(200,169,74,0.7);
+  }
+
+  /* ── PAINEL DE DISPONIBILIDADE ── */
+  .est-disp-panel {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+    animation: estFadeIn 0.15s ease;
+  }
+  .est-disp-panel.visible { display: flex; }
+  @keyframes estFadeIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .est-disp-nome {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+    flex-shrink: 0;
+  }
+  .est-disp-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+  .est-disp-bar-bg {
+    flex: 1;
+    height: 5px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 40px;
+  }
+  .est-disp-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.35s ease;
+  }
+  .est-disp-nums {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+  .est-disp-hint {
+    font-size: 0.64rem;
+    color: var(--muted);
+    font-style: italic;
+    white-space: nowrap;
+  }
+  .est-disp-close {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .est-disp-close:hover { color: var(--text); }
+
   body {
     font-family: 'Barlow', sans-serif;
     background: var(--darker);
@@ -204,6 +313,12 @@
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
+    flex-wrap: nowrap;
+  }
+  .price-field .est-disp-panel {
+    margin-right: auto;
+    flex-shrink: 1;
+    min-width: 0;
   }
 
   .price-prefix {
@@ -1850,18 +1965,18 @@ header {
               <button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,3)"># Kit 3</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,4)"># Kit 4</button>
             </div>
           </div>
-          <div class="desc-highlight-wrap" id="desc1-wrap">
-            <div class="desc-mirror" id="desc1-mirror" aria-hidden="true"></div>
-            <textarea id="desc1">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
+          <div class="est-token-wrap" id="est-wrap-desc1">
+          <textarea id="desc1">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
 Iluminação de palco: 2x torres com spider beam, 2x strobo atomic, máquina de fumaça, DMX.
 Luz cênica: 12x par led RGB.
 Técnica: montagem, desmontagem.</textarea>
-          </div>
+          <div class="est-desc-overlay" id="est-overlay-desc1" aria-hidden="true"></div>
         </div>
-        <div class="price-field" style="position:relative">
-          <div id="disp-panel-1" class="disp-panel" style="display:none"></div>
+        </div>
+        <div class="price-field">
           <span class="price-prefix">R$</span>
           <input type="text" id="valor1" value="2.800,00" style="max-width:160px" />
+              <div class="est-disp-panel" id="est-panel-desc1"><span class="est-disp-nome" id="est-panel-nome-desc1"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-desc1"></div></div><span class="est-disp-nums" id="est-nums-desc1"></span></div><span class="est-disp-hint" id="est-hint-desc1"></span><button class="est-disp-close" onclick="estFecharPanel('desc1')" title="Fechar">×</button></div>
         </div>
       </div>
 
@@ -1881,19 +1996,19 @@ Técnica: montagem, desmontagem.</textarea>
               <button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,3)"># Kit 3</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,4)"># Kit 4</button>
             </div>
           </div>
-          <div class="desc-highlight-wrap" id="desc2-wrap">
-            <div class="desc-mirror" id="desc2-mirror" aria-hidden="true"></div>
-            <textarea id="desc2">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
+          <div class="est-token-wrap" id="est-wrap-desc2">
+          <textarea id="desc2">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
 Iluminação de palco: 2x torres com spider beam, 2x moving beam, 2x strobo atomic, máquina de fumaça vertical, DMX.
 Luz cênica: 12x par led RGB.
 Pista led: Paris 3x3 slim.
 Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
-          </div>
+          <div class="est-desc-overlay" id="est-overlay-desc2" aria-hidden="true"></div>
         </div>
-        <div class="price-field" style="position:relative">
-          <div id="disp-panel-2" class="disp-panel" style="display:none"></div>
+        </div>
+        <div class="price-field">
           <span class="price-prefix">R$</span>
           <input type="text" id="valor2" value="3.500,00" style="max-width:160px" />
+              <div class="est-disp-panel" id="est-panel-desc2"><span class="est-disp-nome" id="est-panel-nome-desc2"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-desc2"></div></div><span class="est-disp-nums" id="est-nums-desc2"></span></div><span class="est-disp-hint" id="est-hint-desc2"></span><button class="est-disp-close" onclick="estFecharPanel('desc2')" title="Fechar">×</button></div>
         </div>
       </div>
 
@@ -1913,19 +2028,19 @@ Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
               <button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,3)"># Kit 3</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,4)"># Kit 4</button>
             </div>
           </div>
-          <div class="desc-highlight-wrap" id="desc3-wrap">
-            <div class="desc-mirror" id="desc3-mirror" aria-hidden="true"></div>
-            <textarea id="desc3">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
+          <div class="est-token-wrap" id="est-wrap-desc3">
+          <textarea id="desc3">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
 Iluminação de palco: 2x torres com spider beam, 4x moving beam, 2x strobo atomic, máquina de fumaça vertical, DMX.
 Luz cênica: 18x par led RGB.
 Pista led: Paris 4x4 slim.
 Técnica: montagem, desmontagem, suporte durante o evento, operação das luzes.</textarea>
-          </div>
+          <div class="est-desc-overlay" id="est-overlay-desc3" aria-hidden="true"></div>
         </div>
-        <div class="price-field" style="position:relative">
-          <div id="disp-panel-3" class="disp-panel" style="display:none"></div>
+        </div>
+        <div class="price-field">
           <span class="price-prefix">R$</span>
           <input type="text" id="valor3" value="4.900,00" style="max-width:160px" />
+              <div class="est-disp-panel" id="est-panel-desc3"><span class="est-disp-nome" id="est-panel-nome-desc3"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-desc3"></div></div><span class="est-disp-nums" id="est-nums-desc3"></span></div><span class="est-disp-hint" id="est-hint-desc3"></span><button class="est-disp-close" onclick="estFecharPanel('desc3')" title="Fechar">×</button></div>
         </div>
       </div>
       </div>
@@ -1953,16 +2068,20 @@ Técnica: montagem, desmontagem, suporte durante o evento, operação das luzes.
                   <button class="btn-preset" onclick="abrirModalPreset(this,'det',1,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',1,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',1,3)"># Kit 3</button>
                 </div>
               </div>
+              <div class="est-token-wrap" id="est-wrap-det_desc1">
               <textarea id="det_desc1" rows="3">2x Caixa alta
 2x Subgrave
 Mesa de som
 Mic s/ fio
 Bancada para DJ
 Cabos e acessórios</textarea>
+              <div class="est-desc-overlay" id="est-overlay-det_desc1" aria-hidden="true"></div>
+            </div>
             </div>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val1" value="800,00" oninput="recalcDetTotal()" style="max-width:140px" />
+              <div class="est-disp-panel" id="est-panel-det_desc1"><span class="est-disp-nome" id="est-panel-nome-det_desc1"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc1"></div></div><span class="est-disp-nums" id="est-nums-det_desc1"></span></div><span class="est-disp-hint" id="est-hint-det_desc1"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc1')" title="Fechar">×</button></div>
             </div>
           </div>
         </div>
@@ -1986,15 +2105,19 @@ Cabos e acessórios</textarea>
                   <button class="btn-preset" onclick="abrirModalPreset(this,'det',2,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',2,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',2,3)"># Kit 3</button>
                 </div>
               </div>
+              <div class="est-token-wrap" id="est-wrap-det_desc2">
               <textarea id="det_desc2" rows="3">2x Torres com Spider Beam
 2x Moving Beam
 2x Strobo Atomic
 1x Máquina de fumaça
 1x DMX</textarea>
+              <div class="est-desc-overlay" id="est-overlay-det_desc2" aria-hidden="true"></div>
+            </div>
             </div>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val2" value="800,00" oninput="recalcDetTotal()" style="max-width:140px" />
+              <div class="est-disp-panel" id="est-panel-det_desc2"><span class="est-disp-nome" id="est-panel-nome-det_desc2"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc2"></div></div><span class="est-disp-nums" id="est-nums-det_desc2"></span></div><span class="est-disp-hint" id="est-hint-det_desc2"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc2')" title="Fechar">×</button></div>
             </div>
           </div>
         </div>
@@ -2018,11 +2141,15 @@ Cabos e acessórios</textarea>
                   <button class="btn-preset" onclick="abrirModalPreset(this,'det',3,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',3,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',3,3)"># Kit 3</button>
                 </div>
               </div>
+              <div class="est-token-wrap" id="est-wrap-det_desc3">
               <textarea id="det_desc3" rows="2">Pista de LED Paris Slim 4x4</textarea>
+              <div class="est-desc-overlay" id="est-overlay-det_desc3" aria-hidden="true"></div>
+            </div>
             </div>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val3" value="1.600,00" oninput="recalcDetTotal()" style="max-width:140px" />
+              <div class="est-disp-panel" id="est-panel-det_desc3"><span class="est-disp-nome" id="est-panel-nome-det_desc3"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc3"></div></div><span class="est-disp-nums" id="est-nums-det_desc3"></span></div><span class="est-disp-hint" id="est-hint-det_desc3"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc3')" title="Fechar">×</button></div>
             </div>
           </div>
         </div>
@@ -2046,7 +2173,10 @@ Cabos e acessórios</textarea>
                   <button class="btn-preset" onclick="abrirModalPreset(this,'det',4,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',4,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',4,3)"># Kit 3</button>
                 </div>
               </div>
+              <div class="est-token-wrap" id="est-wrap-det_desc4">
               <textarea id="det_desc4" rows="2" oninput="calcCenica(event)">6x pontos cênicos</textarea>
+              <div class="est-desc-overlay" id="est-overlay-det_desc4" aria-hidden="true"></div>
+            </div>
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;flex-wrap:wrap;gap:8px">
               <div style="display:flex;align-items:center;gap:6px">
@@ -2056,6 +2186,7 @@ Cabos e acessórios</textarea>
               <div class="price-field" style="margin-top:0">
                 <span class="price-prefix">R$</span>
                 <input type="text" id="det_val4" value="300,00" oninput="recalcDetTotal()" style="max-width:140px" />
+              <div class="est-disp-panel" id="est-panel-det_desc4"><span class="est-disp-nome" id="est-panel-nome-det_desc4"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc4"></div></div><span class="est-disp-nums" id="est-nums-det_desc4"></span></div><span class="est-disp-hint" id="est-hint-det_desc4"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc4')" title="Fechar">×</button></div>
               </div>
             </div>
           </div>
@@ -2080,14 +2211,18 @@ Cabos e acessórios</textarea>
                   <button class="btn-preset" onclick="abrirModalPreset(this,'det',5,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',5,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',5,3)"># Kit 3</button>
                 </div>
               </div>
+              <div class="est-token-wrap" id="est-wrap-det_desc5">
               <textarea id="det_desc5" rows="3">Painel LED 3x2 traseiro
 Processadora de vídeo
 Notebook
 Suporte Técnico</textarea>
+              <div class="est-desc-overlay" id="est-overlay-det_desc5" aria-hidden="true"></div>
+            </div>
             </div>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val5" value="1.800,00" oninput="recalcDetTotal()" style="max-width:140px" />
+              <div class="est-disp-panel" id="est-panel-det_desc5"><span class="est-disp-nome" id="est-panel-nome-det_desc5"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc5"></div></div><span class="est-disp-nums" id="est-nums-det_desc5"></span></div><span class="est-disp-hint" id="est-hint-det_desc5"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc5')" title="Fechar">×</button></div>
             </div>
           </div>
         </div>
@@ -2111,12 +2246,16 @@ Suporte Técnico</textarea>
                   <button class="btn-preset" onclick="abrirModalPreset(this,'det',6,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',6,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',6,3)"># Kit 3</button>
                 </div>
               </div>
+              <div class="est-token-wrap" id="est-wrap-det_desc6">
               <textarea id="det_desc6" rows="2">6x Gerb 15s
 Acionamento</textarea>
+              <div class="est-desc-overlay" id="est-overlay-det_desc6" aria-hidden="true"></div>
+            </div>
             </div>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val6" value="600,00" oninput="recalcDetTotal()" style="max-width:140px" />
+              <div class="est-disp-panel" id="est-panel-det_desc6"><span class="est-disp-nome" id="est-panel-nome-det_desc6"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc6"></div></div><span class="est-disp-nums" id="est-nums-det_desc6"></span></div><span class="est-disp-hint" id="est-hint-det_desc6"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc6')" title="Fechar">×</button></div>
             </div>
           </div>
         </div>
@@ -2140,12 +2279,16 @@ Acionamento</textarea>
                   <button class="btn-preset" onclick="abrirModalPreset(this,'det',7,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',7,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',7,3)"># Kit 3</button>
                 </div>
               </div>
+              <div class="est-token-wrap" id="est-wrap-det_desc7">
               <textarea id="det_desc7" rows="2">Palco praticável 3x2m
 Revestimento</textarea>
+              <div class="est-desc-overlay" id="est-overlay-det_desc7" aria-hidden="true"></div>
+            </div>
             </div>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val7" value="600,00" oninput="recalcDetTotal()" style="max-width:140px" />
+              <div class="est-disp-panel" id="est-panel-det_desc7"><span class="est-disp-nome" id="est-panel-nome-det_desc7"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc7"></div></div><span class="est-disp-nums" id="est-nums-det_desc7"></span></div><span class="est-disp-hint" id="est-hint-det_desc7"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc7')" title="Fechar">×</button></div>
             </div>
           </div>
         </div>
@@ -2169,11 +2312,15 @@ Revestimento</textarea>
                   <button class="btn-preset" onclick="abrirModalPreset(this,'det',8,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',8,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'det',8,3)"># Kit 3</button>
                 </div>
               </div>
+              <div class="est-token-wrap" id="est-wrap-det_desc8">
               <textarea id="det_desc8" rows="2">Montagem, desmontagem, suporte durante o evento.</textarea>
+              <div class="est-desc-overlay" id="est-overlay-det_desc8" aria-hidden="true"></div>
+            </div>
             </div>
             <div class="price-field" style="margin-top:8px">
               <span class="price-prefix">R$</span>
               <input type="text" id="det_val8" value="0,00" oninput="recalcDetTotal()" style="max-width:140px" />
+              <div class="est-disp-panel" id="est-panel-det_desc8"><span class="est-disp-nome" id="est-panel-nome-det_desc8"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc8"></div></div><span class="est-disp-nums" id="est-nums-det_desc8"></span></div><span class="est-disp-hint" id="est-hint-det_desc8"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc8')" title="Fechar">×</button></div>
             </div>
           </div>
         </div>
@@ -2682,11 +2829,15 @@ function addDetItem() {
     <div class="det-body">
       <div style="margin-bottom:12px;margin-top:10px">
         <label>Descrição</label>
-        <textarea id="det_desc${detCount}" rows="2"></textarea>
+        <div class="est-token-wrap" id="est-wrap-det_desc${detCount}">
+          <textarea id="det_desc${detCount}" rows="2"></textarea>
+          <div class="est-desc-overlay" id="est-overlay-det_desc${detCount}" aria-hidden="true"></div>
+        </div>
       </div>
       <div class="price-field" style="margin-top:8px">
         <span class="price-prefix">R$</span>
         <input type="text" id="det_val${detCount}" value="0,00" oninput="recalcDetTotal()" style="max-width:140px" />
+        <div class="est-disp-panel" id="est-panel-det_desc${detCount}"><span class="est-disp-nome" id="est-panel-nome-det_desc${detCount}"></span><div class="est-disp-bar-wrap"><div class="est-disp-bar-bg"><div class="est-disp-bar-fill" id="est-bar-det_desc${detCount}"></div></div><span class="est-disp-nums" id="est-nums-det_desc${detCount}"></span></div><span class="est-disp-hint" id="est-hint-det_desc${detCount}"></span><button class="est-disp-close" onclick="estFecharPanel('det_desc${detCount}')" title="Fechar">×</button></div>
       </div>
     </div>`;
   wrap.appendChild(div);
@@ -2694,6 +2845,8 @@ function addDetItem() {
   const cb = document.getElementById('inc_det' + detCount);
   if (cb) cb.checked = true;
   recalcDetTotal();
+  // bind estoque highlight to new textarea
+  estBindTextarea('det_desc' + detCount);
 }
 
 // Presets: [item][kit] = { desc, val }
@@ -5687,220 +5840,6 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
   </div>
 </div>
 </div>
-<style>
-.desc-highlight-wrap { position: relative; }
-.desc-highlight-wrap textarea { position: relative; background: transparent !important; z-index: 1; }
-.desc-mirror {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  pointer-events: none; z-index: 0;
-  background: var(--darker, #111);
-  border: 1px solid transparent; border-radius: 4px;
-  font-family: 'Barlow', sans-serif; font-size: 0.95rem;
-  padding: 10px 13px; white-space: pre-wrap; word-break: break-word;
-  overflow: hidden; color: transparent; box-sizing: border-box; line-height: 1.5;
-}
-.desc-mirror .eq-match {
-  background: rgba(200,169,74,0.13);
-  border-bottom: 1px solid rgba(200,169,74,0.4);
-  border-radius: 2px; color: transparent; cursor: pointer;
-  pointer-events: all; transition: background 0.15s;
-}
-.desc-mirror .eq-match:hover { background: rgba(200,169,74,0.26); }
-.disp-panel {
-  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  max-width: calc(100% - 190px);
-  font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem;
-  font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  z-index: 10; display: flex; align-items: center; gap: 6px;
-}
-.disp-panel .disp-nome { color: var(--gold, #C8A94A); }
-.disp-panel .disp-ok   { color: #25D366; }
-.disp-panel .disp-warn { color: #E8A838; }
-.disp-panel .disp-err  { color: #e55555; }
-.disp-panel .disp-load { color: #555; }
-</style>
-<script>
-(function() {
-  var _estoqueCache = null;
-  var _activePanel = null;
-  function _getDb() { return window.db || null; }
-  function _carregarEstoque(cb) {
-    if (_estoqueCache) { cb(_estoqueCache); return; }
-    var db = _getDb();
-    if (!db) { setTimeout(function(){ _carregarEstoque(cb); }, 300); return; }
-    db.collection('estoque').get().then(function(snap) {
-      _estoqueCache = {};
-      snap.forEach(function(doc) {
-        var d = Object.assign({ id: doc.id }, doc.data());
-        if (d.nome) _estoqueCache[d.nome.trim().toLowerCase()] = d;
-      });
-      db.collection('estoque').onSnapshot(function(s) {
-        _estoqueCache = {};
-        s.forEach(function(doc) {
-          var d = Object.assign({ id: doc.id }, doc.data());
-          if (d.nome) _estoqueCache[d.nome.trim().toLowerCase()] = d;
-        });
-        [1,2,3].forEach(function(n) {
-          var ta = document.getElementById('desc' + n);
-          if (ta) _updateMirror(n, ta.value);
-        });
-      });
-      cb(_estoqueCache);
-    }).catch(function() { _estoqueCache = {}; cb({}); });
-  }
-  function _findMatches(text, estoque) {
-    var nomes = Object.keys(estoque).sort(function(a,b){ return b.length - a.length; });
-    var lower = text.toLowerCase();
-    var matches = [];
-    nomes.forEach(function(nome) {
-      var idx = 0;
-      while (true) {
-        var pos = lower.indexOf(nome, idx);
-        if (pos === -1) break;
-        var overlap = matches.some(function(m){ return pos < m.end && pos + nome.length > m.start; });
-        if (!overlap) matches.push({ start: pos, end: pos + nome.length, nome: nome, eq: estoque[nome] });
-        idx = pos + 1;
-      }
-    });
-    matches.sort(function(a,b){ return a.start - b.start; });
-    return matches;
-  }
-  function _esc(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-  function _buildMirrorHtml(text, matches) {
-    if (!matches.length) return _esc(text);
-    var html = '', cursor = 0;
-    matches.forEach(function(m) {
-      if (m.start > cursor) html += _esc(text.slice(cursor, m.start));
-      html += '<span class="eq-match" data-eq="' + _esc(m.nome) + '">' + _esc(text.slice(m.start, m.end)) + '</span>';
-      cursor = m.end;
-    });
-    if (cursor < text.length) html += _esc(text.slice(cursor));
-    return html;
-  }
-  function _syncMirrorSize(num) {
-    var ta = document.getElementById('desc' + num);
-    var mirror = document.getElementById('desc' + num + '-mirror');
-    if (!ta || !mirror) return;
-    var cs = window.getComputedStyle(ta);
-    mirror.style.width = ta.offsetWidth + 'px';
-    mirror.style.height = ta.offsetHeight + 'px';
-    mirror.style.fontSize = cs.fontSize;
-    mirror.style.lineHeight = cs.lineHeight;
-    mirror.style.fontFamily = cs.fontFamily;
-    mirror.style.padding = cs.padding;
-    mirror.style.boxSizing = 'border-box';
-    mirror.scrollTop = ta.scrollTop;
-  }
-  function _updateMirror(num, text) {
-    if (!_estoqueCache) return;
-    var mirror = document.getElementById('desc' + num + '-mirror');
-    if (!mirror) return;
-    var matches = _findMatches(text, _estoqueCache);
-    mirror.innerHTML = _buildMirrorHtml(text, matches);
-    _syncMirrorSize(num);
-    mirror.querySelectorAll('.eq-match').forEach(function(span) {
-      span.onclick = function(e) {
-        e.stopPropagation();
-        _mostrarDisponibilidade(num, span.getAttribute('data-eq'));
-      };
-    });
-  }
-  function _mostrarDisponibilidade(num, nomeEq) {
-    var panel = document.getElementById('disp-panel-' + num);
-    if (!panel) return;
-    if (_activePanel && _activePanel.num === num && _activePanel.nome === nomeEq) {
-      panel.style.display = 'none'; _activePanel = null; return;
-    }
-    _activePanel = { num: num, nome: nomeEq };
-    var eq = _estoqueCache && _estoqueCache[nomeEq];
-    if (!eq) return;
-    panel.style.display = 'flex';
-    panel.innerHTML = '<span class="disp-nome">' + _esc(eq.nome) + '</span><span class="disp-load">verificando...</span>';
-    var dataISO = (document.getElementById('data_evento') || {}).value || '';
-    if (!dataISO) { _renderPanel(panel, eq, 0, null); return; }
-    _calcDisponibilidadeNaData(eq, dataISO, function(alocados) {
-      if (_activePanel && _activePanel.num === num && _activePanel.nome === nomeEq)
-        _renderPanel(panel, eq, alocados, dataISO);
-    });
-  }
-  function _renderPanel(panel, eq, alocados, dataISO) {
-    var total = eq.qtd_total || 0;
-    var dispNaData = Math.max(0, (total - (eq.qtd_manutencao || 0)) - alocados);
-    var dataFmt = dataISO ? dataISO.split('-').reverse().join('/') : null;
-    var statusHtml;
-    if (!dataISO) {
-      statusHtml = '<span class="disp-warn">sem data definida</span>';
-    } else if (dispNaData >= 2) {
-      statusHtml = '<span class="disp-ok">' + dispNaData + ' disp. em ' + dataFmt + '</span>';
-    } else if (dispNaData === 1) {
-      statusHtml = '<span class="disp-warn">1 disp. em ' + dataFmt + '</span>';
-    } else {
-      statusHtml = '<span class="disp-err">indispon\xedvel em ' + dataFmt + '</span>';
-    }
-    if (total > 0) statusHtml += '<span style="color:#444">\u00b7 total ' + total + '</span>';
-    panel.innerHTML = '<span class="disp-nome">' + _esc(eq.nome) + '</span>' + statusHtml;
-  }
-  function _calcDisponibilidadeNaData(eq, dataISO, cb) {
-    var db = _getDb();
-    if (!db) { cb(0); return; }
-    db.collection('eventos_campo').where('ev_data', '<=', dataISO).get()
-      .then(function(snap) {
-        var alocados = 0;
-        snap.forEach(function(doc) {
-          var ev = doc.data();
-          var evFim = ev.ev_data_fim || ev.ev_data;
-          if (evFim < dataISO) return;
-          if (Array.isArray(ev._carga_itens))
-            ev._carga_itens.forEach(function(it) {
-              if (it.eqId === eq.id) alocados += (it.qty || 1);
-            });
-        });
-        cb(alocados);
-      }).catch(function() { cb(0); });
-  }
-  document.addEventListener('click', function(e) {
-    if (!_activePanel) return;
-    var mirror = document.getElementById('desc' + _activePanel.num + '-mirror');
-    if (mirror && mirror.contains(e.target)) return;
-    var panel = document.getElementById('disp-panel-' + _activePanel.num);
-    if (panel) panel.style.display = 'none';
-    _activePanel = null;
-  });
-  function _init() {
-    _carregarEstoque(function() {
-      [1,2,3].forEach(function(num) {
-        var ta = document.getElementById('desc' + num);
-        if (!ta) return;
-        _updateMirror(num, ta.value);
-        ta.addEventListener('input', function() {
-          _updateMirror(num, ta.value);
-          if (_activePanel && _activePanel.num === num) {
-            var p = document.getElementById('disp-panel-' + num);
-            if (p) p.style.display = 'none';
-            _activePanel = null;
-          }
-        });
-        ta.addEventListener('scroll', function() {
-          var m = document.getElementById('desc' + num + '-mirror');
-          if (m) m.scrollTop = ta.scrollTop;
-        });
-        new ResizeObserver(function() { _syncMirrorSize(num); }).observe(ta);
-      });
-    });
-  }
-  var _tries = 0;
-  function _tryInit() {
-    if (_getDb() || _tries > 40) { _init(); return; }
-    _tries++; setTimeout(_tryInit, 250);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _tryInit);
-  else _tryInit();
-})();
-</script>
-
 </body>
 </html>`;
 }
@@ -12336,8 +12275,17 @@ function _buildCardDetalheIdx(ev, usuarios) {
   var dataFmt    = ev.ev_data     ? ev.ev_data.split('-').reverse().join('/')     : '';
   var dataFimFmt = ev.ev_data_fim ? ev.ev_data_fim.split('-').reverse().join('/') : '';
   // Cor badge por proximidade
-  var badgeColor = _corBadgeIdx(ev);
-  var badgeStyle = 'color:' + badgeColor + ';background:' + badgeColor + '18';
+  var badgeColor = '#aaa', badgeBg = 'rgba(170,170,170,0.12)';
+  if (ev.ev_data) {
+    var parts = ev.ev_data.split('-');
+    var evDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+    var hoje = new Date(); hoje.setHours(0,0,0,0);
+    var diff = Math.round((evDate - hoje) / 86400000);
+    if (diff < 0)      { badgeColor = '#555';    badgeBg = 'rgba(85,85,85,0.15)'; }
+    else if (diff <= 1){ badgeColor = '#e05c5c'; badgeBg = 'rgba(224,92,92,0.15)'; }
+    else if (diff < 7) { badgeColor = '#4A90C8'; badgeBg = 'rgba(74,144,200,0.12)'; }
+  }
+  var badgeStyle = 'color:' + badgeColor + ';background:' + badgeBg;
 
   var datesHtml = (dataFmt
     ? '<div class="adx-badge" style="' + badgeStyle + '">' + dataFmt + '</div>'
@@ -12450,7 +12398,7 @@ function _buildCardDetalheIdx(ev, usuarios) {
       '<div class="adx-kit-header">' +
         '<span class="adx-kit-arrow">&#9654;</span>' +
         '<div class="adx-kit-check' + (todosChecked ? ' checked' : '') + '"></div>' +
-        '<span class="adx-kit-nome' + (grupo.riscado ? ' riscado' : '') + '" style="color:' + '#bbb' + '">' + esc(grupo.kitNome || grupo.kitId || '') + '</span>' +
+        '<span class="adx-kit-nome' + (grupo.riscado ? ' riscado' : '') + '" style="color:' + (grupo.riscado ? '#bbb' : corCarga) + '">' + esc(grupo.kitNome || grupo.kitId || '') + '</span>' +
       '</div>' +
       '<div class="adx-kit-body">' + itensKitHtml + '</div>' +
     '</div>';
@@ -12625,6 +12573,348 @@ function _montarNotaLivre(d) {
   if (d.val_total) partes.push('R$ ' + d.val_total);
   return partes.join(' – ');
 }
+
+// ═══════════════════════════════════════════════════════════
+//  ESTOQUE HIGHLIGHT — destaque de equipamentos na descrição
+// ═══════════════════════════════════════════════════════════
+(function() {
+
+  // Cache do estoque carregado do Firebase
+  var _estCache = null;       // Array<{id, nome, qtd_total, qtd_disponivel, qtd_em_uso, qtd_manutencao}>
+  var _estLoading = false;
+  var _estCallbacks = [];
+
+  // IDs de textareas a monitorar
+  var _TEXTAREA_IDS = [
+    'desc1','desc2','desc3',
+    'det_desc1','det_desc2','det_desc3','det_desc4',
+    'det_desc5','det_desc6','det_desc7','det_desc8'
+  ];
+
+  // painel aberto atualmente: { taId, matchedNome, eqId }
+  var _panelAberto = null;
+
+  // ── Carrega estoque do Firebase (uma vez, com cache) ──────
+  function _carregarEstoque(cb) {
+    if (_estCache) { cb(_estCache); return; }
+    _estCallbacks.push(cb);
+    if (_estLoading) return;
+    _estLoading = true;
+
+    function _tentarCarregar() {
+      if (typeof db === 'undefined' || !db) {
+        setTimeout(_tentarCarregar, 500);
+        return;
+      }
+      db.collection('estoque').get().then(function(snap) {
+        _estCache = [];
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          if (d.nome) _estCache.push({
+            id:              doc.id,
+            nome:            d.nome,
+            qtd_total:       d.qtd_total       || 0,
+            qtd_disponivel:  d.qtd_disponivel  || 0,
+            qtd_em_uso:      d.qtd_em_uso      || 0,
+            qtd_manutencao:  d.qtd_manutencao  || 0
+          });
+        });
+        // Ordena por nome comprido primeiro (evita match parcial errado)
+        _estCache.sort(function(a, b) { return b.nome.length - a.nome.length; });
+        var cbs = _estCallbacks.slice();
+        _estCallbacks = [];
+        cbs.forEach(function(fn) { fn(_estCache); });
+      }).catch(function(err) {
+        console.warn('[EstHighlight] Erro ao carregar estoque:', err);
+        _estCache = [];
+        _estCallbacks.forEach(function(fn) { fn([]); });
+        _estCallbacks = [];
+      });
+    }
+    _tentarCarregar();
+  }
+
+  // ── Tokeniza o texto da textarea para comparação ─────────
+  // Retorna array de {text, start, end, matched, eqIdx}
+  function _tokenizar(texto, estoque) {
+    if (!estoque || !estoque.length) return [{text: texto, start:0, end:texto.length, matched:false}];
+
+    // Mapa de match: posição → {len, eqIdx}
+    var hits = {};
+    var textoLow = texto.toLowerCase();
+
+    estoque.forEach(function(eq, eqIdx) {
+      var nomeLow = eq.nome.trim().toLowerCase();
+      if (!nomeLow) return;
+      var pos = 0;
+      while (true) {
+        var found = textoLow.indexOf(nomeLow, pos);
+        if (found === -1) break;
+        // Verifica se é palavra/token isolado (não no meio de outra palavra)
+        var antes  = found > 0 ? textoLow[found-1] : ' ';
+        var depois = found + nomeLow.length < textoLow.length ? textoLow[found + nomeLow.length] : ' ';
+        var okAntes  = /[\s\n,:;()\[\]\/\-x0-9]/.test(antes)  || found === 0;
+        var okDepois = /[\s\n,:;()\[\]\/\-x0-9]/.test(depois) || found + nomeLow.length >= textoLow.length;
+        if (okAntes || okDepois) {
+          // Prefere match mais longo se já existir um na mesma posição
+          if (!hits[found] || hits[found].len < nomeLow.length) {
+            hits[found] = { len: nomeLow.length, eqIdx: eqIdx };
+          }
+        }
+        pos = found + 1;
+      }
+    });
+
+    if (!Object.keys(hits).length) return [{text: texto, start:0, end:texto.length, matched:false}];
+
+    // Constrói lista de spans ordenados e sem sobreposição
+    var spans = Object.keys(hits).map(function(p) {
+      var pos = parseInt(p);
+      return { start: pos, end: pos + hits[p].len, eqIdx: hits[p].eqIdx };
+    }).sort(function(a,b) { return a.start - b.start; });
+
+    // Remove sobreposições (mantém o primeiro / mais longo)
+    var clean = [];
+    var cursor = 0;
+    spans.forEach(function(sp) {
+      if (sp.start < cursor) return; // sobreposição, ignora
+      clean.push(sp);
+      cursor = sp.end;
+    });
+
+    // Monta tokens
+    var tokens = [];
+    var cur = 0;
+    clean.forEach(function(sp) {
+      if (sp.start > cur) tokens.push({text: texto.slice(cur, sp.start), start:cur, end:sp.start, matched:false});
+      tokens.push({text: texto.slice(sp.start, sp.end), start:sp.start, end:sp.end, matched:true, eqIdx:sp.eqIdx});
+      cur = sp.end;
+    });
+    if (cur < texto.length) tokens.push({text: texto.slice(cur), start:cur, end:texto.length, matched:false});
+    return tokens;
+  }
+
+  // ── Escapa HTML ───────────────────────────────────────────
+  function _esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Atualiza o overlay de destaque de uma textarea ───────
+  function _atualizarOverlay(taId, estoque) {
+    var ta = document.getElementById(taId);
+    var ov = document.getElementById('est-overlay-' + taId);
+    if (!ta || !ov) return;
+
+    var texto = ta.value;
+    var tokens = _tokenizar(texto, estoque);
+
+    var html = tokens.map(function(tk) {
+      if (!tk.matched) return _esc(tk.text);
+      var eq = estoque[tk.eqIdx];
+      return '<span class="est-match" data-taid="' + taId + '" data-eqidx="' + tk.eqIdx + '" data-nome="' + _esc(eq.nome) + '">' + _esc(tk.text) + '</span>';
+    }).join('');
+
+    ov.innerHTML = html;
+
+    // Sincroniza scroll
+    ov.scrollTop = ta.scrollTop;
+
+    // Re-bindear cliques nos spans
+    ov.querySelectorAll('.est-match').forEach(function(span) {
+      span.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var eqIdx = parseInt(span.getAttribute('data-eqidx'));
+        var eq = estoque[eqIdx];
+        _mostrarPanel(taId, eq, span);
+      });
+    });
+  }
+
+  // ── Sincroniza dimensões e padding do overlay com a textarea ──
+  function _sincronizarOverlay(ta, ov) {
+    var cs = window.getComputedStyle(ta);
+    ov.style.padding     = cs.padding;
+    ov.style.fontSize    = cs.fontSize;
+    ov.style.fontFamily  = cs.fontFamily;
+    ov.style.lineHeight  = cs.lineHeight;
+    ov.style.letterSpacing = cs.letterSpacing;
+    ov.style.width       = ta.offsetWidth  + 'px';
+    ov.style.height      = ta.offsetHeight + 'px';
+    ov.style.borderRadius = cs.borderRadius;
+    ov.style.boxSizing   = 'border-box';
+  }
+
+  // ── Mostra painel de disponibilidade ─────────────────────
+  function _mostrarPanel(taId, eq, spanEl) {
+    // Fecha painel anterior se for diferente
+    if (_panelAberto && _panelAberto.taId !== taId) {
+      estFecharPanel(_panelAberto.taId);
+    }
+    // Remove active de outros spans no mesmo overlay
+    var ov = document.getElementById('est-overlay-' + taId);
+    if (ov) ov.querySelectorAll('.est-match.active').forEach(function(s){ s.classList.remove('active'); });
+    if (spanEl) spanEl.classList.add('active');
+
+    _panelAberto = { taId: taId, eq: eq };
+
+    var panel    = document.getElementById('est-panel-' + taId);
+    var nomeEl   = document.getElementById('est-panel-nome-' + taId);
+    var barEl    = document.getElementById('est-bar-' + taId);
+    var numsEl   = document.getElementById('est-nums-' + taId);
+    var hintEl   = document.getElementById('est-hint-' + taId);
+    if (!panel) return;
+
+    // Valores base do estoque
+    var total = eq.qtd_total;
+    var disp  = eq.qtd_disponivel;
+    var uso   = eq.qtd_em_uso;
+    var manut = eq.qtd_manutencao;
+
+    // Checa se há data de evento definida no formulário
+    var dataISO = (document.getElementById('data_evento') || {}).value || '';
+
+    function _renderPanel(dispFinal, hint) {
+      nomeEl.textContent = eq.nome;
+
+      var pct = total > 0 ? Math.max(0, Math.min(100, (dispFinal / total) * 100)) : 0;
+      barEl.style.width = pct + '%';
+
+      if (dispFinal <= 0) {
+        barEl.style.background = '#E05C5C';
+        numsEl.style.color = '#E05C5C';
+        numsEl.textContent = '0/' + total + ' disp.';
+      } else if (dispFinal < total) {
+        barEl.style.background = '#C8A94A';
+        numsEl.style.color = '#C8A94A';
+        numsEl.textContent = dispFinal + '/' + total + ' disp.';
+      } else {
+        barEl.style.background = '#25D366';
+        numsEl.style.color = '#25D366';
+        numsEl.textContent = dispFinal + '/' + total + ' disp.';
+      }
+
+      hintEl.textContent = hint || '';
+      panel.classList.add('visible');
+    }
+
+    if (!dataISO) {
+      // Sem data: mostra disponibilidade atual simples
+      _renderPanel(disp, 'estoque atual');
+      return;
+    }
+
+    // Com data: consulta eventos_campo para alocações nesse dia
+    _renderPanel(disp, 'verificando…');
+
+    // Mapa nome→id
+    var nomeToId = {};
+    if (_estCache) {
+      _estCache.forEach(function(e) { nomeToId[e.nome.trim().toLowerCase()] = e.id; });
+    }
+
+    db.collection('eventos_campo')
+      .where('ev_data', '<=', dataISO)
+      .get()
+      .then(function(snap) {
+        var alocado = 0;
+        snap.forEach(function(doc) {
+          var ev = doc.data();
+          var evIni = ev.ev_data || null;
+          var evFim = ev.ev_data_fim || evIni;
+          if (!evIni || dataISO < evIni || dataISO > evFim) return;
+
+          var extRem  = ev.itens_extras_removidos || {};
+          var origRem = ev.itens_removidos || {};
+
+          function _somarItem(s, idx, rem) {
+            if (rem[idx]) return;
+            var m = s.match(/^(\d+)x\s+(.+)$/);
+            var nome = (m ? m[2] : s).trim().toLowerCase();
+            if (nome === eq.nome.trim().toLowerCase()) {
+              alocado += (m ? parseInt(m[1]) : 1);
+            }
+          }
+          (ev.itens_extras || []).forEach(function(s, i) { _somarItem(s, i, extRem); });
+          (ev.servicos     || []).forEach(function(s, i) { _somarItem(s, i, origRem); });
+
+          var grupos = ev.kits_grupos_ev || [];
+          grupos.forEach(function(g) {
+            if (g.riscado) return;
+            (g.itens || []).forEach(function(it) {
+              if (!it.riscado && it.eqId === eq.id) alocado += (it.qty || 1);
+            });
+          });
+        });
+
+        var dispNoDia = Math.max(0, total - uso - manut - alocado);
+        var dataFmt   = dataISO.split('-').reverse().join('/');
+        var hint      = 'em ' + dataFmt + (alocado > 0 ? ' · ' + alocado + ' aloc.' : '');
+        _renderPanel(dispNoDia, hint);
+      })
+      .catch(function() {
+        _renderPanel(disp, 'estoque atual');
+      });
+  }
+
+  // ── Fecha painel (exposto globalmente) ────────────────────
+  window.estFecharPanel = function(taId) {
+    var panel = document.getElementById('est-panel-' + taId);
+    if (panel) panel.classList.remove('visible');
+    var ov = document.getElementById('est-overlay-' + taId);
+    if (ov) ov.querySelectorAll('.est-match.active').forEach(function(s){ s.classList.remove('active'); });
+    if (_panelAberto && _panelAberto.taId === taId) _panelAberto = null;
+  };
+
+  // ── Bind de uma textarea ──────────────────────────────────
+  window.estBindTextarea = function(taId) {
+    var ta = document.getElementById(taId);
+    var ov = document.getElementById('est-overlay-' + taId);
+    if (!ta || !ov) return;
+
+    _carregarEstoque(function(estoque) {
+      _sincronizarOverlay(ta, ov);
+      _atualizarOverlay(taId, estoque);
+
+      var _debTimer = null;
+      ta.addEventListener('input', function() {
+        ov.scrollTop = ta.scrollTop;
+        clearTimeout(_debTimer);
+        _debTimer = setTimeout(function() {
+          _sincronizarOverlay(ta, ov);
+          _atualizarOverlay(taId, estoque);
+          // Fecha painel se estava aberto neste textarea (texto mudou)
+          if (_panelAberto && _panelAberto.taId === taId) estFecharPanel(taId);
+        }, 220);
+      });
+
+      ta.addEventListener('scroll', function() {
+        ov.scrollTop = ta.scrollTop;
+      });
+
+      // Resync ao resize (autoResize altera altura)
+      var _roTimer = null;
+      var ro = new ResizeObserver(function() {
+        clearTimeout(_roTimer);
+        _roTimer = setTimeout(function() { _sincronizarOverlay(ta, ov); }, 60);
+      });
+      ro.observe(ta);
+    });
+  };
+
+  // ── Init: bind em todas as textareas existentes ───────────
+  function _init() {
+    _TEXTAREA_IDS.forEach(function(id) { window.estBindTextarea(id); });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _init);
+  } else {
+    // Aguarda Firebase e auth estarem prontos
+    setTimeout(_init, 800);
+  }
+
+})();
+
 </script>
 </div>
 </body                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
