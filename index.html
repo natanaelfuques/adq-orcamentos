@@ -11584,10 +11584,15 @@ var _agDiaSelIdx = null;
 var _eventosAgendaIdx = {};
 var _agendaIndexListener = null;
 
+function _hojeLocalStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
+}
+
 function abrirAgendaIndex() {
   _agMesIdx = new Date().getMonth();
   _agAnoIdx = new Date().getFullYear();
-  _agDiaSelIdx = new Date().toISOString().slice(0,10);
+  _agDiaSelIdx = _hojeLocalStr();
   document.getElementById('agenda-index-overlay').style.display = 'flex';
   _renderAgendaIdx();
   _renderAgendaListaDiaIdx(_agDiaSelIdx);
@@ -11845,7 +11850,7 @@ function _navMesIdx(delta) {
 function _irParaHojeIdx() {
   _agMesIdx = new Date().getMonth();
   _agAnoIdx = new Date().getFullYear();
-  _agDiaSelIdx = new Date().toISOString().slice(0,10);
+  _agDiaSelIdx = _hojeLocalStr();
   _renderAgendaIdx();
   _renderAgendaListaDiaIdx(_agDiaSelIdx);
 }
