@@ -11652,7 +11652,7 @@ function fecharAgendaIndex() {
     for (var i = 0; i < 42; i++) {
       var d = i - primeiro + 1;
       var txt = (d > 0 && d <= dias) ? d : '';
-      cells += '<div style="border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 3px;font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;color:var(--text);opacity:' + (txt?'1':'0.25') + '">' + (txt||'') + '</div>';
+      cells += '<div style="border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:4px 3px;font-size:0.78rem;font-weight:700;color:var(--text);opacity:' + (txt?'1':'0.25') + '">' + (txt||'') + '</div>';
     }
     _ghostGrid.innerHTML = cells;
     wrap.appendChild(_ghostGrid);
