@@ -1850,12 +1850,16 @@ header {
               <button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,3)"># Kit 3</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',1,4)"># Kit 4</button>
             </div>
           </div>
-          <textarea id="desc1">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
+          <div class="desc-highlight-wrap" id="desc1-wrap">
+            <div class="desc-mirror" id="desc1-mirror" aria-hidden="true"></div>
+            <textarea id="desc1">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
 Iluminação de palco: 2x torres com spider beam, 2x strobo atomic, máquina de fumaça, DMX.
 Luz cênica: 12x par led RGB.
 Técnica: montagem, desmontagem.</textarea>
+          </div>
         </div>
-        <div class="price-field">
+        <div class="price-field" style="position:relative">
+          <div id="disp-panel-1" class="disp-panel" style="display:none"></div>
           <span class="price-prefix">R$</span>
           <input type="text" id="valor1" value="2.800,00" style="max-width:160px" />
         </div>
@@ -1877,13 +1881,17 @@ Técnica: montagem, desmontagem.</textarea>
               <button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,3)"># Kit 3</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',2,4)"># Kit 4</button>
             </div>
           </div>
-          <textarea id="desc2">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
+          <div class="desc-highlight-wrap" id="desc2-wrap">
+            <div class="desc-mirror" id="desc2-mirror" aria-hidden="true"></div>
+            <textarea id="desc2">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
 Iluminação de palco: 2x torres com spider beam, 2x moving beam, 2x strobo atomic, máquina de fumaça vertical, DMX.
 Luz cênica: 12x par led RGB.
 Pista led: Paris 3x3 slim.
 Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
+          </div>
         </div>
-        <div class="price-field">
+        <div class="price-field" style="position:relative">
+          <div id="disp-panel-2" class="disp-panel" style="display:none"></div>
           <span class="price-prefix">R$</span>
           <input type="text" id="valor2" value="3.500,00" style="max-width:160px" />
         </div>
@@ -1905,13 +1913,17 @@ Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
               <button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,1)"># Kit 1</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,2)"># Kit 2</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,3)"># Kit 3</button><button class="btn-preset" onclick="abrirModalPreset(this,'pacote',3,4)"># Kit 4</button>
             </div>
           </div>
-          <textarea id="desc3">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
+          <div class="desc-highlight-wrap" id="desc3-wrap">
+            <div class="desc-mirror" id="desc3-mirror" aria-hidden="true"></div>
+            <textarea id="desc3">Sonorização de palco: 2x caixa alta, 2x subgrave, mesa de som, mic s/ fio, bancada para DJ, cabos e acessórios.
 Iluminação de palco: 2x torres com spider beam, 4x moving beam, 2x strobo atomic, máquina de fumaça vertical, DMX.
 Luz cênica: 18x par led RGB.
 Pista led: Paris 4x4 slim.
 Técnica: montagem, desmontagem, suporte durante o evento, operação das luzes.</textarea>
+          </div>
         </div>
-        <div class="price-field">
+        <div class="price-field" style="position:relative">
+          <div id="disp-panel-3" class="disp-panel" style="display:none"></div>
           <span class="price-prefix">R$</span>
           <input type="text" id="valor3" value="4.900,00" style="max-width:160px" />
         </div>
@@ -5675,6 +5687,220 @@ function buildContrato({ cliNome, cliLinha, cliEmail, cliFone, evNome, evResp, e
   </div>
 </div>
 </div>
+<style>
+.desc-highlight-wrap { position: relative; }
+.desc-highlight-wrap textarea { position: relative; background: transparent !important; z-index: 1; }
+.desc-mirror {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none; z-index: 0;
+  background: var(--darker, #111);
+  border: 1px solid transparent; border-radius: 4px;
+  font-family: 'Barlow', sans-serif; font-size: 0.95rem;
+  padding: 10px 13px; white-space: pre-wrap; word-break: break-word;
+  overflow: hidden; color: transparent; box-sizing: border-box; line-height: 1.5;
+}
+.desc-mirror .eq-match {
+  background: rgba(200,169,74,0.13);
+  border-bottom: 1px solid rgba(200,169,74,0.4);
+  border-radius: 2px; color: transparent; cursor: pointer;
+  pointer-events: all; transition: background 0.15s;
+}
+.desc-mirror .eq-match:hover { background: rgba(200,169,74,0.26); }
+.disp-panel {
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  max-width: calc(100% - 190px);
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem;
+  font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  z-index: 10; display: flex; align-items: center; gap: 6px;
+}
+.disp-panel .disp-nome { color: var(--gold, #C8A94A); }
+.disp-panel .disp-ok   { color: #25D366; }
+.disp-panel .disp-warn { color: #E8A838; }
+.disp-panel .disp-err  { color: #e55555; }
+.disp-panel .disp-load { color: #555; }
+</style>
+<script>
+(function() {
+  var _estoqueCache = null;
+  var _activePanel = null;
+  function _getDb() { return window.db || null; }
+  function _carregarEstoque(cb) {
+    if (_estoqueCache) { cb(_estoqueCache); return; }
+    var db = _getDb();
+    if (!db) { setTimeout(function(){ _carregarEstoque(cb); }, 300); return; }
+    db.collection('estoque').get().then(function(snap) {
+      _estoqueCache = {};
+      snap.forEach(function(doc) {
+        var d = Object.assign({ id: doc.id }, doc.data());
+        if (d.nome) _estoqueCache[d.nome.trim().toLowerCase()] = d;
+      });
+      db.collection('estoque').onSnapshot(function(s) {
+        _estoqueCache = {};
+        s.forEach(function(doc) {
+          var d = Object.assign({ id: doc.id }, doc.data());
+          if (d.nome) _estoqueCache[d.nome.trim().toLowerCase()] = d;
+        });
+        [1,2,3].forEach(function(n) {
+          var ta = document.getElementById('desc' + n);
+          if (ta) _updateMirror(n, ta.value);
+        });
+      });
+      cb(_estoqueCache);
+    }).catch(function() { _estoqueCache = {}; cb({}); });
+  }
+  function _findMatches(text, estoque) {
+    var nomes = Object.keys(estoque).sort(function(a,b){ return b.length - a.length; });
+    var lower = text.toLowerCase();
+    var matches = [];
+    nomes.forEach(function(nome) {
+      var idx = 0;
+      while (true) {
+        var pos = lower.indexOf(nome, idx);
+        if (pos === -1) break;
+        var overlap = matches.some(function(m){ return pos < m.end && pos + nome.length > m.start; });
+        if (!overlap) matches.push({ start: pos, end: pos + nome.length, nome: nome, eq: estoque[nome] });
+        idx = pos + 1;
+      }
+    });
+    matches.sort(function(a,b){ return a.start - b.start; });
+    return matches;
+  }
+  function _esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function _buildMirrorHtml(text, matches) {
+    if (!matches.length) return _esc(text);
+    var html = '', cursor = 0;
+    matches.forEach(function(m) {
+      if (m.start > cursor) html += _esc(text.slice(cursor, m.start));
+      html += '<span class="eq-match" data-eq="' + _esc(m.nome) + '">' + _esc(text.slice(m.start, m.end)) + '</span>';
+      cursor = m.end;
+    });
+    if (cursor < text.length) html += _esc(text.slice(cursor));
+    return html;
+  }
+  function _syncMirrorSize(num) {
+    var ta = document.getElementById('desc' + num);
+    var mirror = document.getElementById('desc' + num + '-mirror');
+    if (!ta || !mirror) return;
+    var cs = window.getComputedStyle(ta);
+    mirror.style.width = ta.offsetWidth + 'px';
+    mirror.style.height = ta.offsetHeight + 'px';
+    mirror.style.fontSize = cs.fontSize;
+    mirror.style.lineHeight = cs.lineHeight;
+    mirror.style.fontFamily = cs.fontFamily;
+    mirror.style.padding = cs.padding;
+    mirror.style.boxSizing = 'border-box';
+    mirror.scrollTop = ta.scrollTop;
+  }
+  function _updateMirror(num, text) {
+    if (!_estoqueCache) return;
+    var mirror = document.getElementById('desc' + num + '-mirror');
+    if (!mirror) return;
+    var matches = _findMatches(text, _estoqueCache);
+    mirror.innerHTML = _buildMirrorHtml(text, matches);
+    _syncMirrorSize(num);
+    mirror.querySelectorAll('.eq-match').forEach(function(span) {
+      span.onclick = function(e) {
+        e.stopPropagation();
+        _mostrarDisponibilidade(num, span.getAttribute('data-eq'));
+      };
+    });
+  }
+  function _mostrarDisponibilidade(num, nomeEq) {
+    var panel = document.getElementById('disp-panel-' + num);
+    if (!panel) return;
+    if (_activePanel && _activePanel.num === num && _activePanel.nome === nomeEq) {
+      panel.style.display = 'none'; _activePanel = null; return;
+    }
+    _activePanel = { num: num, nome: nomeEq };
+    var eq = _estoqueCache && _estoqueCache[nomeEq];
+    if (!eq) return;
+    panel.style.display = 'flex';
+    panel.innerHTML = '<span class="disp-nome">' + _esc(eq.nome) + '</span><span class="disp-load">verificando...</span>';
+    var dataISO = (document.getElementById('data_evento') || {}).value || '';
+    if (!dataISO) { _renderPanel(panel, eq, 0, null); return; }
+    _calcDisponibilidadeNaData(eq, dataISO, function(alocados) {
+      if (_activePanel && _activePanel.num === num && _activePanel.nome === nomeEq)
+        _renderPanel(panel, eq, alocados, dataISO);
+    });
+  }
+  function _renderPanel(panel, eq, alocados, dataISO) {
+    var total = eq.qtd_total || 0;
+    var dispNaData = Math.max(0, (total - (eq.qtd_manutencao || 0)) - alocados);
+    var dataFmt = dataISO ? dataISO.split('-').reverse().join('/') : null;
+    var statusHtml;
+    if (!dataISO) {
+      statusHtml = '<span class="disp-warn">sem data definida</span>';
+    } else if (dispNaData >= 2) {
+      statusHtml = '<span class="disp-ok">' + dispNaData + ' disp. em ' + dataFmt + '</span>';
+    } else if (dispNaData === 1) {
+      statusHtml = '<span class="disp-warn">1 disp. em ' + dataFmt + '</span>';
+    } else {
+      statusHtml = '<span class="disp-err">indispon\xedvel em ' + dataFmt + '</span>';
+    }
+    if (total > 0) statusHtml += '<span style="color:#444">\u00b7 total ' + total + '</span>';
+    panel.innerHTML = '<span class="disp-nome">' + _esc(eq.nome) + '</span>' + statusHtml;
+  }
+  function _calcDisponibilidadeNaData(eq, dataISO, cb) {
+    var db = _getDb();
+    if (!db) { cb(0); return; }
+    db.collection('eventos_campo').where('ev_data', '<=', dataISO).get()
+      .then(function(snap) {
+        var alocados = 0;
+        snap.forEach(function(doc) {
+          var ev = doc.data();
+          var evFim = ev.ev_data_fim || ev.ev_data;
+          if (evFim < dataISO) return;
+          if (Array.isArray(ev._carga_itens))
+            ev._carga_itens.forEach(function(it) {
+              if (it.eqId === eq.id) alocados += (it.qty || 1);
+            });
+        });
+        cb(alocados);
+      }).catch(function() { cb(0); });
+  }
+  document.addEventListener('click', function(e) {
+    if (!_activePanel) return;
+    var mirror = document.getElementById('desc' + _activePanel.num + '-mirror');
+    if (mirror && mirror.contains(e.target)) return;
+    var panel = document.getElementById('disp-panel-' + _activePanel.num);
+    if (panel) panel.style.display = 'none';
+    _activePanel = null;
+  });
+  function _init() {
+    _carregarEstoque(function() {
+      [1,2,3].forEach(function(num) {
+        var ta = document.getElementById('desc' + num);
+        if (!ta) return;
+        _updateMirror(num, ta.value);
+        ta.addEventListener('input', function() {
+          _updateMirror(num, ta.value);
+          if (_activePanel && _activePanel.num === num) {
+            var p = document.getElementById('disp-panel-' + num);
+            if (p) p.style.display = 'none';
+            _activePanel = null;
+          }
+        });
+        ta.addEventListener('scroll', function() {
+          var m = document.getElementById('desc' + num + '-mirror');
+          if (m) m.scrollTop = ta.scrollTop;
+        });
+        new ResizeObserver(function() { _syncMirrorSize(num); }).observe(ta);
+      });
+    });
+  }
+  var _tries = 0;
+  function _tryInit() {
+    if (_getDb() || _tries > 40) { _init(); return; }
+    _tries++; setTimeout(_tryInit, 250);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _tryInit);
+  else _tryInit();
+})();
+</script>
+
 </body>
 </html>`;
 }
