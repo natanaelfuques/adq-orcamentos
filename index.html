@@ -12460,25 +12460,25 @@ function gerarPacoteDoEvento(evId, btnEl) {
     var ev = Object.assign({ id: evId }, doc.data());
 
     // Coleta TODOS os itens (incluindo riscados/removidos)
-    var secoes = [];
+    var linhas = [];
 
-    // Serviços individuais — agrupados numa seção só
-    var linhasAvulsas = [];
+    // Serviços
     (ev.servicos || []).forEach(function(s) {
       if (!s || !s.trim()) return;
       if (s.indexOf('•') >= 0) {
-        s.split('•').forEach(function(p) { var t = p.trim(); if (t) linhasAvulsas.push(t); });
+        s.split('•').forEach(function(p) { var t = p.trim(); if (t) linhas.push(t); });
       } else {
-        linhasAvulsas.push(s.trim());
+        linhas.push(s.trim());
       }
     });
+
+    // Itens extras
     (ev.itens_extras || []).forEach(function(s) {
       if (!s || !s.trim()) return;
-      linhasAvulsas.push(s.trim());
+      linhas.push(s.trim());
     });
-    if (linhasAvulsas.length) secoes.push(linhasAvulsas.join('\n'));
 
-    // Kit grupos — cada kit é uma seção separada
+    // Kit grupos — formato "Titulo do Kit: 2x Item A, Item B, Item C."
     (ev.kits_grupos_ev || []).forEach(function(grupo) {
       var itensKit = (grupo.itens || []).map(function(it) {
         return ((it.qty && it.qty > 1) ? it.qty + 'x ' : '') + (it.eqNome || '');
@@ -12486,13 +12486,13 @@ function gerarPacoteDoEvento(evId, btnEl) {
       if (!itensKit.length) return;
       var titulo = (grupo.kitNome || grupo.kitId || 'Kit').trim();
       titulo = titulo.charAt(0).toUpperCase() + titulo.slice(1);
-      secoes.push(titulo + ': ' + itensKit.join(', ') + '.');
+      linhas.push(titulo + ': ' + itensKit.join(', ') + '.');
     });
 
-    if (!secoes.length) return;
+    if (!linhas.length) return;
 
-    // Junta seções com linha em branco entre elas
-    var texto = secoes.join('\n\n');
+    // Monta o texto final — uma linha por item
+    var texto = linhas.join('\n');
 
     // Popula desc2 (pacote "Mais Escolhido") e value2 se tiver valor no evento
     var ta = document.getElementById('desc2');
@@ -12802,25 +12802,11 @@ function _montarNotaLivre(d) {
     var texto = ta.value;
     var tokens = _tokenizar(texto, estoque);
 
-    // Constrói HTML com tokens, depois aplica estilo de fonte menor nos itens de kit
-    var rawHtml = tokens.map(function(tk) {
+    var html = tokens.map(function(tk) {
       if (!tk.matched) return _esc(tk.text);
       var eq = estoque[tk.eqIdx];
       return '<span class="est-match" data-taid="' + taId + '" data-eqidx="' + tk.eqIdx + '" data-nome="' + _esc(eq.nome) + '">' + _esc(tk.text) + '</span>';
     }).join('');
-
-    // Envolve a parte de itens (após "Título: ") com font-size menor em cada linha
-    // Linhas no formato "Titulo: itens..." → título normal, itens menores
-    var html = rawHtml.split('\n').map(function(linha) {
-      var colonIdx = linha.indexOf(': ');
-      if (colonIdx > 0 && colonIdx < 40) {
-        // Título + dois pontos ficam no tamanho normal; itens ficam menores
-        var titulo = linha.slice(0, colonIdx + 1); // "Titulo:"
-        var itens  = linha.slice(colonIdx + 1);    // " item, item..."
-        return titulo + '<span style="font-size:0.85em">' + itens + '</span>';
-      }
-      return linha;
-    }).join('\n');
 
     ov.innerHTML = html;
 
