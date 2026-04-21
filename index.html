@@ -11588,10 +11588,10 @@ var _agendaIndexListener = null;
 function abrirAgendaIndex() {
   _agMesIdx = new Date().getMonth();
   _agAnoIdx = new Date().getFullYear();
-  _agDiaSelIdx = null;
+  _agDiaSelIdx = new Date().toISOString().slice(0,10);
   document.getElementById('agenda-index-overlay').style.display = 'flex';
   _renderAgendaIdx();
-  _renderAgendaListaDiaIdx(null);
+  _renderAgendaListaDiaIdx(_agDiaSelIdx);
   if (!_agendaIndexListener && typeof db !== 'undefined') {
     _agendaIndexListener = db.collection('eventos_campo').onSnapshot(function(snap) {
       _eventosAgendaIdx = {};
@@ -11602,7 +11602,8 @@ function abrirAgendaIndex() {
         }
       });
       _renderAgendaIdx();
-      _renderAgendaListaDiaIdx(_agDiaSelIdx);
+      if (window.innerWidth > 640 || _agDiaSelIdx) _renderAgendaListaDiaIdx(_agDiaSelIdx);
+      else { var l = document.getElementById('agenda-idx-lista'); if (l) l.innerHTML = ''; }
       _atualizarBadgeAgendaIdx();
     }, function(err) { console.warn('Agenda index error:', err); });
   }
@@ -11937,6 +11938,8 @@ function _renderAgendaListaDiaIdx(dateStr) {
   var lista  = document.getElementById('agenda-idx-lista');
   var header = document.getElementById('agenda-idx-dia-header');
   if (!lista) return;
+  // No mobile, sem dia selecionado não exibe lista
+  if (!dateStr && window.innerWidth <= 640) { lista.innerHTML = ''; return; }
 
   if (dateStr) {
     if (header) {
