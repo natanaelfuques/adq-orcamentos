@@ -12479,12 +12479,14 @@ function gerarPacoteDoEvento(evId, btnEl) {
       linhas.push(s.trim());
     });
 
-    // Kit grupos — todos os itens, inclusive riscados
+    // Kit grupos — formato "Titulo do Kit: 2x Item A, Item B, Item C."
     (ev.kits_grupos_ev || []).forEach(function(grupo) {
-      (grupo.itens || []).forEach(function(it) {
-        var label = (it.qty && it.qty > 1 ? it.qty + 'x ' : '') + (it.eqNome || '');
-        if (label.trim()) linhas.push(label.trim());
-      });
+      var itensKit = (grupo.itens || []).map(function(it) {
+        return ((it.qty && it.qty > 1) ? it.qty + 'x ' : '') + (it.eqNome || '');
+      }).filter(function(s) { return s.trim(); });
+      if (!itensKit.length) return;
+      var titulo = (grupo.kitNome || grupo.kitId || 'Kit').trim();
+      linhas.push(titulo + ': ' + itensKit.join(', ') + '.');
     });
 
     if (!linhas.length) return;
