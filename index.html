@@ -507,11 +507,11 @@
     font-family: 'Barlow Condensed', sans-serif; font-size: 0.6rem;
     font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em;
     border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-    background: var(--darker); flex-shrink: 0;
+    background: var(--darker);
   }
   .agenda-card-detalhe-wrap {
-    display: none; overflow-y: auto; flex-shrink: 0; max-height: 340px;
-    background: var(--dark); border-top: none;
+    display: none;
+    background: var(--dark);
   }
   .agenda-card-detalhe-inner { padding: 12px 14px; }
   /* Card styles adaptados do painel_eventos */
@@ -2572,12 +2572,12 @@ Revestimento</textarea>
       <!-- Painel direito -->
       <div class="agenda-dia-panel">
         <div class="agenda-dia-lista-header" id="agenda-idx-dia-header">Todos os eventos</div>
-        <div class="agenda-lista-scroll" id="agenda-idx-lista">
-          <div class="agenda-empty-dia">Carregando...</div>
-        </div>
-        <div class="agenda-card-detalhe-sep" id="agenda-idx-detalhe-sep">Detalhes do evento</div>
-        <div class="agenda-card-detalhe-wrap" id="agenda-idx-detalhe-wrap">
-          <div class="agenda-card-detalhe-inner" id="agenda-idx-detalhe-inner"></div>
+        <div class="agenda-lista-scroll" id="agenda-idx-lista-wrap">
+          <div id="agenda-idx-lista"><div class="agenda-empty-dia">Carregando...</div></div>
+          <div class="agenda-card-detalhe-sep" id="agenda-idx-detalhe-sep">Detalhes do evento</div>
+          <div class="agenda-card-detalhe-wrap" id="agenda-idx-detalhe-wrap">
+            <div class="agenda-card-detalhe-inner" id="agenda-idx-detalhe-inner"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -11676,7 +11676,7 @@ function _renderAgendaIdx() {
     var pills = evDia.slice(0,3).map(function(ev) {
       var cor = _corBadgeIdx(ev);
       var lbl = _escIdx((ev.cli_nome || ev.ev_nome || 'Evento').substring(0,14));
-      return '<div class="agenda-ev-pill" style="color:' + cor + ';border-color:' + cor + '55;background:' + cor + '12" onclick="event.stopPropagation();_selecionarDiaIdx(\'' + ds + '\')" title="' + _escIdx(ev.cli_nome||ev.ev_nome||'') + '">' + lbl + '</div>';
+      return '<div class="agenda-ev-pill" style="color:' + cor + ';border-color:' + cor + '55;background:' + cor + '12" onclick="event.stopPropagation();_selecionarDiaEAbrirCard(\'' + ds + '\',\'' + _escIdx(ev.id) + '\')" title="' + _escIdx(ev.cli_nome||ev.ev_nome||'') + '">' + lbl + '</div>';
     }).join('');
     var mais = evDia.length > 3 ? '<div style="font-size:0.5rem;color:var(--muted);padding:0 3px">+' + (evDia.length-3) + '</div>' : '';
 
@@ -11691,6 +11691,18 @@ function _selecionarDiaIdx(dateStr) {
   _agDiaSelIdx = dateStr;
   _renderAgendaIdx();
   _renderAgendaListaDiaIdx(dateStr);
+}
+
+function _selecionarDiaEAbrirCard(dateStr, evId) {
+  _agDiaSelIdx = dateStr;
+  _renderAgendaIdx();
+  _renderAgendaListaDiaIdx(dateStr);
+  // Abre o card após renderizar a lista
+  setTimeout(function() {
+    _abrirCardEventoIdx(evId);
+    var sep = document.getElementById('agenda-idx-detalhe-sep');
+    if (sep) sep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 0);
 }
 
 function _renderAgendaListaDiaIdx(dateStr) {
@@ -11806,6 +11818,10 @@ function _abrirCardEventoIdx(evId) {
     }
     var ev = Object.assign({ id: evId }, doc.data());
     inner.innerHTML = _buildCardDetalheIdx(ev, usuarios);
+
+    // Scroll para o separador
+    var sep = document.getElementById('agenda-idx-detalhe-sep');
+    if (sep) sep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     // Expandir/colapsar kit grupos
     inner.querySelectorAll('.adx-kit-header').forEach(function(hdr) {
