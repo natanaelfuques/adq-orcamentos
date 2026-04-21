@@ -537,9 +537,9 @@
   .adx-itens-title { font-size: 0.62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
   .adx-item { display: flex; align-items: center; gap: 7px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.78rem; color: var(--text); }
   .adx-item:last-child { border-bottom: none; }
-  .adx-item.done .adx-item-txt { opacity: 0.6; }
-  .adx-item.removido .adx-item-txt { text-decoration: line-through; opacity: 0.45; color: var(--muted); }
-  .adx-item.obs .adx-item-txt { color: #FFD600; }
+  .adx-item.done .adx-item-txt { }
+  .adx-item.removido .adx-item-txt { }
+  .adx-item.obs .adx-item-txt { }
   .adx-check { width: 13px; height: 13px; min-width: 13px; border: 1.5px solid var(--border2, #444); border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .adx-check.checked { background: #4AC87A; border-color: #4AC87A; }
   .adx-check.checked::after { content: ''; width: 7px; height: 3px; border-left: 2px solid #111; border-bottom: 2px solid #111; transform: rotate(-45deg) translateY(-1px); display: block; }
@@ -1411,17 +1411,22 @@ header {
 .acesso-grupo-body.open { display:block; }
 
 @media (max-width:640px) {
-  header { padding:8px 14px; }
-  .hd-title { font-size:1.05rem; }
-  .hd-sub { font-size:0.58rem; }
+  header { padding:6px 10px; }
+  .hd-title { font-size:1rem; }
+  .hd-sub { font-size:0.56rem; }
   /* No mobile: hd-right numa linha só ao lado do título */
-  .hd-right { flex-direction:row; align-items:center; gap:5px; }
+  .hd-right { flex-direction:row; align-items:center; gap:4px; }
   .hd-date { display:none; }
   .hd-user { display:none; }
-  .hd-actions { gap:5px; }
+  .hd-actions { gap:4px; }
   /* Conn: só o ponto, sem label nem borda */
   #conn-indicator { padding:0; border-color:transparent !important; background:transparent !important; gap:0; }
   #conn-label { display:none; }
+  /* Agenda: só ícone, sem texto */
+  #btn-agenda-index span { display:none; }
+  #btn-agenda-index { padding:0 7px; }
+  /* Botão P: menor */
+  #btn-painel-shortcut { width:22px; min-width:22px; height:44px; font-size:0.9rem; }
 }
 
 /* ── SEM HOVER EM TOUCH/CELULAR ── */
