@@ -520,10 +520,10 @@
   .adx-resp-bar-track { flex: 1; height: 100%; background: linear-gradient(to right, rgba(120,120,130,0.25), rgba(120,120,130,0.45)); }
   .adx-resp-bar-colors { display: flex; height: 100%; gap: 2px; }
   .adx-resp-bar-color { width: 18px; height: 100%; }
-  .adx-summary { padding: 10px 14px 0; display: flex; align-items: flex-start; gap: 10px; }
-  .adx-summary-dates { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+  .adx-summary { padding: 10px 14px 0; display: flex; flex-direction: column; gap: 5px; }
+  .adx-summary-dates { display: flex; flex-direction: row; gap: 4px; flex-wrap: wrap; }
   .adx-badge { font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 3px; white-space: nowrap; letter-spacing: 0.06em; }
-  .adx-names { min-width: 0; flex: 1; }
+  .adx-names { min-width: 0; }
   .adx-cliente { font-family: 'Barlow Condensed', sans-serif; font-size: 0.92rem; font-weight: 700; color: var(--text); word-break: break-word; }
   .adx-evento { font-size: 0.72rem; color: var(--muted); margin-top: 2px; word-break: break-word; }
   .adx-body { padding: 10px 14px 12px; }
@@ -1686,7 +1686,7 @@ header {
       <button id="btn-agenda-index" onclick="abrirAgendaIndex()" title="Agenda de Eventos">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <span>Agenda</span>
-        <span id="agenda-index-badge">0</span>
+
       </button>
       <button id="btn-metas-trofeu" onclick="abrirModalMetas()" title="Metas"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12"/><path d="M6 3v6a6 6 0 0 0 12 0V3"/><path d="M6 7H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 7h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M12 15v4"/><path d="M9 19h6"/></svg></button>
       <button id="btn-gerador-sair" onclick="geradorSair()">Sair</button>
