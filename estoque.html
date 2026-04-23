@@ -8022,6 +8022,7 @@ function _mergeEventosSnaps() {
       _evKitGrupos[data.id] = data.kits_grupos_ev;
     }
   });
+  Object.keys(_evEqDragItems).forEach(function(evId) { if (!_eventosAndamento[evId] && !_eventosStagingCarga[evId]) delete _evEqDragItems[evId]; });
   Object.keys(_eventosAndamento).forEach(function(evId) { _recalcularCargaEvento(evId); });
   renderEventosAndamento();
   // Atualiza estoque em tempo real quando filtro de andamento está ativo
