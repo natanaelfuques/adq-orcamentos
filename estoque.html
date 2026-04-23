@@ -9044,9 +9044,12 @@ function _bindEvAndamentoCards() {
           var dispReal2 = Math.max(0, (eq2.qtd_disponivel || 0) - totalJaAloc2);
           if (dispReal2 <= 0) { toast('Sem unidades disponíveis para ' + eqNome2, true); return; }
         }
-        var existente2 = grupo2.itens.find(function(it) { return it.eqId === eqDropId; });
+        var existente2 = grupo2.itens.find(function(it) { return it.eqId === eqDropId && !it.riscado; });
+        var riscado2 = !existente2 && grupo2.itens.find(function(it) { return it.eqId === eqDropId && it.riscado; });
         if (existente2) {
           existente2.qty = (existente2.qty || 1) + 1;
+        } else if (riscado2) {
+          riscado2.riscado = false; riscado2.checked = false; riscado2.qty = 1;
         } else {
           grupo2.itens.push({ eqId: eqDropId, eqNome: eqNome2, qty: 1, checked: false, riscado: false });
         }
