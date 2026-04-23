@@ -13005,49 +13005,88 @@ function _montarNotaLivre(d) {
     _carregarEstoque(function(estoque) {
       if (!estoque || !estoque.length) { panel.classList.remove('visible'); return; }
 
-      var totalEq = 0, totalDisp = 0;
-      // Conta apenas equipamentos que aparecem no texto da textarea
       var ta = document.getElementById(taId);
       var texto = ta ? ta.value.toLowerCase() : '';
-
-      var relevantes = estoque.filter(function(eq) {
+      var lista = estoque.filter(function(eq) {
         return texto.indexOf(eq.nome.trim().toLowerCase()) !== -1;
       });
+      if (!lista.length) lista = estoque;
 
-      // Se não há matches no texto, usa todo o estoque
-      var lista = relevantes.length ? relevantes : estoque;
+      var dataISO = (document.getElementById('data_evento') || {}).value || '';
 
-      lista.forEach(function(eq) {
-        totalEq   += eq.qtd_total;
-        totalDisp += eq.qtd_disponivel;
-      });
-
-      var pct = totalEq > 0 ? Math.round((totalDisp / totalEq) * 100) : 0;
-
-      var cor;
-      if (totalDisp <= 0)           cor = '#E05C5C';
-      else if (pct < 60)            cor = '#C8A94A';
-      else                          cor = '#25D366';
-
-      chipsEl.innerHTML =
-        '<span class="est-summary-chip" style="color:' + cor + ';border-color:' + cor + '30">' +
-          '<span class="chip-num">' + totalDisp + '</span>' +
-          '<span class="chip-sep">/</span>' +
-          '<span class="chip-num">' + totalEq + '</span>' +
-          '&nbsp;disp.' +
-        '</span>';
-
-      panel.classList.remove('visible');
-      panel.classList.add('summary');
-      panel.classList.add('visible');
-
-      // Clique no resumo reabre o último painel ou fecha de vez
-      panel.onclick = function(e) {
-        if (e.target.classList && e.target.classList.contains('est-match')) return;
-        panel.classList.remove('summary');
+      function _renderSummary(dispPorId) {
+        var totalEq = 0, totalDisp = 0;
+        lista.forEach(function(eq) {
+          totalEq  += eq.qtd_total;
+          totalDisp += (dispPorId[eq.id] !== undefined ? dispPorId[eq.id] : eq.qtd_disponivel);
+        });
+        var pct = totalEq > 0 ? Math.round((totalDisp / totalEq) * 100) : 0;
+        var cor = totalDisp <= 0 ? '#E05C5C' : (pct < 60 ? '#C8A94A' : '#25D366');
+        chipsEl.innerHTML =
+          '<span class="est-summary-chip" style="color:' + cor + ';border-color:' + cor + '30">' +
+            '<span class="chip-num">' + totalDisp + '</span>' +
+            '<span class="chip-sep">/</span>' +
+            '<span class="chip-num">' + totalEq + '</span>' +
+            '&nbsp;disp.' +
+          '</span>';
         panel.classList.remove('visible');
-        panel.onclick = null;
-      };
+        panel.classList.add('summary');
+        panel.classList.add('visible');
+        panel.onclick = function(e) {
+          if (e.target.classList && e.target.classList.contains('est-match')) return;
+          panel.classList.remove('summary');
+          panel.classList.remove('visible');
+          panel.onclick = null;
+        };
+      }
+
+      var dispBase = {};
+      lista.forEach(function(eq) { dispBase[eq.id] = eq.qtd_disponivel; });
+
+      if (!dataISO) { _renderSummary(dispBase); return; }
+
+      db.collection('eventos_campo')
+        .where('ev_data', '<=', dataISO)
+        .get()
+        .then(function(snap) {
+          var alocadoPorId = {};
+          lista.forEach(function(eq) { alocadoPorId[eq.id] = 0; });
+
+          snap.forEach(function(doc) {
+            var ev = doc.data();
+            var evIni = ev.ev_data || null;
+            var evFim = ev.ev_data_fim || evIni;
+            if (!evIni || dataISO < evIni || dataISO > evFim) return;
+            var extRem  = ev.itens_extras_removidos || {};
+            var origRem = ev.itens_removidos || {};
+
+            lista.forEach(function(eq) {
+              function _somarItem(s, idx, rem) {
+                if (rem[idx]) return;
+                var m = s.match(/^(\d+)x\s+(.+)$/);
+                var nome = (m ? m[2] : s).trim().toLowerCase();
+                if (nome === eq.nome.trim().toLowerCase()) {
+                  alocadoPorId[eq.id] += (m ? parseInt(m[1]) : 1);
+                }
+              }
+              (ev.itens_extras || []).forEach(function(s, i) { _somarItem(s, i, extRem); });
+              (ev.servicos     || []).forEach(function(s, i) { _somarItem(s, i, origRem); });
+              (ev.kits_grupos_ev || []).forEach(function(g) {
+                if (g.riscado) return;
+                (g.itens || []).forEach(function(it) {
+                  if (!it.riscado && it.eqId === eq.id) alocadoPorId[eq.id] += (it.qty || 1);
+                });
+              });
+            });
+          });
+
+          var dispNoDia = {};
+          lista.forEach(function(eq) {
+            dispNoDia[eq.id] = Math.max(0, eq.qtd_total - eq.qtd_em_uso - eq.qtd_manutencao - alocadoPorId[eq.id]);
+          });
+          _renderSummary(dispNoDia);
+        })
+        .catch(function() { _renderSummary(dispBase); });
     });
   }
 
