@@ -8022,6 +8022,7 @@ function _mergeEventosSnaps() {
       _evKitGrupos[data.id] = data.kits_grupos_ev;
     }
   });
+  Object.keys(_eventosAndamento).forEach(function(evId) { _recalcularCargaEvento(evId); });
   renderEventosAndamento();
   // Atualiza estoque em tempo real quando filtro de andamento está ativo
   if (typeof _filtroAndamento !== 'undefined' && _filtroAndamento) renderEquipamentos();
@@ -9037,6 +9038,12 @@ function _bindEvAndamentoCards() {
         if (!grupo2) return;
         var eq2 = _equipamentos[eqDropId];
         var eqNome2 = eq2 ? (eq2.nome || eqDropId) : eqDropId;
+        // Verificar disponibilidade
+        if (eq2) {
+          var totalJaAloc2 = _getCargaTotalEq(eqDropId);
+          var dispReal2 = Math.max(0, (eq2.qtd_disponivel || 0) - totalJaAloc2);
+          if (dispReal2 <= 0) { toast('Sem unidades disponíveis para ' + eqNome2, true); return; }
+        }
         var existente2 = grupo2.itens.find(function(it) { return it.eqId === eqDropId; });
         if (existente2) {
           existente2.qty = (existente2.qty || 1) + 1;
@@ -9045,6 +9052,7 @@ function _bindEvAndamentoCards() {
         }
         _salvarKitGruposFirestore(evId2);
         _recalcularCargaEvento(evId2);
+        _atualizarCardEqDOM(eqDropId);
         renderEventosAndamento();
         return;
       }
