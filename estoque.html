@@ -5464,16 +5464,14 @@ function setupEqCardDrag(cardEl, eqId) {
     document.body.classList.add('kit-dragging');
   });
   cardEl.addEventListener('dragend', function() {
-    setTimeout(function() {
-      document.body.classList.remove('kit-dragging');
-      _draggingEqId = null;
-      cardEl.classList.remove('dragging-eq');
-      document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
-      document.querySelectorAll('.ev-kit-grupo-dropzone.drag-over-eq').forEach(function(el) { el.classList.remove('drag-over-eq'); });
-      document.querySelectorAll('.ev-kit-grupo.drag-reorder-over').forEach(function(el) { el.classList.remove('drag-reorder-over'); });
-      var novoCard = document.getElementById('kit-novo-card');
-      if (novoCard) novoCard.classList.remove('drag-over-remove');
-    }, 200);
+    document.body.classList.remove('kit-dragging');
+    _draggingEqId = null;
+    cardEl.classList.remove('dragging-eq');
+    document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
+    document.querySelectorAll('.ev-kit-grupo-dropzone.drag-over-eq').forEach(function(el) { el.classList.remove('drag-over-eq'); });
+    document.querySelectorAll('.ev-kit-grupo.drag-reorder-over').forEach(function(el) { el.classList.remove('drag-reorder-over'); });
+    var novoCard = document.getElementById('kit-novo-card');
+    if (novoCard) novoCard.classList.remove('drag-over-remove');
   });
 }
 
