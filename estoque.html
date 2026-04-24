@@ -5447,28 +5447,7 @@ function renderKits() {
   var statKits = document.getElementById('stat-kits');
   if (statKits) statKits.textContent = Object.keys(_kits).length;
 
-  // Re-registra dragover/drop via JS nos kit-panels (inline ondrop falha em elementos draggable em alguns browsers)
-  grid.querySelectorAll('.kit-folder[data-kit-id-js]').forEach(function() {}); // placeholder
-  Array.from(grid.querySelectorAll('.kit-slot-panel.kit-folder')).forEach(function(panel) {
-    var kitId = panel.id.replace('kit-card-', '');
-    if (!kitId) return;
-    panel.addEventListener('dragover', function(ev) {
-      if (!_draggingEqId) return;
-      ev.preventDefault();
-      ev.stopPropagation();
-      panel.classList.add('drag-over-kit');
-    });
-    panel.addEventListener('dragleave', function(ev) {
-      if (!panel.contains(ev.relatedTarget)) panel.classList.remove('drag-over-kit');
-    });
-    panel.addEventListener('drop', function(ev) {
-      panel.classList.remove('drag-over-kit');
-      if (!_draggingEqId) return;
-      ev.preventDefault();
-      ev.stopPropagation();
-      kitFolderDrop(ev, kitId);
-    });
-  });
+
 }
 
 // ── Drag: eq card → kit folder ──
@@ -5483,10 +5462,12 @@ function setupEqCardDrag(cardEl, eqId) {
     ev.dataTransfer.effectAllowed = 'copy';
     setTimeout(function() { cardEl.classList.add('dragging-eq'); }, 0);
     document.body.classList.add('kit-dragging');
+    document.body.classList.add('eq-dragging');
   });
   cardEl.addEventListener('dragend', function() {
     setTimeout(function() {
       document.body.classList.remove('kit-dragging');
+      document.body.classList.remove('eq-dragging');
       _draggingEqId = null;
       cardEl.classList.remove('dragging-eq');
       document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
@@ -7901,9 +7882,8 @@ body.has-ev-sidebar header { margin-right: -340px; }
 body.kit-dragging .ev-kit-grupo { border-color: rgba(74,144,217,0.25); transition: border-color 0.15s; }
 body.kit-dragging .ev-kit-grupo-dropzone { min-height: 26px; }
 .ev-kit-grupo.drag-reorder-over { border-color: var(--gold) !important; background: rgba(200,169,74,0.06); }
-body.kit-dragging .kit-slot-panel-body,
-body.kit-dragging .kit-slot-panel-header,
-body.kit-dragging .kit-slot-item { pointer-events: none; }
+body.eq-dragging .kit-slot-panel-body,
+body.eq-dragging .kit-slot-panel-header { pointer-events: none; }
 
 </style>
 
@@ -10209,7 +10189,6 @@ function _kitSlotDragEnd(ev) {
 }
 
 function _kitSlotReorderOver(el, ev) {
-  if (_draggingEqId) { ev.preventDefault(); return; } // permite drop no slot, propaga para kitFolderDrop
   if (!_draggingKitSlot) return;
   var targetKitId = el.dataset.kitId;
   if (!targetKitId) return;
@@ -10226,11 +10205,6 @@ function _kitSlotReorderLeave(el) {
 }
 function _kitSlotReorderDrop(el, ev) {
   el.style.borderColor = '';
-  if (_draggingEqId) {
-    var kitIdForEq = el.dataset.kitId;
-    if (kitIdForEq) { ev.preventDefault(); ev.stopPropagation(); kitFolderDrop(ev, kitIdForEq); }
-    return;
-  }
   if (!_draggingKitSlot) return;
   var targetKitId = el.dataset.kitId;
   if (!targetKitId) return;
