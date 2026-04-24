@@ -7995,75 +7995,22 @@ function _mergeEventosSnaps() {
   _eventosAndamento = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap);
   _evKitGrupos = {};
 
-  // Reconstruir _evEqDragItems a partir dos itens ativos (não riscados) de cada evento
-  var nomeToId = {};
-  if (typeof _equipamentos !== 'undefined') {
-    Object.keys(_equipamentos).forEach(function(eqId) {
-      var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
-      if (nome) nomeToId[nome] = eqId;
-    });
-  }
-
-  var afetados = {};
-  // Marcar todos os eq atualmente em _evEqDragItems como afetados (podem ter sido liberados)
-  Object.values(_evEqDragItems).forEach(function(ev) {
-    Object.keys(ev).forEach(function(eqId) { afetados[eqId] = true; });
-  });
-  _evEqDragItems = {};
+  // Atualizar _evKitGrupos e re-sincronizar apenas eventos JÁ ABERTOS em _evEqDragItems
+  var eventosAbertos = Object.keys(_evEqDragItems);
 
   Object.values(_eventosAndamento).forEach(function(data) {
     if (Array.isArray(data.kits_grupos_ev) && data.kits_grupos_ev.length) {
       _evKitGrupos[data.id] = data.kits_grupos_ev;
     }
-
-    var evId = data.id;
-    var itensExtrasRem = data.itens_extras_removidos || {};
-    var itensOrigRem   = data.itens_removidos || {};
-    var novasCounts = {};
-
-    (data.servicos || []).forEach(function(s, i) {
-      if (itensOrigRem[i]) return;
-      var m = s && s.match(/^(\d+)x\s+(.+)$/);
-      var qty = m ? parseInt(m[1]) : 1;
-      var nome = (m ? m[2] : s || '').trim();
-      var eqId = nomeToId[nome.toLowerCase()];
-      if (!eqId) return;
-      novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
-    });
-
-    (data.itens_extras || []).forEach(function(s, i) {
-      if (itensExtrasRem[i]) return;
-      var m = s && s.match(/^(\d+)x\s+(.+)$/);
-      var qty = m ? parseInt(m[1]) : 1;
-      var nome = (m ? m[2] : s || '').trim();
-      var eqId = nomeToId[nome.toLowerCase()];
-      if (!eqId) return;
-      novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
-    });
-
-    (data.kits_grupos_ev || []).forEach(function(grupo) {
-      if (grupo.riscado) return;
-      (grupo.itens || []).forEach(function(it) {
-        if (it.riscado) return;
-        var eqId = it.eqId;
-        if (!eqId) return;
-        novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
-      });
-    });
-
-    if (Object.keys(novasCounts).length) {
-      _evEqDragItems[evId] = {};
-      Object.keys(novasCounts).forEach(function(eqId) {
-        var nome = (_equipamentos && _equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
-        _evEqDragItems[evId][eqId] = { nome: nome, qty: novasCounts[eqId] };
-        afetados[eqId] = true;
-      });
-    }
   });
 
-  // Atualizar os cards afetados
-  if (typeof _atualizarCardEqDOM === 'function') {
-    Object.keys(afetados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+  // Só recalcula eventos que o usuário abriu manualmente
+  if (eventosAbertos.length && typeof _recalcularCargaEvento === 'function') {
+    eventosAbertos.forEach(function(evId) {
+      if (_eventosAndamento[evId]) {
+        _recalcularCargaEvento(evId);
+      }
+    });
   }
 
   renderEventosAndamento();
