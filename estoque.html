@@ -7949,8 +7949,16 @@ function _getCargaTotalEq(eqId) {
   Object.values(_evEqDragItems).forEach(function(ev) {
     if (ev[eqId]) total += ev[eqId].qty;
   });
-  // Nota: _evKitGrupos não é contado aqui pois seus itens já movimentam
-  // qtd_em_uso diretamente (seria dupla contagem com o valor do Firestore).
+  // Eventos sem card aberto: contar kit grupos diretamente
+  Object.keys(_evKitGrupos).forEach(function(evId) {
+    if (_evEqDragItems[evId]) return; // já contado acima
+    (_evKitGrupos[evId] || []).forEach(function(g) {
+      if (g.riscado) return;
+      (g.itens || []).forEach(function(it) {
+        if (!it.riscado && it.eqId === eqId) total += (it.qty || 1);
+      });
+    });
+  });
   return total;
 }
 function _atualizarCardEqDOM(eqId) {
@@ -8580,9 +8588,16 @@ function _recalcularCargaEvento(evId) {
     novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
   });
 
-  // Itens de grupos de kit NÃO são incluídos aqui pois já movimentam
-  // qtd_em_uso/qtd_disponivel diretamente no objeto e no Firestore.
-  // Incluí-los causaria dupla contagem em _atualizarCardEqDOM.
+  // Incluir itens dos grupos de kit
+  (_evKitGrupos[evId] || []).forEach(function(grupo) {
+    if (grupo.riscado) return;
+    (grupo.itens || []).forEach(function(it) {
+      if (it.riscado) return;
+      var eqId = it.eqId;
+      if (!eqId) return;
+      novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
+    });
+  });
 
   _evEqDragItems[evId] = {};
   Object.keys(novasCounts).forEach(function(eqId) {
@@ -8909,24 +8924,6 @@ function _bindEvAndamentoCards() {
       var novoRiscadoGrupo = !grupo.riscado;
       grupo.riscado = novoRiscadoGrupo;
       grupo.itens.forEach(function(it) {
-        if (it.eqId && (!!it.riscado !== novoRiscadoGrupo)) {
-          // Movimenta estoque ao mudar estado
-          var eqGrp = _equipamentos[it.eqId];
-          if (eqGrp && db) {
-            var qty = it.qty || 1;
-            var novoEmUsoGrp, novoDispGrp;
-            if (novoRiscadoGrupo) {
-              novoEmUsoGrp = Math.max(0, (eqGrp.qtd_em_uso || 0) - qty);
-              novoDispGrp  = (eqGrp.qtd_disponivel || 0) + ((eqGrp.qtd_em_uso || 0) - novoEmUsoGrp);
-            } else {
-              novoEmUsoGrp = (eqGrp.qtd_em_uso || 0) + Math.min(qty, eqGrp.qtd_disponivel || 0);
-              novoDispGrp  = Math.max(0, (eqGrp.qtd_disponivel || 0) - qty);
-            }
-            eqGrp.qtd_em_uso = novoEmUsoGrp; eqGrp.qtd_disponivel = novoDispGrp;
-            db.collection('estoque').doc(it.eqId).update({ qtd_em_uso: novoEmUsoGrp, qtd_disponivel: novoDispGrp, _atualizado: Date.now() }).catch(function(){});
-            _atualizarCardEqDOM(it.eqId);
-          }
-        }
         it.riscado = novoRiscadoGrupo;
         if (novoRiscadoGrupo) it.checked = false;
       });
@@ -8964,24 +8961,7 @@ function _bindEvAndamentoCards() {
       if (!grupo || !grupo.itens[itIdx]) return;
       var it = grupo.itens[itIdx];
       var novoRiscadoItem = !it.riscado;
-      // Movimenta estoque
-      if (it.eqId) {
-        var eqItBtn = _equipamentos[it.eqId];
-        if (eqItBtn && db) {
-          var qtyIt = it.qty || 1;
-          var novoEmUsoIt, novoDispIt;
-          if (novoRiscadoItem) {
-            novoEmUsoIt = Math.max(0, (eqItBtn.qtd_em_uso || 0) - qtyIt);
-            novoDispIt  = (eqItBtn.qtd_disponivel || 0) + ((eqItBtn.qtd_em_uso || 0) - novoEmUsoIt);
-          } else {
-            novoEmUsoIt = (eqItBtn.qtd_em_uso || 0) + Math.min(qtyIt, eqItBtn.qtd_disponivel || 0);
-            novoDispIt  = Math.max(0, (eqItBtn.qtd_disponivel || 0) - qtyIt);
-          }
-          eqItBtn.qtd_em_uso = novoEmUsoIt; eqItBtn.qtd_disponivel = novoDispIt;
-          db.collection('estoque').doc(it.eqId).update({ qtd_em_uso: novoEmUsoIt, qtd_disponivel: novoDispIt, _atualizado: Date.now() }).catch(function(){});
-          _atualizarCardEqDOM(it.eqId);
-        }
-      }
+      // Alocação virtual: não persiste qtd_em_uso; _recalcularCargaEvento reconstrói _evEqDragItems sem riscados
       it.riscado = novoRiscadoItem;
       if (novoRiscadoItem) it.checked = false;
       _salvarKitGruposFirestore(evId);
@@ -9079,13 +9059,7 @@ function _bindEvAndamentoCards() {
         } else {
           grupo.itens.push({ eqId: eqDropId, eqNome: eqNome2, qty: 1, checked: false, riscado: false });
         }
-        // Movimenta estoque: disp → em_uso
-        if (eq2 && db) {
-          var novoDisp2 = Math.max(0, (eq2.qtd_disponivel || 0) - 1);
-          var novoUso2  = (eq2.qtd_em_uso || 0) + 1;
-          eq2.qtd_disponivel = novoDisp2; eq2.qtd_em_uso = novoUso2;
-          db.collection('estoque').doc(eqDropId).update({ qtd_disponivel: novoDisp2, qtd_em_uso: novoUso2, _atualizado: Date.now() }).catch(function(){});
-        }
+        // Alocação virtual: não persiste qtd_em_uso (apenas ajuste de display via _recalcularCargaEvento)
         _salvarKitGruposFirestore(evId);
         _recalcularCargaEvento(evId);
         _atualizarCardEqDOM(eqDropId);
@@ -9477,14 +9451,10 @@ function evCardDrop(ev, evId) {
       var qtdCap = Math.min(qtd, Math.max(0, dispFir - jaAlocado));
       if (qtdCap <= 0) return;
       grupoItens.push({ eqId: eqId, eqNome: eqNome, qty: qtdCap, checked: false, riscado: false });
-      // Movimenta estoque: disp → em_uso (direto no objeto e Firestore)
-      var eqKD = _equipamentos[eqId];
-      if (eqKD) {
-        var novoDispKD = Math.max(0, (eqKD.qtd_disponivel || 0) - qtdCap);
-        var novoUsoKD  = (eqKD.qtd_em_uso || 0) + qtdCap;
-        eqKD.qtd_disponivel = novoDispKD; eqKD.qtd_em_uso = novoUsoKD;
-        if (db) db.collection('estoque').doc(eqId).update({ qtd_disponivel: novoDispKD, qtd_em_uso: novoUsoKD, _atualizado: Date.now() }).catch(function(){});
-      }
+      if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
+      _evEqDragItems[evId][eqId].qty += qtdCap;
+      // Alocação virtual: não persiste qtd_em_uso no Firestore (apenas ajuste de display via _evEqDragItems)
+      _atualizarCardEqDOM(eqId);
       itensAdicionados++;
     });
 
@@ -9493,10 +9463,6 @@ function evCardDrop(ev, evId) {
     var grupoId = 'kg_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
     _evKitGrupos[evId].push({ grupoId: grupoId, kitId: itemId, kitNome: kitNome, itens: grupoItens, riscado: false });
     _salvarKitGruposFirestore(evId);
-    // Recalcula _evEqDragItems a partir dos kit grupos (fonte única de verdade)
-    _recalcularCargaEvento(evId);
-    // Atualiza cards de todos os itens afetados
-    grupoItens.forEach(function(it) { if (it.eqId) _atualizarCardEqDOM(it.eqId); });
 
     var _kitCardEl2 = document.getElementById('kit-card-' + itemId);
     if (_kitCardEl2) _kitCardEl2.style.opacity = '';
@@ -10360,20 +10326,7 @@ function _kitRemoveZoneDrop(ev) {
       var idx = grupos.findIndex(function(g) { return g.grupoId === kgd.grupoId; });
       if (idx >= 0) {
         var removedGrupo = grupos.splice(idx, 1)[0];
-        // Devolve cada item não-riscado ao estoque
-        (removedGrupo.itens || []).forEach(function(it) {
-          if (!it.riscado && it.eqId && db) {
-            var eq = _equipamentos[it.eqId];
-            if (eq) {
-              var qty = it.qty || 1;
-              var novoEmUso = Math.max(0, (eq.qtd_em_uso || 0) - qty);
-              var novoDisp  = (eq.qtd_disponivel || 0) + ((eq.qtd_em_uso || 0) - novoEmUso);
-              eq.qtd_em_uso = novoEmUso; eq.qtd_disponivel = novoDisp;
-              db.collection('estoque').doc(it.eqId).update({ qtd_em_uso: novoEmUso, qtd_disponivel: novoDisp, _atualizado: Date.now() }).catch(function(){});
-              _atualizarCardEqDOM(it.eqId);
-            }
-          }
-        });
+        // Alocação era virtual: não há qtd_em_uso para reverter no Firestore
         _salvarKitGruposFirestore(kgd.evId);
         _recalcularCargaEvento(kgd.evId);
         renderEventosAndamento();
@@ -10416,18 +10369,7 @@ function _kitRemoveZoneDrop(ev) {
       var srcGrupo = srcGrupos.find(function(g) { return g.grupoId === kgData.grupoId; });
       if (srcGrupo && srcGrupo.itens[kgData.itIdx]) {
         var removedIt = srcGrupo.itens.splice(kgData.itIdx, 1)[0];
-        // Devolve ao estoque se não estava riscado
-        if (!removedIt.riscado && removedIt.eqId && db) {
-          var eqRm = _equipamentos[removedIt.eqId];
-          if (eqRm) {
-            var qtyRm = removedIt.qty || 1;
-            var novoEmUsoRm = Math.max(0, (eqRm.qtd_em_uso || 0) - qtyRm);
-            var novoDispRm  = (eqRm.qtd_disponivel || 0) + ((eqRm.qtd_em_uso || 0) - novoEmUsoRm);
-            eqRm.qtd_em_uso = novoEmUsoRm; eqRm.qtd_disponivel = novoDispRm;
-            db.collection('estoque').doc(removedIt.eqId).update({ qtd_em_uso: novoEmUsoRm, qtd_disponivel: novoDispRm, _atualizado: Date.now() }).catch(function(){});
-            _atualizarCardEqDOM(removedIt.eqId);
-          }
-        }
+        // Alocação era virtual: não há qtd_em_uso para reverter no Firestore
         _salvarKitGruposFirestore(kgData.evId);
         _recalcularCargaEvento(kgData.evId);
         renderEventosAndamento();
