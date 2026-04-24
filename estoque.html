@@ -5473,6 +5473,7 @@ function setupEqCardDrag(cardEl, eqId) {
       document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
       document.querySelectorAll('.ev-kit-grupo-dropzone.drag-over-eq').forEach(function(el) { el.classList.remove('drag-over-eq'); });
       document.querySelectorAll('.ev-kit-grupo.drag-reorder-over').forEach(function(el) { el.classList.remove('drag-reorder-over'); });
+      document.querySelectorAll('.kit-slot-item').forEach(function(el) { el.style.borderColor = ''; el.style.borderStyle = ''; });
       var novoCard = document.getElementById('kit-novo-card');
       if (novoCard) novoCard.classList.remove('drag-over-remove');
     }, 200);
@@ -10189,6 +10190,14 @@ function _kitSlotDragEnd(ev) {
 }
 
 function _kitSlotReorderOver(el, ev) {
+  if (_draggingEqId) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    // Pontilhado visual no slot
+    el.style.borderColor = 'var(--gold)';
+    el.style.borderStyle = 'dashed';
+    return;
+  }
   if (!_draggingKitSlot) return;
   var targetKitId = el.dataset.kitId;
   if (!targetKitId) return;
@@ -10202,9 +10211,16 @@ function _kitSlotReorderOver(el, ev) {
 }
 function _kitSlotReorderLeave(el) {
   el.style.borderColor = '';
+  el.style.borderStyle = '';
 }
 function _kitSlotReorderDrop(el, ev) {
   el.style.borderColor = '';
+  el.style.borderStyle = '';
+  if (_draggingEqId) {
+    var kitId = el.dataset.kitId;
+    if (kitId) { ev.preventDefault(); ev.stopPropagation(); kitFolderDrop(ev, kitId); }
+    return;
+  }
   if (!_draggingKitSlot) return;
   var targetKitId = el.dataset.kitId;
   if (!targetKitId) return;
