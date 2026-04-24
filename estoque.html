@@ -1899,11 +1899,6 @@
   .kit-search-draggable:hover { border-color: rgba(74,144,217,0.4); }
   .kit-item-chip { cursor: default; }
 
-  /* ── TESTE DE DISPONIBILIDADE ── */
-  .ev-teste-card { border-color: rgba(74,144,217,0.6) !important; background: rgba(74,144,217,0.05) !important; }
-  .ev-teste-badge { display:inline-block;font-size:0.48rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#4A90D9;background:rgba(74,144,217,0.15);border:1px solid rgba(74,144,217,0.4);border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle; }
-  #btn-testar-disp.disp-ativa { background:rgba(74,144,217,0.25) !important; border-color:#4A90D9 !important; box-shadow:0 0 8px rgba(74,144,217,0.3); }
-
   /* ── AGENDA CALENDAR ── */
   .agenda-modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 999;
@@ -3966,6 +3961,10 @@ function abrirModalForm(e) {
           '</label>' +
           '<span style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.05em">Aparece na aba Acessórios</span>' +
         '</div>' +
+        '<div class="form-group" id="f-grupo-eq-pai"' + (e.isAcessorio ? '' : ' style="display:none"') + '>' +
+          '<label class="form-label">Equipamento vinculado</label>' +
+          '<select class="form-select" id="f-eq-pai"><option value="">— Sem vínculo —</option>' + Object.values(_equipamentos).filter(function(x){return !x.isAcessorio;}).sort(function(a,b){return(a.nome||'').localeCompare(b.nome||'');}).map(function(x){return'<option value="'+esc(x.id)+'"'+(e.equipamentoPai===x.id?' selected':'')+'>'+esc(x.nome)+'</option>';}).join('') + '</select>' +
+        '</div>' +
         '<div class="form-grid">' +
           '<div class="form-group">' +
             '<label class="form-label">Categoria</label>' +
@@ -3978,10 +3977,14 @@ function abrirModalForm(e) {
         '</div>' +
 
         '<div class="section-title">Quantidades</div>' +
-        '<div class="form-grid">' +
+        '<div class="form-grid-3">' +
           '<div class="form-group">' +
             '<label class="form-label">Total</label>' +
             '<input class="form-input" id="f-total" type="number" min="0" value="' + (e.qtd_total || 0) + '" oninput="_calcDisponivel()" />' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label class="form-label">Em uso</label>' +
+            '<input class="form-input" id="f-uso" type="number" min="0" value="' + (e.qtd_em_uso || 0) + '" oninput="_calcDisponivel()" />' +
           '</div>' +
           '<div class="form-group">' +
             '<label class="form-label">Manutenção</label>' +
@@ -4031,8 +4034,9 @@ function _selecionarEmoji(el, emoji) {
 
 function _calcDisponivel() {
   var total = parseInt(document.getElementById('f-total').value) || 0;
+  var uso = parseInt(document.getElementById('f-uso').value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - manut);
+  var disp = Math.max(0, total - uso - manut);
   var el = document.getElementById('f-disp-calc');
   if (el) {
     el.textContent = disp;
@@ -4043,10 +4047,13 @@ function _calcDisponivel() {
 
 function _toggleTipoItem() {
   var chk = document.getElementById('f-is-acessorio');
+  var grupoEqPai = document.getElementById('f-grupo-eq-pai');
   var grupoModelo = document.getElementById('f-grupo-modelo');
   var nomeLabel = document.getElementById('f-nome-label');
   if (!chk) return;
-  if (nomeLabel) nomeLabel.textContent = chk.checked ? 'Nome do Acessório *' : 'Nome do Equipamento *';
+  var isAc = chk.checked;
+  if (grupoEqPai) grupoEqPai.style.display = isAc ? '' : 'none';
+  if (nomeLabel) nomeLabel.textContent = isAc ? 'Nome do Acessório *' : 'Nome do Equipamento *';
 }
 
 function abrirModalAddAcessorioRapido() {
@@ -4065,20 +4072,23 @@ function salvarEquipamento() {
   if (!nome) { toast('Informe o nome do equipamento.', true); return; }
 
   var total = parseInt(document.getElementById('f-total').value) || 0;
+  var emUso = parseInt(document.getElementById('f-uso').value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - manut);
+  var disp = Math.max(0, total - emUso - manut);
 
   var isAcessorioChk = document.getElementById('f-is-acessorio');
   var isAcessorio = isAcessorioChk ? isAcessorioChk.checked : false;
+  var eqPaiEl = document.getElementById('f-eq-pai');
   var dados = {
     nome: nome,
     emoji: _emojiSelecionado,
     categoria: document.getElementById('f-cat').value || 'Outros',
     modelo: (document.getElementById('f-modelo').value || '').trim(),
     isAcessorio: isAcessorio,
-    equipamentoPai: '',
+    equipamentoPai: isAcessorio && eqPaiEl ? (eqPaiEl.value || '') : '',
     qtd_total: total,
     qtd_disponivel: disp,
+    qtd_em_uso: emUso,
     qtd_manutencao: manut,
     valor_unitario: parseFloat(document.getElementById('f-valor').value) || 0,
     serie: (document.getElementById('f-serie').value || '').trim(),
@@ -6155,14 +6165,12 @@ var _agEditandoId = null;
 var _agMes = new Date().getMonth();
 var _agAno = new Date().getFullYear();
 var _agDiaSelecionado = null;
-var _TESTE_DISP_ID = '__teste_disponibilidade__';
 
 // ── Abrir/fechar ──────────────────────────────────────────
 function abrirAgenda() {
   _agMes = new Date().getMonth();
   _agAno = new Date().getFullYear();
-  // Preserva a data selecionada se o teste de disponibilidade estiver ativo
-  if (!_eventosStagingCarga[_TESTE_DISP_ID]) _agDiaSelecionado = null;
+  _agDiaSelecionado = null;
   document.getElementById('agenda-modal-overlay').style.display = 'flex';
   _renderAgendaCalendar();
   _renderAgendaKitChecklist();
@@ -6899,166 +6907,6 @@ function _abrirCardEvento(id) {
   document.body.appendChild(overlay);
 }
 
-// ── TESTE DE DISPONIBILIDADE ──────────────────────────────
-
-// Calcula e popula _evEqDragItems[_TESTE_DISP_ID] com a soma de todos
-// equipamentos já alocados em eventos cuja data coincide com a data do teste.
-// Busca do Firestore para cobrir todas etapas (andamento, concluido, etc).
-function _calcularAlocacoesPorData(dataISO) {
-  var nomeToId = {};
-  Object.keys(_equipamentos).forEach(function(eqId) {
-    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
-    if (nome) nomeToId[nome] = eqId;
-  });
-
-  function _somarEv(ev, counts) {
-    if (!ev || ev.id === _TESTE_DISP_ID) return;
-    var evIni = ev.ev_data || null;
-    var evFim = ev.ev_data_fim || evIni;
-    if (!evIni || dataISO < evIni || dataISO > evFim) return;
-
-    var extRem = ev.itens_extras_removidos || {};
-    var origRem = ev.itens_removidos || {};
-
-    (ev.itens_extras || []).forEach(function(s, i) {
-      if (extRem[i]) return;
-      var m = s.match(/^(\d+)x\s+(.+)$/);
-      var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
-      if (eqId) counts[eqId] = (counts[eqId] || 0) + (m ? parseInt(m[1]) : 1);
-    });
-
-    (ev.servicos || []).forEach(function(s, i) {
-      if (origRem[i]) return;
-      var m = s.match(/^(\d+)x\s+(.+)$/);
-      var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
-      if (eqId) counts[eqId] = (counts[eqId] || 0) + (m ? parseInt(m[1]) : 1);
-    });
-
-    var grupos = ev.kits_grupos_ev || _evKitGrupos[ev.id] || [];
-    grupos.forEach(function(g) {
-      if (g.riscado) return;
-      (g.itens || []).forEach(function(it) {
-        if (!it.riscado && it.eqId) counts[it.eqId] = (counts[it.eqId] || 0) + (it.qty || 1);
-      });
-    });
-  }
-
-  function _aplicar(counts) {
-    _evEqDragItems[_TESTE_DISP_ID] = {};
-    Object.keys(counts).forEach(function(eqId) {
-      _evEqDragItems[_TESTE_DISP_ID][eqId] = {
-        nome: (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId,
-        qty: counts[eqId]
-      };
-    });
-    // Atualiza visualmente todos os cards
-    Object.keys(_equipamentos).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
-  }
-
-  var counts = {};
-
-  // Soma o que está em memória (andamento + eventos, com e sem carga_finalizada)
-  var emMemoria = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap);
-  var idsEmMemoria = Object.keys(emMemoria);
-  Object.values(emMemoria).forEach(function(ev) { _somarEv(ev, counts); });
-  // Staging (outros eventos pinados)
-  Object.values(_eventosStagingCarga).forEach(function(ev) { _somarEv(ev, counts); });
-
-  if (!db) { _aplicar(counts); return; }
-
-  // Busca no Firestore eventos com ev_data <= dataISO (cobre todas as etapas)
-  // Filtragem por ev_data_fim é feita no cliente dentro de _somarEv
-  db.collection('eventos_campo')
-    .where('ev_data', '<=', dataISO)
-    .get()
-    .then(function(snap) {
-      snap.forEach(function(doc) {
-        if (idsEmMemoria.indexOf(doc.id) !== -1) return; // já somado
-        _somarEv(Object.assign({ id: doc.id }, doc.data()), counts);
-      });
-      _aplicar(counts);
-    })
-    .catch(function(err) {
-      console.warn('[TesteDisp]', err.message);
-      _aplicar(counts); // aplica o que tem em memória
-    });
-}
-
-function _testarDisponibilidade() {
-  // Precisa de uma data selecionada
-  if (!_agDiaSelecionado) {
-    toast('Selecione um dia no calendário primeiro.', true);
-    return;
-  }
-
-  var dataFmt = _agDiaSelecionado; // formato YYYY-MM-DD
-  var dataLabel = dataFmt.split('-').reverse().join('/');
-
-  // Se já existe um teste com a mesma data → toggle off
-  if (_eventosStagingCarga[_TESTE_DISP_ID] && _eventosStagingCarga[_TESTE_DISP_ID].ev_data === dataFmt) {
-    var afetadosToggle = _evEqDragItems[_TESTE_DISP_ID] ? Object.keys(_evEqDragItems[_TESTE_DISP_ID]) : [];
-    delete _eventosStagingCarga[_TESTE_DISP_ID];
-    if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
-    if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
-    Object.keys(_equipamentos).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
-    renderEventosAndamento();
-    var btn = document.getElementById('btn-testar-disp');
-    if (btn) btn.classList.remove('disp-ativa');
-    return;
-  }
-
-  // Cria evento fake apenas em memória
-  var evTeste = {
-    id: _TESTE_DISP_ID,
-    ev_nome: 'Teste de Disponibilidade',
-    ev_data: dataFmt,
-    etapa: 'eventos',
-    _isTeste: true,
-    servicos: [],
-    itens_extras: [],
-    itens_ok: {},
-    itens_removidos: {},
-    kits_grupos_ev: []
-  };
-
-  _eventosStagingCarga[_TESTE_DISP_ID] = evTeste;
-  _evKitGrupos[_TESTE_DISP_ID] = [];
-
-  // Pré-carrega alocações existentes na data selecionada
-  _calcularAlocacoesPorData(dataFmt);
-
-  renderEventosAndamento();
-
-  var btn = document.getElementById('btn-testar-disp');
-  if (btn) btn.classList.add('disp-ativa');
-
-  // Fecha a agenda e abre a sidebar
-  fecharAgenda();
-  var sec = document.getElementById('eventos-andamento-section');
-  if (sec) {
-    sec.style.display = 'block';
-    document.body.classList.add('has-ev-sidebar');
-    setTimeout(function() { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
-  }
-
-  toast('Card de teste criado para ' + dataLabel + ' — arraste kits e equipamentos para testar!');
-}
-
-function _removerTesteDisponibilidade() {
-  // Coleta equipamentos afetados antes de deletar
-  var afetados = _evEqDragItems[_TESTE_DISP_ID] ? Object.keys(_evEqDragItems[_TESTE_DISP_ID]) : [];
-  delete _eventosStagingCarga[_TESTE_DISP_ID];
-  if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
-  if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
-  // Atualiza cards que foram alterados
-  afetados.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
-  renderEventosAndamento();
-  var btn = document.getElementById('btn-testar-disp');
-  if (btn) btn.classList.remove('disp-ativa');
-}
-
-// ── Fim TESTE DE DISPONIBILIDADE ──────────────────────────
-
 function _fecharCardEvento() {
   var el = document.getElementById('agenda-ev-overlay');
   if (el) el.remove();
@@ -7148,13 +6996,7 @@ function _atualizarConflitosNosKits() {
           </div>
           <div style="font-size:0.6rem;color:var(--muted);margin-top:2px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase">Reserve kits por data &bull; Detecta conflitos automaticamente</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button id="btn-testar-disp" onclick="_testarDisponibilidade()" style="display:flex;align-items:center;gap:6px;background:rgba(74,144,217,0.1);border:1px solid rgba(74,144,217,0.35);color:#4A90D9;border-radius:5px;padding:0 12px;height:28px;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;white-space:nowrap" onmouseover="this.style.background='rgba(74,144,217,0.2)';this.style.borderColor='rgba(74,144,217,0.7)'" onmouseout="this.style.background='rgba(74,144,217,0.1)';this.style.borderColor='rgba(74,144,217,0.35)'">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-            Testar Disponibilidade
-          </button>
-          <button class="agenda-modal-close" onclick="fecharAgenda()">✕</button>
-        </div>
+        <button class="agenda-modal-close" onclick="fecharAgenda()">✕</button>
       </div>
 
       <!-- Layout principal: calendário + painel direito -->
@@ -8361,7 +8203,7 @@ function _atualizarBotaoVeiculoEv(evId, sels) {
 }
 
 function _salvarVeiculosEv(evId, ids) {
-  if (db && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ veiculos: ids }).catch(function(e){ console.error('[Ev] veiculo:', e); });
+  if (db) db.collection('eventos_campo').doc(evId).update({ veiculos: ids }).catch(function(e){ console.error('[Ev] veiculo:', e); });
 }
 
 function _riscarCargaItem(btn) {
@@ -8378,7 +8220,7 @@ function _toggleItemEv(evId, idx) {
   var itensOk = Object.assign({}, ev.itens_ok || {});
   itensOk[idx] = !itensOk[idx];
   ev.itens_ok = itensOk;
-  if (db && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
+  if (db) db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
   var chk = document.querySelector('#ev-andamento-scroll .item-check[data-evid="' + evId + '"][data-idx="' + idx + '"]');
   if (chk) {
     var item = chk.closest('.card-item');
@@ -8410,7 +8252,7 @@ function _adicionarItemExtraEv(evId, texto) {
   }
   if (!merged) extras.push(texto);
   ev.itens_extras = extras;
-  if (db && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+  if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
   // Recalcula contagens imediatamente (prefixo 2x, 3x...)
   _recalcularCargaEvento(evId);
   renderEventosAndamento();
@@ -8531,7 +8373,7 @@ function _recalcularCargaEvento(evId) {
 }
 
 function _salvarKitGruposFirestore(evId) {
-  if (!db || evId === _TESTE_DISP_ID) return;
+  if (!db) return;
   var grupos = (_evKitGrupos[evId] || []).map(function(g) {
     return {
       grupoId: g.grupoId,
@@ -8691,19 +8533,19 @@ function _bindEvAndamentoCards() {
         rem[idx] = !rem[idx];
         evObj.itens_removidos = rem;
         isNowRemoved = rem[idx];
-        if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
+        db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
       } else if (tipo === 'painel') {
         var remP = Object.assign({}, evObj.itens_painel_removidos || {});
         remP[idx] = !remP[idx];
         evObj.itens_painel_removidos = remP;
         isNowRemoved = remP[idx];
-        if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_painel_removidos: remP });
+        db.collection('eventos_campo').doc(evId).update({ itens_painel_removidos: remP });
       } else {
         var remE = Object.assign({}, evObj.itens_extras_removidos || {});
         remE[idx] = !remE[idx];
         evObj.itens_extras_removidos = remE;
         isNowRemoved = remE[idx];
-        if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
+        db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
       }
 
       // Recalcula contagens a partir dos itens ativos (não riscados) do evento
@@ -9002,12 +8844,12 @@ function _bindEvAndamentoCards() {
           var rem = Object.assign({}, evObj.itens_removidos || {});
           rem[data.idx] = true;
           evObj.itens_removidos = rem;
-          if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem }).catch(function(){});
+          db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem }).catch(function(){});
         } else {
           var extrasArr = (evObj.itens_extras || []).slice();
           extrasArr.splice(data.idx, 1);
           evObj.itens_extras = extrasArr;
-          if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasArr }).catch(function(){});
+          db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasArr }).catch(function(){});
         }
       }
       // Adicionar ao grupo
@@ -9090,12 +8932,9 @@ function renderEventosAndamento() {
   }
 
   var stagingHtml = '';
-  var stagingNormal = eventosStaging.filter(function(ev) { return ev.id !== _TESTE_DISP_ID; });
-  var stagingTeste  = eventosStaging.filter(function(ev) { return ev.id === _TESTE_DISP_ID; });
-
-  if (stagingNormal.length) {
+  if (eventosStaging.length) {
     var separador = '<div class="ev-section-separator"><div class="ev-section-separator-pulse"></div>Montando carga</div>';
-    stagingHtml = separador + stagingNormal.map(function(ev) {
+    stagingHtml = separador + eventosStaging.map(function(ev) {
       var cardHtml = _buildEvAndamentoCard(ev);
       cardHtml = cardHtml.replace(
         'class="evento-card"',
@@ -9108,27 +8947,7 @@ function renderEventosAndamento() {
     }).join('');
   }
 
-  var testeHtml = '';
-  if (stagingTeste.length) {
-    var evTeste = stagingTeste[0];
-    var dataTesteLabel = evTeste.ev_data ? evTeste.ev_data.split('-').reverse().join('/') : '';
-    var separadorTeste = '<div class="ev-section-separator" style="color:#4A90D9;border-color:rgba(74,144,217,0.25)"><div class="ev-section-separator-pulse" style="background:#4A90D9;box-shadow:0 0 0 0 rgba(74,144,217,0.6)"></div>Teste de Disponibilidade</div>';
-    var cardHtml = _buildEvAndamentoCard(evTeste);
-    cardHtml = cardHtml.replace(
-      'class="evento-card"',
-      'class="evento-card ev-teste-card"'
-    ).replace(
-      '<div class="card-summary">',
-      '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 6px 0;margin-bottom:2px">' +
-        '<span style="font-size:0.5rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#4A90D9;background:rgba(74,144,217,0.15);border:1px solid rgba(74,144,217,0.35);border-radius:3px;padding:1px 6px">🧪 Simulação · ' + dataTesteLabel + '</span>' +
-        '<button onclick="event.stopPropagation();_removerTesteDisponibilidade()" style="background:none;border:none;color:#555;cursor:pointer;font-size:0.75rem;padding:1px 4px;line-height:1;border-radius:3px;transition:color 0.15s" onmouseover="this.style.color=\'#e05c5c\'" onmouseout="this.style.color=\'#555\'" title="Descartar teste">✕ Descartar</button>' +
-      '</div>' +
-      '<div class="card-summary">'
-    );
-    testeHtml = separadorTeste + cardHtml;
-  }
-
-  scroll.innerHTML = andamentoHtml + stagingHtml + testeHtml + eventosHtml;
+  scroll.innerHTML = andamentoHtml + stagingHtml + eventosHtml;
 
   _bindEvAndamentoCards();
 
@@ -9214,7 +9033,7 @@ function evCardDrop(ev, evId) {
       });
       extrasSlot.push(labelSlot);
       evObjSlot.itens_extras = extrasSlot;
-      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId]) && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasSlot });
+      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasSlot });
     }
     _atualizarCardEqDOM(eqIdSlot);
     renderEventosAndamento();
@@ -9246,7 +9065,7 @@ function evCardDrop(ev, evId) {
       var labelMovido = (itMovido.qty > 1 ? itMovido.qty + 'x ' : '') + itMovido.eqNome;
       var extrasMovido = (evDestObj.itens_extras || []).concat([labelMovido]);
       evDestObj.itens_extras = extrasMovido;
-      if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasMovido }).catch(function(){});
+      db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasMovido }).catch(function(){});
     }
     _recalcularCargaEvento(srcEvId);
     if (srcEvId !== evId) _recalcularCargaEvento(evId);
@@ -9340,7 +9159,7 @@ function evCardDrop(ev, evId) {
       });
       extras2.push(label);
       evObj2.itens_extras = extras2;
-      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId]) && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
+      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
     }
     // Atualiza contagem do card do equipamento
     _atualizarCardEqDOM(itemId);
@@ -9377,7 +9196,7 @@ function evCardDrop(ev, evId) {
   }).then(function() {
     if (nomeItem && ev2) {
       var extras = (ev2.itens_extras || []).concat([nomeItem]);
-      if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras }).catch(function(){});
+      db.collection('eventos_campo').doc(evId).update({ itens_extras: extras }).catch(function(){});
     }
     toast('Adicionado ao evento!');
   }).catch(function(e) { toast('Erro: ' + e.message, true); });
