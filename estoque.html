@@ -7949,16 +7949,8 @@ function _getCargaTotalEq(eqId) {
   Object.values(_evEqDragItems).forEach(function(ev) {
     if (ev[eqId]) total += ev[eqId].qty;
   });
-  // Eventos sem card aberto: contar kit grupos diretamente
-  Object.keys(_evKitGrupos).forEach(function(evId) {
-    if (_evEqDragItems[evId]) return; // já contado acima
-    (_evKitGrupos[evId] || []).forEach(function(g) {
-      if (g.riscado) return;
-      (g.itens || []).forEach(function(it) {
-        if (!it.riscado && it.eqId === eqId) total += (it.qty || 1);
-      });
-    });
-  });
+  // Nota: _evKitGrupos não é contado aqui pois seus itens já movimentam
+  // qtd_em_uso diretamente (seria dupla contagem com o valor do Firestore).
   return total;
 }
 function _atualizarCardEqDOM(eqId) {
@@ -8588,16 +8580,9 @@ function _recalcularCargaEvento(evId) {
     novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
   });
 
-  // Incluir itens dos grupos de kit
-  (_evKitGrupos[evId] || []).forEach(function(grupo) {
-    if (grupo.riscado) return;
-    (grupo.itens || []).forEach(function(it) {
-      if (it.riscado) return;
-      var eqId = it.eqId;
-      if (!eqId) return;
-      novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
-    });
-  });
+  // Itens de grupos de kit NÃO são incluídos aqui pois já movimentam
+  // qtd_em_uso/qtd_disponivel diretamente no objeto e no Firestore.
+  // Incluí-los causaria dupla contagem em _atualizarCardEqDOM.
 
   _evEqDragItems[evId] = {};
   Object.keys(novasCounts).forEach(function(eqId) {
@@ -9492,19 +9477,14 @@ function evCardDrop(ev, evId) {
       var qtdCap = Math.min(qtd, Math.max(0, dispFir - jaAlocado));
       if (qtdCap <= 0) return;
       grupoItens.push({ eqId: eqId, eqNome: eqNome, qty: qtdCap, checked: false, riscado: false });
-      if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
-      _evEqDragItems[evId][eqId].qty += qtdCap;
-      // Movimenta estoque: disp → em_uso
-      if (db) {
-        var eqKD = _equipamentos[eqId];
-        if (eqKD) {
-          var novoDispKD = Math.max(0, (eqKD.qtd_disponivel || 0) - qtdCap);
-          var novoUsoKD  = (eqKD.qtd_em_uso || 0) + qtdCap;
-          eqKD.qtd_disponivel = novoDispKD; eqKD.qtd_em_uso = novoUsoKD;
-          db.collection('estoque').doc(eqId).update({ qtd_disponivel: novoDispKD, qtd_em_uso: novoUsoKD, _atualizado: Date.now() }).catch(function(){});
-        }
+      // Movimenta estoque: disp → em_uso (direto no objeto e Firestore)
+      var eqKD = _equipamentos[eqId];
+      if (eqKD) {
+        var novoDispKD = Math.max(0, (eqKD.qtd_disponivel || 0) - qtdCap);
+        var novoUsoKD  = (eqKD.qtd_em_uso || 0) + qtdCap;
+        eqKD.qtd_disponivel = novoDispKD; eqKD.qtd_em_uso = novoUsoKD;
+        if (db) db.collection('estoque').doc(eqId).update({ qtd_disponivel: novoDispKD, qtd_em_uso: novoUsoKD, _atualizado: Date.now() }).catch(function(){});
       }
-      _atualizarCardEqDOM(eqId);
       itensAdicionados++;
     });
 
@@ -9513,6 +9493,10 @@ function evCardDrop(ev, evId) {
     var grupoId = 'kg_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
     _evKitGrupos[evId].push({ grupoId: grupoId, kitId: itemId, kitNome: kitNome, itens: grupoItens, riscado: false });
     _salvarKitGruposFirestore(evId);
+    // Recalcula _evEqDragItems a partir dos kit grupos (fonte única de verdade)
+    _recalcularCargaEvento(evId);
+    // Atualiza cards de todos os itens afetados
+    grupoItens.forEach(function(it) { if (it.eqId) _atualizarCardEqDOM(it.eqId); });
 
     var _kitCardEl2 = document.getElementById('kit-card-' + itemId);
     if (_kitCardEl2) _kitCardEl2.style.opacity = '';
