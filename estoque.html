@@ -4035,8 +4035,9 @@ function abrirModalForm(e) {
 
 
       '</div>' +
-      '<div class="modal-footer">' +
-        '<button class="btn-modal-cancel" onclick="fecharTodosModais()" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancelar</button>' +
+      '<div class="modal-footer" style="flex-wrap:wrap;gap:8px">' +
+        (isEdit ? '<button onclick="_resetarContagensEquip(\''+equipId+'\',this)" style="display:flex;align-items:center;gap:5px;background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:4px;padding:6px 10px;font-size:0.7rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;transition:border-color 0.15s,background 0.15s" onmouseover="this.style.background=\'rgba(224,92,92,0.1)\'" onmouseout="this.style.background=\'none\'"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Resetar Contagens</button>' : '') +
+        '<button class="btn-modal-cancel" onclick="fecharTodosModais()" style="display:flex;align-items:center;gap:6px;margin-left:auto"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancelar</button>' +
         '<button class="btn-modal-save" onclick="salvarEquipamento()" style="display:flex;align-items:center;justify-content:center;gap:6px">' + (isEdit ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Salvar Alterações' : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar') + '</button>' +
       '</div>' +
     '</div>';
@@ -4083,6 +4084,29 @@ function abrirModalAddAcessorioRapido() {
     var chk = document.getElementById('f-is-acessorio');
     if (chk && !chk.checked) { chk.checked = true; _toggleTipoItem(); }
   }, 0);
+}
+
+function _resetarContagensEquip(eqId, btn) {
+  var eq = _equipamentos[eqId];
+  if (!eq) return;
+  var total = eq.qtd_total || 0;
+  if (!confirm('Resetar Em Uso e Manutenção para 0? Disponível será ' + total + ' (igual ao Total).')) return;
+  var updates = { qtd_em_uso: 0, qtd_manutencao: 0, qtd_disponivel: total, _atualizado: Date.now() };
+  btn.disabled = true; btn.textContent = 'Resetando...';
+  db.collection('estoque').doc(eqId).update(updates).then(function() {
+    // Atualiza local
+    eq.qtd_em_uso = 0; eq.qtd_manutencao = 0; eq.qtd_disponivel = total;
+    // Atualiza campos do modal
+    var fUso = document.getElementById('f-uso'); if (fUso) fUso.value = 0;
+    var fManut = document.getElementById('f-manut'); if (fManut) fManut.value = 0;
+    _calcDisponivel();
+    _atualizarCardEqDOM(eqId);
+    toast('Contagens resetadas com sucesso.');
+    btn.textContent = 'Resetado ✓'; btn.style.color = '#4AC87A'; btn.style.borderColor = 'rgba(74,200,122,0.4)';
+  }).catch(function(err) {
+    toast('Erro ao resetar: ' + err.message, true);
+    btn.disabled = false; btn.textContent = 'Resetar Contagens';
+  });
 }
 
 function salvarEquipamento() {
