@@ -8821,54 +8821,8 @@ function _bindEvAndamentoCards() {
 
   // ── Kit Grupos handlers ──
 
-  // Toggle colapso/expande grupo (click no header)
-  scroll.querySelectorAll('.ev-kit-grupo-header').forEach(function(header) {
-    var _mouseDownPos = null;
-    var _didDrag = false;
-    header.addEventListener('mousedown', function(e) {
-      _mouseDownPos = { x: e.clientX, y: e.clientY };
-      _didDrag = false;
-    });
-    header.addEventListener('mousemove', function(e) {
-      if (_mouseDownPos && (Math.abs(e.clientX - _mouseDownPos.x) > 4 || Math.abs(e.clientY - _mouseDownPos.y) > 4)) {
-        _didDrag = true;
-      }
-    });
-    header.addEventListener('click', function(e) {
-      e.stopPropagation();
-      if (_didDrag) return;
-      if (e.target.closest('.ev-kit-grupo-check') || e.target.closest('.ev-kit-grupo-rem')) return;
-      var grupo = header.closest('.ev-kit-grupo');
-      if (grupo) grupo.classList.toggle('expanded');
-    });
-  });
-
-  // Header do kit grupo é draggable → arrastar para criar/remover
-  scroll.querySelectorAll('.ev-kit-grupo-header[draggable]').forEach(function(header) {
-    header.addEventListener('dragstart', function(e) {
-      var evId = header.getAttribute('data-evid');
-      var grupoId = header.getAttribute('data-grupo-id');
-      _draggingKitGrupoData = { evId: evId, grupoId: grupoId };
-      e.dataTransfer.setData('tipo', 'ev_kit_grupo');
-      e.dataTransfer.setData('text/plain', evId + '|' + grupoId);
-      e.dataTransfer.effectAllowed = 'move';
-      document.body.classList.add('kit-dragging');
-      document.body.classList.add('kit-grupo-dragging');
-      var grupoEl = header.closest('.ev-kit-grupo');
-      if (grupoEl) setTimeout(function() { grupoEl.style.opacity = '0.4'; }, 0);
-    });
-    header.addEventListener('dragend', function() {
-      setTimeout(function() {
-        document.body.classList.remove('kit-dragging');
-        document.body.classList.remove('kit-grupo-dragging');
-        _draggingKitGrupoData = null;
-        var grupoEl = header.closest('.ev-kit-grupo');
-        if (grupoEl) grupoEl.style.opacity = '';
-        var novoCard = document.getElementById('kit-novo-card');
-        if (novoCard) novoCard.classList.remove('drag-over-remove');
-      }, 200);
-    });
-  });
+  // Header do kit grupo: click → expand/collapse, drag → reorder/remover
+  // (handlers unificados para evitar conflito com cloneNode)
 
   // Checkbox do kit → marca/desmarca todos os itens do grupo
   scroll.querySelectorAll('.ev-kit-grupo-check').forEach(function(chk) {
@@ -9153,40 +9107,58 @@ function _bindEvAndamentoCards() {
     });
   });
 
-  // ── Reordenação de kit grupos dentro do evento (drag no header) ──
+  // ── Header dos kit grupos: click (expand) + drag (reorder/remover) ──
   var _draggingKitGrupoReorder = null;
   scroll.querySelectorAll('.ev-kit-grupo-header[draggable]').forEach(function(header) {
-    // Remove listeners antigos clonando o elemento
-    var newHeader = header.cloneNode(true);
-    header.parentNode.replaceChild(newHeader, header);
-    newHeader.addEventListener('dragstart', function(e) {
-      var evId    = newHeader.getAttribute('data-evid');
-      var grupoId = newHeader.getAttribute('data-grupo-id');
-      _draggingKitGrupoData   = { evId: evId, grupoId: grupoId };
+    var _mouseDownPos = null;
+    var _didDrag = false;
+
+    header.addEventListener('mousedown', function(e) {
+      _mouseDownPos = { x: e.clientX, y: e.clientY };
+      _didDrag = false;
+    });
+    header.addEventListener('mousemove', function(e) {
+      if (_mouseDownPos && (Math.abs(e.clientX - _mouseDownPos.x) > 4 || Math.abs(e.clientY - _mouseDownPos.y) > 4)) {
+        _didDrag = true;
+      }
+    });
+    header.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (_didDrag) return;
+      if (e.target.closest('.ev-kit-grupo-check') || e.target.closest('.ev-kit-grupo-rem')) return;
+      var grupo = header.closest('.ev-kit-grupo');
+      if (grupo) grupo.classList.toggle('expanded');
+    });
+    header.addEventListener('dragstart', function(e) {
+      _didDrag = true;
+      var evId    = header.getAttribute('data-evid');
+      var grupoId = header.getAttribute('data-grupo-id');
+      _draggingKitGrupoData    = { evId: evId, grupoId: grupoId };
       _draggingKitGrupoReorder = { evId: evId, grupoId: grupoId };
       e.dataTransfer.setData('tipo', 'ev_kit_grupo');
       e.dataTransfer.setData('text/plain', evId + '|' + grupoId);
       e.dataTransfer.effectAllowed = 'move';
       document.body.classList.add('kit-dragging');
       document.body.classList.add('kit-grupo-dragging');
-      var grupoEl = newHeader.closest('.ev-kit-grupo');
+      var grupoEl = header.closest('.ev-kit-grupo');
       if (grupoEl) setTimeout(function() { grupoEl.style.opacity = '0.4'; }, 0);
     });
-    newHeader.addEventListener('dragend', function() {
+    header.addEventListener('dragend', function() {
       setTimeout(function() {
         document.body.classList.remove('kit-dragging');
         document.body.classList.remove('kit-grupo-dragging');
-        _draggingKitGrupoData   = null;
+        _draggingKitGrupoData    = null;
         _draggingKitGrupoReorder = null;
-        var grupoEl = newHeader.closest('.ev-kit-grupo');
-        if (grupoEl) grupoEl.style.opacity = '';
+        var grupoEl = header.closest('.ev-kit-grupo');
+        if (grupoEl) { grupoEl.style.opacity = ''; }
         scroll.querySelectorAll('.ev-kit-grupo.drag-reorder-over').forEach(function(el) { el.classList.remove('drag-reorder-over'); });
         var novoCard = document.getElementById('kit-novo-card');
         if (novoCard) novoCard.classList.remove('drag-over-remove');
       }, 200);
     });
-    // Dragover sobre outros grupos → highlight reorder
-    var grupoEl = newHeader.closest('.ev-kit-grupo');
+
+    // Dragover/drop no grupo pai para reorder
+    var grupoEl = header.closest('.ev-kit-grupo');
     if (grupoEl) {
       grupoEl.addEventListener('dragover', function(e) {
         if (!_draggingKitGrupoReorder) return;
@@ -9211,7 +9183,7 @@ function _bindEvAndamentoCards() {
         var moved = grupos.splice(srcIdx, 1)[0];
         grupos.splice(dstIdx, 0, moved);
         _draggingKitGrupoReorder = null;
-        _draggingKitGrupoData = null;
+        _draggingKitGrupoData    = null;
         _salvarKitGruposFirestore(evId);
         renderEventosAndamento();
       });
