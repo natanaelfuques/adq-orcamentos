@@ -5562,6 +5562,11 @@ function kitFolderDrop(ev, kitId) {
     return;
   }
 
+  // Fallback: read from dataTransfer if _draggingEqId was cleared by dragend
+  var tipo = ev.dataTransfer.getData('tipo');
+  if (!_draggingEqId && (tipo === 'eq' || tipo === 'acessorio')) {
+    _draggingEqId = ev.dataTransfer.getData('text/plain');
+  }
   if (!_draggingEqId) return;
 
   if (kitId.indexOf('temp_') === 0) {
