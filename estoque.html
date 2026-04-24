@@ -9085,6 +9085,7 @@ function _movimentarEstoqueEvento(eqId, qty, paraEstoque) {
   // Drop zone dos kit grupos (para aceitar itens soltos vindos de fora do grupo)
   scroll.querySelectorAll('.ev-kit-grupo-dropzone').forEach(function(zone) {
     zone.addEventListener('dragover', function(e) {
+      if (_draggingKitId) return; // deixa propagar para evCardOver
       if (_draggingEqId) {
         e.preventDefault(); e.stopPropagation();
         zone.classList.add('drag-over-eq');
@@ -9099,9 +9100,10 @@ function _movimentarEstoqueEvento(eqId, qty, paraEstoque) {
       zone.classList.remove('drag-over-eq');
     });
     zone.addEventListener('drop', function(e) {
-      e.preventDefault(); e.stopPropagation();
       zone.classList.remove('drag-over-kit-grupo');
       zone.classList.remove('drag-over-eq');
+      if (_draggingKitId) return; // deixa propagar para evCardDrop
+      e.preventDefault(); e.stopPropagation();
       // ── Drop de equipamento/acessório do estoque ──
       if (_draggingEqId) {
         var eqDropId = _draggingEqId;
