@@ -2580,7 +2580,7 @@
       <option value="disponivel">Disponível</option>
       <option value="categoria">Categoria</option>
       <option value="recente">Mais recente</option>
-      <option value="manual" selected>Manual</option>
+      <option value="manual">Manual</option>
     </select>
   </div>
 
@@ -3937,6 +3937,10 @@ function abrirModalForm(e) {
           '</label>' +
           '<span style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.05em">Aparece na aba Acessórios</span>' +
         '</div>' +
+        '<div class="form-group" id="f-grupo-eq-pai"' + (e.isAcessorio ? '' : ' style="display:none"') + '>' +
+          '<label class="form-label">Equipamento vinculado</label>' +
+          '<select class="form-select" id="f-eq-pai"><option value="">— Sem vínculo —</option>' + Object.values(_equipamentos).filter(function(x){return !x.isAcessorio;}).sort(function(a,b){return(a.nome||'').localeCompare(b.nome||'');}).map(function(x){return'<option value="'+esc(x.id)+'"'+(e.equipamentoPai===x.id?' selected':'')+'>'+esc(x.nome)+'</option>';}).join('') + '</select>' +
+        '</div>' +
         '<div class="form-grid">' +
           '<div class="form-group">' +
             '<label class="form-label">Categoria</label>' +
@@ -4025,10 +4029,12 @@ function _calcDisponivel() {
 
 function _toggleTipoItem() {
   var chk = document.getElementById('f-is-acessorio');
+  var grupoEqPai = document.getElementById('f-grupo-eq-pai');
   var grupoModelo = document.getElementById('f-grupo-modelo');
   var nomeLabel = document.getElementById('f-nome-label');
   if (!chk) return;
   var isAc = chk.checked;
+  if (grupoEqPai) grupoEqPai.style.display = isAc ? '' : 'none';
   if (nomeLabel) nomeLabel.textContent = isAc ? 'Nome do Acessório *' : 'Nome do Equipamento *';
 }
 
@@ -4054,13 +4060,14 @@ function salvarEquipamento() {
 
   var isAcessorioChk = document.getElementById('f-is-acessorio');
   var isAcessorio = isAcessorioChk ? isAcessorioChk.checked : false;
+  var eqPaiEl = document.getElementById('f-eq-pai');
   var dados = {
     nome: nome,
     emoji: _emojiSelecionado,
     categoria: document.getElementById('f-cat').value || 'Outros',
     modelo: (document.getElementById('f-modelo').value || '').trim(),
     isAcessorio: isAcessorio,
-    equipamentoPai: '',
+    equipamentoPai: isAcessorio && eqPaiEl ? (eqPaiEl.value || '') : '',
     qtd_total: total,
     qtd_disponivel: disp,
     qtd_em_uso: emUso,
