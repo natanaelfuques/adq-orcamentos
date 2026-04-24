@@ -10183,6 +10183,7 @@ function _kitSlotDragEnd(ev) {
 }
 
 function _kitSlotReorderOver(el, ev) {
+  if (_draggingEqId) { ev.preventDefault(); return; } // permite drop no slot, propaga para kitFolderDrop
   if (!_draggingKitSlot) return;
   var targetKitId = el.dataset.kitId;
   if (!targetKitId) return;
@@ -10199,6 +10200,11 @@ function _kitSlotReorderLeave(el) {
 }
 function _kitSlotReorderDrop(el, ev) {
   el.style.borderColor = '';
+  if (_draggingEqId) {
+    var kitIdForEq = el.dataset.kitId;
+    if (kitIdForEq) { ev.preventDefault(); ev.stopPropagation(); kitFolderDrop(ev, kitIdForEq); }
+    return;
+  }
   if (!_draggingKitSlot) return;
   var targetKitId = el.dataset.kitId;
   if (!targetKitId) return;
