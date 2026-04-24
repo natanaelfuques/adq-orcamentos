@@ -7896,7 +7896,9 @@ var _evKitGrupos = {};       // { evId: [ { grupoId, kitId, kitNome, itens:[{eqI
 
 function _getCargaTotalEq(eqId) {
   var total = 0;
+  // Itens arrastados visualmente (sistema de carga local)
   Object.values(_cargaEvento).forEach(function(c) { total += (c[eqId] || 0); });
+  // Itens dos eventos abertos (itens_extras / servicos não riscados)
   Object.values(_evEqDragItems).forEach(function(ev) {
     if (ev[eqId]) total += ev[eqId].qty;
   });
@@ -7991,15 +7993,8 @@ function _mergeEventosSnaps() {
       _evKitGrupos[data.id] = data.kits_grupos_ev;
     }
   });
-  // Remove entradas órfãs de eventos que saíram
-  Object.keys(_evEqDragItems).forEach(function(evId) {
-    if (!_eventosAndamento[evId] && !_eventosStagingCarga[evId]) delete _evEqDragItems[evId];
-  });
-  // Garante contagens para eventos com card fechado
-  Object.keys(_eventosAndamento).forEach(function(evId) {
-    if (!_evEqDragItems[evId]) _recalcularCargaEvento(evId);
-  });
   renderEventosAndamento();
+  // Atualiza estoque em tempo real quando filtro de andamento está ativo
   if (typeof _filtroAndamento !== 'undefined' && _filtroAndamento) renderEquipamentos();
 }
 
@@ -8521,20 +8516,16 @@ function _recalcularCargaEvento(evId) {
     novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
   });
 
-  // Kits: incluir apenas se o card estiver aberto (expanded), mantendo consistência com _abrirCargaEvento.
-  var cardEl = document.getElementById('ev-card-' + evId);
-  var cardAberto = cardEl && cardEl.classList.contains('expanded');
-  if (cardAberto) {
-    (_evKitGrupos[evId] || []).forEach(function(grupo) {
-      if (grupo.riscado) return;
-      (grupo.itens || []).forEach(function(it) {
-        if (it.riscado) return;
-        var eqId = it.eqId;
-        if (!eqId) return;
-        novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
-      });
+  // Incluir itens dos grupos de kit
+  (_evKitGrupos[evId] || []).forEach(function(grupo) {
+    if (grupo.riscado) return;
+    (grupo.itens || []).forEach(function(it) {
+      if (it.riscado) return;
+      var eqId = it.eqId;
+      if (!eqId) return;
+      novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
     });
-  }
+  });
 
   _evEqDragItems[evId] = {};
   Object.keys(novasCounts).forEach(function(eqId) {
@@ -8859,11 +8850,8 @@ function _bindEvAndamentoCards() {
       var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
       if (!grupo) return;
       var novoRiscadoGrupo = !grupo.riscado;
-      grupo.riscado = novoRiscadoGrupo;
-      grupo.itens.forEach(function(it) {
-        it.riscado = novoRiscadoGrupo;
-        if (novoRiscadoGrupo) it.checked = false;
-      });
+      grupo.riscado = !grupo.riscado;
+      grupo.itens.forEach(function(it) { it.riscado = grupo.riscado; if (grupo.riscado) it.checked = false; });
       _salvarKitGruposFirestore(evId);
       _recalcularCargaEvento(evId);
       // Atualiza UI imediatamente
@@ -8897,8 +8885,8 @@ function _bindEvAndamentoCards() {
       var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
       if (!grupo || !grupo.itens[itIdx]) return;
       var it = grupo.itens[itIdx];
-      var novoRiscadoItem = !it.riscado;
-      it.riscado = novoRiscadoItem;
+      it.riscado = !it.riscado;
+      if (it.riscado) it.checked = false;
       if (novoRiscadoItem) it.checked = false;
       _salvarKitGruposFirestore(evId);
       _recalcularCargaEvento(evId);
@@ -8995,7 +8983,6 @@ function _bindEvAndamentoCards() {
         } else {
           grupo.itens.push({ eqId: eqDropId, eqNome: eqNome2, qty: 1, checked: false, riscado: false });
         }
-        // Alocação virtual — não persiste qtd_em_uso no Firestore
         _salvarKitGruposFirestore(evId);
         _recalcularCargaEvento(evId);
         _atualizarCardEqDOM(eqDropId);
@@ -9390,7 +9377,6 @@ function evCardDrop(ev, evId) {
       grupoItens.push({ eqId: eqId, eqNome: eqNome, qty: qtdCap, checked: false, riscado: false });
       if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
       _evEqDragItems[evId][eqId].qty += qtdCap;
-      // Alocação virtual — não persiste qtd_em_uso no Firestore (gerenciado por movimentações manuais)
       _atualizarCardEqDOM(eqId);
       itensAdicionados++;
     });
@@ -10263,7 +10249,6 @@ function _kitRemoveZoneDrop(ev) {
       var idx = grupos.findIndex(function(g) { return g.grupoId === kgd.grupoId; });
       if (idx >= 0) {
         var removedGrupo = grupos.splice(idx, 1)[0];
-        // Alocação era virtual — não há qtd_em_uso para reverter no Firestore
         _salvarKitGruposFirestore(kgd.evId);
         _recalcularCargaEvento(kgd.evId);
         renderEventosAndamento();
@@ -10306,11 +10291,10 @@ function _kitRemoveZoneDrop(ev) {
       var srcGrupo = srcGrupos.find(function(g) { return g.grupoId === kgData.grupoId; });
       if (srcGrupo && srcGrupo.itens[kgData.itIdx]) {
         var removedIt = srcGrupo.itens.splice(kgData.itIdx, 1)[0];
-        // Alocação era virtual — não há qtd_em_uso para reverter no Firestore
         _salvarKitGruposFirestore(kgData.evId);
         _recalcularCargaEvento(kgData.evId);
         renderEventosAndamento();
-        toast((removedIt.eqNome || 'Item') + ' devolvido ao estoque');
+        toast((removedIt.eqNome || 'Item') + ' removido do kit');
       }
     }
   } else if (tipo === 'eq' || tipo === 'acessorio' || _draggingEqId) {
