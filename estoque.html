@@ -263,7 +263,7 @@
 
   .btn-add-eq {
     background: var(--gold);
-    color: #111;
+    color: #fff;
     border: none;
     border-radius: 5px;
     padding: 9px 18px;
@@ -318,7 +318,7 @@
   /* ── GRID ── */
   .equip-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 8px;
     padding: 16px 24px 32px;
     min-height: 60vh;
@@ -351,7 +351,7 @@
   .status-bar-manutencao { background: linear-gradient(90deg, #5BA8E8, rgba(91,168,232,0.4)); }
   .status-bar-indisponivel { background: linear-gradient(90deg, #555, rgba(85,85,85,0.4)); }
 
-  .eq-card-body { padding: 6px 8px; }
+  .eq-card-body { padding: 8px 10px; }
 
   .eq-top {
     display: flex;
@@ -452,7 +452,7 @@
   }
   .qty-num {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.25rem;
+    font-size: 0.95rem;
     font-weight: 800;
     line-height: 1;
   }
@@ -899,7 +899,7 @@
   .btn-modal-save {
     flex: 1;
     background: var(--gold);
-    color: #111;
+    color: #fff;
     border: none;
     border-radius: 5px;
     padding: 11px;
@@ -1630,10 +1630,10 @@
   .kit-item-qty-btn:hover { border-color: var(--gold); color: var(--gold); }
   .kit-item-qty-num {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 1.1rem;
+    font-size: 0.82rem;
     font-weight: 800;
     color: var(--text);
-    min-width: 22px;
+    min-width: 18px;
     text-align: center;
   }
   .kit-item-qty-label {
@@ -2322,14 +2322,14 @@
     position: absolute;
     top: 3px;
     right: 3px;
-    background: #1a4a80;
+    background: var(--gold);
     color: #fff;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.65rem;
+    font-size: 0.48rem;
     font-weight: 800;
-    border-radius: 2px;
-    min-width: 12px;
-    height: 12px;
+    border-radius: 8px;
+    min-width: 11px;
+    height: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2492,7 +2492,7 @@
       <button id="btn-novo-item" class="btn-hd hv-green" title="Novo equipamento / acessório / veículo" style="display:flex;align-items:center;gap:5px" onclick="_abrirDropdownNovo(this)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="btn-label">Novo</span></button>
       <button class="btn-hd hv-cat" onclick="abrirModalCategorias()" title="Gerenciar categorias" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span class="btn-label">Categorias</span></button>
       <button class="btn-hd hv-amber" onclick="abrirAgenda()" title="Agenda de eventos" id="btn-agenda" style="display:flex;align-items:center;justify-content:center;gap:5px;position:relative;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="btn-label">Agenda</span><span id="agenda-badge" style="display:none;background:#F5A623;color:#111;border-radius:9px;padding:0 4px;font-size:0.5rem;font-weight:800;line-height:14px;position:absolute;top:-5px;right:-5px">0</span></button>
-      
+      <button id="btn-admin-estoque" onclick="abrirPainelAdminEstoque()" title="Painel do Administrador" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:0;width:26px;height:26px;box-sizing:border-box;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button class="btn-hd danger" onclick="sair()" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="btn-label">Sair</span></button>
       <button id="btn-ev-carga-hd" class="btn-hd" onclick="_toggleSidebar()" title="Eventos em andamento" style="display:flex;align-items:center;gap:5px">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
@@ -2570,12 +2570,12 @@
       </button>
     </div>
 
-    <select id="sort-select" class="filter-btn" style="display:none" onchange="renderEquipamentos()">
+    <select id="sort-select" class="filter-btn" style="cursor:pointer;padding-right:10px" onchange="renderEquipamentos()">
       <option value="nome">A–Z</option>
       <option value="disponivel">Disponível</option>
       <option value="categoria">Categoria</option>
       <option value="recente">Mais recente</option>
-      <option value="manual" selected>Manual</option>
+      <option value="manual">Manual</option>
     </select>
   </div>
 
@@ -2603,7 +2603,7 @@
   </div>
 
   <!-- SECTION TABS (Equipamentos / Acessórios / Categorias) -->
-  <div class="section-tabs-bar" style="overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;position:relative;z-index:91;background:var(--dark)">
+  <div class="section-tabs-bar" style="flex-wrap:wrap;position:relative;z-index:91;background:var(--dark)">
     <div class="section-tabs-left" style="flex-shrink:0">
       <button class="section-tab-btn primary-tab active" id="tab-btn-equipamentos" onclick="switchTabSecao('equipamentos')">Equipamentos <span class="tab-count" id="cnt-primary-equipamentos"></span></button>
       <button class="section-tab-btn primary-tab" id="tab-btn-acessorios" onclick="switchTabSecao('acessorios')">Acessórios <span class="tab-count" id="cnt-primary-acessorios"></span></button>
@@ -2768,8 +2768,7 @@ function abrirPainelAdminEstoque() {
       </div>\
       <div style="position:relative;padding:14px 22px 0 22px;margin-top:14px">\
         <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1">\
-          <button id="adm-est-tab-hist" onclick="_admEstAba(0)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #4A90D9;color:#4A90D9;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\
-          <button id="adm-est-tab-ordem" onclick="_admEstAba(1)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Ordenar Cards</button>\
+          <button id="adm-est-tab-hist" onclick="_admEstAba(0)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #4A90D9;color:#4A90D9;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\n          <button id="adm-est-tab-ordem" onclick="_admEstAba(1)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Ordenar Equip.</button>\
         </div>\
         <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:#2a2a2a;z-index:0"></div>\
       </div>\
@@ -2777,11 +2776,11 @@ function abrirPainelAdminEstoque() {
         <div id="adm-est-panel-hist" style="padding:0;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:block">\
           <div id="adm-est-hist-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
         </div>\
-        <div id="adm-est-panel-ordem" style="padding:20px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
-          <div style="font-family:Barlow Condensed,sans-serif;font-size:0.72rem;color:#666;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Reordene os cards de equipamento arrastando-os. A ordem é salva no Firestore ao desativar.</div>\
-          <div id="adm-ordem-status" style="font-size:0.78rem;font-family:Barlow Condensed,sans-serif;color:#888;margin-bottom:16px;padding:8px 12px;background:#111;border-radius:6px;border:1px solid #222"></div>\
-          <button id="adm-btn-ordem-toggle" onclick="_admEstOrdemToggle()" style="background:#4A90D9;color:#fff;border:none;border-radius:6px;padding:11px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;margin-bottom:8px;transition:background 0.15s">Ativar Ordenação Manual</button>\
-          <button onclick="_admEstOrdemResetar()" style="background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:6px;padding:9px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;transition:background 0.15s">Resetar Ordem</button>\
+        <div id="adm-est-panel-ordem" style="padding:16px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
+          <div style="font-family:Barlow Condensed,sans-serif;font-size:0.72rem;color:#666;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Ative a ordenação manual e arraste os cards para reordenar.</div>\
+          <div id="adm-ordem-status" style="font-size:0.75rem;color:#888;margin-bottom:14px;font-family:Barlow Condensed,sans-serif"></div>\
+          <button onclick="_admEstOrdemAtivar()" id="adm-btn-ordem-manual" style="background:#4A90D9;color:#fff;border:none;border-radius:6px;padding:10px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;margin-bottom:8px">Ativar Ordenação Manual</button>\
+          <button onclick="_admEstOrdemResetar()" style="background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:6px;padding:8px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%">Resetar Ordem</button>\
         </div>\
       </div>\
     </div>';
@@ -2802,79 +2801,30 @@ function _admEstAba(idx) {
     if (panel) panel.style.display = i === idx ? '' : 'none';
   });
   if (idx === 0) { _admEstHistCarregar(); }
-  if (idx === 1) { _admEstOrdemRenderStatus(); }
+  if (idx === 1) { _admEstOrdemAtualizar(); }
 }
-
-function _admEstOrdemRenderStatus() {
+function _admEstOrdemAtualizar() {
   var sortSel = document.getElementById('sort-select');
   var isManual = sortSel && sortSel.value === 'manual';
   var statusEl = document.getElementById('adm-ordem-status');
-  var btnEl = document.getElementById('adm-btn-ordem-toggle');
-  if (statusEl) statusEl.textContent = isManual
-    ? '✓ Ordenação manual ativa — arraste os cards de equipamento para reordenar.'
-    : 'Modo atual: ' + (sortSel ? sortSel.options[sortSel.selectedIndex].text : '—') + '. Ative para poder reordenar.';
-  if (btnEl) {
-    btnEl.textContent = isManual ? 'Salvar e Desativar' : 'Ativar Ordenação Manual';
-    btnEl.style.background = isManual ? '#50C878' : '#4A90D9';
-  }
+  var btnEl = document.getElementById('adm-btn-ordem-manual');
+  if (statusEl) statusEl.textContent = isManual ? '✓ Ordenação manual ativa — arraste os cards para reordenar.' : 'Ordenação atual: ' + (sortSel ? sortSel.options[sortSel.selectedIndex].text : '—');
+  if (btnEl) { btnEl.textContent = isManual ? 'Desativar Ordenação Manual' : 'Ativar Ordenação Manual'; btnEl.style.background = isManual ? '#555' : '#4A90D9'; }
 }
-
-function _admEstOrdemToggle() {
+function _admEstOrdemAtivar() {
   var sortSel = document.getElementById('sort-select');
   if (!sortSel) return;
-  var isManual = sortSel.value === 'manual';
-  if (isManual) {
-    // Desativar: salvar ordem atual no Firestore
-    var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
-    var _catAtualLocal = typeof _catAtual !== 'undefined' ? _catAtual : 'todos';
-    var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
-    var ordemAtual = [];
-    try { ordemAtual = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-    if (db && ordemAtual.length) {
-      var updSave = { _atualizado: Date.now() };
-      updSave[key] = ordemAtual;
-      db.collection('configuracoes').doc('eq_ordem_manual').set(updSave, { merge: true })
-      .then(function() { toast('Ordem salva no Firestore!'); })
-      .catch(function(e) { toast('Erro ao salvar: ' + e.message, true); });
-    }
-    sortSel.value = 'nome';
-    renderEquipamentos();
-    var modal = document.getElementById('modal-admin-estoque');
-    if (modal) { document.body.style.overflow = ''; modal.remove(); }
-    toast('Ordem salva e ordenação manual desativada');
-  } else {
-    // Ativar: buscar ordem salva do Firestore e popular localStorage
-    var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
-    var _catAtualLocal = typeof _catAtual !== 'undefined' ? _catAtual : 'todos';
-    var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
-    function _ativar() {
-      sortSel.value = 'manual';
-      renderEquipamentos();
-      _admEstOrdemRenderStatus();
-      toast('Ordenação manual ativa — arraste os cards!');
-    }
-    if (db) {
-      db.collection('configuracoes').doc('eq_ordem_manual').get().then(function(doc) {
-        if (doc.exists && doc.data()[key]) {
-          try { localStorage.setItem(key, JSON.stringify(doc.data()[key])); } catch(e) {}
-        }
-        _ativar();
-      }).catch(function() { _ativar(); });
-    } else { _ativar(); }
-  }
-}
-
-function _admEstOrdemResetar() {
-  var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
-  var _catAtualLocal = typeof _catAtual !== 'undefined' ? _catAtual : 'todos';
-  var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
-  try { localStorage.removeItem(key); } catch(e) {}
-  if (db) {
-    var upd = {}; upd[key] = [];
-    db.collection('configuracoes').doc('eq_ordem_manual').set(upd, { merge: true }).catch(function(){});
-  }
+  var ativando = sortSel.value !== 'manual';
+  sortSel.value = ativando ? 'manual' : 'nome';
   renderEquipamentos();
-  _admEstOrdemRenderStatus();
+  var modal = document.getElementById('modal-admin-estoque');
+  if (modal) { document.body.style.overflow = ''; modal.remove(); }
+  toast(ativando ? 'Ordenação manual ativa — arraste os cards!' : 'Ordenação manual desativada');
+}
+function _admEstOrdemResetar() {
+  var key = 'eq_ordem_manual_' + (typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos') + '_' + (typeof _catAtual !== 'undefined' ? _catAtual : 'todos');
+  try { localStorage.removeItem(key); } catch(e) {}
+  renderEquipamentos();
   toast('Ordem resetada');
 }
 
@@ -3443,11 +3393,6 @@ function _setupEqCardDrag() {
       var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
       var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
       try { localStorage.setItem(key, JSON.stringify(newOrder)); } catch(e) {}
-      // Persiste no Firestore em tempo real
-      if (typeof db !== 'undefined' && db) {
-        var upd = {}; upd[key] = newOrder;
-        db.collection('configuracoes').doc('eq_ordem_manual').set(upd, { merge: true }).catch(function(){});
-      }
     });
   });
 }
@@ -3775,6 +3720,9 @@ function renderList(equips) {
         '<button class="eq-action-btn" onclick="event.stopPropagation();abrirModalEdit(\'' + e.id + '\')" title="Editar">' +
           '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
         '</button>' +
+        '<button class="eq-action-btn del" onclick="event.stopPropagation();confirmarDelete(\'' + e.id + '\')" title="Excluir">' +
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
+        '</button>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -3810,7 +3758,7 @@ function buildCard(e) {
     });
   }
 
-  var _acBadge = '';
+  var _acBadge = e.isAcessorio ? '<span style="font-size:0.55rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);background:rgba(200,169,74,0.12);border:1px solid rgba(200,169,74,0.25);border-radius:3px;padding:1px 5px;margin-left:4px">AC</span>' : '';
   return '<div class="eq-card' + cardClass + '" data-eq-id="' + e.id + '">' +
     '<div class="eq-status-bar ' + statusBarClass + '"></div>' +
     '<div class="eq-card-body">' +
@@ -3823,6 +3771,9 @@ function buildCard(e) {
         '<div class="eq-actions">' +
           '<button class="eq-action-btn" onclick="event.stopPropagation();abrirModalEdit(\'' + e.id + '\')" title="Editar">' +
             '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+          '</button>' +
+          '<button class="eq-action-btn del" onclick="event.stopPropagation();confirmarDelete(\'' + e.id + '\')" title="Excluir">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
           '</button>' +
         '</div>' +
       '</div>' +
@@ -3960,7 +3911,7 @@ function abrirModalForm(e) {
             '<select class="form-select" id="f-cat"><option value="">Selecione</option>' + catOptions + '</select>' +
           '</div>' +
           '<div class="form-group" id="f-grupo-modelo">' +
-            '<label class="form-label">Descrição</label>' +
+            '<label class="form-label">Modelo / Marca</label>' +
             '<input class="form-input" id="f-modelo" value="' + esc(e.modelo || '') + '" placeholder="Ex: JBL SRX 815" />' +
           '</div>' +
         '</div>' +
@@ -4000,8 +3951,14 @@ function abrirModalForm(e) {
           '<label class="form-label">Localização Física</label>' +
           '<input class="form-input" id="f-localizacao" value="' + esc(e.localizacao || '') + '" placeholder="Ex: Rack B / Prateleira 2" />' +
         '</div>' +
-
-
+        '<div class="form-group">' +
+          '<label class="form-label">Tags (separadas por vírgula)</label>' +
+          '<input class="form-input" id="f-tags" value="' + esc(e.tags || '') + '" placeholder="Ex: ativo, grave, pesado" />' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Observações</label>' +
+          '<textarea class="form-textarea" id="f-obs" placeholder="Notas, detalhes técnicos...">' + esc(e.obs || '') + '</textarea>' +
+        '</div>' +
       '</div>' +
       '<div class="modal-footer">' +
         '<button class="btn-modal-cancel" onclick="fecharTodosModais()" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancelar</button>' +
@@ -4082,8 +4039,8 @@ function salvarEquipamento() {
     valor_unitario: parseFloat(document.getElementById('f-valor').value) || 0,
     serie: (document.getElementById('f-serie').value || '').trim(),
     localizacao: (document.getElementById('f-localizacao').value || '').trim(),
-    tags: '',
-    obs: '',
+    tags: (document.getElementById('f-tags').value || '').trim(),
+    obs: (document.getElementById('f-obs').value || '').trim(),
     _atualizado: Date.now()
   };
 
@@ -5237,7 +5194,6 @@ function iniciarKits() {
     });
     renderKits();
     if (Object.keys(_equipamentos).length > 0) renderEquipamentos();
-      _carregarOrdemManualFirestore();
   }, function(err) {
     console.error('[Kits]', err);
   });
@@ -7856,19 +7812,6 @@ function _mergeEventosSnaps() {
   if (typeof _filtroAndamento !== 'undefined' && _filtroAndamento) renderEquipamentos();
 }
 
-function _carregarOrdemManualFirestore() {
-  if (!db) return;
-  db.collection('configuracoes').doc('eq_ordem_manual').get().then(function(doc) {
-    if (!doc.exists) return;
-    var data = doc.data();
-    Object.keys(data).forEach(function(k) {
-      if (k.indexOf('eq_ordem_manual_') === 0 && Array.isArray(data[k]) && data[k].length) {
-        try { localStorage.setItem(k, JSON.stringify(data[k])); } catch(e) {}
-      }
-    });
-  }).catch(function(){});
-}
-
 function iniciarEventosAndamento() {
   _carregarVeiculosEv();
   // Ouve eventos com etapa === 'andamento'
@@ -9896,7 +9839,7 @@ function _kitSlotReorderDrop(el, ev) {
 function _kitRemoveZoneOver(ev) {
   var tipos = ev.dataTransfer.types || [];
   var temTipo = tipos.indexOf('tipo') >= 0 || tipos.indexOf('text/plain') >= 0;
-  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData && !_draggingKitGrupoData && !_draggingEqId && !temTipo) return;
+  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData && !_draggingKitGrupoData && !temTipo) return;
   ev.preventDefault();
   ev.dataTransfer.dropEffect = 'move';
   var zone = document.getElementById('kit-remove-zone');
@@ -10027,11 +9970,6 @@ function _kitRemoveZoneDrop(ev) {
         toast((removedIt.eqNome || 'Item') + ' removido do kit');
       }
     }
-  } else if (tipo === 'eq' || tipo === 'acessorio' || _draggingEqId) {
-    // ── Card de equipamento/acessório arrastado para zona de remoção → confirmar exclusão ──
-    var eqId = _draggingEqId || ev.dataTransfer.getData('text/plain');
-    _draggingEqId = null;
-    if (eqId) confirmarDelete(eqId);
   }
 }
 
