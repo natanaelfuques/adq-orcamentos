@@ -7943,15 +7943,20 @@ var _evEqDragItems = {};     // { evId: { eqId: {nome,qty} } } — eq arrastados
 var _evEqOrigCounts = {};    // { eqId: {qtd_disponivel,qtd_em_uso} } — antes do drag
 var _evKitGrupos = {};       // { evId: [ { grupoId, kitId, kitNome, itens:[{eqId,eqNome,qty,checked,riscado}] } ] }
 
+// Retorna total alocado para display (itens soltos de evento, sem kits).
+// Usado por _atualizarCardEqDOM — kits são exibidos apenas via buildCard/_getFiltroAndamentoIds.
 function _getCargaTotalEq(eqId) {
   var total = 0;
   Object.values(_cargaEvento).forEach(function(c) { total += (c[eqId] || 0); });
   Object.values(_evEqDragItems).forEach(function(ev) {
     if (ev[eqId]) total += ev[eqId].qty;
   });
-  // Eventos sem card aberto: contar kit grupos diretamente
+  return total;
+}
+// Retorna total alocado incluindo kits — usado para verificação de disponibilidade ao adicionar.
+function _getCargaTotalEqComKits(eqId) {
+  var total = _getCargaTotalEq(eqId);
   Object.keys(_evKitGrupos).forEach(function(evId) {
-    if (_evEqDragItems[evId]) return; // já contado acima
     (_evKitGrupos[evId] || []).forEach(function(g) {
       if (g.riscado) return;
       (g.itens || []).forEach(function(it) {
@@ -8588,16 +8593,9 @@ function _recalcularCargaEvento(evId) {
     novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
   });
 
-  // Incluir itens dos grupos de kit
-  (_evKitGrupos[evId] || []).forEach(function(grupo) {
-    if (grupo.riscado) return;
-    (grupo.itens || []).forEach(function(it) {
-      if (it.riscado) return;
-      var eqId = it.eqId;
-      if (!eqId) return;
-      novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
-    });
-  });
+  // Nota: itens dos grupos de kit NÃO entram em _evEqDragItems.
+  // São contados separadamente via _getCargaTotalEq (fallback _evKitGrupos)
+  // apenas para verificação de disponibilidade, não para display em _atualizarCardEqDOM.
 
   _evEqDragItems[evId] = {};
   Object.keys(novasCounts).forEach(function(eqId) {
@@ -9045,7 +9043,7 @@ function _bindEvAndamentoCards() {
         var eqNome2 = eq2 ? (eq2.nome || eqDropId) : eqDropId;
         // Verificar disponibilidade
         if (eq2) {
-          var jaAloc = _getCargaTotalEq(eqDropId);
+          var jaAloc = _getCargaTotalEqComKits(eqDropId);
           var dispReal = Math.max(0, (eq2.qtd_disponivel || 0) - jaAloc);
           if (dispReal <= 0) { toast('Sem unidades disponíveis para ' + eqNome2, true); return; }
         }
@@ -9365,7 +9363,7 @@ function evCardDrop(ev, evId) {
     if (!_evEqDragItems[evId][eqIdSlot]) _evEqDragItems[evId][eqIdSlot] = { nome: eqNomeSlot, qty: 0 };
     var eqObjSlot = _equipamentos[eqIdSlot];
     if (eqObjSlot) {
-      var totalJaAlocSlot = _getCargaTotalEq(eqIdSlot);
+      var totalJaAlocSlot = _getCargaTotalEqComKits(eqIdSlot);
       var dispRealSlot = Math.max(0, (eqObjSlot.qtd_disponivel || 0) - totalJaAlocSlot);
       if (dispRealSlot <= 0) { toast('Sem unidades disponíveis', true); return; }
     }
@@ -9447,7 +9445,7 @@ function evCardDrop(ev, evId) {
       if (!eqId) return;
       var eqNome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
       var dispFir = (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0);
-      var jaAlocado = _getCargaTotalEq(eqId);
+      var jaAlocado = _getCargaTotalEqComKits(eqId);
       var qtdCap = Math.min(qtd, Math.max(0, dispFir - jaAlocado));
       if (qtdCap <= 0) return;
       grupoItens.push({ eqId: eqId, eqNome: eqNome, qty: qtdCap, checked: false, riscado: false });
@@ -9491,7 +9489,7 @@ function evCardDrop(ev, evId) {
     var eqObjCap = _equipamentos[itemId];
     if (eqObjCap) {
       // Disponível real = do Firestore menos o já alocado em TODOS os eventos abertos
-      var totalJaAlocado = _getCargaTotalEq(itemId);
+      var totalJaAlocado = _getCargaTotalEqComKits(itemId);
       var dispReal = Math.max(0, (eqObjCap.qtd_disponivel || 0) - totalJaAlocado);
       if (dispReal <= 0) { toast('Sem unidades disponíveis', true); return; }
     }
