@@ -8054,9 +8054,16 @@ function _mergeEventosSnaps() {
   Object.keys(_evEqDragItems).forEach(function(evId) {
     if (!_eventosAndamento[evId] && !_eventosStagingCarga[evId]) delete _evEqDragItems[evId];
   });
-  // Recalcula contagens para todos os eventos — garante sincronização quando
-  // outro HTML (painel) risca itens e salva no Firestore
+  // Recalcula contagens respeitando estado do card:
+  // - Card fechado: sempre recalcula (sincroniza com Firestore externo)
+  // - Card aberto (expanded): mantém _evEqDragItems intacto
+  var _expandedIdsMerge = {};
+  document.querySelectorAll('.evento-card.expanded').forEach(function(c) {
+    var id = c.id.replace('ev-card-', '');
+    if (id) _expandedIdsMerge[id] = true;
+  });
   Object.keys(_eventosAndamento).forEach(function(evId) {
+    if (_expandedIdsMerge[evId]) return; // card aberto — não sobrescreve
     _recalcularCargaEvento(evId);
   });
   renderEventosAndamento();
@@ -9326,10 +9333,9 @@ function renderEventosAndamento() {
     var card2 = document.getElementById('ev-card-' + id2);
     if (card2) {
       card2.classList.add('expanded');
-      // Re-aplica contagens se nao ha sessao de drag ativa para este evento
-      if (!_evEqDragItems[id2] || Object.keys(_evEqDragItems[id2]).length === 0) {
-        _abrirCargaEvento(id2);
-      }
+      // Sempre re-aplica contagens ao restaurar card expandido,
+      // garantindo sincronização com mudanças feitas em outro HTML
+      _abrirCargaEvento(id2);
     }
   });
 
