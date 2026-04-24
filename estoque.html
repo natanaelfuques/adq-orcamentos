@@ -263,7 +263,7 @@
 
   .btn-add-eq {
     background: var(--gold);
-    color: #fff;
+    color: #111;
     border: none;
     border-radius: 5px;
     padding: 9px 18px;
@@ -318,7 +318,7 @@
   /* ── GRID ── */
   .equip-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 8px;
     padding: 16px 24px 32px;
     min-height: 60vh;
@@ -351,26 +351,26 @@
   .status-bar-manutencao { background: linear-gradient(90deg, #5BA8E8, rgba(91,168,232,0.4)); }
   .status-bar-indisponivel { background: linear-gradient(90deg, #555, rgba(85,85,85,0.4)); }
 
-  .eq-card-body { padding: 8px 10px; }
+  .eq-card-body { padding: 6px 8px; }
 
   .eq-top {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
   }
 
   .eq-icon {
-    width: 26px;
-    height: 26px;
+    width: 31px;
+    height: 31px;
     background: var(--gold-dim);
     border: 1px solid rgba(74,144,217,0.2);
-    border-radius: 6px;
+    border-radius: 7px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1.35rem;
     flex-shrink: 0;
     color: var(--gold);
   }
@@ -379,7 +379,7 @@
 
   .eq-name {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.82rem;
+    font-size: 0.96rem;
     font-weight: 700;
     color: var(--text);
     letter-spacing: 0.03em;
@@ -390,7 +390,7 @@
   }
 
   .eq-cat {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: #999;
     white-space: nowrap;
@@ -437,8 +437,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 5px;
-    padding: 4px 6px;
+    margin-bottom: 4px;
+    padding: 2px 5px;
     background: var(--surface2);
     border-radius: 4px;
   }
@@ -452,7 +452,7 @@
   }
   .qty-num {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: 800;
     line-height: 1;
   }
@@ -468,7 +468,7 @@
     color: #555;
     white-space: nowrap;
   }
-  .qty-sep { width: 1px; height: 22px; background: var(--border2); flex-shrink: 0; }
+  .qty-sep { width: 1px; height: 18px; background: var(--border2); flex-shrink: 0; }
 
   /* Barra de disponibilidade */
   .avail-bar {
@@ -899,7 +899,7 @@
   .btn-modal-save {
     flex: 1;
     background: var(--gold);
-    color: #fff;
+    color: #111;
     border: none;
     border-radius: 5px;
     padding: 11px;
@@ -1329,12 +1329,12 @@
     align-items: stretch;
   }
   .kit-slot-panel {
-    width: 280px;
+    width: 310px;
     flex-shrink: 0;
   }
   /* novo kit btn — modo duplo: normal + zona de remoção ao arrastar */
   .kit-novo-card {
-    width: 280px;
+    width: 310px;
     flex-shrink: 0;
     align-self: stretch;
     background: transparent;
@@ -1630,10 +1630,10 @@
   .kit-item-qty-btn:hover { border-color: var(--gold); color: var(--gold); }
   .kit-item-qty-num {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.82rem;
+    font-size: 1.1rem;
     font-weight: 800;
     color: var(--text);
-    min-width: 18px;
+    min-width: 22px;
     text-align: center;
   }
   .kit-item-qty-label {
@@ -1898,6 +1898,11 @@
   .kit-search-draggable.dragging { opacity: 0.35; }
   .kit-search-draggable:hover { border-color: rgba(74,144,217,0.4); }
   .kit-item-chip { cursor: default; }
+
+  /* ── TESTE DE DISPONIBILIDADE ── */
+  .ev-teste-card { border-color: rgba(74,144,217,0.6) !important; background: rgba(74,144,217,0.05) !important; }
+  .ev-teste-badge { display:inline-block;font-size:0.48rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#4A90D9;background:rgba(74,144,217,0.15);border:1px solid rgba(74,144,217,0.4);border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle; }
+  #btn-testar-disp.disp-ativa { background:rgba(74,144,217,0.25) !important; border-color:#4A90D9 !important; box-shadow:0 0 8px rgba(74,144,217,0.3); }
 
   /* ── AGENDA CALENDAR ── */
   .agenda-modal-overlay {
@@ -2322,14 +2327,14 @@
     position: absolute;
     top: 3px;
     right: 3px;
-    background: var(--gold);
+    background: #1a4a80;
     color: #fff;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.48rem;
+    font-size: 0.65rem;
     font-weight: 800;
-    border-radius: 8px;
-    min-width: 11px;
-    height: 11px;
+    border-radius: 2px;
+    min-width: 12px;
+    height: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2492,7 +2497,7 @@
       <button id="btn-novo-item" class="btn-hd hv-green" title="Novo equipamento / acessório / veículo" style="display:flex;align-items:center;gap:5px" onclick="_abrirDropdownNovo(this)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="btn-label">Novo</span></button>
       <button class="btn-hd hv-cat" onclick="abrirModalCategorias()" title="Gerenciar categorias" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span class="btn-label">Categorias</span></button>
       <button class="btn-hd hv-amber" onclick="abrirAgenda()" title="Agenda de eventos" id="btn-agenda" style="display:flex;align-items:center;justify-content:center;gap:5px;position:relative;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="btn-label">Agenda</span><span id="agenda-badge" style="display:none;background:#F5A623;color:#111;border-radius:9px;padding:0 4px;font-size:0.5rem;font-weight:800;line-height:14px;position:absolute;top:-5px;right:-5px">0</span></button>
-      <button id="btn-admin-estoque" onclick="abrirPainelAdminEstoque()" title="Painel do Administrador" style="display:none;background:transparent;border:1px solid #444;color:#aaa;border-radius:4px;padding:0;width:26px;height:26px;box-sizing:border-box;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='#444';this.style.color='#aaa'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      
       <button class="btn-hd danger" onclick="sair()" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="btn-label">Sair</span></button>
       <button id="btn-ev-carga-hd" class="btn-hd" onclick="_toggleSidebar()" title="Eventos em andamento" style="display:flex;align-items:center;gap:5px">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
@@ -2570,20 +2575,20 @@
       </button>
     </div>
 
-    <select id="sort-select" class="filter-btn" style="cursor:pointer;padding-right:10px" onchange="renderEquipamentos()">
+    <select id="sort-select" class="filter-btn" style="display:none" onchange="renderEquipamentos()">
       <option value="nome">A–Z</option>
       <option value="disponivel">Disponível</option>
       <option value="categoria">Categoria</option>
       <option value="recente">Mais recente</option>
-      <option value="manual">Manual</option>
+      <option value="manual" selected>Manual</option>
     </select>
   </div>
 
   <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
     <div class="kits-section-inner">
-      <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
-        <div class="kits-section-title">
+      <div class="kits-section-header">
+        <div class="kits-section-title" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:6px">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           Kits
           <svg id="kits-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;margin-left:4px"><polyline points="6 9 12 15 18 9"/></svg>
@@ -2603,7 +2608,7 @@
   </div>
 
   <!-- SECTION TABS (Equipamentos / Acessórios / Categorias) -->
-  <div class="section-tabs-bar" style="flex-wrap:wrap;position:relative;z-index:91;background:var(--dark)">
+  <div class="section-tabs-bar" style="overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;position:relative;z-index:91;background:var(--dark)">
     <div class="section-tabs-left" style="flex-shrink:0">
       <button class="section-tab-btn primary-tab active" id="tab-btn-equipamentos" onclick="switchTabSecao('equipamentos')">Equipamentos <span class="tab-count" id="cnt-primary-equipamentos"></span></button>
       <button class="section-tab-btn primary-tab" id="tab-btn-acessorios" onclick="switchTabSecao('acessorios')">Acessórios <span class="tab-count" id="cnt-primary-acessorios"></span></button>
@@ -2661,35 +2666,66 @@ var CATEGORIAS_SVG = {
 
 // SVGs para emoji picker no modal (maior, 20px)
 var EMOJIS_SVG = [
-  { key:'mixer',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="2"/><line x1="6" y1="12" x2="6.01" y2="12"/><line x1="10" y1="12" x2="10.01" y2="12"/><line x1="14" y1="10" x2="14" y2="14"/><line x1="18" y1="10" x2="18" y2="14"/></svg>' },
-  { key:'speaker', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>' },
-  { key:'mic',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' },
-  { key:'guitar',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18c-2.5-1-4-3.5-4-6a7 7 0 0 1 14 0c0 2.5-1.5 5-4 6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="14" x2="12" y2="22"/></svg>' },
-  { key:'piano',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="7" y1="4" x2="7" y2="14"/><line x1="12" y1="4" x2="12" y2="14"/><line x1="17" y1="4" x2="17" y2="14"/><rect x="5" y="4" width="3" height="8" rx="1" fill="currentColor" opacity="0.4"/><rect x="10" y="4" width="3" height="8" rx="1" fill="currentColor" opacity="0.4"/><rect x="15" y="4" width="3" height="8" rx="1" fill="currentColor" opacity="0.4"/></svg>' },
-  { key:'bulb',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>' },
-  { key:'video',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>' },
-  { key:'tv',      svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>' },
-  { key:'antenna', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="22"/></svg>' },
-  { key:'battery', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/><line x1="6" y1="10" x2="6" y2="14"/><line x1="10" y1="10" x2="10" y2="14"/></svg>' },
-  { key:'plug',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3v2M6 3v2M6 5h12v5a6 6 0 0 1-12 0V5z"/><line x1="12" y1="16" x2="12" y2="21"/><line x1="9" y1="21" x2="15" y2="21"/></svg>' },
-  { key:'bolt',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' },
-  { key:'tool',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>' },
-  { key:'box',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
-  { key:'fader',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>' },
-  { key:'headph',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>' },
-  { key:'monitor', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' },
-  { key:'pager',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="7.01" y2="9"/><line x1="7" y1="13" x2="7.01" y2="13"/><line x1="11" y1="9" x2="17" y2="9"/><line x1="11" y1="13" x2="17" y2="13"/></svg>' },
-  { key:'truck',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>' },
-  { key:'music',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>' },
-  { key:'radio',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>' },
-  { key:'film',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>' },
-  { key:'wifi',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12" y2="22"/></svg>' },
-  { key:'cpu',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>' },
-  { key:'vol2',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>' },
-  { key:'drum',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="10" ry="3"/><path d="M2 6v12c0 1.66 4.48 3 10 3s10-1.34 10-3V6"/></svg>' },
-  { key:'settings',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>' },
-  { key:'camera',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' },
-  { key:'tape',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="12" rx="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M10 14h4"/></svg>' }
+  { key:'mixer',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="2"/><line x1="6" y1="12" x2="6.01" y2="12"/><line x1="10" y1="12" x2="10.01" y2="12"/><line x1="14" y1="10" x2="14" y2="14"/><line x1="18" y1="10" x2="18" y2="14"/></svg>' },
+  { key:'speaker',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>' },
+  { key:'mic',      svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' },
+  { key:'bulb',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>' },
+  { key:'video',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>' },
+  { key:'tv',       svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>' },
+  { key:'battery',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/><line x1="6" y1="10" x2="6" y2="14"/><line x1="10" y1="10" x2="10" y2="14"/></svg>' },
+  { key:'bolt',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' },
+  { key:'tool',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>' },
+  { key:'box',      svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>' },
+  { key:'fader',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>' },
+  { key:'headph',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>' },
+  { key:'monitor',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' },
+  { key:'truck',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>' },
+  { key:'film',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>' },
+  { key:'cpu',      svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>' },
+  { key:'camera',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' },
+  { key:'tape',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="12" rx="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="14" r="2"/><path d="M10 14h4"/></svg>' },
+  { key:'subwoofer',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="2"/></svg>' },
+  { key:'rack',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="5" rx="1"/><rect x="2" y="9" width="20" height="5" rx="1"/><rect x="2" y="16" width="20" height="5" rx="1"/><circle cx="19" cy="4.5" r="1" fill="currentColor"/><circle cx="19" cy="11.5" r="1" fill="currentColor"/><circle cx="19" cy="18.5" r="1" fill="currentColor"/></svg>' },
+  { key:'smoke',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c0-3 3-3 3-6s-3-3-3-6"/><path d="M9 18c0-3 3-3 3-6s-3-3-3-6"/><path d="M15 18c0-3 3-3 3-6s-3-3-3-6"/></svg>' },
+  { key:'projector',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2"/><circle cx="13" cy="12" r="3"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="18" y1="9" x2="22" y2="6"/><line x1="18" y1="15" x2="22" y2="18"/></svg>' },
+  { key:'cable',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/><path d="M6 12h3a3 3 0 0 1 3 3v0a3 3 0 0 0 3 3h1"/><path d="M6 12h3a3 3 0 0 0 3-3v0a3 3 0 0 1 3-3h1"/></svg>' },
+  { key:'strobe',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' },
+  { key:'parled',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>' },
+  { key:'truss',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="7" x2="22" y2="7"/><line x1="2" y1="13" x2="22" y2="13"/><line x1="2" y1="7" x2="6" y2="13"/><line x1="6" y1="7" x2="10" y2="13"/><line x1="10" y1="7" x2="14" y2="13"/><line x1="14" y1="7" x2="18" y2="13"/><line x1="18" y1="7" x2="22" y2="13"/></svg>' },
+  { key:'power',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>' },
+  { key:'dmx',      svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="2"/><circle cx="7" cy="12" r="1" fill="currentColor"/><circle cx="11" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/><line x1="7" y1="8" x2="7" y2="5"/><line x1="11" y1="8" x2="11" y2="5"/><line x1="15" y1="8" x2="15" y2="5"/><line x1="19" y1="8" x2="19" y2="5"/></svg>' },
+  { key:'fogos',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="22"/><line x1="2" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="8.46" y2="8.46"/><line x1="15.54" y1="15.54" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="15.54" y2="8.46"/><line x1="8.46" y1="15.54" x2="4.93" y2="19.07"/></svg>' },
+  { key:'mesa',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="3" rx="1"/><line x1="5" y1="10" x2="5" y2="20"/><line x1="19" y1="10" x2="19" y2="20"/><line x1="5" y1="16" x2="19" y2="16"/></svg>' },
+  { key:'canhao',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="5"/><circle cx="9" cy="12" r="2"/><line x1="14" y1="12" x2="22" y2="12"/><line x1="20" y1="9" x2="22" y2="12"/><line x1="20" y1="15" x2="22" y2="12"/><line x1="9" y1="7" x2="9" y2="4"/><line x1="6" y1="4" x2="12" y2="4"/></svg>' },
+  { key:'laptop',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg>' },
+  { key:'plug',     svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3v2M6 3v2M6 5h12v5a6 6 0 0 1-12 0V5z"/><line x1="12" y1="16" x2="12" y2="21"/><line x1="9" y1="21" x2="15" y2="21"/></svg>' },
+  { key:'cabos',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6c0 0 2-2 4 0s4 0 4 0 2-2 4 0"/><path d="M4 12c0 0 2-2 4 0s4 0 4 0 2-2 4 0"/><path d="M4 18c0 0 2-2 4 0s4 0 4 0 2-2 4 0"/></svg>' },
+  { key:'caixas',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="12" width="10" height="10" rx="1"/><rect x="12" y="12" width="10" height="10" rx="1"/><rect x="7" y="2" width="10" height="10" rx="1"/></svg>' },
+  { key:'parafuso', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="21" x2="21" y2="3"/><path d="M17 3l4 4-2 2-4-4z"/><line x1="3" y1="21" x2="7" y2="17"/></svg>' },
+  { key:'lampada',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21h6"/><path d="M10 17h4"/><path d="M12 3a6 6 0 0 1 6 6c0 2.5-1.5 4.5-3 6H9c-1.5-1.5-3-3.5-3-6a6 6 0 0 1 6-6z"/></svg>' },
+  { key:'maleta',   svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="13" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="13" x2="12" y2="13.01"/><line x1="2" y1="13" x2="22" y2="13"/></svg>' },
+  { key:'pistalcd', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="9" width="20" height="6" rx="1"/><line x1="5" y1="9" x2="5" y2="15"/><line x1="9" y1="9" x2="9" y2="15"/><line x1="13" y1="9" x2="13" y2="15"/><line x1="17" y1="9" x2="17" y2="15"/><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="13" cy="12" r="1" fill="currentColor"/><circle cx="17" cy="12" r="1" fill="currentColor"/></svg>' },
+  { key:'barra',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(30 12 12)"><rect x="1" y="10" width="22" height="4" rx="1"/></g></svg>' },
+  { key:'cdj',      svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="9" cy="12" r="4"/><circle cx="9" cy="12" r="1.5" fill="currentColor"/><line x1="16" y1="8" x2="20" y2="8"/><line x1="16" y1="11" x2="20" y2="11"/><line x1="16" y1="14" x2="20" y2="14"/><line x1="16" y1="17" x2="20" y2="17"/></svg>' },
+  { key:'dj_ctrl',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="22" height="14" rx="2"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="12" r="3"/><circle cx="6" cy="12" r="1" fill="currentColor"/><circle cx="18" cy="12" r="1" fill="currentColor"/><line x1="12" y1="8" x2="12" y2="16"/></svg>' },
+  { key:'amp',      svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="3"/><circle cx="8" cy="12" r="1" fill="currentColor"/><line x1="14" y1="9" x2="14" y2="15"/><line x1="17" y1="9" x2="17" y2="15"/><line x1="20" y1="9" x2="20" y2="15"/></svg>' },
+  { key:'linearray',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="6" rx="1"/><rect x="7" y="9" width="10" height="6" rx="1"/><rect x="7" y="16" width="10" height="6" rx="1"/><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>' },
+  { key:'micwireless',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><path d="M16 3.5c1.2.8 2 2.2 2 3.8"/><path d="M18.5 1.5c2 1.4 3.5 3.6 3.5 6.2"/></svg>' },
+  { key:'dmxctrl',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="6" x2="6" y2="3"/><line x1="10" y1="6" x2="10" y2="3"/><line x1="14" y1="6" x2="14" y2="3"/><line x1="18" y1="6" x2="18" y2="3"/><circle cx="6" cy="12" r="1.5" fill="currentColor"/><circle cx="10" cy="12" r="1.5" fill="currentColor"/><circle cx="14" cy="12" r="1.5" fill="currentColor"/><circle cx="18" cy="12" r="1.5" fill="currentColor"/></svg>' },
+  { key:'piano',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><line x1="6" y1="6" x2="6" y2="15"/><line x1="10" y1="6" x2="10" y2="15"/><line x1="14" y1="6" x2="14" y2="15"/><line x1="18" y1="6" x2="18" y2="15"/><rect x="4" y="6" width="3" height="7" rx="1" fill="currentColor" stroke="none"/><rect x="8" y="6" width="3" height="7" rx="1" fill="currentColor" stroke="none"/><rect x="16" y="6" width="3" height="7" rx="1" fill="currentColor" stroke="none"/></svg>' },
+  { key:'guitarra', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="15" r="5"/><circle cx="9" cy="15" r="2"/><line x1="13" y1="11" x2="20" y2="4"/><line x1="17" y1="4" x2="20" y2="4"/><line x1="20" y1="4" x2="20" y2="7"/></svg>' },
+  { key:'suporte',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="14"/><path d="M12 14l-4 6"/><path d="M12 14l4 6"/><line x1="7" y1="20" x2="17" y2="20"/><path d="M8 8l-4 2"/><path d="M16 8l4 2"/></svg>' },
+  { key:'processador',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="2"/><line x1="6" y1="7" x2="6" y2="4"/><line x1="10" y1="7" x2="10" y2="4"/><line x1="14" y1="7" x2="14" y2="4"/><line x1="18" y1="7" x2="18" y2="4"/><line x1="6" y1="17" x2="6" y2="20"/><line x1="10" y1="17" x2="10" y2="20"/><line x1="14" y1="17" x2="14" y2="20"/><line x1="18" y1="17" x2="18" y2="20"/></svg>' },
+  { key:'flightcase',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="15" rx="2"/><line x1="2" y1="12" x2="22" y2="12"/><rect x="9" y="9" width="6" height="6" rx="1"/><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/></svg>' },
+  { key:'praticavel',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="20" height="4" rx="1"/><rect x="2" y="8" width="15" height="4" rx="1"/><rect x="2" y="2" width="10" height="4" rx="1"/><line x1="17" y1="14" x2="17" y2="18"/><line x1="22" y1="14" x2="22" y2="18"/></svg>' },
+  { key:'laser',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="3"/><line x1="9" y1="12" x2="22" y2="12"/><line x1="15" y1="12" x2="22" y2="5"/><line x1="15" y1="12" x2="22" y2="19"/><line x1="17" y1="12" x2="22" y2="8"/><line x1="17" y1="12" x2="22" y2="16"/></svg>' },
+  { key:'splitter', svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="12" height="8" rx="2"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="9" x2="22" y2="7"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="18" y1="15" x2="22" y2="17"/></svg>' },
+  { key:'gerador',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="12" rx="2"/><path d="M7 7V5a2 2 0 0 1 4 0v2"/><path d="M13 7V5a2 2 0 0 1 4 0v2"/><path d="M12 12l-2 3h4l-2 3"/></svg>' },
+  { key:'dolly',    svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="14" height="12" rx="1"/><line x1="4" y1="15" x2="4" y2="19"/><line x1="20" y1="15" x2="20" y2="19"/><circle cx="7" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/><line x1="4" y1="19" x2="20" y2="19"/></svg>' },
+  { key:'ribalta',  svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="20" height="4" rx="1"/><line x1="5" y1="14" x2="5" y2="10"/><line x1="8" y1="14" x2="8" y2="10"/><line x1="11" y1="14" x2="11" y2="10"/><line x1="14" y1="14" x2="14" y2="10"/><line x1="17" y1="14" x2="17" y2="10"/><line x1="20" y1="14" x2="20" y2="10"/></svg>' },
+  { key:'interfaceaudio',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><circle cx="8" cy="12" r="0.8" fill="currentColor"/><line x1="13" y1="9" x2="19" y2="9"/><line x1="13" y1="12" x2="19" y2="12"/><line x1="13" y1="15" x2="19" y2="15"/></svg>' },
+  { key:'rmx',      svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 15c0-3 2-3 3-5s-1-3 1-5"/><path d="M11 15c0-3 2-3 3-5s-1-3 1-5"/><path d="M16 15c0-3 2-3 3-5"/></svg>' },
+  { key:'equalizador',svg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="5" y1="9" x2="5" y2="15"/><line x1="8" y1="7" x2="8" y2="15"/><line x1="11" y1="10" x2="11" y2="15"/><line x1="14" y1="8" x2="14" y2="15"/><line x1="17" y1="11" x2="17" y2="15"/><line x1="20" y1="9" x2="20" y2="15"/><circle cx="5" cy="9" r="1.2" fill="currentColor"/><circle cx="8" cy="7" r="1.2" fill="currentColor"/><circle cx="11" cy="10" r="1.2" fill="currentColor"/><circle cx="14" cy="8" r="1.2" fill="currentColor"/><circle cx="17" cy="11" r="1.2" fill="currentColor"/><circle cx="20" cy="9" r="1.2" fill="currentColor"/></svg>' }
 ];
 
 var EMOJIS = EMOJIS_SVG.map(function(e) { return e.key; });
@@ -2768,7 +2804,8 @@ function abrirPainelAdminEstoque() {
       </div>\
       <div style="position:relative;padding:14px 22px 0 22px;margin-top:14px">\
         <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1">\
-          <button id="adm-est-tab-hist" onclick="_admEstAba(0)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #4A90D9;color:#4A90D9;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\n          <button id="adm-est-tab-ordem" onclick="_admEstAba(1)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Ordenar Equip.</button>\
+          <button id="adm-est-tab-hist" onclick="_admEstAba(0)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #4A90D9;color:#4A90D9;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\
+          <button id="adm-est-tab-ordem" onclick="_admEstAba(1)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Ordenar Cards</button>\
         </div>\
         <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:#2a2a2a;z-index:0"></div>\
       </div>\
@@ -2776,11 +2813,11 @@ function abrirPainelAdminEstoque() {
         <div id="adm-est-panel-hist" style="padding:0;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:block">\
           <div id="adm-est-hist-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
         </div>\
-        <div id="adm-est-panel-ordem" style="padding:16px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
-          <div style="font-family:Barlow Condensed,sans-serif;font-size:0.72rem;color:#666;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Ative a ordenação manual e arraste os cards para reordenar.</div>\
-          <div id="adm-ordem-status" style="font-size:0.75rem;color:#888;margin-bottom:14px;font-family:Barlow Condensed,sans-serif"></div>\
-          <button onclick="_admEstOrdemAtivar()" id="adm-btn-ordem-manual" style="background:#4A90D9;color:#fff;border:none;border-radius:6px;padding:10px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;margin-bottom:8px">Ativar Ordenação Manual</button>\
-          <button onclick="_admEstOrdemResetar()" style="background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:6px;padding:8px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%">Resetar Ordem</button>\
+        <div id="adm-est-panel-ordem" style="padding:20px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
+          <div style="font-family:Barlow Condensed,sans-serif;font-size:0.72rem;color:#666;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Reordene os cards de equipamento arrastando-os. A ordem é salva no Firestore ao desativar.</div>\
+          <div id="adm-ordem-status" style="font-size:0.78rem;font-family:Barlow Condensed,sans-serif;color:#888;margin-bottom:16px;padding:8px 12px;background:#111;border-radius:6px;border:1px solid #222"></div>\
+          <button id="adm-btn-ordem-manual" onclick="_admEstOrdemAtivar()" style="background:#4A90D9;color:#fff;border:none;border-radius:6px;padding:11px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;margin-bottom:8px;transition:background 0.15s">Ativar Ordenação Manual</button>\
+          <button onclick="_admEstOrdemResetar()" style="background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:6px;padding:9px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;transition:background 0.15s">Resetar Ordem</button>\
         </div>\
       </div>\
     </div>';
@@ -2801,16 +2838,23 @@ function _admEstAba(idx) {
     if (panel) panel.style.display = i === idx ? '' : 'none';
   });
   if (idx === 0) { _admEstHistCarregar(); }
-  if (idx === 1) { _admEstOrdemAtualizar(); }
+  if (idx === 1) { _admEstOrdemRenderStatus(); }
 }
-function _admEstOrdemAtualizar() {
+
+function _admEstOrdemRenderStatus() {
   var sortSel = document.getElementById('sort-select');
   var isManual = sortSel && sortSel.value === 'manual';
   var statusEl = document.getElementById('adm-ordem-status');
   var btnEl = document.getElementById('adm-btn-ordem-manual');
-  if (statusEl) statusEl.textContent = isManual ? '✓ Ordenação manual ativa — arraste os cards para reordenar.' : 'Ordenação atual: ' + (sortSel ? sortSel.options[sortSel.selectedIndex].text : '—');
-  if (btnEl) { btnEl.textContent = isManual ? 'Desativar Ordenação Manual' : 'Ativar Ordenação Manual'; btnEl.style.background = isManual ? '#555' : '#4A90D9'; }
+  if (statusEl) statusEl.textContent = isManual
+    ? '✓ Ordenação manual ativa — arraste os cards de equipamento para reordenar.'
+    : 'Modo atual: ' + (sortSel ? sortSel.options[sortSel.selectedIndex].text : '—') + '. Ative para poder reordenar.';
+  if (btnEl) {
+    btnEl.textContent = isManual ? 'Salvar e Desativar' : 'Ativar Ordenação Manual';
+    btnEl.style.background = isManual ? '#50C878' : '#4A90D9';
+  }
 }
+
 function _admEstOrdemAtivar() {
   var sortSel = document.getElementById('sort-select');
   if (!sortSel) return;
@@ -2821,10 +2865,18 @@ function _admEstOrdemAtivar() {
   if (modal) { document.body.style.overflow = ''; modal.remove(); }
   toast(ativando ? 'Ordenação manual ativa — arraste os cards!' : 'Ordenação manual desativada');
 }
+
 function _admEstOrdemResetar() {
-  var key = 'eq_ordem_manual_' + (typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos') + '_' + (typeof _catAtual !== 'undefined' ? _catAtual : 'todos');
+  var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
+  var _catAtualLocal = typeof _catAtual !== 'undefined' ? _catAtual : 'todos';
+  var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
   try { localStorage.removeItem(key); } catch(e) {}
+  if (db) {
+    var upd = {}; upd[key] = [];
+    db.collection('configuracoes').doc('eq_ordem_manual').set(upd, { merge: true }).catch(function(){});
+  }
   renderEquipamentos();
+  _admEstOrdemRenderStatus();
   toast('Ordem resetada');
 }
 
@@ -3393,6 +3445,11 @@ function _setupEqCardDrag() {
       var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
       var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
       try { localStorage.setItem(key, JSON.stringify(newOrder)); } catch(e) {}
+      // Persiste no Firestore em tempo real
+      if (typeof db !== 'undefined' && db) {
+        var upd = {}; upd[key] = newOrder;
+        db.collection('configuracoes').doc('eq_ordem_manual').set(upd, { merge: true }).catch(function(){});
+      }
     });
   });
 }
@@ -3720,9 +3777,6 @@ function renderList(equips) {
         '<button class="eq-action-btn" onclick="event.stopPropagation();abrirModalEdit(\'' + e.id + '\')" title="Editar">' +
           '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
         '</button>' +
-        '<button class="eq-action-btn del" onclick="event.stopPropagation();confirmarDelete(\'' + e.id + '\')" title="Excluir">' +
-          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
-        '</button>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -3758,12 +3812,12 @@ function buildCard(e) {
     });
   }
 
-  var _acBadge = e.isAcessorio ? '<span style="font-size:0.55rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);background:rgba(200,169,74,0.12);border:1px solid rgba(200,169,74,0.25);border-radius:3px;padding:1px 5px;margin-left:4px">AC</span>' : '';
+  var _acBadge = '';
   return '<div class="eq-card' + cardClass + '" data-eq-id="' + e.id + '">' +
     '<div class="eq-status-bar ' + statusBarClass + '"></div>' +
     '<div class="eq-card-body">' +
       '<div class="eq-top">' +
-        '<div class="eq-icon">' + _getEqSvg(e.emoji, 18) + '</div>' +
+        '<div class="eq-icon">' + _getEqSvg(e.emoji, 22) + '</div>' +
         '<div class="eq-info">' +
           '<div class="eq-name" title="' + esc(e.nome || '') + '">' + esc(e.nome || 'Sem nome') + _acBadge + '</div>' +
           '<div class="eq-cat">' + esc(e.modelo || '') + '</div>' +
@@ -3771,9 +3825,6 @@ function buildCard(e) {
         '<div class="eq-actions">' +
           '<button class="eq-action-btn" onclick="event.stopPropagation();abrirModalEdit(\'' + e.id + '\')" title="Editar">' +
             '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
-          '</button>' +
-          '<button class="eq-action-btn del" onclick="event.stopPropagation();confirmarDelete(\'' + e.id + '\')" title="Excluir">' +
-            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>' +
           '</button>' +
         '</div>' +
       '</div>' +
@@ -3799,7 +3850,7 @@ function buildCard(e) {
       '<div class="avail-bar">' +
         '<div class="avail-fill" style="width:' + pct + '%;background:' + barColor + '"></div>' +
       '</div>' +
-      '<div class="eq-footer-row">' + (e.categoria ? '<span class="eq-cat-pill">' + esc(e.categoria) + '</span>' : '') + '</div>' +
+      '' +
 
     '</div>' +
   '</div>';
@@ -3901,30 +3952,22 @@ function abrirModalForm(e) {
           '</label>' +
           '<span style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.05em">Aparece na aba Acessórios</span>' +
         '</div>' +
-        '<div class="form-group" id="f-grupo-eq-pai"' + (e.isAcessorio ? '' : ' style="display:none"') + '>' +
-          '<label class="form-label">Equipamento vinculado</label>' +
-          '<select class="form-select" id="f-eq-pai"><option value="">— Sem vínculo —</option>' + Object.values(_equipamentos).filter(function(x){return !x.isAcessorio;}).sort(function(a,b){return(a.nome||'').localeCompare(b.nome||'');}).map(function(x){return'<option value="'+esc(x.id)+'"'+(e.equipamentoPai===x.id?' selected':'')+'>'+esc(x.nome)+'</option>';}).join('') + '</select>' +
-        '</div>' +
         '<div class="form-grid">' +
           '<div class="form-group">' +
             '<label class="form-label">Categoria</label>' +
             '<select class="form-select" id="f-cat"><option value="">Selecione</option>' + catOptions + '</select>' +
           '</div>' +
           '<div class="form-group" id="f-grupo-modelo">' +
-            '<label class="form-label">Modelo / Marca</label>' +
+            '<label class="form-label">Descrição</label>' +
             '<input class="form-input" id="f-modelo" value="' + esc(e.modelo || '') + '" placeholder="Ex: JBL SRX 815" />' +
           '</div>' +
         '</div>' +
 
         '<div class="section-title">Quantidades</div>' +
-        '<div class="form-grid-3">' +
+        '<div class="form-grid">' +
           '<div class="form-group">' +
             '<label class="form-label">Total</label>' +
             '<input class="form-input" id="f-total" type="number" min="0" value="' + (e.qtd_total || 0) + '" oninput="_calcDisponivel()" />' +
-          '</div>' +
-          '<div class="form-group">' +
-            '<label class="form-label">Em uso</label>' +
-            '<input class="form-input" id="f-uso" type="number" min="0" value="' + (e.qtd_em_uso || 0) + '" oninput="_calcDisponivel()" />' +
           '</div>' +
           '<div class="form-group">' +
             '<label class="form-label">Manutenção</label>' +
@@ -3951,14 +3994,8 @@ function abrirModalForm(e) {
           '<label class="form-label">Localização Física</label>' +
           '<input class="form-input" id="f-localizacao" value="' + esc(e.localizacao || '') + '" placeholder="Ex: Rack B / Prateleira 2" />' +
         '</div>' +
-        '<div class="form-group">' +
-          '<label class="form-label">Tags (separadas por vírgula)</label>' +
-          '<input class="form-input" id="f-tags" value="' + esc(e.tags || '') + '" placeholder="Ex: ativo, grave, pesado" />' +
-        '</div>' +
-        '<div class="form-group">' +
-          '<label class="form-label">Observações</label>' +
-          '<textarea class="form-textarea" id="f-obs" placeholder="Notas, detalhes técnicos...">' + esc(e.obs || '') + '</textarea>' +
-        '</div>' +
+
+
       '</div>' +
       '<div class="modal-footer">' +
         '<button class="btn-modal-cancel" onclick="fecharTodosModais()" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancelar</button>' +
@@ -3980,9 +4017,8 @@ function _selecionarEmoji(el, emoji) {
 
 function _calcDisponivel() {
   var total = parseInt(document.getElementById('f-total').value) || 0;
-  var uso = parseInt(document.getElementById('f-uso').value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - uso - manut);
+  var disp = Math.max(0, total - manut);
   var el = document.getElementById('f-disp-calc');
   if (el) {
     el.textContent = disp;
@@ -3993,13 +4029,10 @@ function _calcDisponivel() {
 
 function _toggleTipoItem() {
   var chk = document.getElementById('f-is-acessorio');
-  var grupoEqPai = document.getElementById('f-grupo-eq-pai');
   var grupoModelo = document.getElementById('f-grupo-modelo');
   var nomeLabel = document.getElementById('f-nome-label');
   if (!chk) return;
-  var isAc = chk.checked;
-  if (grupoEqPai) grupoEqPai.style.display = isAc ? '' : 'none';
-  if (nomeLabel) nomeLabel.textContent = isAc ? 'Nome do Acessório *' : 'Nome do Equipamento *';
+  if (nomeLabel) nomeLabel.textContent = chk.checked ? 'Nome do Acessório *' : 'Nome do Equipamento *';
 }
 
 function abrirModalAddAcessorioRapido() {
@@ -4018,29 +4051,26 @@ function salvarEquipamento() {
   if (!nome) { toast('Informe o nome do equipamento.', true); return; }
 
   var total = parseInt(document.getElementById('f-total').value) || 0;
-  var emUso = parseInt(document.getElementById('f-uso').value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - emUso - manut);
+  var disp = Math.max(0, total - manut);
 
   var isAcessorioChk = document.getElementById('f-is-acessorio');
   var isAcessorio = isAcessorioChk ? isAcessorioChk.checked : false;
-  var eqPaiEl = document.getElementById('f-eq-pai');
   var dados = {
     nome: nome,
     emoji: _emojiSelecionado,
     categoria: document.getElementById('f-cat').value || 'Outros',
     modelo: (document.getElementById('f-modelo').value || '').trim(),
     isAcessorio: isAcessorio,
-    equipamentoPai: isAcessorio && eqPaiEl ? (eqPaiEl.value || '') : '',
+    equipamentoPai: '',
     qtd_total: total,
     qtd_disponivel: disp,
-    qtd_em_uso: emUso,
     qtd_manutencao: manut,
     valor_unitario: parseFloat(document.getElementById('f-valor').value) || 0,
     serie: (document.getElementById('f-serie').value || '').trim(),
     localizacao: (document.getElementById('f-localizacao').value || '').trim(),
-    tags: (document.getElementById('f-tags').value || '').trim(),
-    obs: (document.getElementById('f-obs').value || '').trim(),
+    tags: '',
+    obs: '',
     _atualizado: Date.now()
   };
 
@@ -5194,6 +5224,7 @@ function iniciarKits() {
     });
     renderKits();
     if (Object.keys(_equipamentos).length > 0) renderEquipamentos();
+      _carregarOrdemManualFirestore();
   }, function(err) {
     console.error('[Kits]', err);
   });
@@ -5381,6 +5412,8 @@ function renderKits() {
   // Atualizar stat de kits
   var statKits = document.getElementById('stat-kits');
   if (statKits) statKits.textContent = Object.keys(_kits).length;
+
+
 }
 
 // ── Drag: eq card → kit folder ──
@@ -5401,9 +5434,9 @@ function setupEqCardDrag(cardEl, eqId) {
       document.body.classList.remove('kit-dragging');
       _draggingEqId = null;
       cardEl.classList.remove('dragging-eq');
-      document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) {
-        el.classList.remove('drag-over-kit');
-      });
+      document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) { el.classList.remove('drag-over-kit'); });
+      document.querySelectorAll('.ev-kit-grupo-dropzone.drag-over-eq').forEach(function(el) { el.classList.remove('drag-over-eq'); });
+      document.querySelectorAll('.ev-kit-grupo.drag-reorder-over').forEach(function(el) { el.classList.remove('drag-reorder-over'); });
       var novoCard = document.getElementById('kit-novo-card');
       if (novoCard) novoCard.classList.remove('drag-over-remove');
     }, 200);
@@ -5492,6 +5525,11 @@ function kitFolderDrop(ev, kitId) {
     return;
   }
 
+  // Fallback: read from dataTransfer if _draggingEqId was cleared by dragend
+  var tipo = ev.dataTransfer.getData('tipo');
+  if (!_draggingEqId && (tipo === 'eq' || tipo === 'acessorio')) {
+    _draggingEqId = ev.dataTransfer.getData('text/plain');
+  }
   if (!_draggingEqId) return;
 
   if (kitId.indexOf('temp_') === 0) {
@@ -5543,37 +5581,8 @@ renderGrid = function(equips) {
     var eqId = card.getAttribute('data-eq-id');
     if (!eqId) return;
     setupEqCardDrag(card, eqId);
-    var kitBadges = _getKitBadgesForEq(eqId);
-    if (kitBadges) {
-      var body = card.querySelector('.eq-card-body');
-      if (body) {
-        var footerRow = body.querySelector('.eq-footer-row');
-        if (footerRow) {
-          var tmp = document.createElement('div');
-          tmp.innerHTML = kitBadges;
-          while (tmp.firstChild) { footerRow.appendChild(tmp.firstChild); }
-        } else {
-          var badgeDiv = document.createElement('div');
-          badgeDiv.className = 'eq-kit-badges';
-          badgeDiv.innerHTML = kitBadges;
-          body.appendChild(badgeDiv);
-        }
-      }
-    }
   });
 };
-
-function _getKitBadgesForEq(eqId) {
-  var html = '';
-  Object.values(_kits).forEach(function(kit) {
-    if (!Array.isArray(kit.itens)) return;
-    var found = kit.itens.some(function(it) { return it.equipId === eqId; });
-    if (found) {
-      html += '<span class="eq-kit-badge" onclick="event.stopPropagation();abrirModalEditarKit(\'' + esc(kit.id) + '\')" title="' + esc(kit.nome || '') + '">' + esc(kit.nome || 'Kit') + '</span>';
-    }
-  });
-  return html;
-}
 
 // ── Modal Kit ──
 function criarNovoKitDireto() {
@@ -6139,12 +6148,15 @@ var _agEditandoId = null;
 var _agMes = new Date().getMonth();
 var _agAno = new Date().getFullYear();
 var _agDiaSelecionado = null;
+var _TESTE_DISP_ID = 'teste-disponibilidade-local';
+var _testeDispAdicionados = {}; // qtd adicionada manualmente no teste (separada das pré-alocações)
 
 // ── Abrir/fechar ──────────────────────────────────────────
 function abrirAgenda() {
   _agMes = new Date().getMonth();
   _agAno = new Date().getFullYear();
-  _agDiaSelecionado = null;
+  // Preserva a data selecionada se o teste de disponibilidade estiver ativo
+  if (!_eventosStagingCarga[_TESTE_DISP_ID]) _agDiaSelecionado = null;
   document.getElementById('agenda-modal-overlay').style.display = 'flex';
   _renderAgendaCalendar();
   _renderAgendaKitChecklist();
@@ -6881,6 +6893,169 @@ function _abrirCardEvento(id) {
   document.body.appendChild(overlay);
 }
 
+// ── TESTE DE DISPONIBILIDADE ──────────────────────────────
+
+// Calcula e popula _evEqDragItems[_TESTE_DISP_ID] com a soma de todos
+// equipamentos já alocados em eventos cuja data coincide com a data do teste.
+// Busca do Firestore para cobrir todas etapas (andamento, concluido, etc).
+function _calcularAlocacoesPorData(dataISO) {
+  var nomeToId = {};
+  Object.keys(_equipamentos).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
+    if (nome) nomeToId[nome] = eqId;
+  });
+
+  function _somarEv(ev, counts) {
+    if (!ev || ev.id === _TESTE_DISP_ID) return;
+    var evIni = ev.ev_data || null;
+    var evFim = ev.ev_data_fim || evIni;
+    if (!evIni || dataISO < evIni || dataISO > evFim) return;
+
+    var extRem = ev.itens_extras_removidos || {};
+    var origRem = ev.itens_removidos || {};
+
+    (ev.itens_extras || []).forEach(function(s, i) {
+      if (extRem[i]) return;
+      var m = s.match(/^(\d+)x\s+(.+)$/);
+      var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
+      if (eqId) counts[eqId] = (counts[eqId] || 0) + (m ? parseInt(m[1]) : 1);
+    });
+
+    (ev.servicos || []).forEach(function(s, i) {
+      if (origRem[i]) return;
+      var m = s.match(/^(\d+)x\s+(.+)$/);
+      var eqId = nomeToId[(m ? m[2] : s).trim().toLowerCase()];
+      if (eqId) counts[eqId] = (counts[eqId] || 0) + (m ? parseInt(m[1]) : 1);
+    });
+
+    var grupos = ev.kits_grupos_ev || _evKitGrupos[ev.id] || [];
+    grupos.forEach(function(g) {
+      if (g.riscado) return;
+      (g.itens || []).forEach(function(it) {
+        if (!it.riscado && it.eqId) counts[it.eqId] = (counts[it.eqId] || 0) + (it.qty || 1);
+      });
+    });
+  }
+
+  function _aplicar(counts) {
+    _evEqDragItems[_TESTE_DISP_ID] = {};
+    Object.keys(counts).forEach(function(eqId) {
+      _evEqDragItems[_TESTE_DISP_ID][eqId] = {
+        nome: (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId,
+        qty: counts[eqId]
+      };
+    });
+    // Atualiza visualmente todos os cards
+    Object.keys(_equipamentos).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+  }
+
+  var counts = {};
+
+  // Soma o que está em memória (andamento + eventos, com e sem carga_finalizada)
+  var emMemoria = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap);
+  var idsEmMemoria = Object.keys(emMemoria);
+  Object.values(emMemoria).forEach(function(ev) { _somarEv(ev, counts); });
+  // Staging (outros eventos pinados)
+  Object.values(_eventosStagingCarga).forEach(function(ev) { _somarEv(ev, counts); });
+
+  if (!db) { _aplicar(counts); return; }
+
+  // Busca no Firestore eventos com ev_data <= dataISO (cobre todas as etapas)
+  // Filtragem por ev_data_fim é feita no cliente dentro de _somarEv
+  db.collection('eventos_campo')
+    .where('ev_data', '<=', dataISO)
+    .get()
+    .then(function(snap) {
+      snap.forEach(function(doc) {
+        if (idsEmMemoria.indexOf(doc.id) !== -1) return; // já somado
+        _somarEv(Object.assign({ id: doc.id }, doc.data()), counts);
+      });
+      _aplicar(counts);
+    })
+    .catch(function(err) {
+      console.warn('[TesteDisp]', err.message);
+      _aplicar(counts); // aplica o que tem em memória
+    });
+}
+
+function _testarDisponibilidade() {
+  // Precisa de uma data selecionada
+  if (!_agDiaSelecionado) {
+    toast('Selecione um dia no calendário primeiro.', true);
+    return;
+  }
+
+  var dataFmt = _agDiaSelecionado; // formato YYYY-MM-DD
+  var dataLabel = dataFmt.split('-').reverse().join('/');
+
+  // Se já existe um teste com a mesma data → toggle off
+  if (_eventosStagingCarga[_TESTE_DISP_ID] && _eventosStagingCarga[_TESTE_DISP_ID].ev_data === dataFmt) {
+    var afetadosToggle = _evEqDragItems[_TESTE_DISP_ID] ? Object.keys(_evEqDragItems[_TESTE_DISP_ID]) : [];
+    delete _eventosStagingCarga[_TESTE_DISP_ID];
+    if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
+    if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
+    _testeDispAdicionados = {};
+    Object.keys(_equipamentos).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+    renderEventosAndamento();
+    var btn = document.getElementById('btn-testar-disp');
+    if (btn) btn.classList.remove('disp-ativa');
+    return;
+  }
+
+  // Cria evento fake apenas em memória
+  var evTeste = {
+    id: _TESTE_DISP_ID,
+    ev_nome: 'Teste de Disponibilidade',
+    ev_data: dataFmt,
+    etapa: 'eventos',
+    _isTeste: true,
+    servicos: [],
+    itens_extras: [],
+    itens_ok: {},
+    itens_removidos: {},
+    kits_grupos_ev: []
+  };
+
+  _testeDispAdicionados = {};
+  _eventosStagingCarga[_TESTE_DISP_ID] = evTeste;
+  _evKitGrupos[_TESTE_DISP_ID] = [];
+
+  // Pré-carrega alocações existentes na data selecionada
+  _calcularAlocacoesPorData(dataFmt);
+
+  renderEventosAndamento();
+
+  var btn = document.getElementById('btn-testar-disp');
+  if (btn) btn.classList.add('disp-ativa');
+
+  // Fecha a agenda e abre a sidebar
+  fecharAgenda();
+  var sec = document.getElementById('eventos-andamento-section');
+  if (sec) {
+    sec.style.display = 'block';
+    document.body.classList.add('has-ev-sidebar');
+    setTimeout(function() { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+  }
+
+  toast('Card de teste criado para ' + dataLabel + ' — arraste kits e equipamentos para testar!');
+}
+
+function _removerTesteDisponibilidade() {
+  // Coleta equipamentos afetados antes de deletar
+  var afetados = _evEqDragItems[_TESTE_DISP_ID] ? Object.keys(_evEqDragItems[_TESTE_DISP_ID]) : [];
+  delete _eventosStagingCarga[_TESTE_DISP_ID];
+  if (_evKitGrupos[_TESTE_DISP_ID]) delete _evKitGrupos[_TESTE_DISP_ID];
+  if (_evEqDragItems[_TESTE_DISP_ID]) delete _evEqDragItems[_TESTE_DISP_ID];
+  _testeDispAdicionados = {};
+  // Atualiza cards que foram alterados
+  afetados.forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
+  renderEventosAndamento();
+  var btn = document.getElementById('btn-testar-disp');
+  if (btn) btn.classList.remove('disp-ativa');
+}
+
+// ── Fim TESTE DE DISPONIBILIDADE ──────────────────────────
+
 function _fecharCardEvento() {
   var el = document.getElementById('agenda-ev-overlay');
   if (el) el.remove();
@@ -6970,7 +7145,13 @@ function _atualizarConflitosNosKits() {
           </div>
           <div style="font-size:0.6rem;color:var(--muted);margin-top:2px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase">Reserve kits por data &bull; Detecta conflitos automaticamente</div>
         </div>
-        <button class="agenda-modal-close" onclick="fecharAgenda()">✕</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="btn-testar-disp" onclick="_testarDisponibilidade()" style="display:flex;align-items:center;gap:6px;background:rgba(74,144,217,0.1);border:1px solid rgba(74,144,217,0.35);color:#4A90D9;border-radius:5px;padding:0 12px;height:28px;font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.15s;white-space:nowrap" onmouseover="this.style.background='rgba(74,144,217,0.2)';this.style.borderColor='rgba(74,144,217,0.7)'" onmouseout="this.style.background='rgba(74,144,217,0.1)';this.style.borderColor='rgba(74,144,217,0.35)'">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Testar Disponibilidade
+          </button>
+          <button class="agenda-modal-close" onclick="fecharAgenda()">✕</button>
+        </div>
       </div>
 
       <!-- Layout principal: calendário + painel direito -->
@@ -7666,6 +7847,11 @@ body.has-ev-sidebar header { margin-right: -340px; }
 .ev-kit-grupo-body .card-item { padding: 4px 0; font-size: 0.78rem; }
 .ev-kit-grupo-dropzone { min-height: 12px; }
 .ev-kit-grupo-dropzone.drag-over-kit-grupo { background: rgba(200,169,74,0.08); border-radius: 4px; }
+.ev-kit-grupo-dropzone.drag-over-eq { background: rgba(74,144,217,0.12); border-radius: 4px; outline: 1px dashed rgba(74,144,217,0.5); }
+body.kit-dragging .ev-kit-grupo { border-color: rgba(74,144,217,0.25); transition: border-color 0.15s; }
+body.kit-dragging .ev-kit-grupo-dropzone { min-height: 26px; }
+.ev-kit-grupo.drag-reorder-over { border-color: var(--gold) !important; background: rgba(200,169,74,0.06); }
+
 
 </style>
 
@@ -7710,11 +7896,19 @@ var _evKitGrupos = {};       // { evId: [ { grupoId, kitId, kitNome, itens:[{eqI
 
 function _getCargaTotalEq(eqId) {
   var total = 0;
-  // Itens arrastados visualmente (sistema de carga local)
   Object.values(_cargaEvento).forEach(function(c) { total += (c[eqId] || 0); });
-  // Itens dos eventos abertos (itens_extras / servicos não riscados)
   Object.values(_evEqDragItems).forEach(function(ev) {
     if (ev[eqId]) total += ev[eqId].qty;
+  });
+  // Eventos sem card aberto: contar kit grupos diretamente
+  Object.keys(_evKitGrupos).forEach(function(evId) {
+    if (_evEqDragItems[evId]) return; // já contado acima
+    (_evKitGrupos[evId] || []).forEach(function(g) {
+      if (g.riscado) return;
+      (g.itens || []).forEach(function(it) {
+        if (!it.riscado && it.eqId === eqId) total += (it.qty || 1);
+      });
+    });
   });
   return total;
 }
@@ -7807,9 +8001,29 @@ function _mergeEventosSnaps() {
       _evKitGrupos[data.id] = data.kits_grupos_ev;
     }
   });
+  // Remove entradas órfãs de eventos que saíram
+  Object.keys(_evEqDragItems).forEach(function(evId) {
+    if (!_eventosAndamento[evId] && !_eventosStagingCarga[evId]) delete _evEqDragItems[evId];
+  });
+  // Garante contagens para eventos com card fechado
+  Object.keys(_eventosAndamento).forEach(function(evId) {
+    if (!_evEqDragItems[evId]) _recalcularCargaEvento(evId);
+  });
   renderEventosAndamento();
-  // Atualiza estoque em tempo real quando filtro de andamento está ativo
   if (typeof _filtroAndamento !== 'undefined' && _filtroAndamento) renderEquipamentos();
+}
+
+function _carregarOrdemManualFirestore() {
+  if (!db) return;
+  db.collection('configuracoes').doc('eq_ordem_manual').get().then(function(doc) {
+    if (!doc.exists) return;
+    var data = doc.data();
+    Object.keys(data).forEach(function(k) {
+      if (k.indexOf('eq_ordem_manual_') === 0 && Array.isArray(data[k]) && data[k].length) {
+        try { localStorage.setItem(k, JSON.stringify(data[k])); } catch(e) {}
+      }
+    });
+  }).catch(function(){});
 }
 
 function iniciarEventosAndamento() {
@@ -8052,10 +8266,17 @@ function _buildEvAndamentoCard(ev) {
         '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="1" x2="5" y2="9"/><line x1="1" y1="5" x2="9" y2="5"/></svg>' +
         'Adicionar item' +
       '</button>' +
-      ((_eventosStagingCarga[ev.id] || _eventosEventosSnap[ev.id]) ? '<button class="btn-finalizar-carga" onclick="event.stopPropagation();_finalizarCargaEvento(\'' + esc(ev.id) + '\')">' +
-        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
-        'Finalizar carga' +
-      '</button>' : '') +
+      (ev.id === _TESTE_DISP_ID
+        ? '<button class="btn-finalizar-carga" style="background:rgba(224,92,92,0.08);border-color:rgba(224,92,92,0.4);color:#e05c5c" onclick="event.stopPropagation();_removerTesteDisponibilidade()">' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          'Descartar teste' +
+          '</button>'
+        : ((_eventosStagingCarga[ev.id] || _eventosEventosSnap[ev.id])
+          ? '<button class="btn-finalizar-carga" onclick="event.stopPropagation();_finalizarCargaEvento(\'' + esc(ev.id) + '\')">' +
+            '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+            'Finalizar carga' +
+            '</button>'
+          : '')) +
 
     '</div>';
   }
@@ -8164,7 +8385,7 @@ function _atualizarBotaoVeiculoEv(evId, sels) {
 }
 
 function _salvarVeiculosEv(evId, ids) {
-  if (db) db.collection('eventos_campo').doc(evId).update({ veiculos: ids }).catch(function(e){ console.error('[Ev] veiculo:', e); });
+  if (db && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ veiculos: ids }).catch(function(e){ console.error('[Ev] veiculo:', e); });
 }
 
 function _riscarCargaItem(btn) {
@@ -8181,7 +8402,7 @@ function _toggleItemEv(evId, idx) {
   var itensOk = Object.assign({}, ev.itens_ok || {});
   itensOk[idx] = !itensOk[idx];
   ev.itens_ok = itensOk;
-  if (db) db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
+  if (db && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
   var chk = document.querySelector('#ev-andamento-scroll .item-check[data-evid="' + evId + '"][data-idx="' + idx + '"]');
   if (chk) {
     var item = chk.closest('.card-item');
@@ -8213,7 +8434,7 @@ function _adicionarItemExtraEv(evId, texto) {
   }
   if (!merged) extras.push(texto);
   ev.itens_extras = extras;
-  if (db) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
+  if (db && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras });
   // Recalcula contagens imediatamente (prefixo 2x, 3x...)
   _recalcularCargaEvento(evId);
   renderEventosAndamento();
@@ -8334,7 +8555,7 @@ function _recalcularCargaEvento(evId) {
 }
 
 function _salvarKitGruposFirestore(evId) {
-  if (!db) return;
+  if (!db || evId === _TESTE_DISP_ID) return;
   var grupos = (_evKitGrupos[evId] || []).map(function(g) {
     return {
       grupoId: g.grupoId,
@@ -8426,6 +8647,7 @@ function _bindEvAndamentoCards() {
           e.target.closest('.btn-wa-painel') || e.target.closest('.item-rem-ev-btn') ||
           e.target.closest('.card-carga-del')) return;
       var card = summary.closest('.evento-card');
+      if (card && card.id === 'ev-card-' + _TESTE_DISP_ID) return;
       if (!card) return;
       var wasExpanded = card.classList.contains('expanded');
       // Recolhendo: resetar carga dos cards que serão fechados
@@ -8494,19 +8716,19 @@ function _bindEvAndamentoCards() {
         rem[idx] = !rem[idx];
         evObj.itens_removidos = rem;
         isNowRemoved = rem[idx];
-        db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
+        if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem });
       } else if (tipo === 'painel') {
         var remP = Object.assign({}, evObj.itens_painel_removidos || {});
         remP[idx] = !remP[idx];
         evObj.itens_painel_removidos = remP;
         isNowRemoved = remP[idx];
-        db.collection('eventos_campo').doc(evId).update({ itens_painel_removidos: remP });
+        if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_painel_removidos: remP });
       } else {
         var remE = Object.assign({}, evObj.itens_extras_removidos || {});
         remE[idx] = !remE[idx];
         evObj.itens_extras_removidos = remE;
         isNowRemoved = remE[idx];
-        db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
+        if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras_removidos: remE });
       }
 
       // Recalcula contagens a partir dos itens ativos (não riscados) do evento
@@ -8573,54 +8795,8 @@ function _bindEvAndamentoCards() {
 
   // ── Kit Grupos handlers ──
 
-  // Toggle colapso/expande grupo (click no header)
-  scroll.querySelectorAll('.ev-kit-grupo-header').forEach(function(header) {
-    var _mouseDownPos = null;
-    var _didDrag = false;
-    header.addEventListener('mousedown', function(e) {
-      _mouseDownPos = { x: e.clientX, y: e.clientY };
-      _didDrag = false;
-    });
-    header.addEventListener('mousemove', function(e) {
-      if (_mouseDownPos && (Math.abs(e.clientX - _mouseDownPos.x) > 4 || Math.abs(e.clientY - _mouseDownPos.y) > 4)) {
-        _didDrag = true;
-      }
-    });
-    header.addEventListener('click', function(e) {
-      e.stopPropagation();
-      if (_didDrag) return;
-      if (e.target.closest('.ev-kit-grupo-check') || e.target.closest('.ev-kit-grupo-rem')) return;
-      var grupo = header.closest('.ev-kit-grupo');
-      if (grupo) grupo.classList.toggle('expanded');
-    });
-  });
-
-  // Header do kit grupo é draggable → arrastar para criar/remover
-  scroll.querySelectorAll('.ev-kit-grupo-header[draggable]').forEach(function(header) {
-    header.addEventListener('dragstart', function(e) {
-      var evId = header.getAttribute('data-evid');
-      var grupoId = header.getAttribute('data-grupo-id');
-      _draggingKitGrupoData = { evId: evId, grupoId: grupoId };
-      e.dataTransfer.setData('tipo', 'ev_kit_grupo');
-      e.dataTransfer.setData('text/plain', evId + '|' + grupoId);
-      e.dataTransfer.effectAllowed = 'move';
-      document.body.classList.add('kit-dragging');
-      document.body.classList.add('kit-grupo-dragging');
-      var grupoEl = header.closest('.ev-kit-grupo');
-      if (grupoEl) setTimeout(function() { grupoEl.style.opacity = '0.4'; }, 0);
-    });
-    header.addEventListener('dragend', function() {
-      setTimeout(function() {
-        document.body.classList.remove('kit-dragging');
-        document.body.classList.remove('kit-grupo-dragging');
-        _draggingKitGrupoData = null;
-        var grupoEl = header.closest('.ev-kit-grupo');
-        if (grupoEl) grupoEl.style.opacity = '';
-        var novoCard = document.getElementById('kit-novo-card');
-        if (novoCard) novoCard.classList.remove('drag-over-remove');
-      }, 200);
-    });
-  });
+  // Header do kit grupo: click → expand/collapse, drag → reorder/remover
+  // (handlers unificados para evitar conflito com cloneNode)
 
   // Checkbox do kit → marca/desmarca todos os itens do grupo
   scroll.querySelectorAll('.ev-kit-grupo-check').forEach(function(chk) {
@@ -8688,8 +8864,30 @@ function _bindEvAndamentoCards() {
       var grupos = _evKitGrupos[evId] || [];
       var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
       if (!grupo) return;
-      grupo.riscado = !grupo.riscado;
-      grupo.itens.forEach(function(it) { it.riscado = grupo.riscado; if (grupo.riscado) it.checked = false; });
+      var novoRiscadoGrupo = !grupo.riscado;
+      grupo.riscado = novoRiscadoGrupo;
+      grupo.itens.forEach(function(it) {
+        if (it.eqId && (!!it.riscado !== novoRiscadoGrupo)) {
+          // Movimenta estoque ao mudar estado
+          var eqGrp = _equipamentos[it.eqId];
+          if (eqGrp && db) {
+            var qty = it.qty || 1;
+            var novoEmUsoGrp, novoDispGrp;
+            if (novoRiscadoGrupo) {
+              novoEmUsoGrp = Math.max(0, (eqGrp.qtd_em_uso || 0) - qty);
+              novoDispGrp  = (eqGrp.qtd_disponivel || 0) + ((eqGrp.qtd_em_uso || 0) - novoEmUsoGrp);
+            } else {
+              novoEmUsoGrp = (eqGrp.qtd_em_uso || 0) + Math.min(qty, eqGrp.qtd_disponivel || 0);
+              novoDispGrp  = Math.max(0, (eqGrp.qtd_disponivel || 0) - qty);
+            }
+            eqGrp.qtd_em_uso = novoEmUsoGrp; eqGrp.qtd_disponivel = novoDispGrp;
+            db.collection('estoque').doc(it.eqId).update({ qtd_em_uso: novoEmUsoGrp, qtd_disponivel: novoDispGrp, _atualizado: Date.now() }).catch(function(){});
+            _atualizarCardEqDOM(it.eqId);
+          }
+        }
+        it.riscado = novoRiscadoGrupo;
+        if (novoRiscadoGrupo) it.checked = false;
+      });
       _salvarKitGruposFirestore(evId);
       _recalcularCargaEvento(evId);
       // Atualiza UI imediatamente
@@ -8723,8 +8921,27 @@ function _bindEvAndamentoCards() {
       var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
       if (!grupo || !grupo.itens[itIdx]) return;
       var it = grupo.itens[itIdx];
-      it.riscado = !it.riscado;
-      if (it.riscado) it.checked = false;
+      var novoRiscadoItem = !it.riscado;
+      // Movimenta estoque
+      if (it.eqId) {
+        var eqItBtn = _equipamentos[it.eqId];
+        if (eqItBtn && db) {
+          var qtyIt = it.qty || 1;
+          var novoEmUsoIt, novoDispIt;
+          if (novoRiscadoItem) {
+            novoEmUsoIt = Math.max(0, (eqItBtn.qtd_em_uso || 0) - qtyIt);
+            novoDispIt  = (eqItBtn.qtd_disponivel || 0) + ((eqItBtn.qtd_em_uso || 0) - novoEmUsoIt);
+          } else {
+            novoEmUsoIt = (eqItBtn.qtd_em_uso || 0) + Math.min(qtyIt, eqItBtn.qtd_disponivel || 0);
+            novoDispIt  = Math.max(0, (eqItBtn.qtd_disponivel || 0) - qtyIt);
+          }
+          eqItBtn.qtd_em_uso = novoEmUsoIt; eqItBtn.qtd_disponivel = novoDispIt;
+          db.collection('estoque').doc(it.eqId).update({ qtd_em_uso: novoEmUsoIt, qtd_disponivel: novoDispIt, _atualizado: Date.now() }).catch(function(){});
+          _atualizarCardEqDOM(it.eqId);
+        }
+      }
+      it.riscado = novoRiscadoItem;
+      if (novoRiscadoItem) it.checked = false;
       _salvarKitGruposFirestore(evId);
       _recalcularCargaEvento(evId);
       // Atualiza UI imediatamente
@@ -8768,57 +8985,183 @@ function _bindEvAndamentoCards() {
     });
   });
 
-  // Drop zone dos kit grupos (para aceitar itens soltos vindos de fora do grupo)
+  // Drop zone dos kit grupos — aceita: item solto do evento, eq/acessório do estoque
   scroll.querySelectorAll('.ev-kit-grupo-dropzone').forEach(function(zone) {
     zone.addEventListener('dragover', function(e) {
-      if (!_draggingItemData || _draggingItemData.tipo !== 'item_ev') return;
-      e.preventDefault(); e.stopPropagation();
-      zone.classList.add('drag-over-kit-grupo');
+      if (_draggingKitId || _draggingKitGrupoData) return; // deixa propagar para reorder / evCardDrop
+      if (_draggingEqId) {
+        e.preventDefault(); e.stopPropagation();
+        zone.classList.add('drag-over-eq'); return;
+      }
+      if (_draggingItemData && _draggingItemData.tipo === 'item_ev') {
+        e.preventDefault(); e.stopPropagation();
+        zone.classList.add('drag-over-kit-grupo'); return;
+      }
     });
-    zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over-kit-grupo'); });
-    zone.addEventListener('drop', function(e) {
-      e.preventDefault(); e.stopPropagation();
+    zone.addEventListener('dragleave', function() {
       zone.classList.remove('drag-over-kit-grupo');
-      var data = _draggingItemData;
-      if (!data || data.tipo !== 'item_ev') return;
+      zone.classList.remove('drag-over-eq');
+    });
+    zone.addEventListener('drop', function(e) {
+      zone.classList.remove('drag-over-kit-grupo');
+      zone.classList.remove('drag-over-eq');
+      if (_draggingKitId || _draggingKitGrupoData) return; // propaga
+      e.preventDefault(); e.stopPropagation();
+
       var grupoEl = zone.closest('.ev-kit-grupo');
       if (!grupoEl) return;
-      var evId = grupoEl.getAttribute('data-evid');
+      var evId   = grupoEl.getAttribute('data-evid');
       var grupoId = grupoEl.getAttribute('data-grupo-id');
       var grupos = _evKitGrupos[evId] || [];
-      var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
+      var grupo  = grupos.find(function(g) { return g.grupoId === grupoId; });
       if (!grupo) return;
-      // Pegar texto do item arrastado
+
+      // ── Drop de eq/acessório do estoque ──
+      if (_draggingEqId) {
+        var eqDropId = _draggingEqId; _draggingEqId = null;
+        var eq2 = _equipamentos[eqDropId];
+        var eqNome2 = eq2 ? (eq2.nome || eqDropId) : eqDropId;
+        // Verificar disponibilidade
+        if (eq2) {
+          var jaAloc = _getCargaTotalEq(eqDropId);
+          var dispReal = Math.max(0, (eq2.qtd_disponivel || 0) - jaAloc);
+          if (dispReal <= 0) { toast('Sem unidades disponíveis para ' + eqNome2, true); return; }
+        }
+        // Procura ativo ou riscado existente
+        var exist = grupo.itens.find(function(it) { return it.eqId === eqDropId && !it.riscado; });
+        var risc  = !exist && grupo.itens.find(function(it) { return it.eqId === eqDropId && it.riscado; });
+        if (exist) {
+          exist.qty = (exist.qty || 1) + 1;
+        } else if (risc) {
+          risc.riscado = false; risc.checked = false; risc.qty = 1;
+        } else {
+          grupo.itens.push({ eqId: eqDropId, eqNome: eqNome2, qty: 1, checked: false, riscado: false });
+        }
+        // Movimenta estoque: disp → em_uso
+        if (eq2 && db) {
+          var novoDisp2 = Math.max(0, (eq2.qtd_disponivel || 0) - 1);
+          var novoUso2  = (eq2.qtd_em_uso || 0) + 1;
+          eq2.qtd_disponivel = novoDisp2; eq2.qtd_em_uso = novoUso2;
+          db.collection('estoque').doc(eqDropId).update({ qtd_disponivel: novoDisp2, qtd_em_uso: novoUso2, _atualizado: Date.now() }).catch(function(){});
+        }
+        _salvarKitGruposFirestore(evId);
+        _recalcularCargaEvento(evId);
+        _atualizarCardEqDOM(eqDropId);
+        renderEventosAndamento();
+        return;
+      }
+
+      // ── Drop de item solto do evento ──
+      var data = _draggingItemData;
+      if (!data || data.tipo !== 'item_ev') return;
       var txt = data.txt || '';
       var m = txt.match(/^(\d+)x\s+(.+)$/);
       var qty = m ? parseInt(m[1]) : 1;
       var eqNome = m ? m[2] : txt;
-      // Encontrar eqId
       var eqId = null;
       Object.keys(_equipamentos).forEach(function(id) {
         if ((_equipamentos[id].nome || '').trim().toLowerCase() === eqNome.trim().toLowerCase()) eqId = id;
       });
-      // Remover do evento original
       var evObj = _eventosAndamento[evId] || _eventosStagingCarga[evId];
-      if (data.tipo === 'item_ev' && evObj) {
+      if (evObj) {
         if (data.tipo_item === 'orig') {
-          var rem = Object.assign({}, evObj.itens_removidos || {});
-          rem[data.idx] = true;
+          var rem = Object.assign({}, evObj.itens_removidos || {}); rem[data.idx] = true;
           evObj.itens_removidos = rem;
-          db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem }).catch(function(){});
+          if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_removidos: rem }).catch(function(){});
         } else {
-          var extrasArr = (evObj.itens_extras || []).slice();
-          extrasArr.splice(data.idx, 1);
+          var extrasArr = (evObj.itens_extras || []).slice(); extrasArr.splice(data.idx, 1);
           evObj.itens_extras = extrasArr;
-          db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasArr }).catch(function(){});
+          if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasArr }).catch(function(){});
         }
       }
-      // Adicionar ao grupo
       grupo.itens.push({ eqId: eqId || '', eqNome: eqNome, qty: qty, checked: false, riscado: false });
       _salvarKitGruposFirestore(evId);
       _recalcularCargaEvento(evId);
       renderEventosAndamento();
     });
+  });
+
+  // ── Header dos kit grupos: click (expand) + drag (reorder/remover) ──
+  var _draggingKitGrupoReorder = null;
+  scroll.querySelectorAll('.ev-kit-grupo-header[draggable]').forEach(function(header) {
+    var _mouseDownPos = null;
+    var _didDrag = false;
+
+    header.addEventListener('mousedown', function(e) {
+      _mouseDownPos = { x: e.clientX, y: e.clientY };
+      _didDrag = false;
+    });
+    header.addEventListener('mousemove', function(e) {
+      if (_mouseDownPos && (Math.abs(e.clientX - _mouseDownPos.x) > 4 || Math.abs(e.clientY - _mouseDownPos.y) > 4)) {
+        _didDrag = true;
+      }
+    });
+    header.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (_didDrag) return;
+      if (e.target.closest('.ev-kit-grupo-check') || e.target.closest('.ev-kit-grupo-rem')) return;
+      var grupo = header.closest('.ev-kit-grupo');
+      if (grupo) grupo.classList.toggle('expanded');
+    });
+    header.addEventListener('dragstart', function(e) {
+      _didDrag = true;
+      var evId    = header.getAttribute('data-evid');
+      var grupoId = header.getAttribute('data-grupo-id');
+      _draggingKitGrupoData    = { evId: evId, grupoId: grupoId };
+      _draggingKitGrupoReorder = { evId: evId, grupoId: grupoId };
+      e.dataTransfer.setData('tipo', 'ev_kit_grupo');
+      e.dataTransfer.setData('text/plain', evId + '|' + grupoId);
+      e.dataTransfer.effectAllowed = 'move';
+      document.body.classList.add('kit-dragging');
+      document.body.classList.add('kit-grupo-dragging');
+      var grupoEl = header.closest('.ev-kit-grupo');
+      if (grupoEl) setTimeout(function() { grupoEl.style.opacity = '0.4'; }, 0);
+    });
+    header.addEventListener('dragend', function() {
+      setTimeout(function() {
+        document.body.classList.remove('kit-dragging');
+        document.body.classList.remove('kit-grupo-dragging');
+        _draggingKitGrupoData    = null;
+        _draggingKitGrupoReorder = null;
+        var grupoEl = header.closest('.ev-kit-grupo');
+        if (grupoEl) { grupoEl.style.opacity = ''; }
+        scroll.querySelectorAll('.ev-kit-grupo.drag-reorder-over').forEach(function(el) { el.classList.remove('drag-reorder-over'); });
+        var novoCard = document.getElementById('kit-novo-card');
+        if (novoCard) novoCard.classList.remove('drag-over-remove');
+      }, 200);
+    });
+
+    // Dragover/drop no grupo pai para reorder
+    var grupoEl = header.closest('.ev-kit-grupo');
+    if (grupoEl) {
+      grupoEl.addEventListener('dragover', function(e) {
+        if (!_draggingKitGrupoReorder) return;
+        var myGrupoId = grupoEl.getAttribute('data-grupo-id');
+        if (_draggingKitGrupoReorder.grupoId === myGrupoId) return;
+        e.preventDefault(); e.stopPropagation();
+        grupoEl.classList.add('drag-reorder-over');
+      });
+      grupoEl.addEventListener('dragleave', function() { grupoEl.classList.remove('drag-reorder-over'); });
+      grupoEl.addEventListener('drop', function(e) {
+        grupoEl.classList.remove('drag-reorder-over');
+        if (!_draggingKitGrupoReorder) return;
+        var srcGrupoId = _draggingKitGrupoReorder.grupoId;
+        var dstGrupoId = grupoEl.getAttribute('data-grupo-id');
+        var evId = _draggingKitGrupoReorder.evId;
+        if (srcGrupoId === dstGrupoId) return;
+        e.preventDefault(); e.stopPropagation();
+        var grupos = _evKitGrupos[evId] || [];
+        var srcIdx = grupos.findIndex(function(g) { return g.grupoId === srcGrupoId; });
+        var dstIdx = grupos.findIndex(function(g) { return g.grupoId === dstGrupoId; });
+        if (srcIdx < 0 || dstIdx < 0) return;
+        var moved = grupos.splice(srcIdx, 1)[0];
+        grupos.splice(dstIdx, 0, moved);
+        _draggingKitGrupoReorder = null;
+        _draggingKitGrupoData    = null;
+        _salvarKitGruposFirestore(evId);
+        renderEventosAndamento();
+      });
+    }
   });
 
 }
@@ -8893,9 +9236,12 @@ function renderEventosAndamento() {
   }
 
   var stagingHtml = '';
-  if (eventosStaging.length) {
+  var stagingNormal = eventosStaging.filter(function(ev) { return ev.id !== _TESTE_DISP_ID; });
+  var stagingTeste  = eventosStaging.filter(function(ev) { return ev.id === _TESTE_DISP_ID; });
+
+  if (stagingNormal.length) {
     var separador = '<div class="ev-section-separator"><div class="ev-section-separator-pulse"></div>Montando carga</div>';
-    stagingHtml = separador + eventosStaging.map(function(ev) {
+    stagingHtml = separador + stagingNormal.map(function(ev) {
       var cardHtml = _buildEvAndamentoCard(ev);
       cardHtml = cardHtml.replace(
         'class="evento-card"',
@@ -8908,7 +9254,20 @@ function renderEventosAndamento() {
     }).join('');
   }
 
-  scroll.innerHTML = andamentoHtml + stagingHtml + eventosHtml;
+  var testeHtml = '';
+  if (stagingTeste.length) {
+    var evTeste = stagingTeste[0];
+    var dataTesteLabel = evTeste.ev_data ? evTeste.ev_data.split('-').reverse().join('/') : '';
+    var separadorTeste = '<div class="ev-section-separator" style="color:#4A90D9;border-color:rgba(74,144,217,0.25)"><div class="ev-section-separator-pulse" style="background:#4A90D9;box-shadow:0 0 0 0 rgba(74,144,217,0.6)"></div>Teste de Disponibilidade</div>';
+    var cardHtml = _buildEvAndamentoCard(evTeste);
+    cardHtml = cardHtml.replace(
+      'class="evento-card"',
+      'class="evento-card ev-teste-card"'
+    );
+    testeHtml = separadorTeste + cardHtml;
+  }
+
+  scroll.innerHTML = andamentoHtml + stagingHtml + testeHtml + eventosHtml;
 
   _bindEvAndamentoCards();
 
@@ -8923,6 +9282,17 @@ function renderEventosAndamento() {
       }
     }
   });
+
+  // Garantir que o card de teste fique sempre expandido
+  if (stagingTeste.length) {
+    var testeCardEl = document.getElementById('ev-card-' + _TESTE_DISP_ID);
+    if (testeCardEl) {
+      testeCardEl.classList.add('expanded');
+      if (!_evEqDragItems[_TESTE_DISP_ID] || Object.keys(_evEqDragItems[_TESTE_DISP_ID]).length === 0) {
+        _abrirCargaEvento(_TESTE_DISP_ID);
+      }
+    }
+  }
   // Restaurar grupos de kit expandidos
   _expandedGrupos.forEach(function(gId) {
     var grupoEl = document.getElementById('ev-kit-grupo-' + gId);
@@ -8994,7 +9364,7 @@ function evCardDrop(ev, evId) {
       });
       extrasSlot.push(labelSlot);
       evObjSlot.itens_extras = extrasSlot;
-      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasSlot });
+      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId]) && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasSlot });
     }
     _atualizarCardEqDOM(eqIdSlot);
     renderEventosAndamento();
@@ -9026,7 +9396,7 @@ function evCardDrop(ev, evId) {
       var labelMovido = (itMovido.qty > 1 ? itMovido.qty + 'x ' : '') + itMovido.eqNome;
       var extrasMovido = (evDestObj.itens_extras || []).concat([labelMovido]);
       evDestObj.itens_extras = extrasMovido;
-      db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasMovido }).catch(function(){});
+      if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extrasMovido }).catch(function(){});
     }
     _recalcularCargaEvento(srcEvId);
     if (srcEvId !== evId) _recalcularCargaEvento(evId);
@@ -9068,6 +9438,16 @@ function evCardDrop(ev, evId) {
       grupoItens.push({ eqId: eqId, eqNome: eqNome, qty: qtdCap, checked: false, riscado: false });
       if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
       _evEqDragItems[evId][eqId].qty += qtdCap;
+      // Movimenta estoque: disp → em_uso
+      if (db) {
+        var eqKD = _equipamentos[eqId];
+        if (eqKD) {
+          var novoDispKD = Math.max(0, (eqKD.qtd_disponivel || 0) - qtdCap);
+          var novoUsoKD  = (eqKD.qtd_em_uso || 0) + qtdCap;
+          eqKD.qtd_disponivel = novoDispKD; eqKD.qtd_em_uso = novoUsoKD;
+          db.collection('estoque').doc(eqId).update({ qtd_disponivel: novoDispKD, qtd_em_uso: novoUsoKD, _atualizado: Date.now() }).catch(function(){});
+        }
+      }
       _atualizarCardEqDOM(eqId);
       itensAdicionados++;
     });
@@ -9110,8 +9490,17 @@ function evCardDrop(ev, evId) {
       if (dispReal <= 0) { toast('Sem unidades disponíveis', true); return; }
     }
     _evEqDragItems[evId][itemId].qty++;
-    var qty = _evEqDragItems[evId][itemId].qty;
-    var label = qty > 1 ? qty + 'x ' + eqNome : eqNome;
+    // Para o card de teste, qty em _evEqDragItems inclui pré-alocações de outros eventos.
+    // O label deve mostrar apenas o que foi adicionado nesta sessão de teste.
+    var qtyLabel;
+    if (evId === _TESTE_DISP_ID) {
+      if (!_testeDispAdicionados) _testeDispAdicionados = {};
+      _testeDispAdicionados[itemId] = (_testeDispAdicionados[itemId] || 0) + 1;
+      qtyLabel = _testeDispAdicionados[itemId];
+    } else {
+      qtyLabel = _evEqDragItems[evId][itemId].qty;
+    }
+    var label = qtyLabel > 1 ? qtyLabel + 'x ' + eqNome : eqNome;
     // Atualiza itens_extras (Firestore apenas para eventos em andamento)
     var evObj2 = _eventosAndamento[evId] || _eventosStagingCarga[evId];
     if (evObj2) {
@@ -9120,7 +9509,7 @@ function evCardDrop(ev, evId) {
       });
       extras2.push(label);
       evObj2.itens_extras = extras2;
-      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId])) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
+      if (db && (_eventosAndamento[evId] || _eventosStagingCarga[evId]) && evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras2 });
     }
     // Atualiza contagem do card do equipamento
     _atualizarCardEqDOM(itemId);
@@ -9140,6 +9529,16 @@ function evCardDrop(ev, evId) {
   var novoItem = { estoque_id: itemId, nome: nomeItem, tipo: tipo, qtd: 1 };
   var ev2 = _eventosAndamento[evId] || _eventosStagingCarga[evId];
 
+  // Card de teste: apenas registra em memória, sem tocar no Firestore
+  if (evId === _TESTE_DISP_ID) {
+    if (nomeItem && ev2) {
+      ev2.itens_extras = (ev2.itens_extras || []).concat([nomeItem]);
+    }
+    toast(nomeItem || 'Acessório adicionado ao teste');
+    renderEventosAndamento();
+    return;
+  }
+
   db.collection('reservas_evento').doc(evId).get().then(function(snap) {
     var dados = snap.exists ? snap.data() : {};
     var itens = Array.isArray(dados.itens) ? dados.itens.slice() : [];
@@ -9157,7 +9556,7 @@ function evCardDrop(ev, evId) {
   }).then(function() {
     if (nomeItem && ev2) {
       var extras = (ev2.itens_extras || []).concat([nomeItem]);
-      db.collection('eventos_campo').doc(evId).update({ itens_extras: extras }).catch(function(){});
+      if (evId !== _TESTE_DISP_ID) db.collection('eventos_campo').doc(evId).update({ itens_extras: extras }).catch(function(){});
     }
     toast('Adicionado ao evento!');
   }).catch(function(e) { toast('Erro: ' + e.message, true); });
@@ -9839,7 +10238,7 @@ function _kitSlotReorderDrop(el, ev) {
 function _kitRemoveZoneOver(ev) {
   var tipos = ev.dataTransfer.types || [];
   var temTipo = tipos.indexOf('tipo') >= 0 || tipos.indexOf('text/plain') >= 0;
-  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData && !_draggingKitGrupoData && !temTipo) return;
+  if (!_draggingKitSlot && !_draggingKitId && !_draggingItemData && !_draggingKitGrupoData && !_draggingEqId && !temTipo) return;
   ev.preventDefault();
   ev.dataTransfer.dropEffect = 'move';
   var zone = document.getElementById('kit-remove-zone');
@@ -9921,6 +10320,20 @@ function _kitRemoveZoneDrop(ev) {
       var idx = grupos.findIndex(function(g) { return g.grupoId === kgd.grupoId; });
       if (idx >= 0) {
         var removedGrupo = grupos.splice(idx, 1)[0];
+        // Devolve cada item não-riscado ao estoque
+        (removedGrupo.itens || []).forEach(function(it) {
+          if (!it.riscado && it.eqId && db) {
+            var eq = _equipamentos[it.eqId];
+            if (eq) {
+              var qty = it.qty || 1;
+              var novoEmUso = Math.max(0, (eq.qtd_em_uso || 0) - qty);
+              var novoDisp  = (eq.qtd_disponivel || 0) + ((eq.qtd_em_uso || 0) - novoEmUso);
+              eq.qtd_em_uso = novoEmUso; eq.qtd_disponivel = novoDisp;
+              db.collection('estoque').doc(it.eqId).update({ qtd_em_uso: novoEmUso, qtd_disponivel: novoDisp, _atualizado: Date.now() }).catch(function(){});
+              _atualizarCardEqDOM(it.eqId);
+            }
+          }
+        });
         _salvarKitGruposFirestore(kgd.evId);
         _recalcularCargaEvento(kgd.evId);
         renderEventosAndamento();
@@ -9956,7 +10369,6 @@ function _kitRemoveZoneDrop(ev) {
     }
     if (data) _excluirItemEvDrop(data);
   } else if (tipo === 'kit_grupo_item' || (_draggingItemData && _draggingItemData.tipo === 'kit_grupo_item')) {
-    // ── Item de dentro de um kit grupo — remove do grupo e devolve ao estoque ──
     var kgData = _draggingItemData;
     _draggingItemData = null;
     if (kgData && kgData.grupoId !== undefined) {
@@ -9964,12 +10376,29 @@ function _kitRemoveZoneDrop(ev) {
       var srcGrupo = srcGrupos.find(function(g) { return g.grupoId === kgData.grupoId; });
       if (srcGrupo && srcGrupo.itens[kgData.itIdx]) {
         var removedIt = srcGrupo.itens.splice(kgData.itIdx, 1)[0];
+        // Devolve ao estoque se não estava riscado
+        if (!removedIt.riscado && removedIt.eqId && db) {
+          var eqRm = _equipamentos[removedIt.eqId];
+          if (eqRm) {
+            var qtyRm = removedIt.qty || 1;
+            var novoEmUsoRm = Math.max(0, (eqRm.qtd_em_uso || 0) - qtyRm);
+            var novoDispRm  = (eqRm.qtd_disponivel || 0) + ((eqRm.qtd_em_uso || 0) - novoEmUsoRm);
+            eqRm.qtd_em_uso = novoEmUsoRm; eqRm.qtd_disponivel = novoDispRm;
+            db.collection('estoque').doc(removedIt.eqId).update({ qtd_em_uso: novoEmUsoRm, qtd_disponivel: novoDispRm, _atualizado: Date.now() }).catch(function(){});
+            _atualizarCardEqDOM(removedIt.eqId);
+          }
+        }
         _salvarKitGruposFirestore(kgData.evId);
         _recalcularCargaEvento(kgData.evId);
         renderEventosAndamento();
-        toast((removedIt.eqNome || 'Item') + ' removido do kit');
+        toast((removedIt.eqNome || 'Item') + ' devolvido ao estoque');
       }
     }
+  } else if (tipo === 'eq' || tipo === 'acessorio' || _draggingEqId) {
+    // ── Card de equipamento/acessório arrastado para zona de remoção → confirmar exclusão ──
+    var eqId = _draggingEqId || ev.dataTransfer.getData('text/plain');
+    _draggingEqId = null;
+    if (eqId) confirmarDelete(eqId);
   }
 }
 
