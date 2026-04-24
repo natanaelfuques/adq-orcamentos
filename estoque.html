@@ -2813,11 +2813,11 @@ function abrirPainelAdminEstoque() {
         <div id="adm-est-panel-hist" style="padding:0;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:block">\
           <div id="adm-est-hist-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
         </div>\
-        <div id="adm-est-panel-ordem" style="padding:20px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
-          <div style="font-family:Barlow Condensed,sans-serif;font-size:0.72rem;color:#666;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Reordene os cards de equipamento arrastando-os. A ordem é salva no Firestore ao desativar.</div>\
-          <div id="adm-ordem-status" style="font-size:0.78rem;font-family:Barlow Condensed,sans-serif;color:#888;margin-bottom:16px;padding:8px 12px;background:#111;border-radius:6px;border:1px solid #222"></div>\
-          <button id="adm-btn-ordem-toggle" onclick="_admEstOrdemToggle()" style="background:#4A90D9;color:#fff;border:none;border-radius:6px;padding:11px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;margin-bottom:8px;transition:background 0.15s">Ativar Ordenação Manual</button>\
-          <button onclick="_admEstOrdemResetar()" style="background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:6px;padding:9px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;transition:background 0.15s">Resetar Ordem</button>\
+        <div id="adm-est-panel-ordem" style="padding:16px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
+          <div style="font-family:Barlow Condensed,sans-serif;font-size:0.72rem;color:#666;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Ative a ordenação manual e arraste os cards para reordenar.</div>\
+          <div id="adm-ordem-status" style="font-size:0.75rem;color:#888;margin-bottom:14px;font-family:Barlow Condensed,sans-serif"></div>\
+          <button onclick="_admEstOrdemAtivar()" id="adm-btn-ordem-manual" style="background:#4A90D9;color:#fff;border:none;border-radius:6px;padding:10px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;margin-bottom:8px">Ativar Ordenação Manual</button>\
+          <button onclick="_admEstOrdemResetar()" style="background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:6px;padding:8px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%">Resetar Ordem</button>\
         </div>\
       </div>\
     </div>';
@@ -2838,79 +2838,30 @@ function _admEstAba(idx) {
     if (panel) panel.style.display = i === idx ? '' : 'none';
   });
   if (idx === 0) { _admEstHistCarregar(); }
-  if (idx === 1) { _admEstOrdemRenderStatus(); }
+  if (idx === 1) { _admEstOrdemAtualizar(); }
 }
-
-function _admEstOrdemRenderStatus() {
+function _admEstOrdemAtualizar() {
   var sortSel = document.getElementById('sort-select');
   var isManual = sortSel && sortSel.value === 'manual';
   var statusEl = document.getElementById('adm-ordem-status');
-  var btnEl = document.getElementById('adm-btn-ordem-toggle');
-  if (statusEl) statusEl.textContent = isManual
-    ? '✓ Ordenação manual ativa — arraste os cards de equipamento para reordenar.'
-    : 'Modo atual: ' + (sortSel ? sortSel.options[sortSel.selectedIndex].text : '—') + '. Ative para poder reordenar.';
-  if (btnEl) {
-    btnEl.textContent = isManual ? 'Salvar e Desativar' : 'Ativar Ordenação Manual';
-    btnEl.style.background = isManual ? '#50C878' : '#4A90D9';
-  }
+  var btnEl = document.getElementById('adm-btn-ordem-manual');
+  if (statusEl) statusEl.textContent = isManual ? '✓ Ordenação manual ativa — arraste os cards para reordenar.' : 'Ordenação atual: ' + (sortSel ? sortSel.options[sortSel.selectedIndex].text : '—');
+  if (btnEl) { btnEl.textContent = isManual ? 'Desativar Ordenação Manual' : 'Ativar Ordenação Manual'; btnEl.style.background = isManual ? '#555' : '#4A90D9'; }
 }
-
-function _admEstOrdemToggle() {
+function _admEstOrdemAtivar() {
   var sortSel = document.getElementById('sort-select');
   if (!sortSel) return;
-  var isManual = sortSel.value === 'manual';
-  if (isManual) {
-    // Desativar: salvar ordem atual no Firestore
-    var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
-    var _catAtualLocal = typeof _catAtual !== 'undefined' ? _catAtual : 'todos';
-    var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
-    var ordemAtual = [];
-    try { ordemAtual = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-    if (db && ordemAtual.length) {
-      var updSave = { _atualizado: Date.now() };
-      updSave[key] = ordemAtual;
-      db.collection('configuracoes').doc('eq_ordem_manual').set(updSave, { merge: true })
-      .then(function() { toast('Ordem salva no Firestore!'); })
-      .catch(function(e) { toast('Erro ao salvar: ' + e.message, true); });
-    }
-    sortSel.value = 'nome';
-    renderEquipamentos();
-    var modal = document.getElementById('modal-admin-estoque');
-    if (modal) { document.body.style.overflow = ''; modal.remove(); }
-    toast('Ordem salva e ordenação manual desativada');
-  } else {
-    // Ativar: buscar ordem salva do Firestore e popular localStorage
-    var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
-    var _catAtualLocal = typeof _catAtual !== 'undefined' ? _catAtual : 'todos';
-    var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
-    function _ativar() {
-      sortSel.value = 'manual';
-      renderEquipamentos();
-      _admEstOrdemRenderStatus();
-      toast('Ordenação manual ativa — arraste os cards!');
-    }
-    if (db) {
-      db.collection('configuracoes').doc('eq_ordem_manual').get().then(function(doc) {
-        if (doc.exists && doc.data()[key]) {
-          try { localStorage.setItem(key, JSON.stringify(doc.data()[key])); } catch(e) {}
-        }
-        _ativar();
-      }).catch(function() { _ativar(); });
-    } else { _ativar(); }
-  }
-}
-
-function _admEstOrdemResetar() {
-  var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
-  var _catAtualLocal = typeof _catAtual !== 'undefined' ? _catAtual : 'todos';
-  var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
-  try { localStorage.removeItem(key); } catch(e) {}
-  if (db) {
-    var upd = {}; upd[key] = [];
-    db.collection('configuracoes').doc('eq_ordem_manual').set(upd, { merge: true }).catch(function(){});
-  }
+  var ativando = sortSel.value !== 'manual';
+  sortSel.value = ativando ? 'manual' : 'nome';
   renderEquipamentos();
-  _admEstOrdemRenderStatus();
+  var modal = document.getElementById('modal-admin-estoque');
+  if (modal) { document.body.style.overflow = ''; modal.remove(); }
+  toast(ativando ? 'Ordenação manual ativa — arraste os cards!' : 'Ordenação manual desativada');
+}
+function _admEstOrdemResetar() {
+  var key = 'eq_ordem_manual_' + (typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos') + '_' + (typeof _catAtual !== 'undefined' ? _catAtual : 'todos');
+  try { localStorage.removeItem(key); } catch(e) {}
+  renderEquipamentos();
   toast('Ordem resetada');
 }
 
@@ -7943,20 +7894,15 @@ var _evEqDragItems = {};     // { evId: { eqId: {nome,qty} } } — eq arrastados
 var _evEqOrigCounts = {};    // { eqId: {qtd_disponivel,qtd_em_uso} } — antes do drag
 var _evKitGrupos = {};       // { evId: [ { grupoId, kitId, kitNome, itens:[{eqId,eqNome,qty,checked,riscado}] } ] }
 
-// Retorna total alocado para display (itens soltos de evento, sem kits).
-// Usado por _atualizarCardEqDOM — kits são exibidos apenas via buildCard/_getFiltroAndamentoIds.
 function _getCargaTotalEq(eqId) {
   var total = 0;
   Object.values(_cargaEvento).forEach(function(c) { total += (c[eqId] || 0); });
   Object.values(_evEqDragItems).forEach(function(ev) {
     if (ev[eqId]) total += ev[eqId].qty;
   });
-  return total;
-}
-// Retorna total alocado incluindo kits — usado para verificação de disponibilidade ao adicionar.
-function _getCargaTotalEqComKits(eqId) {
-  var total = _getCargaTotalEq(eqId);
+  // Eventos sem card aberto: contar kit grupos diretamente
   Object.keys(_evKitGrupos).forEach(function(evId) {
+    if (_evEqDragItems[evId]) return; // já contado acima
     (_evKitGrupos[evId] || []).forEach(function(g) {
       if (g.riscado) return;
       (g.itens || []).forEach(function(it) {
@@ -8059,17 +8005,9 @@ function _mergeEventosSnaps() {
   Object.keys(_evEqDragItems).forEach(function(evId) {
     if (!_eventosAndamento[evId] && !_eventosStagingCarga[evId]) delete _evEqDragItems[evId];
   });
-  // Recalcula contagens respeitando estado do card:
-  // - Card fechado: sempre recalcula (sincroniza com Firestore externo)
-  // - Card aberto (expanded): mantém _evEqDragItems intacto
-  var _expandedIdsMerge = {};
-  document.querySelectorAll('.evento-card.expanded').forEach(function(c) {
-    var id = c.id.replace('ev-card-', '');
-    if (id) _expandedIdsMerge[id] = true;
-  });
+  // Garante contagens para eventos com card fechado
   Object.keys(_eventosAndamento).forEach(function(evId) {
-    if (_expandedIdsMerge[evId]) return; // card aberto — não sobrescreve
-    _recalcularCargaEvento(evId);
+    if (!_evEqDragItems[evId]) _recalcularCargaEvento(evId);
   });
   renderEventosAndamento();
   if (typeof _filtroAndamento !== 'undefined' && _filtroAndamento) renderEquipamentos();
@@ -8593,9 +8531,16 @@ function _recalcularCargaEvento(evId) {
     novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
   });
 
-  // Nota: itens dos grupos de kit NÃO entram em _evEqDragItems.
-  // São contados separadamente via _getCargaTotalEq (fallback _evKitGrupos)
-  // apenas para verificação de disponibilidade, não para display em _atualizarCardEqDOM.
+  // Incluir itens dos grupos de kit
+  (_evKitGrupos[evId] || []).forEach(function(grupo) {
+    if (grupo.riscado) return;
+    (grupo.itens || []).forEach(function(it) {
+      if (it.riscado) return;
+      var eqId = it.eqId;
+      if (!eqId) return;
+      novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
+    });
+  });
 
   _evEqDragItems[evId] = {};
   Object.keys(novasCounts).forEach(function(eqId) {
@@ -8922,6 +8867,24 @@ function _bindEvAndamentoCards() {
       var novoRiscadoGrupo = !grupo.riscado;
       grupo.riscado = novoRiscadoGrupo;
       grupo.itens.forEach(function(it) {
+        if (it.eqId && (!!it.riscado !== novoRiscadoGrupo)) {
+          // Movimenta estoque ao mudar estado
+          var eqGrp = _equipamentos[it.eqId];
+          if (eqGrp && db) {
+            var qty = it.qty || 1;
+            var novoEmUsoGrp, novoDispGrp;
+            if (novoRiscadoGrupo) {
+              novoEmUsoGrp = Math.max(0, (eqGrp.qtd_em_uso || 0) - qty);
+              novoDispGrp  = (eqGrp.qtd_disponivel || 0) + ((eqGrp.qtd_em_uso || 0) - novoEmUsoGrp);
+            } else {
+              novoEmUsoGrp = (eqGrp.qtd_em_uso || 0) + Math.min(qty, eqGrp.qtd_disponivel || 0);
+              novoDispGrp  = Math.max(0, (eqGrp.qtd_disponivel || 0) - qty);
+            }
+            eqGrp.qtd_em_uso = novoEmUsoGrp; eqGrp.qtd_disponivel = novoDispGrp;
+            db.collection('estoque').doc(it.eqId).update({ qtd_em_uso: novoEmUsoGrp, qtd_disponivel: novoDispGrp, _atualizado: Date.now() }).catch(function(){});
+            _atualizarCardEqDOM(it.eqId);
+          }
+        }
         it.riscado = novoRiscadoGrupo;
         if (novoRiscadoGrupo) it.checked = false;
       });
@@ -8959,7 +8922,24 @@ function _bindEvAndamentoCards() {
       if (!grupo || !grupo.itens[itIdx]) return;
       var it = grupo.itens[itIdx];
       var novoRiscadoItem = !it.riscado;
-      // Alocação virtual: não persiste qtd_em_uso; _recalcularCargaEvento reconstrói _evEqDragItems sem riscados
+      // Movimenta estoque
+      if (it.eqId) {
+        var eqItBtn = _equipamentos[it.eqId];
+        if (eqItBtn && db) {
+          var qtyIt = it.qty || 1;
+          var novoEmUsoIt, novoDispIt;
+          if (novoRiscadoItem) {
+            novoEmUsoIt = Math.max(0, (eqItBtn.qtd_em_uso || 0) - qtyIt);
+            novoDispIt  = (eqItBtn.qtd_disponivel || 0) + ((eqItBtn.qtd_em_uso || 0) - novoEmUsoIt);
+          } else {
+            novoEmUsoIt = (eqItBtn.qtd_em_uso || 0) + Math.min(qtyIt, eqItBtn.qtd_disponivel || 0);
+            novoDispIt  = Math.max(0, (eqItBtn.qtd_disponivel || 0) - qtyIt);
+          }
+          eqItBtn.qtd_em_uso = novoEmUsoIt; eqItBtn.qtd_disponivel = novoDispIt;
+          db.collection('estoque').doc(it.eqId).update({ qtd_em_uso: novoEmUsoIt, qtd_disponivel: novoDispIt, _atualizado: Date.now() }).catch(function(){});
+          _atualizarCardEqDOM(it.eqId);
+        }
+      }
       it.riscado = novoRiscadoItem;
       if (novoRiscadoItem) it.checked = false;
       _salvarKitGruposFirestore(evId);
@@ -9043,7 +9023,7 @@ function _bindEvAndamentoCards() {
         var eqNome2 = eq2 ? (eq2.nome || eqDropId) : eqDropId;
         // Verificar disponibilidade
         if (eq2) {
-          var jaAloc = _getCargaTotalEqComKits(eqDropId);
+          var jaAloc = _getCargaTotalEq(eqDropId);
           var dispReal = Math.max(0, (eq2.qtd_disponivel || 0) - jaAloc);
           if (dispReal <= 0) { toast('Sem unidades disponíveis para ' + eqNome2, true); return; }
         }
@@ -9057,7 +9037,13 @@ function _bindEvAndamentoCards() {
         } else {
           grupo.itens.push({ eqId: eqDropId, eqNome: eqNome2, qty: 1, checked: false, riscado: false });
         }
-        // Alocação virtual: não persiste qtd_em_uso (apenas ajuste de display via _recalcularCargaEvento)
+        // Movimenta estoque: disp → em_uso
+        if (eq2 && db) {
+          var novoDisp2 = Math.max(0, (eq2.qtd_disponivel || 0) - 1);
+          var novoUso2  = (eq2.qtd_em_uso || 0) + 1;
+          eq2.qtd_disponivel = novoDisp2; eq2.qtd_em_uso = novoUso2;
+          db.collection('estoque').doc(eqDropId).update({ qtd_disponivel: novoDisp2, qtd_em_uso: novoUso2, _atualizado: Date.now() }).catch(function(){});
+        }
         _salvarKitGruposFirestore(evId);
         _recalcularCargaEvento(evId);
         _atualizarCardEqDOM(eqDropId);
@@ -9290,9 +9276,10 @@ function renderEventosAndamento() {
     var card2 = document.getElementById('ev-card-' + id2);
     if (card2) {
       card2.classList.add('expanded');
-      // Sempre re-aplica contagens ao restaurar card expandido,
-      // garantindo sincronização com mudanças feitas em outro HTML
-      _abrirCargaEvento(id2);
+      // Re-aplica contagens se nao ha sessao de drag ativa para este evento
+      if (!_evEqDragItems[id2] || Object.keys(_evEqDragItems[id2]).length === 0) {
+        _abrirCargaEvento(id2);
+      }
     }
   });
 
@@ -9363,7 +9350,7 @@ function evCardDrop(ev, evId) {
     if (!_evEqDragItems[evId][eqIdSlot]) _evEqDragItems[evId][eqIdSlot] = { nome: eqNomeSlot, qty: 0 };
     var eqObjSlot = _equipamentos[eqIdSlot];
     if (eqObjSlot) {
-      var totalJaAlocSlot = _getCargaTotalEqComKits(eqIdSlot);
+      var totalJaAlocSlot = _getCargaTotalEq(eqIdSlot);
       var dispRealSlot = Math.max(0, (eqObjSlot.qtd_disponivel || 0) - totalJaAlocSlot);
       if (dispRealSlot <= 0) { toast('Sem unidades disponíveis', true); return; }
     }
@@ -9445,13 +9432,22 @@ function evCardDrop(ev, evId) {
       if (!eqId) return;
       var eqNome = (_equipamentos[eqId] && _equipamentos[eqId].nome) || eqId;
       var dispFir = (_equipamentos[eqId] ? (_equipamentos[eqId].qtd_disponivel || 0) : 0);
-      var jaAlocado = _getCargaTotalEqComKits(eqId);
+      var jaAlocado = _getCargaTotalEq(eqId);
       var qtdCap = Math.min(qtd, Math.max(0, dispFir - jaAlocado));
       if (qtdCap <= 0) return;
       grupoItens.push({ eqId: eqId, eqNome: eqNome, qty: qtdCap, checked: false, riscado: false });
       if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
       _evEqDragItems[evId][eqId].qty += qtdCap;
-      // Alocação virtual: não persiste qtd_em_uso no Firestore (apenas ajuste de display via _evEqDragItems)
+      // Movimenta estoque: disp → em_uso
+      if (db) {
+        var eqKD = _equipamentos[eqId];
+        if (eqKD) {
+          var novoDispKD = Math.max(0, (eqKD.qtd_disponivel || 0) - qtdCap);
+          var novoUsoKD  = (eqKD.qtd_em_uso || 0) + qtdCap;
+          eqKD.qtd_disponivel = novoDispKD; eqKD.qtd_em_uso = novoUsoKD;
+          db.collection('estoque').doc(eqId).update({ qtd_disponivel: novoDispKD, qtd_em_uso: novoUsoKD, _atualizado: Date.now() }).catch(function(){});
+        }
+      }
       _atualizarCardEqDOM(eqId);
       itensAdicionados++;
     });
@@ -9489,7 +9485,7 @@ function evCardDrop(ev, evId) {
     var eqObjCap = _equipamentos[itemId];
     if (eqObjCap) {
       // Disponível real = do Firestore menos o já alocado em TODOS os eventos abertos
-      var totalJaAlocado = _getCargaTotalEqComKits(itemId);
+      var totalJaAlocado = _getCargaTotalEq(itemId);
       var dispReal = Math.max(0, (eqObjCap.qtd_disponivel || 0) - totalJaAlocado);
       if (dispReal <= 0) { toast('Sem unidades disponíveis', true); return; }
     }
@@ -10324,7 +10320,20 @@ function _kitRemoveZoneDrop(ev) {
       var idx = grupos.findIndex(function(g) { return g.grupoId === kgd.grupoId; });
       if (idx >= 0) {
         var removedGrupo = grupos.splice(idx, 1)[0];
-        // Alocação era virtual: não há qtd_em_uso para reverter no Firestore
+        // Devolve cada item não-riscado ao estoque
+        (removedGrupo.itens || []).forEach(function(it) {
+          if (!it.riscado && it.eqId && db) {
+            var eq = _equipamentos[it.eqId];
+            if (eq) {
+              var qty = it.qty || 1;
+              var novoEmUso = Math.max(0, (eq.qtd_em_uso || 0) - qty);
+              var novoDisp  = (eq.qtd_disponivel || 0) + ((eq.qtd_em_uso || 0) - novoEmUso);
+              eq.qtd_em_uso = novoEmUso; eq.qtd_disponivel = novoDisp;
+              db.collection('estoque').doc(it.eqId).update({ qtd_em_uso: novoEmUso, qtd_disponivel: novoDisp, _atualizado: Date.now() }).catch(function(){});
+              _atualizarCardEqDOM(it.eqId);
+            }
+          }
+        });
         _salvarKitGruposFirestore(kgd.evId);
         _recalcularCargaEvento(kgd.evId);
         renderEventosAndamento();
@@ -10367,7 +10376,18 @@ function _kitRemoveZoneDrop(ev) {
       var srcGrupo = srcGrupos.find(function(g) { return g.grupoId === kgData.grupoId; });
       if (srcGrupo && srcGrupo.itens[kgData.itIdx]) {
         var removedIt = srcGrupo.itens.splice(kgData.itIdx, 1)[0];
-        // Alocação era virtual: não há qtd_em_uso para reverter no Firestore
+        // Devolve ao estoque se não estava riscado
+        if (!removedIt.riscado && removedIt.eqId && db) {
+          var eqRm = _equipamentos[removedIt.eqId];
+          if (eqRm) {
+            var qtyRm = removedIt.qty || 1;
+            var novoEmUsoRm = Math.max(0, (eqRm.qtd_em_uso || 0) - qtyRm);
+            var novoDispRm  = (eqRm.qtd_disponivel || 0) + ((eqRm.qtd_em_uso || 0) - novoEmUsoRm);
+            eqRm.qtd_em_uso = novoEmUsoRm; eqRm.qtd_disponivel = novoDispRm;
+            db.collection('estoque').doc(removedIt.eqId).update({ qtd_em_uso: novoEmUsoRm, qtd_disponivel: novoDispRm, _atualizado: Date.now() }).catch(function(){});
+            _atualizarCardEqDOM(removedIt.eqId);
+          }
+        }
         _salvarKitGruposFirestore(kgData.evId);
         _recalcularCargaEvento(kgData.evId);
         renderEventosAndamento();
