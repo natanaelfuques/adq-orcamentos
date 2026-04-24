@@ -4036,7 +4036,7 @@ function abrirModalForm(e) {
 
       '</div>' +
       '<div class="modal-footer" style="flex-wrap:wrap;gap:8px">' +
-        (isEdit ? '<button onclick="_resetarContagensEquip(\''+equipId+'\',this)" style="display:flex;align-items:center;gap:5px;background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:4px;padding:6px 10px;font-size:0.7rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;transition:border-color 0.15s,background 0.15s" onmouseover="this.style.background=\'rgba(224,92,92,0.1)\'" onmouseout="this.style.background=\'none\'"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Resetar Contagens</button>' : '') +
+        (isEdit ? '<button onclick="_resetarContagensEquip(\''+_editandoId+'\',this)" style="display:flex;align-items:center;gap:5px;background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:4px;padding:6px 10px;font-size:0.7rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;transition:border-color 0.15s,background 0.15s" onmouseover="this.style.background=\'rgba(224,92,92,0.1)\'" onmouseout="this.style.background=\'none\'"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Resetar Contagens</button>' : '') +
         '<button class="btn-modal-cancel" onclick="fecharTodosModais()" style="display:flex;align-items:center;gap:6px;margin-left:auto"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancelar</button>' +
         '<button class="btn-modal-save" onclick="salvarEquipamento()" style="display:flex;align-items:center;justify-content:center;gap:6px">' + (isEdit ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Salvar Alterações' : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar') + '</button>' +
       '</div>' +
@@ -8953,6 +8953,37 @@ function _bindEvAndamentoCards() {
   });
 
   // Botão × do kit grupo → risca/restaura todos os itens e devolve ao estoque
+
+// Movimenta qtd_em_uso ↔ qtd_disponivel no Firestore quando item é riscado/restaurado no evento
+function _movimentarEstoqueEvento(eqId, qty, paraEstoque) {
+  if (!eqId || !qty || !db) return;
+  var eq = _equipamentos[eqId];
+  if (!eq) return;
+  var emUso = eq.qtd_em_uso || 0;
+  var disp  = eq.qtd_disponivel || 0;
+  var updates = {};
+  if (paraEstoque) {
+    // Riscou/removeu: devolve ao disponível
+    var devolver = Math.min(qty, emUso);
+    if (devolver <= 0) return;
+    updates.qtd_em_uso     = emUso - devolver;
+    updates.qtd_disponivel = disp  + devolver;
+  } else {
+    // Adicionou/restaurou: retira do disponível e coloca em uso
+    var retirar = Math.min(qty, disp);
+    if (retirar <= 0) return;
+    updates.qtd_em_uso     = emUso + retirar;
+    updates.qtd_disponivel = disp  - retirar;
+  }
+  updates._atualizado = Date.now();
+  eq.qtd_em_uso     = updates.qtd_em_uso;
+  eq.qtd_disponivel = updates.qtd_disponivel;
+  db.collection('estoque').doc(eqId).update(updates).catch(function(err) {
+    console.warn('[movimentarEstoque]', err.message);
+  });
+  _atualizarCardEqDOM(eqId);
+}
+
   scroll.querySelectorAll('.ev-kit-grupo-rem').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -8961,8 +8992,16 @@ function _bindEvAndamentoCards() {
       var grupos = _evKitGrupos[evId] || [];
       var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
       if (!grupo) return;
-      grupo.riscado = !grupo.riscado;
-      grupo.itens.forEach(function(it) { it.riscado = grupo.riscado; if (grupo.riscado) it.checked = false; });
+      var novoRiscadoGrupo = !grupo.riscado;
+      grupo.riscado = novoRiscadoGrupo;
+      grupo.itens.forEach(function(it) {
+        // só movimenta se o estado do item efetivamente muda
+        if (it.eqId && (!!it.riscado !== novoRiscadoGrupo)) {
+          _movimentarEstoqueEvento(it.eqId, it.qty || 1, novoRiscadoGrupo);
+        }
+        it.riscado = novoRiscadoGrupo;
+        if (novoRiscadoGrupo) it.checked = false;
+      });
       _salvarKitGruposFirestore(evId);
       _recalcularCargaEvento(evId);
       // Atualiza UI imediatamente
@@ -8996,7 +9035,9 @@ function _bindEvAndamentoCards() {
       var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
       if (!grupo || !grupo.itens[itIdx]) return;
       var it = grupo.itens[itIdx];
-      it.riscado = !it.riscado;
+      var novoRiscado = !it.riscado;
+      _movimentarEstoqueEvento(it.eqId, it.qty || 1, novoRiscado);
+      it.riscado = novoRiscado;
       if (it.riscado) it.checked = false;
       _salvarKitGruposFirestore(evId);
       _recalcularCargaEvento(evId);
@@ -9086,10 +9127,13 @@ function _bindEvAndamentoCards() {
         var riscado2 = !existente2 && grupo2.itens.find(function(it) { return it.eqId === eqDropId && it.riscado; });
         if (existente2) {
           existente2.qty = (existente2.qty || 1) + 1;
+          _movimentarEstoqueEvento(eqDropId, 1, false);
         } else if (riscado2) {
           riscado2.riscado = false; riscado2.checked = false; riscado2.qty = 1;
+          _movimentarEstoqueEvento(eqDropId, 1, false);
         } else {
           grupo2.itens.push({ eqId: eqDropId, eqNome: eqNome2, qty: 1, checked: false, riscado: false });
+          _movimentarEstoqueEvento(eqDropId, 1, false);
         }
         _salvarKitGruposFirestore(evId2);
         _recalcularCargaEvento(evId2);
@@ -9413,6 +9457,7 @@ function evCardDrop(ev, evId) {
       grupoItens.push({ eqId: eqId, eqNome: eqNome, qty: qtdCap, checked: false, riscado: false });
       if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
       _evEqDragItems[evId][eqId].qty += qtdCap;
+      _movimentarEstoqueEvento(eqId, qtdCap, false);
       _atualizarCardEqDOM(eqId);
       itensAdicionados++;
     });
