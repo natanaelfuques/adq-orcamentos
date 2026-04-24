@@ -7995,22 +7995,28 @@ function _mergeEventosSnaps() {
   _eventosAndamento = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap);
   _evKitGrupos = {};
 
-  // Atualizar _evKitGrupos e re-sincronizar apenas eventos JÁ ABERTOS em _evEqDragItems
-  var eventosAbertos = Object.keys(_evEqDragItems);
-
   Object.values(_eventosAndamento).forEach(function(data) {
     if (Array.isArray(data.kits_grupos_ev) && data.kits_grupos_ev.length) {
       _evKitGrupos[data.id] = data.kits_grupos_ev;
     }
   });
 
-  // Só recalcula eventos que o usuário abriu manualmente
-  if (eventosAbertos.length && typeof _recalcularCargaEvento === 'function') {
-    eventosAbertos.forEach(function(evId) {
-      if (_eventosAndamento[evId]) {
-        _recalcularCargaEvento(evId);
-      }
-    });
+  // Eventos abertos que sumiram dos snaps (ex: movidos para concluido): limpar carga
+  var eventosAbertos = Object.keys(_evEqDragItems);
+  var afetadosLiberados = {};
+  eventosAbertos.forEach(function(evId) {
+    if (!_eventosAndamento[evId]) {
+      // Evento saiu das colunas ativas — liberar todos os equipamentos dele
+      Object.keys(_evEqDragItems[evId]).forEach(function(eqId) { afetadosLiberados[eqId] = true; });
+      delete _evEqDragItems[evId];
+      if (_evKitGrupos[evId]) delete _evKitGrupos[evId];
+    } else {
+      // Ainda ativo: recalcular para refletir itens riscados
+      if (typeof _recalcularCargaEvento === 'function') _recalcularCargaEvento(evId);
+    }
+  });
+  if (typeof _atualizarCardEqDOM === 'function') {
+    Object.keys(afetadosLiberados).forEach(function(eqId) { _atualizarCardEqDOM(eqId); });
   }
 
   renderEventosAndamento();
