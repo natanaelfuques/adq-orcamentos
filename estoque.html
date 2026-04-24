@@ -2580,15 +2580,15 @@
       <option value="disponivel">Disponível</option>
       <option value="categoria">Categoria</option>
       <option value="recente">Mais recente</option>
-      <option value="manual">Manual</option>
+      <option value="manual" selected>Manual</option>
     </select>
   </div>
 
   <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
     <div class="kits-section-inner">
-      <div class="kits-section-header" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none">
-        <div class="kits-section-title">
+      <div class="kits-section-header">
+        <div class="kits-section-title" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:6px">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
           Kits
           <svg id="kits-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;margin-left:4px"><polyline points="6 9 12 15 18 9"/></svg>
@@ -3937,10 +3937,6 @@ function abrirModalForm(e) {
           '</label>' +
           '<span style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.05em">Aparece na aba Acessórios</span>' +
         '</div>' +
-        '<div class="form-group" id="f-grupo-eq-pai"' + (e.isAcessorio ? '' : ' style="display:none"') + '>' +
-          '<label class="form-label">Equipamento vinculado</label>' +
-          '<select class="form-select" id="f-eq-pai"><option value="">— Sem vínculo —</option>' + Object.values(_equipamentos).filter(function(x){return !x.isAcessorio;}).sort(function(a,b){return(a.nome||'').localeCompare(b.nome||'');}).map(function(x){return'<option value="'+esc(x.id)+'"'+(e.equipamentoPai===x.id?' selected':'')+'>'+esc(x.nome)+'</option>';}).join('') + '</select>' +
-        '</div>' +
         '<div class="form-grid">' +
           '<div class="form-group">' +
             '<label class="form-label">Categoria</label>' +
@@ -4029,12 +4025,10 @@ function _calcDisponivel() {
 
 function _toggleTipoItem() {
   var chk = document.getElementById('f-is-acessorio');
-  var grupoEqPai = document.getElementById('f-grupo-eq-pai');
   var grupoModelo = document.getElementById('f-grupo-modelo');
   var nomeLabel = document.getElementById('f-nome-label');
   if (!chk) return;
   var isAc = chk.checked;
-  if (grupoEqPai) grupoEqPai.style.display = isAc ? '' : 'none';
   if (nomeLabel) nomeLabel.textContent = isAc ? 'Nome do Acessório *' : 'Nome do Equipamento *';
 }
 
@@ -4060,14 +4054,13 @@ function salvarEquipamento() {
 
   var isAcessorioChk = document.getElementById('f-is-acessorio');
   var isAcessorio = isAcessorioChk ? isAcessorioChk.checked : false;
-  var eqPaiEl = document.getElementById('f-eq-pai');
   var dados = {
     nome: nome,
     emoji: _emojiSelecionado,
     categoria: document.getElementById('f-cat').value || 'Outros',
     modelo: (document.getElementById('f-modelo').value || '').trim(),
     isAcessorio: isAcessorio,
-    equipamentoPai: isAcessorio && eqPaiEl ? (eqPaiEl.value || '') : '',
+    equipamentoPai: '',
     qtd_total: total,
     qtd_disponivel: disp,
     qtd_em_uso: emUso,
