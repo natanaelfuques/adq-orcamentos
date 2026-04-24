@@ -7900,16 +7900,6 @@ function _getCargaTotalEq(eqId) {
   Object.values(_evEqDragItems).forEach(function(ev) {
     if (ev[eqId]) total += ev[eqId].qty;
   });
-  // Eventos sem card aberto: contar kit grupos diretamente
-  Object.keys(_evKitGrupos).forEach(function(evId) {
-    if (_evEqDragItems[evId]) return; // já contado acima
-    (_evKitGrupos[evId] || []).forEach(function(g) {
-      if (g.riscado) return;
-      (g.itens || []).forEach(function(it) {
-        if (!it.riscado && it.eqId === eqId) total += (it.qty || 1);
-      });
-    });
-  });
   return total;
 }
 function _atualizarCardEqDOM(eqId) {
@@ -8531,16 +8521,20 @@ function _recalcularCargaEvento(evId) {
     novasCounts[eqId] = (novasCounts[eqId] || 0) + qty;
   });
 
-  // Incluir itens dos grupos de kit
-  (_evKitGrupos[evId] || []).forEach(function(grupo) {
-    if (grupo.riscado) return;
-    (grupo.itens || []).forEach(function(it) {
-      if (it.riscado) return;
-      var eqId = it.eqId;
-      if (!eqId) return;
-      novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
+  // Kits: incluir apenas se o card estiver aberto (expanded), mantendo consistência com _abrirCargaEvento.
+  var cardEl = document.getElementById('ev-card-' + evId);
+  var cardAberto = cardEl && cardEl.classList.contains('expanded');
+  if (cardAberto) {
+    (_evKitGrupos[evId] || []).forEach(function(grupo) {
+      if (grupo.riscado) return;
+      (grupo.itens || []).forEach(function(it) {
+        if (it.riscado) return;
+        var eqId = it.eqId;
+        if (!eqId) return;
+        novasCounts[eqId] = (novasCounts[eqId] || 0) + (it.qty || 1);
+      });
     });
-  });
+  }
 
   _evEqDragItems[evId] = {};
   Object.keys(novasCounts).forEach(function(eqId) {
