@@ -4004,6 +4004,10 @@ function abrirModalForm(e) {
             '<input class="form-input" id="f-total" type="number" min="0" value="' + (e.qtd_total || 0) + '" oninput="_calcDisponivel()" />' +
           '</div>' +
           '<div class="form-group">' +
+            '<label class="form-label">Em Uso</label>' +
+            '<input class="form-input" id="f-uso" type="number" min="0" value="' + (e.qtd_em_uso || 0) + '" oninput="_calcDisponivel()" />' +
+          '</div>' +
+          '<div class="form-group">' +
             '<label class="form-label">Manutenção</label>' +
             '<input class="form-input" id="f-manut" type="number" min="0" value="' + (e.qtd_manutencao || 0) + '" oninput="_calcDisponivel()" />' +
           '</div>' +
@@ -4051,8 +4055,9 @@ function _selecionarEmoji(el, emoji) {
 
 function _calcDisponivel() {
   var total = parseInt(document.getElementById('f-total').value) || 0;
+  var uso = parseInt((document.getElementById('f-uso') || {}).value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - manut);
+  var disp = Math.max(0, total - uso - manut);
   var el = document.getElementById('f-disp-calc');
   if (el) {
     el.textContent = disp;
@@ -4085,8 +4090,9 @@ function salvarEquipamento() {
   if (!nome) { toast('Informe o nome do equipamento.', true); return; }
 
   var total = parseInt(document.getElementById('f-total').value) || 0;
+  var uso = parseInt((document.getElementById('f-uso') || {}).value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - manut);
+  var disp = Math.max(0, total - uso - manut);
 
   var isAcessorioChk = document.getElementById('f-is-acessorio');
   var isAcessorio = isAcessorioChk ? isAcessorioChk.checked : false;
@@ -4099,6 +4105,7 @@ function salvarEquipamento() {
     equipamentoPai: '',
     qtd_total: total,
     qtd_disponivel: disp,
+    qtd_em_uso: uso,
     qtd_manutencao: manut,
     valor_unitario: parseFloat(document.getElementById('f-valor').value) || 0,
     serie: (document.getElementById('f-serie').value || '').trim(),
@@ -8022,7 +8029,11 @@ function _mergeEventosSnaps() {
       _evKitGrupos[data.id] = data.kits_grupos_ev;
     }
   });
-  Object.keys(_evEqDragItems).forEach(function(evId) { if (!_eventosAndamento[evId] && !_eventosStagingCarga[evId]) delete _evEqDragItems[evId]; });
+  // Remove entradas de eventos que saíram do andamento
+  Object.keys(_evEqDragItems).forEach(function(evId) {
+    if (!_eventosAndamento[evId] && !_eventosStagingCarga[evId]) delete _evEqDragItems[evId];
+  });
+  // Popula _evEqDragItems para todos os eventos (inclusive fechados) para verificação de disponibilidade
   Object.keys(_eventosAndamento).forEach(function(evId) { _recalcularCargaEvento(evId); });
   renderEventosAndamento();
   // Atualiza estoque em tempo real quando filtro de andamento está ativo
@@ -9045,7 +9056,9 @@ function _bindEvAndamentoCards() {
           var dispReal2 = Math.max(0, (eq2.qtd_disponivel || 0) - totalJaAloc2);
           if (dispReal2 <= 0) { toast('Sem unidades disponíveis para ' + eqNome2, true); return; }
         }
+        // Procura item ativo (não riscado) com mesmo eqId
         var existente2 = grupo2.itens.find(function(it) { return it.eqId === eqDropId && !it.riscado; });
+        // Procura item riscado para restaurar
         var riscado2 = !existente2 && grupo2.itens.find(function(it) { return it.eqId === eqDropId && it.riscado; });
         if (existente2) {
           existente2.qty = (existente2.qty || 1) + 1;
