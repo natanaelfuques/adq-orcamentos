@@ -8054,9 +8054,10 @@ function _mergeEventosSnaps() {
   Object.keys(_evEqDragItems).forEach(function(evId) {
     if (!_eventosAndamento[evId] && !_eventosStagingCarga[evId]) delete _evEqDragItems[evId];
   });
-  // Garante contagens para eventos com card fechado
+  // Recalcula contagens para todos os eventos — garante sincronização quando
+  // outro HTML (painel) risca itens e salva no Firestore
   Object.keys(_eventosAndamento).forEach(function(evId) {
-    if (!_evEqDragItems[evId]) _recalcularCargaEvento(evId);
+    _recalcularCargaEvento(evId);
   });
   renderEventosAndamento();
   if (typeof _filtroAndamento !== 'undefined' && _filtroAndamento) renderEquipamentos();
