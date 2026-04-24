@@ -4004,10 +4004,6 @@ function abrirModalForm(e) {
             '<input class="form-input" id="f-total" type="number" min="0" value="' + (e.qtd_total || 0) + '" oninput="_calcDisponivel()" />' +
           '</div>' +
           '<div class="form-group">' +
-            '<label class="form-label">Em Uso</label>' +
-            '<input class="form-input" id="f-uso" type="number" min="0" value="' + (e.qtd_em_uso || 0) + '" oninput="_calcDisponivel()" />' +
-          '</div>' +
-          '<div class="form-group">' +
             '<label class="form-label">Manutenção</label>' +
             '<input class="form-input" id="f-manut" type="number" min="0" value="' + (e.qtd_manutencao || 0) + '" oninput="_calcDisponivel()" />' +
           '</div>' +
@@ -4035,9 +4031,8 @@ function abrirModalForm(e) {
 
 
       '</div>' +
-      '<div class="modal-footer" style="flex-wrap:wrap;gap:8px">' +
-        (isEdit ? '<button onclick="_resetarContagensEquip(\''+_editandoId+'\',this)" style="display:flex;align-items:center;gap:5px;background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:4px;padding:6px 10px;font-size:0.7rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;transition:border-color 0.15s,background 0.15s" onmouseover="this.style.background=\'rgba(224,92,92,0.1)\'" onmouseout="this.style.background=\'none\'"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Resetar Contagens</button>' : '') +
-        '<button class="btn-modal-cancel" onclick="fecharTodosModais()" style="display:flex;align-items:center;gap:6px;margin-left:auto"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancelar</button>' +
+      '<div class="modal-footer">' +
+        '<button class="btn-modal-cancel" onclick="fecharTodosModais()" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancelar</button>' +
         '<button class="btn-modal-save" onclick="salvarEquipamento()" style="display:flex;align-items:center;justify-content:center;gap:6px">' + (isEdit ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Salvar Alterações' : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar') + '</button>' +
       '</div>' +
     '</div>';
@@ -4056,9 +4051,8 @@ function _selecionarEmoji(el, emoji) {
 
 function _calcDisponivel() {
   var total = parseInt(document.getElementById('f-total').value) || 0;
-  var uso = parseInt((document.getElementById('f-uso') || {}).value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - uso - manut);
+  var disp = Math.max(0, total - manut);
   var el = document.getElementById('f-disp-calc');
   if (el) {
     el.textContent = disp;
@@ -4086,37 +4080,13 @@ function abrirModalAddAcessorioRapido() {
   }, 0);
 }
 
-function _resetarContagensEquip(eqId, btn) {
-  var eq = _equipamentos[eqId];
-  if (!eq) return;
-  var total = eq.qtd_total || 0;
-  if (!confirm('Resetar Em Uso e Manutenção para 0? Disponível será ' + total + ' (igual ao Total).')) return;
-  var updates = { qtd_em_uso: 0, qtd_manutencao: 0, qtd_disponivel: total, _atualizado: Date.now() };
-  btn.disabled = true; btn.textContent = 'Resetando...';
-  db.collection('estoque').doc(eqId).update(updates).then(function() {
-    // Atualiza local
-    eq.qtd_em_uso = 0; eq.qtd_manutencao = 0; eq.qtd_disponivel = total;
-    // Atualiza campos do modal
-    var fUso = document.getElementById('f-uso'); if (fUso) fUso.value = 0;
-    var fManut = document.getElementById('f-manut'); if (fManut) fManut.value = 0;
-    _calcDisponivel();
-    _atualizarCardEqDOM(eqId);
-    toast('Contagens resetadas com sucesso.');
-    btn.textContent = 'Resetado ✓'; btn.style.color = '#4AC87A'; btn.style.borderColor = 'rgba(74,200,122,0.4)';
-  }).catch(function(err) {
-    toast('Erro ao resetar: ' + err.message, true);
-    btn.disabled = false; btn.textContent = 'Resetar Contagens';
-  });
-}
-
 function salvarEquipamento() {
   var nome = (document.getElementById('f-nome').value || '').trim();
   if (!nome) { toast('Informe o nome do equipamento.', true); return; }
 
   var total = parseInt(document.getElementById('f-total').value) || 0;
-  var uso = parseInt((document.getElementById('f-uso') || {}).value) || 0;
   var manut = parseInt(document.getElementById('f-manut').value) || 0;
-  var disp = Math.max(0, total - uso - manut);
+  var disp = Math.max(0, total - manut);
 
   var isAcessorioChk = document.getElementById('f-is-acessorio');
   var isAcessorio = isAcessorioChk ? isAcessorioChk.checked : false;
@@ -4129,7 +4099,6 @@ function salvarEquipamento() {
     equipamentoPai: '',
     qtd_total: total,
     qtd_disponivel: disp,
-    qtd_em_uso: uso,
     qtd_manutencao: manut,
     valor_unitario: parseFloat(document.getElementById('f-valor').value) || 0,
     serie: (document.getElementById('f-serie').value || '').trim(),
@@ -5499,9 +5468,6 @@ function setupEqCardDrag(cardEl, eqId) {
       cardEl.classList.remove('dragging-eq');
       document.querySelectorAll('.kit-slot-panel.drag-over-kit').forEach(function(el) {
         el.classList.remove('drag-over-kit');
-      });
-      document.querySelectorAll('.ev-kit-grupo-dropzone.drag-over-eq').forEach(function(el) {
-        el.classList.remove('drag-over-eq');
       });
       var novoCard = document.getElementById('kit-novo-card');
       if (novoCard) novoCard.classList.remove('drag-over-remove');
@@ -7908,10 +7874,6 @@ body.has-ev-sidebar header { margin-right: -340px; }
 .ev-kit-grupo-body .card-item { padding: 4px 0; font-size: 0.78rem; }
 .ev-kit-grupo-dropzone { min-height: 12px; }
 .ev-kit-grupo-dropzone.drag-over-kit-grupo { background: rgba(200,169,74,0.08); border-radius: 4px; }
-.ev-kit-grupo-dropzone.drag-over-eq { background: rgba(74,144,217,0.12); border-radius: 4px; outline: 1px dashed rgba(74,144,217,0.5); }
-body.kit-dragging .ev-kit-grupo { border-color: rgba(74,144,217,0.3); }
-body.kit-dragging .ev-kit-grupo-dropzone { min-height: 28px; }
-body.kit-dragging .ev-kit-grupo-body { padding-bottom: 6px; }
 
 </style>
 
@@ -8053,12 +8015,6 @@ function _mergeEventosSnaps() {
       _evKitGrupos[data.id] = data.kits_grupos_ev;
     }
   });
-  // Remove entradas de eventos que saíram do andamento
-  Object.keys(_evEqDragItems).forEach(function(evId) {
-    if (!_eventosAndamento[evId] && !_eventosStagingCarga[evId]) delete _evEqDragItems[evId];
-  });
-  // Popula _evEqDragItems para todos os eventos (inclusive fechados) para verificação de disponibilidade
-  Object.keys(_eventosAndamento).forEach(function(evId) { _recalcularCargaEvento(evId); });
   renderEventosAndamento();
   // Atualiza estoque em tempo real quando filtro de andamento está ativo
   if (typeof _filtroAndamento !== 'undefined' && _filtroAndamento) renderEquipamentos();
@@ -8953,37 +8909,6 @@ function _bindEvAndamentoCards() {
   });
 
   // Botão × do kit grupo → risca/restaura todos os itens e devolve ao estoque
-
-// Movimenta qtd_em_uso ↔ qtd_disponivel no Firestore quando item é riscado/restaurado no evento
-function _movimentarEstoqueEvento(eqId, qty, paraEstoque) {
-  if (!eqId || !qty || !db) return;
-  var eq = _equipamentos[eqId];
-  if (!eq) return;
-  var emUso = eq.qtd_em_uso || 0;
-  var disp  = eq.qtd_disponivel || 0;
-  var updates = {};
-  if (paraEstoque) {
-    // Riscou/removeu: devolve ao disponível
-    var devolver = Math.min(qty, emUso);
-    if (devolver <= 0) return;
-    updates.qtd_em_uso     = emUso - devolver;
-    updates.qtd_disponivel = disp  + devolver;
-  } else {
-    // Adicionou/restaurou: retira do disponível e coloca em uso
-    var retirar = Math.min(qty, disp);
-    if (retirar <= 0) return;
-    updates.qtd_em_uso     = emUso + retirar;
-    updates.qtd_disponivel = disp  - retirar;
-  }
-  updates._atualizado = Date.now();
-  eq.qtd_em_uso     = updates.qtd_em_uso;
-  eq.qtd_disponivel = updates.qtd_disponivel;
-  db.collection('estoque').doc(eqId).update(updates).catch(function(err) {
-    console.warn('[movimentarEstoque]', err.message);
-  });
-  _atualizarCardEqDOM(eqId);
-}
-
   scroll.querySelectorAll('.ev-kit-grupo-rem').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -8992,16 +8917,8 @@ function _movimentarEstoqueEvento(eqId, qty, paraEstoque) {
       var grupos = _evKitGrupos[evId] || [];
       var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
       if (!grupo) return;
-      var novoRiscadoGrupo = !grupo.riscado;
-      grupo.riscado = novoRiscadoGrupo;
-      grupo.itens.forEach(function(it) {
-        // só movimenta se o estado do item efetivamente muda
-        if (it.eqId && (!!it.riscado !== novoRiscadoGrupo)) {
-          _movimentarEstoqueEvento(it.eqId, it.qty || 1, novoRiscadoGrupo);
-        }
-        it.riscado = novoRiscadoGrupo;
-        if (novoRiscadoGrupo) it.checked = false;
-      });
+      grupo.riscado = !grupo.riscado;
+      grupo.itens.forEach(function(it) { it.riscado = grupo.riscado; if (grupo.riscado) it.checked = false; });
       _salvarKitGruposFirestore(evId);
       _recalcularCargaEvento(evId);
       // Atualiza UI imediatamente
@@ -9035,9 +8952,7 @@ function _movimentarEstoqueEvento(eqId, qty, paraEstoque) {
       var grupo = grupos.find(function(g) { return g.grupoId === grupoId; });
       if (!grupo || !grupo.itens[itIdx]) return;
       var it = grupo.itens[itIdx];
-      var novoRiscado = !it.riscado;
-      _movimentarEstoqueEvento(it.eqId, it.qty || 1, novoRiscado);
-      it.riscado = novoRiscado;
+      it.riscado = !it.riscado;
       if (it.riscado) it.checked = false;
       _salvarKitGruposFirestore(evId);
       _recalcularCargaEvento(evId);
@@ -9085,64 +9000,14 @@ function _movimentarEstoqueEvento(eqId, qty, paraEstoque) {
   // Drop zone dos kit grupos (para aceitar itens soltos vindos de fora do grupo)
   scroll.querySelectorAll('.ev-kit-grupo-dropzone').forEach(function(zone) {
     zone.addEventListener('dragover', function(e) {
-      if (_draggingKitId) return; // deixa propagar para evCardOver
-      if (_draggingEqId) {
-        e.preventDefault(); e.stopPropagation();
-        zone.classList.add('drag-over-eq');
-        return;
-      }
       if (!_draggingItemData || _draggingItemData.tipo !== 'item_ev') return;
       e.preventDefault(); e.stopPropagation();
       zone.classList.add('drag-over-kit-grupo');
     });
-    zone.addEventListener('dragleave', function() {
-      zone.classList.remove('drag-over-kit-grupo');
-      zone.classList.remove('drag-over-eq');
-    });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over-kit-grupo'); });
     zone.addEventListener('drop', function(e) {
-      zone.classList.remove('drag-over-kit-grupo');
-      zone.classList.remove('drag-over-eq');
-      if (_draggingKitId) return; // deixa propagar para evCardDrop
       e.preventDefault(); e.stopPropagation();
-      // ── Drop de equipamento/acessório do estoque ──
-      if (_draggingEqId) {
-        var eqDropId = _draggingEqId;
-        _draggingEqId = null;
-        var grupoEl2 = zone.closest('.ev-kit-grupo');
-        if (!grupoEl2) return;
-        var evId2 = grupoEl2.getAttribute('data-evid');
-        var grupoId2 = grupoEl2.getAttribute('data-grupo-id');
-        var grupos2 = _evKitGrupos[evId2] || [];
-        var grupo2 = grupos2.find(function(g) { return g.grupoId === grupoId2; });
-        if (!grupo2) return;
-        var eq2 = _equipamentos[eqDropId];
-        var eqNome2 = eq2 ? (eq2.nome || eqDropId) : eqDropId;
-        // Verificar disponibilidade
-        if (eq2) {
-          var totalJaAloc2 = _getCargaTotalEq(eqDropId);
-          var dispReal2 = Math.max(0, (eq2.qtd_disponivel || 0) - totalJaAloc2);
-          if (dispReal2 <= 0) { toast('Sem unidades disponíveis para ' + eqNome2, true); return; }
-        }
-        // Procura item ativo (não riscado) com mesmo eqId
-        var existente2 = grupo2.itens.find(function(it) { return it.eqId === eqDropId && !it.riscado; });
-        // Procura item riscado para restaurar
-        var riscado2 = !existente2 && grupo2.itens.find(function(it) { return it.eqId === eqDropId && it.riscado; });
-        if (existente2) {
-          existente2.qty = (existente2.qty || 1) + 1;
-          _movimentarEstoqueEvento(eqDropId, 1, false);
-        } else if (riscado2) {
-          riscado2.riscado = false; riscado2.checked = false; riscado2.qty = 1;
-          _movimentarEstoqueEvento(eqDropId, 1, false);
-        } else {
-          grupo2.itens.push({ eqId: eqDropId, eqNome: eqNome2, qty: 1, checked: false, riscado: false });
-          _movimentarEstoqueEvento(eqDropId, 1, false);
-        }
-        _salvarKitGruposFirestore(evId2);
-        _recalcularCargaEvento(evId2);
-        _atualizarCardEqDOM(eqDropId);
-        renderEventosAndamento();
-        return;
-      }
+      zone.classList.remove('drag-over-kit-grupo');
       var data = _draggingItemData;
       if (!data || data.tipo !== 'item_ev') return;
       var grupoEl = zone.closest('.ev-kit-grupo');
@@ -9459,7 +9324,6 @@ function evCardDrop(ev, evId) {
       grupoItens.push({ eqId: eqId, eqNome: eqNome, qty: qtdCap, checked: false, riscado: false });
       if (!_evEqDragItems[evId][eqId]) _evEqDragItems[evId][eqId] = { nome: eqNome, qty: 0 };
       _evEqDragItems[evId][eqId].qty += qtdCap;
-      _movimentarEstoqueEvento(eqId, qtdCap, false);
       _atualizarCardEqDOM(eqId);
       itensAdicionados++;
     });
