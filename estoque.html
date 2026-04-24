@@ -2813,11 +2813,11 @@ function abrirPainelAdminEstoque() {
         <div id="adm-est-panel-hist" style="padding:0;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:block">\
           <div id="adm-est-hist-lista" style="padding:0"><div style="padding:20px 22px;text-align:center;font-size:0.8rem;color:#555">Carregando...</div></div>\
         </div>\
-        <div id="adm-est-panel-ordem" style="padding:20px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
-          <div style="font-family:Barlow Condensed,sans-serif;font-size:0.72rem;color:#666;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Reordene os cards de equipamento arrastando-os. A ordem é salva no Firestore ao desativar.</div>\
-          <div id="adm-ordem-status" style="font-size:0.78rem;font-family:Barlow Condensed,sans-serif;color:#888;margin-bottom:16px;padding:8px 12px;background:#111;border-radius:6px;border:1px solid #222"></div>\
-          <button id="adm-btn-ordem-manual" onclick="_admEstOrdemAtivar()" style="background:#4A90D9;color:#fff;border:none;border-radius:6px;padding:11px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;margin-bottom:8px;transition:background 0.15s">Ativar Ordenação Manual</button>\
-          <button onclick="_admEstOrdemResetar()" style="background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:6px;padding:9px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;transition:background 0.15s">Resetar Ordem</button>\
+        <div id="adm-est-panel-ordem" style="padding:16px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none">\
+          <div style="font-family:Barlow Condensed,sans-serif;font-size:0.72rem;color:#666;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px">Ative a ordenação manual e arraste os cards para reordenar.</div>\
+          <div id="adm-ordem-status" style="font-size:0.75rem;color:#888;margin-bottom:14px;font-family:Barlow Condensed,sans-serif"></div>\
+          <button onclick="_admEstOrdemAtivar()" id="adm-btn-ordem-manual" style="background:#4A90D9;color:#fff;border:none;border-radius:6px;padding:10px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;margin-bottom:8px">Ativar Ordenação Manual</button>\
+          <button onclick="_admEstOrdemResetar()" style="background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:6px;padding:8px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%">Resetar Ordem</button>\
         </div>\
       </div>\
     </div>';
@@ -2838,23 +2838,16 @@ function _admEstAba(idx) {
     if (panel) panel.style.display = i === idx ? '' : 'none';
   });
   if (idx === 0) { _admEstHistCarregar(); }
-  if (idx === 1) { _admEstOrdemRenderStatus(); }
+  if (idx === 1) { _admEstOrdemAtualizar(); }
 }
-
-function _admEstOrdemRenderStatus() {
+function _admEstOrdemAtualizar() {
   var sortSel = document.getElementById('sort-select');
   var isManual = sortSel && sortSel.value === 'manual';
   var statusEl = document.getElementById('adm-ordem-status');
   var btnEl = document.getElementById('adm-btn-ordem-manual');
-  if (statusEl) statusEl.textContent = isManual
-    ? '✓ Ordenação manual ativa — arraste os cards de equipamento para reordenar.'
-    : 'Modo atual: ' + (sortSel ? sortSel.options[sortSel.selectedIndex].text : '—') + '. Ative para poder reordenar.';
-  if (btnEl) {
-    btnEl.textContent = isManual ? 'Salvar e Desativar' : 'Ativar Ordenação Manual';
-    btnEl.style.background = isManual ? '#50C878' : '#4A90D9';
-  }
+  if (statusEl) statusEl.textContent = isManual ? '✓ Ordenação manual ativa — arraste os cards para reordenar.' : 'Ordenação atual: ' + (sortSel ? sortSel.options[sortSel.selectedIndex].text : '—');
+  if (btnEl) { btnEl.textContent = isManual ? 'Desativar Ordenação Manual' : 'Ativar Ordenação Manual'; btnEl.style.background = isManual ? '#555' : '#4A90D9'; }
 }
-
 function _admEstOrdemAtivar() {
   var sortSel = document.getElementById('sort-select');
   if (!sortSel) return;
@@ -2865,18 +2858,10 @@ function _admEstOrdemAtivar() {
   if (modal) { document.body.style.overflow = ''; modal.remove(); }
   toast(ativando ? 'Ordenação manual ativa — arraste os cards!' : 'Ordenação manual desativada');
 }
-
 function _admEstOrdemResetar() {
-  var _tabAtualLocal = typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos';
-  var _catAtualLocal = typeof _catAtual !== 'undefined' ? _catAtual : 'todos';
-  var key = 'eq_ordem_manual_' + _tabAtualLocal + '_' + _catAtualLocal;
+  var key = 'eq_ordem_manual_' + (typeof _tabSecaoAtiva !== 'undefined' ? _tabSecaoAtiva : 'equipamentos') + '_' + (typeof _catAtual !== 'undefined' ? _catAtual : 'todos');
   try { localStorage.removeItem(key); } catch(e) {}
-  if (db) {
-    var upd = {}; upd[key] = [];
-    db.collection('configuracoes').doc('eq_ordem_manual').set(upd, { merge: true }).catch(function(){});
-  }
   renderEquipamentos();
-  _admEstOrdemRenderStatus();
   toast('Ordem resetada');
 }
 
