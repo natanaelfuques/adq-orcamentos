@@ -4075,8 +4075,8 @@ function salvarEquipamento() {
     valor_unitario: parseFloat(document.getElementById('f-valor').value) || 0,
     serie: (document.getElementById('f-serie').value || '').trim(),
     localizacao: (document.getElementById('f-localizacao').value || '').trim(),
-    tags: (document.getElementById('f-tags').value || '').trim(),
-    obs: (document.getElementById('f-obs').value || '').trim(),
+    tags: (document.getElementById('f-tags') ? document.getElementById('f-tags').value : '').trim(),
+    obs: (document.getElementById('f-obs') ? document.getElementById('f-obs').value : '').trim(),
     _atualizado: Date.now()
   };
 
