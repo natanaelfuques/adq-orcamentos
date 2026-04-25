@@ -805,7 +805,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     width: 100%;
-    max-width: 660px;
+    max-width: 780px;
     max-height: 90vh;
     overflow-y: auto;
     animation: slideUp 0.2s ease;
@@ -3941,12 +3941,8 @@ function abrirModalForm(e) {
           '<label class="form-label" id="f-nome-label">Nome *</label>' +
           '<input class="form-input" id="f-nome" value="' + esc(e.nome || '') + '" placeholder="Ex: Caixa JBL SRX 815" />' +
         '</div>' +
-        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px">' +
-          '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1">' +
-            '<input type="checkbox" id="f-is-acessorio"' + (e.isAcessorio ? ' checked' : '') + ' onchange="_toggleTipoItem()" style="width:15px;height:15px;accent-color:var(--gold);cursor:pointer">' +
-            '<span style="font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text)">É um acessório</span>' +
-          '</label>' +
-          '<span style="font-size:0.65rem;color:#555;text-transform:uppercase;letter-spacing:0.05em">Aparece na aba Acessórios</span>' +
+        '<div style="display:none">' +
+          '<input type="checkbox" id="f-is-acessorio"' + (e.isAcessorio ? ' checked' : '') + ' onchange="_toggleTipoItem()">' +
         '</div>' +
         '<div class="form-group" id="f-grupo-eq-pai"' + (e.isAcessorio ? '' : ' style="display:none"') + '>' +
           '<label class="form-label">Equipamento vinculado</label>' +
