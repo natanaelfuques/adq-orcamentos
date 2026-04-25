@@ -4080,7 +4080,7 @@ function salvarEquipamento() {
     _atualizado: Date.now()
   };
 
-  var btn = document.querySelector('.btn-modal-save');
+  var btn = document.querySelector('#modal-form .btn-modal-save');
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
 
   var promise;
