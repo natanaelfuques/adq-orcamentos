@@ -3944,7 +3944,7 @@ function abrirModalForm(e) {
         '<div style="display:none">' +
           '<input type="checkbox" id="f-is-acessorio"' + (e.isAcessorio ? ' checked' : '') + ' onchange="_toggleTipoItem()">' +
         '</div>' +
-        '<div class="form-group" id="f-grupo-eq-pai"' + (e.isAcessorio ? '' : ' style="display:none"') + '>' +
+        '<div class="form-group" id="f-grupo-eq-pai" style="display:none">' +
           '<label class="form-label">Equipamento vinculado</label>' +
           '<select class="form-select" id="f-eq-pai"><option value="">— Sem vínculo —</option>' + Object.values(_equipamentos).filter(function(x){return !x.isAcessorio;}).sort(function(a,b){return(a.nome||'').localeCompare(b.nome||'');}).map(function(x){return'<option value="'+esc(x.id)+'"'+(e.equipamentoPai===x.id?' selected':'')+'>'+esc(x.nome)+'</option>';}).join('') + '</select>' +
         '</div>' +
