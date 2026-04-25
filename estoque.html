@@ -7990,6 +7990,7 @@ function _toggleSidebar() {
 // ── Iniciar listener de eventos em andamento ──
 var _eventosAndamentoSnap = {}; // etapa === 'andamento'
 var _eventosEventosSnap = {};   // etapa === 'eventos'
+var _eventosAtivosAntes = new Set(); // IDs ativos no último merge (para detectar saídas)
 
 function _mergeEventosSnaps() {
   _eventosAndamento = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap);
@@ -8000,6 +8001,29 @@ function _mergeEventosSnaps() {
       _evKitGrupos[data.id] = data.kits_grupos_ev;
     }
   });
+
+  var idsAtivos = new Set(Object.keys(_eventosAndamento));
+
+  // Detectar eventos que saíram (ex: movidos para concluido)
+  _eventosAtivosAntes.forEach(function(evId) {
+    if (!idsAtivos.has(evId)) {
+      // Devolver acessórios reservados no Firestore
+      if (db) {
+        db.collection('reservas_evento')
+          .where('evento_id', '==', evId)
+          .where('status', '!=', 'devolvido')
+          .get()
+          .then(function(snap) {
+            snap.forEach(function(doc) {
+              doc.ref.update({ status: 'devolvido' });
+            });
+          })
+          .catch(function(e) { console.warn('[ReservasDevolver]', e.message); });
+      }
+    }
+  });
+
+  _eventosAtivosAntes = idsAtivos;
 
   // Eventos abertos que sumiram dos snaps (ex: movidos para concluido): limpar carga
   var eventosAbertos = Object.keys(_evEqDragItems);
