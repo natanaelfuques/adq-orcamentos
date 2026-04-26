@@ -1307,6 +1307,7 @@
   }
   .kit-saved-item {
     width: 310px;
+    box-sizing: border-box;
     background: var(--surface);
     border: 1px solid rgba(74,144,217,0.45);
     border-radius: 8px;
@@ -2366,7 +2367,7 @@
   .kit-slot-grid-3x3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 72px;
+    grid-template-rows: repeat(3, 1fr);
     gap: 3px;
   }
   .kit-slot-item {
@@ -2380,8 +2381,7 @@
     justify-content: center;
     gap: 3px;
     padding: 4px 3px;
-    height: 72px;
-    overflow: hidden;
+    min-height: 48px;
     transition: border-color 0.15s;
   }
   .kit-slot-item.filled {
