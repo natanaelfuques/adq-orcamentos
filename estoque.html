@@ -5473,14 +5473,20 @@ function _kitSavedToggle(kitId) {
 
 function _kitSavedDragStart(ev, kitId) {
   _draggingKitSavedId = kitId;
+  _draggingKitId = kitId; // permite drop em eventos como kit normal
   ev.dataTransfer.setData('text/plain', kitId);
-  ev.dataTransfer.effectAllowed = 'copy';
+  ev.dataTransfer.setData('tipo', 'kit');
+  ev.dataTransfer.effectAllowed = 'all';
   document.body.classList.add('kit-grupo-dragging'); // ativa modo split no kit-novo-card
+  document.body.classList.add('kit-dragging'); // ativa highlight nos eventos
 }
 function _kitSavedDragEnd() {
   _draggingKitSavedId = null;
+  _draggingKitId = null;
   document.body.classList.remove('kit-grupo-dragging');
+  document.body.classList.remove('kit-dragging');
   document.querySelectorAll('.drag-over-half').forEach(function(e) { e.classList.remove('drag-over-half'); });
+  document.querySelectorAll('.ev-card.drag-target-ev').forEach(function(e) { e.classList.remove('drag-target-ev'); });
 }
 
 function renderKits() {
@@ -9490,6 +9496,7 @@ function evCardLeave(ev, evId) {
 function evCardDrop(ev, evId) {
   ev.preventDefault();
   ev.stopPropagation();
+  _draggingKitSavedId = null; // limpa flag de kit salvo ao dropar em evento
   var el = document.getElementById('ev-card-' + evId);
   if (el) el.classList.remove('drag-target-ev');
 
