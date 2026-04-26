@@ -2366,7 +2366,7 @@
   .kit-slot-grid-3x3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+    grid-auto-rows: 72px;
     gap: 3px;
   }
   .kit-slot-item {
@@ -2380,7 +2380,8 @@
     justify-content: center;
     gap: 3px;
     padding: 4px 3px;
-    min-height: 48px;
+    height: 72px;
+    overflow: hidden;
     transition: border-color 0.15s;
   }
   .kit-slot-item.filled {
