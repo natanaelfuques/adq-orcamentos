@@ -5436,7 +5436,7 @@ function renderKits() {
   var grid = document.getElementById('kits-grid');
   if (!grid) return;
 
-  var kitsArr = _kitOrdemGetArr(Object.values(_kits));
+  var kitsArr = _kitOrdemGetArr(Object.values(_kits)).filter(function(k) { return !k.salvo; });
   var html = '';
 
   kitsArr.forEach(function(kit) {
@@ -9743,11 +9743,10 @@ function _kitNovoCardSplitDrop(ev, half) {
     _draggingKitSavedId = null;
     document.body.classList.remove('kit-grupo-dragging');
     if (half === 'remove') {
-      // Desmarcar como salvo + comportamento padrão de remover
+      // Apenas desmarcar como salvo
       if (db) db.collection('kits').doc(savedKitId).update({ salvo: false })
-        .catch(function(e) { console.warn('salvo update:', e); });
-      _draggingKitId = savedKitId;
-      _kitRemoveZoneDrop(ev);
+        .then(function() { toast('Kit removido dos salvos'); })
+        .catch(function(e) { toast('Erro: ' + e.message, true); });
       return;
     }
     // Duplicar kit
