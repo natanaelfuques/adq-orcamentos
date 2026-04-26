@@ -1285,7 +1285,7 @@
     gap: 0;
   }
   .kits-saved-panel {
-    width: 20%;
+    width: 15%;
     min-width: 160px;
     flex-shrink: 0;
     border-right: 1px solid var(--border2);
@@ -5373,11 +5373,12 @@ function renderKitsSavedList() {
   var list = document.getElementById('kits-saved-list');
   if (!list) return;
   var kitsArr = _kitOrdemGetArr(Object.values(_kits));
-  if (!kitsArr.length) {
-    list.innerHTML = '<div style="font-size:0.7rem;color:#555;padding:6px 2px">Nenhum kit salvo</div>';
+  var savedKits = kitsArr.filter(function(k) { return !!k.salvo; });
+  if (!savedKits.length) {
+    list.innerHTML = '<div style="font-size:0.7rem;color:#555;padding:6px 2px">Arraste um kit aqui para salvar</div>';
     return;
   }
-  list.innerHTML = kitsArr.map(function(kit) {
+  list.innerHTML = savedKits.map(function(kit) {
     var count = Array.isArray(kit.itens) ? kit.itens.length : 0;
     return '<div class="kit-saved-item" id="kit-saved-' + esc(kit.id) + '"' +
       ' draggable="true"' +
@@ -9653,12 +9654,14 @@ function _kitDragStart(ev, kitId) {
   var el = document.getElementById('kit-card-' + kitId);
   if (el) setTimeout(function() { el.style.opacity = '0.5'; }, 0);
   document.body.classList.add('kit-dragging');
+  document.body.classList.add('kit-grupo-dragging'); // ativa modo split
 }
 function _kitDragEnd() {
   // Aguarda o evento 'drop' ser disparado antes de remover a classe kit-dragging,
   // garantindo que _kitNovoCardDrop consiga detectar que estava arrastando.
   setTimeout(function() {
     document.body.classList.remove('kit-dragging');
+    document.body.classList.remove('kit-grupo-dragging');
     if (_draggingKitId) {
       var el = document.getElementById('kit-card-' + _draggingKitId);
       if (el) el.style.opacity = '';
@@ -9710,29 +9713,40 @@ function _kitNovoCardSplitDrop(ev, half) {
   ev.stopPropagation();
   document.querySelectorAll('.drag-over-half').forEach(function(e) { e.classList.remove('drag-over-half'); });
 
-  // Kit salvo arrastado para criar grupo no evento aberto
+  // Kit salvo arrastado: duplicar (criar) ou desmarcar como salvo (remover)
   if (_draggingKitSavedId) {
     var savedKitId = _draggingKitSavedId;
     _draggingKitSavedId = null;
     document.body.classList.remove('kit-grupo-dragging');
-    if (half === 'remove') { return; }
+    if (half === 'remove') {
+      // Desmarcar como salvo + comportamento padrão de remover
+      if (db) db.collection('kits').doc(savedKitId).update({ salvo: false })
+        .catch(function(e) { console.warn('salvo update:', e); });
+      _draggingKitId = savedKitId;
+      _kitRemoveZoneDrop(ev);
+      return;
+    }
+    // Duplicar kit
     var kit = _kits[savedKitId];
     if (!kit || !db) return;
-    // Encontrar evento aberto (staging ou andamento com _evEqDragItems aberto)
-    var evId = Object.keys(_evEqDragItems)[0] || Object.keys(_eventosStagingCarga)[0];
-    if (!evId) { toast('Abra um evento primeiro', true); return; }
-    var grupos = _evKitGrupos[evId] || [];
-    var grupoId = 'g_' + Date.now();
-    var itensGrupo = (kit.itens || []).map(function(it) {
-      var eq = _equipamentos[it.equipId];
-      return { eqId: it.equipId, eqNome: eq ? eq.nome : it.equipId, qty: it.qtd || 1, checked: false, riscado: false };
-    });
-    grupos.push({ grupoId: grupoId, kitId: savedKitId, kitNome: kit.nome || 'Kit', riscado: false, itens: itensGrupo });
-    _evKitGrupos[evId] = grupos;
-    _recalcularCargaEvento(evId);
-    _salvarKitGruposFirestore(evId);
-    renderEventosAndamento();
-    toast('Kit "' + (kit.nome || 'Kit') + '" adicionado ao evento');
+    var existentes = Object.values(_kits).map(function(k) { return k.nome || ''; });
+    var nomeBase = kit.nome || 'Kit';
+    var nomeCopia = nomeBase + ' (cópia)';
+    var n = 2;
+    while (existentes.indexOf(nomeCopia) >= 0) { nomeCopia = nomeBase + ' (cópia ' + n + ')'; n++; }
+    db.collection('kits').add({ nome: nomeCopia, descricao: kit.descricao || '', itens: kit.itens || [], salvo: false, _criado: Date.now(), _atualizado: Date.now() })
+      .then(function(docRef) { _kitOrdem.push(docRef.id); _kitOrdemSalvar(); toast('Kit duplicado: ' + nomeCopia); })
+      .catch(function(e) { toast('Erro: ' + e.message, true); });
+    return;
+  }
+
+  // Kit normal arrastado para 'create': marcar como salvo
+  if (_draggingKitId && half === 'create') {
+    var kitIdToSave = _draggingKitId;
+    _draggingKitId = null;
+    if (db) db.collection('kits').doc(kitIdToSave).update({ salvo: true })
+      .then(function() { toast('Kit salvo!'); })
+      .catch(function(e) { toast('Erro: ' + e.message, true); });
     return;
   }
 
