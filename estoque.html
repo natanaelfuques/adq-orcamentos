@@ -5394,16 +5394,26 @@ function renderKitsSavedList() {
   }
   list.innerHTML = savedKits.map(function(kit) {
     var count = Array.isArray(kit.itens) ? kit.itens.length : 0;
-    var slots = (kit.itens || []).map(function(it) {
-      var eq = _equipamentos[it.equipId];
-      if (!eq) return '<div class="kit-slot-item empty"></div>';
-      var svgStr = _getEqSvg(eq.emoji, 16);
-      return '<div class="kit-slot-item filled" title="' + esc(eq.nome || '') + '">' +
-        '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
-        '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
-        '<div class="kit-slot-item-name">' + esc(eq.nome || '') + '</div>' +
-      '</div>';
-    }).join('');
+    var itens = kit.itens || [];
+    var slots = '';
+    for (var si = 0; si < 9; si++) {
+      if (si < itens.length) {
+        var it = itens[si];
+        var eq = _equipamentos[it.equipId];
+        if (eq) {
+          var svgStr = _getEqSvg(eq.emoji, 16);
+          slots += '<div class="kit-slot-item filled" title="' + esc(eq.nome || '') + '">' +
+            '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
+            '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
+            '<div class="kit-slot-item-name">' + esc(eq.nome || '') + '</div>' +
+          '</div>';
+        } else {
+          slots += '<div class="kit-slot-item empty"></div>';
+        }
+      } else {
+        slots += '<div class="kit-slot-item empty"></div>';
+      }
+    }
 
     return '<div class="kit-saved-item" id="kit-saved-' + esc(kit.id) + '"' +
       ' draggable="true"' +
