@@ -1321,6 +1321,7 @@
   }
   .kit-saved-item:hover { border-color: var(--gold); background: var(--gold-dim); }
   .kit-saved-item.drag-over-saved { border-color: var(--gold); background: var(--gold-dim); opacity: 0.7; }
+  .kits-saved-panel.drag-over-panel { background: rgba(74,144,217,0.06); border-radius: 6px; }
   .kit-saved-item-icon { color: var(--gold); flex-shrink: 0; }
   .kit-saved-item-info { flex: 1; min-width: 0; }
   .kit-saved-item-name {
@@ -2643,7 +2644,7 @@
 
   <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
-    <div class="kits-saved-panel" id="kits-saved-panel">
+    <div class="kits-saved-panel" id="kits-saved-panel" ondragover="_kitSavedPanelOver(event)" ondragleave="_kitSavedPanelLeave(event)" ondrop="_kitSavedPanelDrop(event)">
       <div class="kits-saved-title">Kits salvos</div>
       <div id="kits-saved-list"><!-- renderizado por JS --></div>
     </div>
@@ -5395,6 +5396,29 @@ function renderKitsSavedList() {
 }
 
 var _draggingKitSavedId = null;
+
+function _kitSavedPanelOver(ev) {
+  if (!_draggingKitId) return;
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect = 'copy';
+  var panel = document.getElementById('kits-saved-panel');
+  if (panel) panel.classList.add('drag-over-panel');
+}
+function _kitSavedPanelLeave(ev) {
+  var panel = document.getElementById('kits-saved-panel');
+  if (panel) panel.classList.remove('drag-over-panel');
+}
+function _kitSavedPanelDrop(ev) {
+  ev.preventDefault();
+  var panel = document.getElementById('kits-saved-panel');
+  if (panel) panel.classList.remove('drag-over-panel');
+  if (!_draggingKitId) return;
+  var kitId = _draggingKitId;
+  _draggingKitId = null;
+  if (db) db.collection('kits').doc(kitId).update({ salvo: true })
+    .then(function() { toast('Kit salvo!'); })
+    .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
 
 function _kitSavedDragStart(ev, kitId) {
   _draggingKitSavedId = kitId;
@@ -9740,12 +9764,19 @@ function _kitNovoCardSplitDrop(ev, half) {
     return;
   }
 
-  // Kit normal arrastado para 'create': marcar como salvo
+  // Kit normal arrastado para 'create': duplicar
   if (_draggingKitId && half === 'create') {
-    var kitIdToSave = _draggingKitId;
+    var kitIdToDup = _draggingKitId;
     _draggingKitId = null;
-    if (db) db.collection('kits').doc(kitIdToSave).update({ salvo: true })
-      .then(function() { toast('Kit salvo!'); })
+    var kitToDup = _kits[kitIdToDup];
+    if (!kitToDup || !db) return;
+    var existentes = Object.values(_kits).map(function(k) { return k.nome || ''; });
+    var nomeBase = kitToDup.nome || 'Kit';
+    var nomeCopia = nomeBase + ' (cópia)';
+    var n = 2;
+    while (existentes.indexOf(nomeCopia) >= 0) { nomeCopia = nomeBase + ' (cópia ' + n + ')'; n++; }
+    db.collection('kits').add({ nome: nomeCopia, descricao: kitToDup.descricao || '', itens: kitToDup.itens || [], salvo: false, _criado: Date.now(), _atualizado: Date.now() })
+      .then(function(docRef) { _kitOrdem.push(docRef.id); _kitOrdemSalvar(); toast('Kit duplicado: ' + nomeCopia); })
       .catch(function(e) { toast('Erro: ' + e.message, true); });
     return;
   }
