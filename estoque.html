@@ -5472,6 +5472,7 @@ function _kitSavedToggle(kitId) {
 }
 
 function _kitSavedDragStart(ev, kitId) {
+  try {
   _draggingKitSavedId = kitId;
   _draggingKitId = kitId; // permite drop em eventos como kit normal
   ev.dataTransfer.setData('text/plain', kitId);
@@ -5479,6 +5480,7 @@ function _kitSavedDragStart(ev, kitId) {
   ev.dataTransfer.effectAllowed = 'all';
   document.body.classList.add('kit-grupo-dragging'); // ativa modo split no kit-novo-card
   document.body.classList.add('kit-dragging'); // ativa highlight nos eventos
+  } catch(e) { console.error('[dragstart:kitSaved]', e); ev.preventDefault(); }
 }
 function _kitSavedDragEnd() {
   _draggingKitSavedId = null;
@@ -5603,6 +5605,7 @@ function renderKits() {
 function setupEqCardDrag(cardEl, eqId) {
   cardEl.setAttribute('draggable', 'true');
   cardEl.addEventListener('dragstart', function(ev) {
+    try {
     _draggingEqId = eqId;
     var _eq = _equipamentos[eqId];
     var _tipo = (_eq && _eq.isAcessorio) ? 'acessorio' : 'eq';
@@ -5611,6 +5614,7 @@ function setupEqCardDrag(cardEl, eqId) {
     ev.dataTransfer.effectAllowed = 'copy';
     setTimeout(function() { cardEl.classList.add('dragging-eq'); }, 0);
     document.body.classList.add('kit-dragging');
+    } catch(e) { console.error('[dragstart:eq]', e); ev.preventDefault(); }
   });
   cardEl.addEventListener('dragend', function() {
     setTimeout(function() {
@@ -9729,6 +9733,7 @@ function _toggleKitPanel(kitId) {
 }
 
 function _kitDragStart(ev, kitId) {
+  try {
   _draggingKitId = kitId;
   ev.dataTransfer.setData('text/plain', kitId);
   ev.dataTransfer.setData('tipo', 'kit');
@@ -9737,6 +9742,7 @@ function _kitDragStart(ev, kitId) {
   if (el) setTimeout(function() { el.style.opacity = '0.5'; }, 0);
   document.body.classList.add('kit-dragging');
   document.body.classList.add('kit-grupo-dragging'); // ativa modo split
+  } catch(e) { console.error('[dragstart:kit]', e); ev.preventDefault(); }
 }
 function _kitDragEnd() {
   // Aguarda o evento 'drop' ser disparado antes de remover a classe kit-dragging,
@@ -9905,10 +9911,12 @@ function _kitNovoCardDrop(ev) {
 }
 
 function _stagingDragStart(ev, evId) {
+  try {
   _draggingStagingId = evId;
   ev.dataTransfer.setData('text/plain', evId);
   ev.dataTransfer.setData('tipo', 'staging');
   ev.dataTransfer.effectAllowed = 'link';
+  } catch(e) { console.error('[dragstart:staging]', e); ev.preventDefault(); }
 }
 function _stagingDragEnd(ev, evId) {
   _draggingStagingId = null;
@@ -10340,6 +10348,7 @@ var _draggingKitSlot  = null; // { kitId, equipId }
 var _draggingItemData = null; // { evId, idx, tipo, txt, el }
 
 function _kitSlotDragStart(el, ev) {
+  try {
   var kitId   = el.dataset.kitId;
   var equipId = el.dataset.equipId;
   var slotIdx = parseInt(el.dataset.slotIdx || '-1', 10);
@@ -10349,6 +10358,7 @@ function _kitSlotDragStart(el, ev) {
   ev.dataTransfer.effectAllowed = 'move';
   ev.stopPropagation(); // não aciona drag do kit-folder pai
   document.body.classList.add('kit-dragging');
+  } catch(e) { console.error('[dragstart:kitSlot]', e); ev.preventDefault(); }
 }
 
 function _kitSlotDragEnd(ev) {
