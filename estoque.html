@@ -1285,7 +1285,7 @@
     gap: 0;
   }
   .kits-saved-panel {
-    width: 15%;
+    width: 10%;
     min-width: 160px;
     flex-shrink: 0;
     border-right: 1px solid var(--border2);
@@ -1336,6 +1336,50 @@
   .kit-saved-item-count {
     font-size: 0.65rem;
     color: #666;
+  }
+  .kit-saved-item-header { display: flex; align-items: center; gap: 8px; }
+  .kit-saved-chevron { flex-shrink: 0; color: #555; transition: transform 0.2s; }
+  .kit-saved-item.expanded .kit-saved-chevron { transform: rotate(180deg); }
+  .kit-saved-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding-top: 8px;
+    margin-top: 6px;
+    border-top: 1px solid var(--border2);
+  }
+  .kit-saved-slot {
+    position: relative;
+    width: 44px;
+    background: var(--darker);
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    padding: 4px 2px 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .kit-saved-slot-badge {
+    position: absolute;
+    top: 2px; right: 3px;
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: var(--gold);
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .kit-saved-slot-icon { color: var(--gold); }
+  .kit-saved-slot-name {
+    font-size: 0.5rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    color: #888;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    padding: 0 2px;
   }
   .kits-section-inner {
     flex: 1;
@@ -5381,15 +5425,32 @@ function renderKitsSavedList() {
   }
   list.innerHTML = savedKits.map(function(kit) {
     var count = Array.isArray(kit.itens) ? kit.itens.length : 0;
+    var slots = (kit.itens || []).map(function(it) {
+      var eq = _equipamentos[it.equipId];
+      if (!eq) return '';
+      var svgStr = _getEqSvg(eq.emoji, 14);
+      return '<div class="kit-saved-slot" title="' + esc(eq.nome || '') + '">' +
+        '<span class="kit-saved-slot-badge">' + (it.qtd || 1) + '</span>' +
+        '<div class="kit-saved-slot-icon">' + svgStr + '</div>' +
+        '<div class="kit-saved-slot-name">' + esc(eq.nome || '') + '</div>' +
+      '</div>';
+    }).join('');
+
     return '<div class="kit-saved-item" id="kit-saved-' + esc(kit.id) + '"' +
       ' draggable="true"' +
       ' ondragstart="_kitSavedDragStart(event,\'' + esc(kit.id) + '\')"' +
       ' ondragend="_kitSavedDragEnd()"' +
-      ' title="Arraste para criar kit no evento">' +
-      '<div class="kit-saved-item-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>' +
-      '<div class="kit-saved-item-info">' +
-        '<div class="kit-saved-item-name">' + esc(kit.nome || 'Kit') + '</div>' +
-        '<div class="kit-saved-item-count">' + count + ' item' + (count !== 1 ? 's' : '') + '</div>' +
+      ' onclick="_kitSavedToggle(\'' + esc(kit.id) + '\')">' +
+      '<div class="kit-saved-item-header">' +
+        '<div class="kit-saved-item-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>' +
+        '<div class="kit-saved-item-info">' +
+          '<div class="kit-saved-item-name">' + esc(kit.nome || 'Kit') + '</div>' +
+          '<div class="kit-saved-item-count">' + count + ' item' + (count !== 1 ? 's' : '') + '</div>' +
+        '</div>' +
+        '<svg class="kit-saved-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
+      '</div>' +
+      '<div class="kit-saved-slots" id="kit-saved-slots-' + esc(kit.id) + '" style="display:none">' +
+        slots +
       '</div>' +
     '</div>';
   }).join('');
@@ -5418,6 +5479,14 @@ function _kitSavedPanelDrop(ev) {
   if (db) db.collection('kits').doc(kitId).update({ salvo: true })
     .then(function() { toast('Kit salvo!'); })
     .catch(function(e) { toast('Erro: ' + e.message, true); });
+}
+
+function _kitSavedToggle(kitId) {
+  var item = document.getElementById('kit-saved-' + kitId);
+  var slots = document.getElementById('kit-saved-slots-' + kitId);
+  if (!item || !slots) return;
+  var expanded = item.classList.toggle('expanded');
+  slots.style.display = expanded ? 'flex' : 'none';
 }
 
 function _kitSavedDragStart(ev, kitId) {
