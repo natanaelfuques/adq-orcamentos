@@ -1285,8 +1285,7 @@
     gap: 0;
   }
   .kits-saved-panel {
-    width: 10%;
-    min-width: 160px;
+    width: 220px;
     flex-shrink: 0;
     border-right: 1px solid var(--border2);
     padding-right: 14px;
@@ -1341,45 +1340,12 @@
   .kit-saved-chevron { flex-shrink: 0; color: #555; transition: transform 0.2s; }
   .kit-saved-item.expanded .kit-saved-chevron { transform: rotate(180deg); }
   .kit-saved-slots {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
     padding-top: 8px;
     margin-top: 6px;
     border-top: 1px solid var(--border2);
-  }
-  .kit-saved-slot {
-    position: relative;
-    width: 44px;
-    background: var(--darker);
-    border: 1px solid var(--border2);
-    border-radius: 5px;
-    padding: 4px 2px 3px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-  .kit-saved-slot-badge {
-    position: absolute;
-    top: 2px; right: 3px;
-    font-size: 0.55rem;
-    font-weight: 700;
-    color: var(--gold);
-    font-family: 'Barlow Condensed', sans-serif;
-  }
-  .kit-saved-slot-icon { color: var(--gold); }
-  .kit-saved-slot-name {
-    font-size: 0.5rem;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 600;
-    color: #888;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    padding: 0 2px;
   }
   .kits-section-inner {
     flex: 1;
@@ -5427,12 +5393,12 @@ function renderKitsSavedList() {
     var count = Array.isArray(kit.itens) ? kit.itens.length : 0;
     var slots = (kit.itens || []).map(function(it) {
       var eq = _equipamentos[it.equipId];
-      if (!eq) return '';
-      var svgStr = _getEqSvg(eq.emoji, 14);
-      return '<div class="kit-saved-slot" title="' + esc(eq.nome || '') + '">' +
-        '<span class="kit-saved-slot-badge">' + (it.qtd || 1) + '</span>' +
-        '<div class="kit-saved-slot-icon">' + svgStr + '</div>' +
-        '<div class="kit-saved-slot-name">' + esc(eq.nome || '') + '</div>' +
+      if (!eq) return '<div class="kit-slot-item empty"></div>';
+      var svgStr = _getEqSvg(eq.emoji, 16);
+      return '<div class="kit-slot-item filled" title="' + esc(eq.nome || '') + '">' +
+        '<span class="kit-slot-item-badge">' + (it.qtd || 1) + '</span>' +
+        '<div class="kit-slot-item-icon">' + svgStr + '</div>' +
+        '<div class="kit-slot-item-name">' + esc(eq.nome || '') + '</div>' +
       '</div>';
     }).join('');
 
