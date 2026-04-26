@@ -9812,9 +9812,9 @@ function _kitNovoCardSplitDrop(ev, half) {
     if (!kit || !db) return;
     var existentes = Object.values(_kits).map(function(k) { return k.nome || ''; });
     var nomeBase = kit.nome || 'Kit';
-    var nomeCopia = nomeBase + ' (cópia)';
+    var nomeCopia = nomeBase;
     var n = 2;
-    while (existentes.indexOf(nomeCopia) >= 0) { nomeCopia = nomeBase + ' (cópia ' + n + ')'; n++; }
+    while (existentes.indexOf(nomeCopia) >= 0) { nomeCopia = nomeBase + ' (' + n + ')'; n++; }
     db.collection('kits').add({ nome: nomeCopia, descricao: kit.descricao || '', itens: kit.itens || [], salvo: false, _criado: Date.now(), _atualizado: Date.now() })
       .then(function(docRef) { _kitOrdem.push(docRef.id); _kitOrdemSalvar(); toast('Kit duplicado: ' + nomeCopia); })
       .catch(function(e) { toast('Erro: ' + e.message, true); });
