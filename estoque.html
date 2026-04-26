@@ -1282,7 +1282,59 @@
     padding: 0 24px 0;
     display: flex;
     align-items: stretch;
-    gap: 12px;
+    gap: 0;
+  }
+  .kits-saved-panel {
+    width: 20%;
+    min-width: 160px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border2);
+    padding-right: 14px;
+    margin-right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .kits-saved-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border2);
+  }
+  .kit-saved-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--border2);
+    margin-bottom: 5px;
+    cursor: grab;
+    background: var(--surface2);
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+  .kit-saved-item:hover { border-color: var(--gold); background: var(--gold-dim); }
+  .kit-saved-item.drag-over-saved { border-color: var(--gold); background: var(--gold-dim); opacity: 0.7; }
+  .kit-saved-item-icon { color: var(--gold); flex-shrink: 0; }
+  .kit-saved-item-info { flex: 1; min-width: 0; }
+  .kit-saved-item-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .kit-saved-item-count {
+    font-size: 0.65rem;
+    color: #666;
   }
   .kits-section-inner {
     flex: 1;
@@ -2591,6 +2643,10 @@
 
   <!-- KITS SECTION (antes de equipamentos, colapsável) -->
   <div class="kits-section" id="kits-section" style="padding-top:8px">
+    <div class="kits-saved-panel" id="kits-saved-panel">
+      <div class="kits-saved-title">Kits salvos</div>
+      <div id="kits-saved-list"><!-- renderizado por JS --></div>
+    </div>
     <div class="kits-section-inner">
       <div class="kits-section-header">
         <div class="kits-section-title" onclick="toggleSecaoKits()" style="cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:6px">
@@ -5313,6 +5369,44 @@ function _kitQtdSalvar() {
   modal.remove();
 }
 
+function renderKitsSavedList() {
+  var list = document.getElementById('kits-saved-list');
+  if (!list) return;
+  var kitsArr = _kitOrdemGetArr(Object.values(_kits));
+  if (!kitsArr.length) {
+    list.innerHTML = '<div style="font-size:0.7rem;color:#555;padding:6px 2px">Nenhum kit salvo</div>';
+    return;
+  }
+  list.innerHTML = kitsArr.map(function(kit) {
+    var count = Array.isArray(kit.itens) ? kit.itens.length : 0;
+    return '<div class="kit-saved-item" id="kit-saved-' + esc(kit.id) + '"' +
+      ' draggable="true"' +
+      ' ondragstart="_kitSavedDragStart(event,\'' + esc(kit.id) + '\')"' +
+      ' ondragend="_kitSavedDragEnd()"' +
+      ' title="Arraste para criar kit no evento">' +
+      '<div class="kit-saved-item-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>' +
+      '<div class="kit-saved-item-info">' +
+        '<div class="kit-saved-item-name">' + esc(kit.nome || 'Kit') + '</div>' +
+        '<div class="kit-saved-item-count">' + count + ' item' + (count !== 1 ? 's' : '') + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+var _draggingKitSavedId = null;
+
+function _kitSavedDragStart(ev, kitId) {
+  _draggingKitSavedId = kitId;
+  ev.dataTransfer.setData('text/plain', kitId);
+  ev.dataTransfer.effectAllowed = 'copy';
+  document.body.classList.add('kit-grupo-dragging'); // ativa modo split no kit-novo-card
+}
+function _kitSavedDragEnd() {
+  _draggingKitSavedId = null;
+  document.body.classList.remove('kit-grupo-dragging');
+  document.querySelectorAll('.drag-over-half').forEach(function(e) { e.classList.remove('drag-over-half'); });
+}
+
 function renderKits() {
   var grid = document.getElementById('kits-grid');
   if (!grid) return;
@@ -5420,7 +5514,7 @@ function renderKits() {
   var statKits = document.getElementById('stat-kits');
   if (statKits) statKits.textContent = Object.keys(_kits).length;
 
-
+  renderKitsSavedList();
 }
 
 // ── Drag: eq card → kit folder ──
@@ -9615,6 +9709,33 @@ function _kitNovoCardSplitDrop(ev, half) {
   ev.preventDefault();
   ev.stopPropagation();
   document.querySelectorAll('.drag-over-half').forEach(function(e) { e.classList.remove('drag-over-half'); });
+
+  // Kit salvo arrastado para criar grupo no evento aberto
+  if (_draggingKitSavedId) {
+    var savedKitId = _draggingKitSavedId;
+    _draggingKitSavedId = null;
+    document.body.classList.remove('kit-grupo-dragging');
+    if (half === 'remove') { return; }
+    var kit = _kits[savedKitId];
+    if (!kit || !db) return;
+    // Encontrar evento aberto (staging ou andamento com _evEqDragItems aberto)
+    var evId = Object.keys(_evEqDragItems)[0] || Object.keys(_eventosStagingCarga)[0];
+    if (!evId) { toast('Abra um evento primeiro', true); return; }
+    var grupos = _evKitGrupos[evId] || [];
+    var grupoId = 'g_' + Date.now();
+    var itensGrupo = (kit.itens || []).map(function(it) {
+      var eq = _equipamentos[it.equipId];
+      return { eqId: it.equipId, eqNome: eq ? eq.nome : it.equipId, qty: it.qtd || 1, checked: false, riscado: false };
+    });
+    grupos.push({ grupoId: grupoId, kitId: savedKitId, kitNome: kit.nome || 'Kit', riscado: false, itens: itensGrupo });
+    _evKitGrupos[evId] = grupos;
+    _recalcularCargaEvento(evId);
+    _salvarKitGruposFirestore(evId);
+    renderEventosAndamento();
+    toast('Kit "' + (kit.nome || 'Kit') + '" adicionado ao evento');
+    return;
+  }
+
   if (half === 'create') {
     // Criar novo kit com os itens do grupo
     var kgd = _draggingKitGrupoData;
@@ -9641,6 +9762,12 @@ function _kitNovoCardSplitDrop(ev, half) {
 function _kitNovoCardDrop(ev) {
   var el = document.getElementById('kit-novo-card');
   if (el) el.classList.remove('drag-over-remove');
+  // Kit salvo: handled by split halves (kit-grupo-dragging is set)
+  if (_draggingKitSavedId) {
+    _draggingKitSavedId = null;
+    document.body.classList.remove('kit-grupo-dragging');
+    return;
+  }
   // Kit grupo: handled by split halves
   if (document.body.classList.contains('kit-grupo-dragging')) return;
   var isDragging = document.body.classList.contains('kit-dragging') ||
