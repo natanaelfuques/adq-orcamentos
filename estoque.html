@@ -8656,9 +8656,69 @@ function _adicionarItemExtraEv(evId, texto) {
   renderEventosAndamento();
 }
 
+function _datasEventosSobrepoem(evA, evB) {
+  // Retorna true se os períodos dos dois eventos se cruzam
+  var iniA = evA.ev_data || null;
+  var fimA = evA.ev_data_fim || iniA;
+  var iniB = evB.ev_data || null;
+  var fimB = evB.ev_data_fim || iniB;
+  if (!iniA || !iniB) return false;
+  return iniA <= fimB && iniB <= fimA;
+}
+
+function _abrirCargaEventoSilencioso(evId) {
+  var ev = _eventosAndamento[evId];
+  if (!ev) return;
+  var nomeToId = {};
+  Object.keys(_equipamentos).forEach(function(eqId) {
+    var nome = (_equipamentos[eqId].nome || '').trim().toLowerCase();
+    if (nome) nomeToId[nome] = eqId;
+  });
+  _evEqDragItems[evId] = {};
+  var itensExtrasRem = ev.itens_extras_removidos || {};
+  var itensOrigRem   = ev.itens_removidos || {};
+  (ev.itens_extras || []).forEach(function(item, i) {
+    if (itensExtrasRem[i]) return;
+    var m = item.match(/^(\d+)x\s+(.+)$/);
+    var qty = m ? parseInt(m[1]) : 1;
+    var nome = (m ? m[2] : item).trim();
+    var eqId = nomeToId[nome.toLowerCase()];
+    if (!eqId || !_equipamentos[eqId]) return;
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
+  });
+  (ev.servicos || []).forEach(function(item, i) {
+    if (itensOrigRem[i]) return;
+    var m = item.match(/^(\d+)x\s+(.+)$/);
+    var qty = m ? parseInt(m[1]) : 1;
+    var nome = (m ? m[2] : item).trim();
+    var eqId = nomeToId[nome.toLowerCase()];
+    if (!eqId || !_equipamentos[eqId]) return;
+    _evEqDragItems[evId][eqId] = { nome: nome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
+  });
+  (_evKitGrupos[evId] || []).forEach(function(grupo) {
+    if (grupo.riscado) return;
+    (grupo.itens || []).forEach(function(it) {
+      if (it.riscado) return;
+      var eqId = it.eqId;
+      if (!eqId || !_equipamentos[eqId]) return;
+      var qty = it.qty || 1;
+      _evEqDragItems[evId][eqId] = { nome: it.eqNome, qty: (_evEqDragItems[evId][eqId] ? _evEqDragItems[evId][eqId].qty + qty : qty) };
+    });
+  });
+}
+
 function _abrirCargaEvento(evId) {
   var ev = _eventosAndamento[evId] || _eventosStagingCarga[evId];
   if (!ev) return;
+
+  // Carregar silenciosamente todos os eventos com datas sobrepostas
+  Object.values(_eventosAndamento).forEach(function(outro) {
+    if (outro.id === evId) return;
+    if (_evEqDragItems[outro.id]) return; // já está carregado
+    if (_datasEventosSobrepoem(ev, outro)) {
+      _abrirCargaEventoSilencioso(outro.id);
+    }
+  });
   // Mapeia nome -> eqId
   var nomeToId = {};
   Object.keys(_equipamentos).forEach(function(eqId) {
