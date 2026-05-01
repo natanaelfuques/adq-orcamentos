@@ -261,6 +261,9 @@
     padding: 10px 16px;
     font-size: 0.85rem; color: #bbb; line-height: 1.6;
   }
+  .det-body ul { list-style: none; padding: 0; margin: 0; }
+  .det-body ul li { padding: 2.5px 0 2.5px 14px; position: relative; line-height: 1.5; }
+  .det-body ul li::before { content: '•'; color: var(--gold); position: absolute; left: 0; font-weight: 700; }
   .det-footer {
     border-top: 1px solid #222;
     padding: 7px 16px;
@@ -1229,7 +1232,7 @@ function renderOrcamento(doc) {
       lista.innerHTML = det.itens.map(it => `
         <div class="det-card">
           <div class="det-head">${escHtml(it.titulo)}</div>
-          <div class="det-body">${escHtml(it.desc)}</div>
+          <div class="det-body"><ul>${(it.desc||'').split('\n').filter(l=>l.trim()).map(l=>`<li>${escHtml(l.trim())}</li>`).join('')}</ul></div>
           ${it.valor ? `<div class="det-footer">R$ <strong>${escHtml(it.valor)}</strong></div>` : ''}
         </div>`).join('');
       if (det.valor) {
