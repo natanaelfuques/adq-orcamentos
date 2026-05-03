@@ -2037,8 +2037,19 @@ let _charts = {};
 window.addEventListener('load', function() {
   if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
+  var _EMAILS_PERM_REL = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
+
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
+      if (_EMAILS_PERM_REL.indexOf(user.email) === -1) {
+        firebase.auth().signOut();
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('screen-loading').style.display = 'none';
+        document.getElementById('screen-app').style.display = 'none';
+        var err = document.getElementById('login-err');
+        if (err) err.textContent = 'Acesso negado. Conta não autorizada.';
+        return;
+      }
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('screen-loading').style.display = 'flex';
       document.getElementById('user-info').textContent = user.email;

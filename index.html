@@ -6042,16 +6042,11 @@ function initFirebase(config) {
         _entrarNoApp(null);
         return;
       }
-      // Verificar na coleção 'usuarios' do Firestore
-      db.collection('usuarios').where('email', '==', user.email).limit(1).get()
-        .then(function(snap) {
-          if (!snap.empty) {
-            var doc = snap.docs[0].data();
-            if (doc.ativo === true) { _entrarNoApp(doc); }
-            else { _negarAcesso(); }
-          } else { _negarAcesso(); }
-        })
-        .catch(function() { _negarAcesso(); });
+      if (user.email === 'karielenmoreira@gmail.com') {
+        _entrarNoApp(null);
+        return;
+      }
+      _negarAcesso();
     });
   } catch(e) {
     console.warn('[AdQ] Firebase erro:', e);

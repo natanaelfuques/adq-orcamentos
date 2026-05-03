@@ -2810,21 +2810,44 @@ var EMOJIS_SVG = [
 var EMOJIS = EMOJIS_SVG.map(function(e) { return e.key; });
 
 // ── Auth ──
+var _EMAILS_FIXOS_EST = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
+var _EMAILS_PERM_EST  = _EMAILS_FIXOS_EST.slice();
+
 auth.onAuthStateChanged(function(user) {
   if (user) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
-    document.getElementById('user-name').textContent = user.email.split('@')[0];
-    var btnAdmin = document.getElementById('btn-admin-estoque');
-    if (btnAdmin) {
-      btnAdmin.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'flex' : 'none';
-    }
-    iniciarEstoque();
+    db.collection('configuracoes').doc('usuarios_cadastrados').get()
+      .then(function(doc) {
+        var extras = (doc.exists && doc.data().usuarios) ? doc.data().usuarios : [];
+        extras.forEach(function(u) {
+          if (_EMAILS_PERM_EST.indexOf(u.email) === -1) _EMAILS_PERM_EST.push(u.email);
+        });
+        _admEstEntrar(user);
+      })
+      .catch(function() { _admEstEntrar(user); });
   } else {
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
   }
 });
+
+function _admEstEntrar(user) {
+  if (_EMAILS_PERM_EST.indexOf(user.email) === -1) {
+    auth.signOut();
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-screen').style.display = 'none';
+    var err = document.getElementById('login-error');
+    if (err) { err.textContent = 'Acesso negado.'; err.style.display = 'block'; }
+    return;
+  }
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('user-name').textContent = user.email.split('@')[0];
+  var btnAdmin = document.getElementById('btn-admin-estoque');
+  if (btnAdmin) {
+    btnAdmin.style.display = (user.email === 'natanael.fuques@gmail.com') ? 'flex' : 'none';
+  }
+  iniciarEstoque();
+}
 
 function fazerLogin() {
   var email = document.getElementById('login-email').value.trim();
@@ -2885,6 +2908,7 @@ function abrirPainelAdminEstoque() {
         <div style="display:flex;gap:0;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1">\
           <button id="adm-est-tab-hist" onclick="_admEstAba(0)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid #4A90D9;color:#4A90D9;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Histórico</button>\
           <button id="adm-est-tab-ordem" onclick="_admEstAba(1)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Ordenar Cards</button>\
+          <button id="adm-est-tab-users" onclick="_admEstAba(2)" style="font-family:Barlow Condensed,sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:transparent;border:none;border-bottom:2px solid transparent;color:#555;padding:8px 16px 8px 0;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-right:4px">Usuários</button>\
         </div>\
         <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:#2a2a2a;z-index:0"></div>\
       </div>\
@@ -2898,6 +2922,7 @@ function abrirPainelAdminEstoque() {
           <button onclick="_admEstOrdemAtivar()" id="adm-btn-ordem-manual" style="background:#4A90D9;color:#fff;border:none;border-radius:6px;padding:10px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%;margin-bottom:8px">Ativar Ordenação Manual</button>\
           <button onclick="_admEstOrdemResetar()" style="background:none;border:1px solid rgba(224,92,92,0.4);color:#e05c5c;border-radius:6px;padding:8px 22px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer;width:100%">Resetar Ordem</button>\
         </div>\
+        <div id="adm-est-panel-users" style="padding:16px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain;display:none"></div>\
       </div>\
     </div>';
 
@@ -2909,7 +2934,7 @@ function abrirPainelAdminEstoque() {
 }
 
 function _admEstAba(idx) {
-  var keys = ['hist', 'ordem'];
+  var keys = ['hist', 'ordem', 'users'];
   keys.forEach(function(k, i) {
     var tab = document.getElementById('adm-est-tab-' + k);
     var panel = document.getElementById('adm-est-panel-' + k);
@@ -2918,6 +2943,7 @@ function _admEstAba(idx) {
   });
   if (idx === 0) { _admEstHistCarregar(); }
   if (idx === 1) { _admEstOrdemAtualizar(); }
+  if (idx === 2) { _admEstUsersInit(); }
 }
 function _admEstOrdemAtualizar() {
   var sortSel = document.getElementById('sort-select');
@@ -2942,6 +2968,177 @@ function _admEstOrdemResetar() {
   try { localStorage.removeItem(key); } catch(e) {}
   renderEquipamentos();
   toast('Ordem resetada');
+}
+
+// ── Admin Estoque: Usuários ──────────────────────────────────────────────────
+
+function _admEstUsersInit() {
+  var panel = document.getElementById('adm-est-panel-users');
+  if (!panel) return;
+  panel.innerHTML = '';
+
+  // Linha do título + link Firebase
+  var header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:4px';
+
+  var titulo = document.createElement('div');
+  titulo.style.cssText = 'font-family:Barlow Condensed,sans-serif;font-size:0.78rem;font-weight:700;color:#4A90D9;text-transform:uppercase;letter-spacing:0.1em';
+  titulo.textContent = 'Usuários com Acesso';
+
+  var linkFb = document.createElement('a');
+  linkFb.href = 'https://console.firebase.google.com/project/adq-orcamentos/authentication/users';
+  linkFb.target = '_blank';
+  linkFb.textContent = 'Firebase Auth';
+  linkFb.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;padding:4px 9px;text-decoration:none;color:#aaa;font-family:Barlow Condensed,sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em';
+  linkFb.onmouseover = function() { this.style.borderColor = '#4A90D9'; this.style.color = '#7abfff'; };
+  linkFb.onmouseout  = function() { this.style.borderColor = '#2a2a2a'; this.style.color = '#aaa'; };
+
+  header.appendChild(titulo);
+  header.appendChild(linkFb);
+  panel.appendChild(header);
+
+  // Subtítulo
+  var sub = document.createElement('div');
+  sub.style.cssText = 'font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:12px';
+  sub.textContent = 'Gerencie quem pode acessar o Estoque. Crie a conta no Firebase Auth antes de adicionar.';
+  panel.appendChild(sub);
+
+  // Lista
+  var lista = document.createElement('div');
+  lista.id = 'adm-est-users-lista';
+  lista.style.marginBottom = '10px';
+  lista.innerHTML = '<div style="font-size:0.75rem;color:#555">Carregando...</div>';
+  panel.appendChild(lista);
+
+  // Input + botão
+  var row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:6px;margin-top:8px;align-items:center';
+
+  var input = document.createElement('input');
+  input.id = 'adm-est-users-input';
+  input.type = 'email';
+  input.placeholder = 'email@usuario.com';
+  input.style.cssText = 'flex:1;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-family:Barlow,sans-serif;font-size:0.75rem;padding:7px 10px;outline:none;box-sizing:border-box';
+  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') _admEstUsersAdicionar(); });
+
+  var btn = document.createElement('button');
+  btn.textContent = '+';
+  btn.style.cssText = 'background:#4A90D9;color:#fff;border:none;border-radius:4px;padding:7px 14px;font-family:Barlow Condensed,sans-serif;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer';
+  btn.onclick = function() { _admEstUsersAdicionar(); };
+
+  row.appendChild(input);
+  row.appendChild(btn);
+  panel.appendChild(row);
+
+  _admEstUsersCarregar();
+}
+
+function _admEstUsersCarregar() {
+  var lista = document.getElementById('adm-est-users-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div style="font-size:0.75rem;color:#555">Carregando...</div>';
+  db.collection('configuracoes').doc('usuarios_cadastrados').get()
+    .then(function(doc) {
+      var usuarios = (doc.exists && doc.data().usuarios) ? doc.data().usuarios : [];
+      _admEstUsersRender(lista, usuarios);
+    })
+    .catch(function() {
+      lista.innerHTML = '<div style="font-size:0.73rem;color:#e05c5c">Erro ao carregar.</div>';
+    });
+}
+
+function _admEstUsersRender(lista, usuarios) {
+  if (!usuarios.length) {
+    lista.innerHTML = '<div style="font-size:0.72rem;color:#555;font-style:italic">Nenhum usuário cadastrado.</div>';
+    return;
+  }
+  var nivelCores = { colaborador: '#888', gerente: '#C8A94A', adm: '#7B22B8' };
+  lista.innerHTML = '';
+  usuarios.forEach(function(u, i) {
+    var isFixo = _EMAILS_FIXOS_EST.indexOf(u.email) !== -1;
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #1e1e1e';
+
+    var dot = document.createElement('div');
+    dot.style.cssText = 'width:10px;height:10px;border-radius:50%;flex-shrink:0;background:' + (u.cor || '#888');
+
+    var emailEl = document.createElement('span');
+    emailEl.style.cssText = 'flex:1;font-size:0.74rem;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    emailEl.textContent = u.email;
+
+    var nivelEl = document.createElement('span');
+    nivelEl.style.cssText = 'font-family:Barlow Condensed,sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;color:' + (nivelCores[u.nivel || 'colaborador'] || '#888');
+    nivelEl.textContent = u.nivel || 'colaborador';
+
+    row.appendChild(dot);
+    row.appendChild(emailEl);
+    row.appendChild(nivelEl);
+
+    if (isFixo) {
+      var fixoEl = document.createElement('span');
+      fixoEl.style.cssText = 'font-size:0.63rem;color:#444;flex-shrink:0;padding:0 4px';
+      fixoEl.textContent = 'fixo';
+      row.appendChild(fixoEl);
+    } else {
+      var remBtn = document.createElement('button');
+      remBtn.title = 'Remover';
+      remBtn.textContent = '×';
+      remBtn.style.cssText = 'background:none;border:none;color:#555;cursor:pointer;font-size:1.1rem;padding:0 4px;line-height:1;flex-shrink:0';
+      remBtn.onmouseover = function() { this.style.color = '#e05c5c'; };
+      remBtn.onmouseout  = function() { this.style.color = '#555'; };
+      remBtn.onclick = (function(idx) { return function() { _admEstUsersRemover(idx); }; })(i);
+      row.appendChild(remBtn);
+    }
+    lista.appendChild(row);
+  });
+}
+
+function _admEstUsersAdicionar() {
+  var input = document.getElementById('adm-est-users-input');
+  if (!input) return;
+  var email = input.value.trim().toLowerCase();
+  if (!email || email.indexOf('@') < 0) {
+    input.style.borderColor = '#e05c5c';
+    setTimeout(function() { input.style.borderColor = '#2a2a2a'; }, 1500);
+    return;
+  }
+  db.collection('configuracoes').doc('usuarios_cadastrados').get()
+    .then(function(doc) {
+      var usuarios = (doc.exists && doc.data().usuarios) ? doc.data().usuarios : [];
+      if (usuarios.find(function(u) { return u.email === email; })) {
+        toast('E-mail já cadastrado'); return;
+      }
+      var cores = ['#4A90C8','#C8A94A','#4AC87A','#7B22B8','#e05c5c','#4AC8C8','#C84A90','#C8784A','#888','#FFD600'];
+      usuarios.push({ email: email, cor: cores[usuarios.length % cores.length], nivel: 'colaborador' });
+      db.collection('configuracoes').doc('usuarios_cadastrados').set({ usuarios: usuarios })
+        .then(function() {
+          input.value = '';
+          if (_EMAILS_PERM_EST.indexOf(email) === -1) _EMAILS_PERM_EST.push(email);
+          toast('Usuário adicionado');
+          var lista = document.getElementById('adm-est-users-lista');
+          if (lista) _admEstUsersRender(lista, usuarios);
+        });
+    })
+    .catch(function() { toast('Erro ao salvar'); });
+}
+
+function _admEstUsersRemover(idx) {
+  db.collection('configuracoes').doc('usuarios_cadastrados').get()
+    .then(function(doc) {
+      var usuarios = (doc.exists && doc.data().usuarios) ? doc.data().usuarios : [];
+      var removido = usuarios[idx];
+      if (!removido || _EMAILS_FIXOS_EST.indexOf(removido.email) !== -1) return;
+      usuarios.splice(idx, 1);
+      db.collection('configuracoes').doc('usuarios_cadastrados').set({ usuarios: usuarios })
+        .then(function() {
+          var pos = _EMAILS_PERM_EST.indexOf(removido.email);
+          if (pos !== -1) _EMAILS_PERM_EST.splice(pos, 1);
+          toast('Usuário removido');
+          var lista = document.getElementById('adm-est-users-lista');
+          if (lista) _admEstUsersRender(lista, usuarios);
+        });
+    })
+    .catch(function() { toast('Erro ao remover'); });
 }
 
 // ── Admin Estoque: Veículos ──
