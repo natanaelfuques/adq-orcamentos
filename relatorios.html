@@ -357,7 +357,7 @@ header {
   cursor: pointer;
   transition: border-color 0.18s, background 0.18s;
 }
-.pgto-kpi-grid .kpi-card:hover { border-color: rgba(255,255,255,0.2); background: #1e1e1e; }
+.pgto-kpi-grid .kpi-card:hover { border-color: rgba(128,128,128,0.3); background: var(--surface2); }
 .pgto-kpi-grid .kpi-card.pgto-active                { border-color: rgba(200,200,200,0.55); }
 .pgto-kpi-grid .kpi-card.green.pgto-active           { border-color: var(--green); }
 .pgto-kpi-grid .kpi-card.blue.pgto-active            { border-color: var(--blue); }
@@ -4720,7 +4720,7 @@ function renderFinanceiro() {
       responsive: true, maintainAspectRatio: true,
       plugins: { legend: { display: false } },
       scales: {
-        y: { ticks: { callback: v => frsShort(v) }, grid: { color: '#2a2a2a' } },
+        y: { ticks: { callback: v => frsShort(v) }, grid: { color: _gridColor() } },
         x: { grid: { display: false } }
       }
     }
@@ -4816,7 +4816,7 @@ function renderFinanceiro() {
         }
       },
       scales: {
-        x: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
+        x: { ticks: { precision: 0 }, grid: { color: _gridColor() } },
         y: { grid: { display: false }, ticks: { font: { size: 11 } } }
       }
     }
@@ -5235,7 +5235,7 @@ function renderClientes() {
       responsive: true, maintainAspectRatio: true,
       plugins: { legend: { display: false } },
       scales: {
-        y: { ticks: { callback: v => frsShort(v) }, grid: { color: '#2a2a2a' } },
+        y: { ticks: { callback: v => frsShort(v) }, grid: { color: _gridColor() } },
         x: { grid: { display: false } }
       }
     }
@@ -5269,7 +5269,7 @@ function renderClientes() {
       responsive: true, maintainAspectRatio: true,
       plugins: { legend: { display: false }, title: { display: true, text: 'Convidados por evento', color: '#777', font: { size: 11 } } },
       scales: {
-        y: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
+        y: { ticks: { precision: 0 }, grid: { color: _gridColor() } },
         x: { grid: { display: false } }
       }
     }
@@ -5333,7 +5333,7 @@ function renderSazonalidade() {
       responsive: true, maintainAspectRatio: true,
       plugins: { legend: { display: false } },
       scales: {
-        y: { ticks: { precision: 0 }, grid: { color: '#2a2a2a' } },
+        y: { ticks: { precision: 0 }, grid: { color: _gridColor() } },
         x: { grid: { display: false } }
       }
     }
@@ -5355,7 +5355,7 @@ function renderSazonalidade() {
       responsive: true, maintainAspectRatio: true,
       plugins: { legend: { display: false } },
       scales: {
-        y: { ticks: { callback: v => frsShort(v) }, grid: { color: '#2a2a2a' } },
+        y: { ticks: { callback: v => frsShort(v) }, grid: { color: _gridColor() } },
         x: { grid: { display: false } }
       }
     }
@@ -6043,6 +6043,13 @@ window.addEventListener('appinstalled', function() {
   _pwaPrompt = null;
 });
 // ── MODO DIA / NOITE ──────────────────────────────────────────────
+// ── HELPER: cor das gridlines adaptada ao tema ──────────────────
+function _gridColor() {
+  return document.documentElement.classList.contains('dia')
+    ? 'rgba(0,0,0,0.07)'
+    : 'rgba(255,255,255,0.06)';
+}
+
 function _toggleTema() {
   var root = document.documentElement;
   var isDia = root.classList.toggle('dia');
