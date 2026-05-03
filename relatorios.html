@@ -2590,7 +2590,7 @@ const CHART_DEFAULTS = {
 };
 Chart.defaults.color = '#777';
 Chart.defaults.font.family = 'Barlow';
-Chart.defaults.borderColor = '#2e2e2e';
+Chart.defaults.borderColor = _gridColor();
 
 // ══════════════════════════════════════════
 // RENDER TUDO
@@ -4749,7 +4749,7 @@ function renderFinanceiro() {
     type: 'doughnut',
     data: {
       labels: tipoEntries.map(x => x[0]),
-      datasets: [{ data: tipoEntries.map(x => x[1]), backgroundColor: CORES, borderColor: '#1a1a1a', borderWidth: 2 }]
+      datasets: [{ data: tipoEntries.map(x => x[1]), backgroundColor: CORES, borderColor: _doughnutBorder(), borderWidth: 2 }]
     },
     options: {
       responsive: true, maintainAspectRatio: true,
@@ -4947,7 +4947,7 @@ function renderContratos() {
   if (titleEl) titleEl.textContent = statusTitle;
   criarChart('chart-status', {
     type: 'doughnut',
-    data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors, borderColor: '#1a1a1a', borderWidth: 2 }] },
+    data: { labels: statusLabels, datasets: [{ data: statusData, backgroundColor: statusColors, borderColor: _doughnutBorder(), borderWidth: 2 }] },
     options: { responsive:true, maintainAspectRatio:true, plugins:{ legend:{ position:'right', labels:{ boxWidth:12, padding:14 } } } }
   });
 
@@ -5384,7 +5384,7 @@ function renderSazonalidade() {
     type: 'doughnut',
     data: {
       labels: tipoSort.map(x => x[0]),
-      datasets: [{ data: tipoSort.map(x => x[1]), backgroundColor: CORES2, borderColor: '#1a1a1a', borderWidth: 2 }]
+      datasets: [{ data: tipoSort.map(x => x[1]), backgroundColor: CORES2, borderColor: _doughnutBorder(), borderWidth: 2 }]
     },
     options: {
       responsive: true, maintainAspectRatio: true,
@@ -6058,6 +6058,13 @@ function _gridColor() {
   return document.documentElement.classList.contains('dia')
     ? 'rgba(0,0,0,0.07)'
     : 'rgba(255,255,255,0.06)';
+}
+
+// ── HELPER: cor de borda dos doughnuts adaptada ao tema ─────────
+function _doughnutBorder() {
+  return document.documentElement.classList.contains('dia')
+    ? 'rgba(200,200,200,0.5)'
+    : '#1a1a1a';
 }
 
 function _toggleTema() {
