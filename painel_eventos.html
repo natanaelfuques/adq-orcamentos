@@ -2887,7 +2887,13 @@ function abrirPainelAdmin() {
         </div>\
         <div id="adm-panel-users" style="padding:20px 22px 22px 22px;box-sizing:border-box;overflow-y:auto;height:100%;overscroll-behavior:contain">\
           <div style="background:#111;border:1px solid #2a2a2a;border-radius:6px;padding:16px 18px;margin-bottom:12px">\
-            <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Usuários</div>\
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">\
+              <div style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.78rem;font-weight:700;color:#7B22B8;text-transform:uppercase;letter-spacing:0.1em">Usuários</div>\
+              <a href="https://console.firebase.google.com/project/adq-orcamentos/authentication/users" target="_blank" title="Abrir Firebase Authentication" style="display:flex;align-items:center;gap:5px;background:#0e0e0e;border:1px solid #2a2a2a;border-radius:4px;padding:4px 9px;text-decoration:none;color:#aaa;font-family:\'Barlow Condensed\',sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;cursor:pointer;transition:border-color 0.2s,color 0.2s" onmouseover="this.style.borderColor=\'#7B22B8\';this.style.color=\'#c084fc\'" onmouseout="this.style.borderColor=\'#2a2a2a\';this.style.color=\'#aaa\'">\
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>\
+                Firebase Auth\
+              </a>\
+            </div>\
             <div style="font-size:0.68rem;color:#555;line-height:1.5;margin-bottom:12px">Cadastre usuários e defina uma cor para identificá-los nos cards.</div>\
             <div id="adm-users-lista" style="margin-bottom:10px"><div style="font-size:0.75rem;color:#555">Carregando...</div></div>\
             <div style="display:flex;gap:6px;margin-top:8px;align-items:center">\
