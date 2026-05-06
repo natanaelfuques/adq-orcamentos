@@ -8376,6 +8376,7 @@ function _toggleSidebar() {
 var _eventosAndamentoSnap = {}; // etapa === 'andamento'
 var _eventosEventosSnap = {};   // etapa === 'eventos'
 var _eventosAtivosAntes = new Set(); // IDs ativos no último merge (para detectar saídas)
+var _andamentoOrderEst = []; // ordem manual dos cards em andamento (espelhada do painel_eventos)
 
 function _mergeEventosSnaps() {
   _eventosAndamento = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap);
@@ -8446,6 +8447,11 @@ function _carregarOrdemManualFirestore() {
 
 function iniciarEventosAndamento() {
   _carregarVeiculosEv();
+  // Carregar ordem manual da coluna andamento (salva pelo painel_eventos)
+  db.collection('configuracoes').doc('andamento_order').onSnapshot(function(doc) {
+    _andamentoOrderEst = (doc.exists && Array.isArray(doc.data().order)) ? doc.data().order : [];
+    renderEventosAndamento();
+  }, function() {});
   // Ouve eventos com etapa === 'andamento'
   try {
     db.collection('eventos_campo').where('etapa', '==', 'andamento').onSnapshot(function(snap) {
@@ -9609,7 +9615,20 @@ function renderEventosAndamento() {
   var count = document.getElementById('ev-andamento-count');
   if (!sec || !scroll) return;
 
-  var eventosEmAndamento = Object.values(_eventosAndamentoSnap);
+  // Ordenar por ordem manual do painel_eventos, novos ao final
+  var _andSnap = Object.values(_eventosAndamentoSnap);
+  var eventosEmAndamento = [];
+  if (_andamentoOrderEst.length > 0) {
+    _andamentoOrderEst.forEach(function(id) {
+      var found = _andSnap.find(function(x) { return x.id === id; });
+      if (found) eventosEmAndamento.push(found);
+    });
+    _andSnap.forEach(function(x) {
+      if (_andamentoOrderEst.indexOf(x.id) < 0) eventosEmAndamento.push(x);
+    });
+  } else {
+    eventosEmAndamento = _andSnap;
+  }
   var eventosEmEventos   = Object.values(_eventosEventosSnap).sort(function(a, b) {
     var hoje = new Date(); hoje.setHours(0,0,0,0);
     var da = a.ev_data ? new Date(a.ev_data + 'T00:00:00') : new Date('9999-12-31');
