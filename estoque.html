@@ -8377,6 +8377,7 @@ var _eventosAndamentoSnap = {}; // etapa === 'andamento'
 var _eventosEventosSnap = {};   // etapa === 'eventos'
 var _eventosAtivosAntes = new Set(); // IDs ativos no último merge (para detectar saídas)
 var _andamentoOrderEst = []; // ordem manual dos cards em andamento (espelhada do painel_eventos)
+var _evAndamentoDraggingId = null; // id do card de andamento sendo arrastado na sidebar
 
 function _mergeEventosSnaps() {
   _eventosAndamento = Object.assign({}, _eventosAndamentoSnap, _eventosEventosSnap);
@@ -9129,6 +9130,85 @@ function _bindEvAndamentoCards() {
   var scroll = document.getElementById('ev-andamento-scroll');
   if (!scroll) return;
 
+  // ── Drag para reordenar cards de andamento ──
+  scroll.querySelectorAll('[data-andamento-card]').forEach(function(card) {
+    card.addEventListener('dragstart', function(e) {
+      _evAndamentoDraggingId = card.getAttribute('data-andamento-card');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', _evAndamentoDraggingId);
+      setTimeout(function() { card.style.opacity = '0.4'; }, 0);
+    });
+    card.addEventListener('dragend', function() {
+      card.style.opacity = '';
+      _evAndamentoDraggingId = null;
+      var ph = scroll.querySelector('.ev-andamento-reorder-ph');
+      if (ph) ph.parentNode.removeChild(ph);
+    });
+  });
+
+  scroll.addEventListener('dragover', function(e) {
+    if (!_evAndamentoDraggingId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    // Remover placeholder anterior
+    var oldPH = scroll.querySelector('.ev-andamento-reorder-ph');
+    if (oldPH) oldPH.parentNode.removeChild(oldPH);
+    // Encontrar card mais próximo abaixo do cursor
+    var cards = Array.from(scroll.querySelectorAll('[data-andamento-card]'))
+      .filter(function(c) { return c.getAttribute('data-andamento-card') !== _evAndamentoDraggingId; });
+    var insertBefore = null;
+    for (var i = 0; i < cards.length; i++) {
+      var r = cards[i].getBoundingClientRect();
+      if (e.clientY < r.top + r.height / 2) { insertBefore = cards[i]; break; }
+    }
+    var ph = document.createElement('div');
+    ph.className = 'ev-andamento-reorder-ph';
+    ph.style.cssText = 'height:3px;margin:3px 0;background:var(--andamento,#C8A94A);border-radius:2px;pointer-events:none;flex-shrink:0;';
+    if (insertBefore) scroll.insertBefore(ph, insertBefore);
+    else {
+      // Inserir antes do primeiro separador não-andamento, ou no final dos andamento cards
+      var firstSep = scroll.querySelector('.ev-section-separator');
+      if (firstSep) scroll.insertBefore(ph, firstSep);
+      else scroll.appendChild(ph);
+    }
+  });
+
+  scroll.addEventListener('dragleave', function(e) {
+    if (!_evAndamentoDraggingId) return;
+    if (!scroll.contains(e.relatedTarget)) {
+      var ph = scroll.querySelector('.ev-andamento-reorder-ph');
+      if (ph) ph.parentNode.removeChild(ph);
+    }
+  });
+
+  scroll.addEventListener('drop', function(e) {
+    if (!_evAndamentoDraggingId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var draggedId = _evAndamentoDraggingId;
+    _evAndamentoDraggingId = null;
+    var ph = scroll.querySelector('.ev-andamento-reorder-ph');
+    // Calcular nova ordem pelos cards de andamento no DOM
+    var andCards = Array.from(scroll.querySelectorAll('[data-andamento-card]'));
+    var newOrder = [];
+    var inserted = false;
+    andCards.forEach(function(c) {
+      var cId = c.getAttribute('data-andamento-card');
+      if (cId === draggedId) return;
+      if (ph && c === ph.nextElementSibling && !inserted) {
+        newOrder.push(draggedId); inserted = true;
+      }
+      newOrder.push(cId);
+    });
+    if (!inserted) newOrder.push(draggedId);
+    if (ph) ph.parentNode.removeChild(ph);
+    _andamentoOrderEst = newOrder;
+    db.collection('configuracoes').doc('andamento_order')
+      .set({ order: newOrder })
+      .catch(function(err) { console.error('[AdQ] Erro ao salvar ordem andamento:', err); });
+    renderEventosAndamento();
+  });
+
   scroll.querySelectorAll('.card-summary').forEach(function(summary) {
     summary.addEventListener('click', function(e) {
       if (e.target.closest('.item-check') || e.target.closest('.veiculo-icon-btn') ||
@@ -9675,7 +9755,10 @@ function renderEventosAndamento() {
 
   // Renderiza: andamento → separador → eventos (aguardando) → separador → staging
   var andamentoHtml = eventosEmAndamento.map(function(ev) {
-    return _buildEvAndamentoCard(ev);
+    return _buildEvAndamentoCard(ev).replace(
+      '<div class="evento-card" id="ev-card-' + ev.id + '"',
+      '<div class="evento-card" id="ev-card-' + ev.id + '" draggable="true" data-andamento-card="' + ev.id + '"'
+    );
   }).join('');
 
   var eventosHtml = '';
@@ -9786,6 +9869,7 @@ function evCardLeave(ev, evId) {
   if (el) el.classList.remove('drag-target-ev');
 }
 function evCardDrop(ev, evId) {
+  if (_evAndamentoDraggingId) return; // reordenação de cards — ignorar
   ev.preventDefault();
   ev.stopPropagation();
   _draggingKitSavedId = null; // limpa flag de kit salvo ao dropar em evento
