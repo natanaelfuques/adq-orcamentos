@@ -1512,9 +1512,18 @@ function registrarAcesso(user) {
 // ── Board ──
 var _draggingId = null;
 var _todosEventos = [];
+var _andamentoOrder = []; // ordem manual dos cards em andamento
+var _draggingFromAndamento = false;
 
 function iniciarBoard() {
   sincronizarPainel();
+  // Carregar ordem manual da coluna andamento
+  db.collection('configuracoes').doc('andamento_order').get()
+    .then(function(doc) {
+      if (doc.exists && Array.isArray(doc.data().order)) {
+        _andamentoOrder = doc.data().order;
+      }
+    }).catch(function() {});
   // Carregar veículos do Firestore ao iniciar (sobrescreve os hardcoded)
   db.collection('configuracoes').doc('veiculos').get()
     .then(function(doc) {
@@ -1636,10 +1645,26 @@ function renderBoard() {
         return da - db2;
       });
     }
-    if (col === 'andamento' || col === 'concluido') {
-      // Merge futuros + passados, sort all by proximity to today
-      var todos = futuros.concat(passados);
-      futuros = sortByProximity(todos);
+    if (col === 'andamento') {
+      var todosAnd = futuros.concat(passados);
+      if (_andamentoOrder.length > 0) {
+        var ordered = [];
+        _andamentoOrder.forEach(function(id) {
+          var found = todosAnd.find(function(x) { return x.id === id; });
+          if (found) ordered.push(found);
+        });
+        // Novos eventos não salvos na ordem vão ao final
+        todosAnd.forEach(function(x) {
+          if (_andamentoOrder.indexOf(x.id) < 0) ordered.push(x);
+        });
+        futuros = ordered;
+      } else {
+        futuros = sortByProximity(todosAnd);
+      }
+      passados = [];
+    } else if (col === 'concluido') {
+      var todosCon = futuros.concat(passados);
+      futuros = sortByProximity(todosCon);
       passados = [];
     } else {
       futuros = sortByDate(futuros);
@@ -1694,6 +1719,9 @@ function renderBoard() {
           card.classList.remove('dragging');
           card.classList.remove('expanded');
           document.removeEventListener('dragover', onDragScroll);
+          var ph = document.querySelector('.andamento-reorder-ph');
+          if (ph) ph.parentNode.removeChild(ph);
+          _draggingFromAndamento = false;
           snapBoardToColumn();
         });
     });
@@ -2230,6 +2258,8 @@ var _dragScrollInterval = null;
 
 function onDragStart(e, id) {
   _draggingId = id;
+  var _srcCard = document.querySelector('.evento-card[data-id="' + id + '"]');
+  _draggingFromAndamento = _srcCard && !!_srcCard.closest('#col-andamento');
   var card = document.querySelector('.evento-card[data-id="' + id + '"]');
   if (card) {
     // Criar fantasma limpo — só o card-summary, sem o corpo expandido
@@ -2325,8 +2355,31 @@ function onDropBoard(e) {
 function onDragOver(e, col) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
-  document.getElementById('body-' + col).classList.add('drag-over');
 
+  if (col === 'andamento' && _draggingFromAndamento && _draggingId) {
+    // Reordenação interna: mostrar placeholder sem highlight da coluna
+    var body = document.getElementById('body-andamento');
+    if (!body) return;
+    body.classList.remove('drag-over');
+    // Remover placeholder anterior
+    var oldPH = body.querySelector('.andamento-reorder-ph');
+    if (oldPH) oldPH.parentNode.removeChild(oldPH);
+    // Encontrar o card mais próximo abaixo do cursor
+    var cards = Array.from(body.querySelectorAll('.evento-card:not(.dragging)'));
+    var insertBefore = null;
+    for (var i = 0; i < cards.length; i++) {
+      var rect = cards[i].getBoundingClientRect();
+      if (e.clientY < rect.top + rect.height / 2) { insertBefore = cards[i]; break; }
+    }
+    var ph = document.createElement('div');
+    ph.className = 'andamento-reorder-ph';
+    ph.style.cssText = 'height:3px;margin:3px 0;background:var(--andamento);border-radius:2px;pointer-events:none;';
+    if (insertBefore) body.insertBefore(ph, insertBefore);
+    else body.appendChild(ph);
+    return;
+  }
+
+  document.getElementById('body-' + col).classList.add('drag-over');
 }
 
 function onDragLeave(e) {
@@ -2334,6 +2387,8 @@ function onDragLeave(e) {
     var body = document.getElementById('body-' + col);
     if (body) body.classList.remove('drag-over');
   });
+  var ph = document.querySelector('.andamento-reorder-ph');
+  if (ph) ph.parentNode.removeChild(ph);
 }
 
 
@@ -2345,16 +2400,51 @@ function recolherCardAposDrop(id) {
 }
 function onDrop(e, col) {
   e.preventDefault();
-  onDragLeave(e);
-  if (!_draggingId) return;
+  if (!_draggingId) { onDragLeave(e); return; }
   var draggedId = _draggingId;
+  var fromAndamento = _draggingFromAndamento;
   _draggingId = null;
+  _draggingFromAndamento = false;
+
+  // Reordenação interna na coluna andamento
+  if (col === 'andamento' && fromAndamento) {
+    var body = document.getElementById('body-andamento');
+    var ph = body && body.querySelector('.andamento-reorder-ph');
+    var cards = body ? Array.from(body.querySelectorAll('.evento-card')) : [];
+    var newOrder = [];
+    var inserted = false;
+    cards.forEach(function(c) {
+      if (c.classList.contains('dragging')) return;
+      if (ph && c === ph.nextElementSibling && !inserted) {
+        newOrder.push(draggedId); inserted = true;
+      }
+      newOrder.push(c.dataset.id);
+    });
+    if (!inserted) newOrder.push(draggedId);
+    onDragLeave(e);
+    _andamentoOrder = newOrder;
+    db.collection('configuracoes').doc('andamento_order')
+      .set({ order: newOrder })
+      .catch(function(err) { console.error('[AdQ] Erro ao salvar ordem:', err); });
+    renderBoard();
+    return;
+  }
+
+  onDragLeave(e);
+  // Mudança de coluna normal
   var colLabels = { eventos: 'Eventos', andamento: 'Em Andamento', concluido: 'Concluído' };
   var ev = _todosEventos.find(function(x) { return x.id === draggedId; });
   var nomeEvento = ev ? (ev.ev_nome || draggedId) : draggedId;
   db.collection('eventos_campo').doc(draggedId).update({ etapa: col })
     .catch(function(err) { console.error('Erro ao mover card:', err); });
   registrarLog('moveu_coluna', colLabels[col] || col, nomeEvento);
+  // Se saiu de andamento, remover da ordem salva
+  if (col !== 'andamento' && fromAndamento) {
+    _andamentoOrder = _andamentoOrder.filter(function(id) { return id !== draggedId; });
+    db.collection('configuracoes').doc('andamento_order')
+      .set({ order: _andamentoOrder })
+      .catch(function() {});
+  }
   recolherCardAposDrop(draggedId);
 }
 
