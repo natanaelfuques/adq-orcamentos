@@ -399,7 +399,7 @@ header {
 
 .card-summary-left {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   min-width: 0;
 }
@@ -1891,7 +1891,20 @@ function renderBoard() {
         if (form) {
           form.style.display = 'flex';
           var inp = form.querySelector('.add-item-input');
-          if (inp) setTimeout(function(){ inp.focus(); }, 50);
+          if (inp) {
+            setTimeout(function(){ inp.focus(); }, 50);
+            if (!inp._enterBound) {
+              inp._enterBound = true;
+              inp.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  var val = inp.value.trim();
+                  if (val) adicionarItemExtra(evid, val);
+                }
+              });
+            }
+          }
         }
         btn.style.display = 'none';
       });
@@ -2219,10 +2232,10 @@ function buildCard(ev, past, col) {
     respBar +
     '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
       '<div class="card-summary-left">' +
-        '<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start">' +
-          (diaSemanaFmt ? '<div class="card-dia-semana">' + diaSemanaFmt + '</div>' : '') +
+        '<div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start">' +
           (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
           (dataFimFmt ? '<div class="card-data-badge card-data-fim-badge card-field-editable" data-field="ev_data_fim" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFimFmt + '</div>' : '') +
+          (diaSemanaFmt ? '<div class="card-dia-semana">' + diaSemanaFmt + '</div>' : '') +
         '</div>' +
         '<div>' +
           (ev.nota_id
