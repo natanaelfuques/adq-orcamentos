@@ -1353,7 +1353,7 @@ function _temPermissao(permissao) {
   if (permissao === 'orcamento')     return nivel === 'gerente';
   if (permissao === 'editor')        return false;
   if (permissao === 'historico')     return false;
-  if (permissao === 'responsaveis')  return nivel === 'gerente';
+  if (permissao === 'responsaveis')  return nivel === 'gerente' || nivel === 'chefe_equipes';
   if (permissao === 'verTodos')      return nivel === 'gerente' || nivel === 'chefe_equipes';
   return false;
 }
