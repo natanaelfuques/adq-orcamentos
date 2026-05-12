@@ -427,6 +427,15 @@ header {
   margin-top: 0;
 }
 
+.card-dia-semana {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0 2px;
+  line-height: 1;
+}
 .card-data-badge {
   font-size: 0.65rem;
   font-weight: 700;
@@ -2025,6 +2034,13 @@ function buildCard(ev, past, col) {
   var colColor = col === 'concluido' ? '#4AC87A' : col === 'andamento' ? 'rgba(200,169,74,0.8)' : '#4A90C8';
   var dataFmt    = ev.ev_data     ? ev.ev_data.split('-').reverse().join('/')     : '';
   var dataFimFmt = ev.ev_data_fim ? ev.ev_data_fim.split('-').reverse().join('/') : '';
+  var _diasSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  var diaSemanaFmt = '';
+  if (ev.ev_data && !ev.ev_data_fim) {
+    var _p = ev.ev_data.split('-');
+    var _d = new Date(parseInt(_p[0]), parseInt(_p[1])-1, parseInt(_p[2]));
+    diaSemanaFmt = _diasSemana[_d.getDay()];
+  }
   // Cor do badge de data conforme coluna e proximidade
   var badgeColor = '';
   var badgeBg = '';
@@ -2204,6 +2220,7 @@ function buildCard(ev, past, col) {
     '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
       '<div class="card-summary-left">' +
         '<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start">' +
+          (diaSemanaFmt ? '<div class="card-dia-semana">' + diaSemanaFmt + '</div>' : '') +
           (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
           (dataFimFmt ? '<div class="card-data-badge card-data-fim-badge card-field-editable" data-field="ev_data_fim" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFimFmt + '</div>' : '') +
         '</div>' +
