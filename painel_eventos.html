@@ -1328,10 +1328,11 @@ const db = firebase.firestore();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // ── Auth / Níveis ──
-// Níveis: 'colaborador' | 'gerente' | 'adm'
-// adm       → tudo
-// gerente   → orçamentos, seleção de responsáveis, ver todos os eventos
-// colaborador → apenas eventos onde é responsável
+// Níveis: 'colaborador' | 'chefe_equipes' | 'gerente' | 'adm'
+// adm          → tudo
+// gerente      → orçamentos, seleção de responsáveis, ver todos os eventos
+// chefe_equipes → ver todos os eventos (sem orçamentos nem seleção de responsáveis)
+// colaborador  → apenas eventos onde é responsável
 
 // Fallbacks legado (mantidos para compatibilidade)
 var EMAILS_ORCAMENTO_PADRAO = ['natanael.fuques@gmail.com', 'karielenmoreira@gmail.com'];
@@ -1339,7 +1340,7 @@ var EMAILS_EDITOR_PADRAO = ['natanael.fuques@gmail.com'];
 var EMAILS_HISTORICO_PADRAO = ['natanael.fuques@gmail.com'];
 
 // Nível do usuário atual (carregado no login)
-var _nivelUsuarioAtual = null; // 'colaborador' | 'gerente' | 'adm'
+var _nivelUsuarioAtual = null; // 'colaborador' | 'chefe_equipes' | 'gerente' | 'adm'
 
 // Permissões carregadas do Firestore (atualizadas no login)
 var _permissoesEditor = EMAILS_EDITOR_PADRAO.slice();
@@ -1353,7 +1354,7 @@ function _temPermissao(permissao) {
   if (permissao === 'editor')        return false;
   if (permissao === 'historico')     return false;
   if (permissao === 'responsaveis')  return nivel === 'gerente';
-  if (permissao === 'verTodos')      return nivel === 'gerente';
+  if (permissao === 'verTodos')      return nivel === 'gerente' || nivel === 'chefe_equipes';
   return false;
 }
 
@@ -3629,13 +3630,14 @@ function _admUsersRender() {
   }
   lista.innerHTML = _usuariosCadastrados.map(function(u, i) {
     var nivel = u.nivel || 'colaborador';
-    var nivelColors = { colaborador: '#555', gerente: '#C8A94A', adm: '#7B22B8' };
+    var nivelColors = { colaborador: '#555', chefe_equipes: '#4A90C8', gerente: '#C8A94A', adm: '#7B22B8' };
     var nivelColor = nivelColors[nivel] || '#555';
     return '<div class="adm-user-row" style="flex-wrap:wrap;gap:4px">' +
       '<div class="adm-user-dot" style="background:' + (u.cor || '#888') + ';cursor:pointer" onclick="_admUsersEditarCor(' + i + ')" title="Trocar cor"></div>' +
       '<span class="adm-user-email" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">' + u.email + '</span>' +
       '<select onchange="_admUsersAlterarNivel(' + i + ',this.value)" style="background:#1a1a1a;border:1px solid #333;color:' + nivelColor + ';border-radius:4px;font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:2px 6px;cursor:pointer;flex-shrink:0">' +
         '<option value="colaborador"' + (nivel === 'colaborador' ? ' selected' : '') + '>Colaborador</option>' +
+        '<option value="chefe_equipes"' + (nivel === 'chefe_equipes' ? ' selected' : '') + '>Chefe de Equipes</option>' +
         '<option value="gerente"' + (nivel === 'gerente' ? ' selected' : '') + '>Gerente</option>' +
         '<option value="adm"' + (nivel === 'adm' ? ' selected' : '') + '>ADM</option>' +
       '</select>' +
