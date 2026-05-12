@@ -2233,9 +2233,9 @@ function buildCard(ev, past, col) {
     '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
       '<div class="card-summary-left">' +
         '<div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start">' +
+          (diaSemanaFmt ? '<div class="card-dia-semana">' + diaSemanaFmt + '</div>' : '') +
           (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
           (dataFimFmt ? '<div class="card-data-badge card-data-fim-badge card-field-editable" data-field="ev_data_fim" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFimFmt + '</div>' : '') +
-          (diaSemanaFmt ? '<div class="card-dia-semana">' + diaSemanaFmt + '</div>' : '') +
         '</div>' +
         '<div>' +
           (ev.nota_id
