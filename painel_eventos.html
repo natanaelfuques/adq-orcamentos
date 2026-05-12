@@ -436,6 +436,23 @@ header {
   padding: 0 2px;
   line-height: 1;
 }
+
+/* Mobile padrão: dia da semana em cima, data embaixo */
+.card-data-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+/* Desktop: dia da semana à esquerda da data */
+@media (min-width: 701px) {
+  .card-data-wrapper {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+  }
+}
 .card-data-badge {
   font-size: 0.65rem;
   font-weight: 700;
@@ -2232,7 +2249,7 @@ function buildCard(ev, past, col) {
     respBar +
     '<div class="card-summary" data-toggle="' + esc(ev.id) + '">' +
       '<div class="card-summary-left">' +
-        '<div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start">' +
+        '<div class="card-data-wrapper">' +
           (diaSemanaFmt ? '<div class="card-dia-semana">' + diaSemanaFmt + '</div>' : '') +
           (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
           (dataFimFmt ? '<div class="card-data-badge card-data-fim-badge card-field-editable" data-field="ev_data_fim" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFimFmt + '</div>' : '') +
