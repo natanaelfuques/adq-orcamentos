@@ -213,6 +213,10 @@ header {
 .btn-config-painel:hover { border-color: var(--gold); color: var(--gold); }
 
 /* Editor mode */
+/* Badge "Sem data" só aparece no modo editor */
+.card-data-badge[data-sem-data] { display: none; }
+.editor-mode .card-data-badge[data-sem-data] { display: block; }
+
 .editor-mode .card-field-editable {
   cursor: pointer;
   border-bottom: 1px dashed rgba(200,169,74,0.3);
@@ -2226,7 +2230,7 @@ function buildCard(ev, past, col) {
       '<div class="card-summary-left">' +
         '<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start">' +
           (diaSemanaFmt ? '<div class="card-dia-semana">' + diaSemanaFmt + '</div>' : '') +
-          (dataFmt ? '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFmt + '</div>' : '') +
+          '<div class="card-data-badge card-field-editable" data-field="ev_data" data-evid="' + esc(ev.id) + '"' + badgeStyle + (dataFmt ? '' : ' data-sem-data="1" style="opacity:0.35;font-style:italic"') + '>' + (dataFmt || 'Sem data') + '</div>' +
           (dataFimFmt ? '<div class="card-data-badge card-data-fim-badge card-field-editable" data-field="ev_data_fim" data-evid="' + esc(ev.id) + '"' + badgeStyle + '>' + dataFimFmt + '</div>' : '') +
         '</div>' +
         '<div>' +
@@ -3962,6 +3966,7 @@ document.addEventListener('click', function(e) {
   if (isDate) {
     input.type = 'date';
     input.value = valorAtual; // YYYY-MM-DD
+    input.style.cssText = 'background:#1a1a1a;border:1px solid var(--gold,#C8A94A);border-radius:4px;color:#eee;padding:3px 6px;font-family:inherit;font-size:inherit;outline:none;color-scheme:dark;accent-color:#C8A94A;cursor:pointer';
   } else {
     input.type = 'text';
     input.value = valorAtual;
@@ -3971,7 +3976,11 @@ document.addEventListener('click', function(e) {
   el.innerHTML = '';
   el.appendChild(input);
   input.focus();
-  if (!isDate) input.select();
+  if (isDate) {
+    try { input.showPicker(); } catch(e) {}
+  } else {
+    input.select();
+  }
 
   function salvar() {
     var novoValor = input.value.trim();
@@ -3988,6 +3997,12 @@ document.addEventListener('click', function(e) {
           // Atualizar cache e re-render
           if (_eventosCache && _eventosCache[evId]) {
             _eventosCache[evId][field] = novoValor;
+          }
+          // Propagar ev_data / ev_data_fim para contratos se houver contrato_id
+          if (isDate && _eventosCache && _eventosCache[evId] && _eventosCache[evId].contrato_id) {
+            var contratoUpd = {};
+            contratoUpd[field] = novoValor;
+            db.collection('contratos').doc(_eventosCache[evId].contrato_id).update(contratoUpd).catch(function(){});
           }
           renderBoard();
           _editorToast('Campo atualizado!');
