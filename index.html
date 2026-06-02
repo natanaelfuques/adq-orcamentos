@@ -2037,7 +2037,7 @@ header {
       <!-- OPÇÃO 1 -->
       <div class="opcao-box">
         <div class="opcao-header">
-          <input class="opcao-label-full" id="opcao-titulo-1" value="Opção 1 — Essencial" title="Clique para editar o título" oninput="autoSizeOpcaoSub(this)" />
+          <input class="opcao-label-full" id="opcao-titulo-1" value="Opção 1 — Essencial" data-sub="Essencial" title="Clique para editar o título" oninput="autoSizeOpcaoSub(this)" />
           <label class="include-toggle" onclick="event.stopPropagation()">
             <input type="checkbox" id="inc_op1" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
@@ -2068,7 +2068,7 @@ Técnica: montagem, desmontagem.</textarea>
       <!-- OPÇÃO 2 -->
       <div class="opcao-box">
         <div class="opcao-header">
-          <input class="opcao-label-full" id="opcao-titulo-2" value="Opção 2 — Mais Escolhido ⭐" title="Clique para editar o título" oninput="autoSizeOpcaoSub(this)" />
+          <input class="opcao-label-full" id="opcao-titulo-2" value="Opção 2 — Mais Escolhido ⭐" data-sub="Mais Escolhido ⭐" title="Clique para editar o título" oninput="autoSizeOpcaoSub(this)" />
           <label class="include-toggle" onclick="event.stopPropagation()">
             <input type="checkbox" id="inc_op2" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
@@ -2100,7 +2100,7 @@ Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
       <!-- OPÇÃO 3 -->
       <div class="opcao-box">
         <div class="opcao-header">
-          <input class="opcao-label-full" id="opcao-titulo-3" value="Opção 3 — Experiência Completa" title="Clique para editar o título" oninput="autoSizeOpcaoSub(this)" />
+          <input class="opcao-label-full" id="opcao-titulo-3" value="Opção 3 — Experiência Completa" data-sub="Experiência Completa" title="Clique para editar o título" oninput="autoSizeOpcaoSub(this)" />
           <label class="include-toggle" onclick="event.stopPropagation()">
             <input type="checkbox" id="inc_op3" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
@@ -3576,15 +3576,13 @@ function renumerarPagamentos() {
 }
 
 function autoSizeOpcaoSub(input) {
-  // Mede via canvas para precisão máxima (sem cortar letras)
-  var canvas = autoSizeOpcaoSub._canvas || (autoSizeOpcaoSub._canvas = document.createElement('canvas'));
-  var ctx = canvas.getContext('2d');
-  var style = getComputedStyle(input);
-  ctx.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
-  var measured = ctx.measureText(input.value || input.placeholder || '').width;
-  var lsRaw = parseFloat(style.letterSpacing) || 0;
-  var ls = lsRaw * Math.max(1, input.value.length);
-  input.style.width = Math.max(60, Math.ceil(measured + ls + 10)) + 'px';
+  // Salva o subtítulo editado (tudo após o primeiro ' — ' ou o valor inteiro)
+  var val = input.value;
+  var sep = val.indexOf(' — ');
+  input.dataset.sub = sep !== -1 ? val.slice(sep + 3) : val;
+  // Ajusta largura
+  input.style.width = '1px';
+  input.style.width = input.scrollWidth + 'px';
 }
 
 function renumerarOpcoes() {
@@ -3593,16 +3591,15 @@ function renumerarOpcoes() {
     var cb  = document.getElementById('inc_op' + i);
     var inp = document.getElementById('opcao-titulo-' + i);
     if (!inp || !cb) return;
-    // Extrai a parte do subtítulo (tudo após o primeiro ' — ')
-    var cur = inp.value;
-    var sep = cur.indexOf(' — ');
-    var sub = sep !== -1 ? cur.slice(sep + 3) : cur;
+    // Usa data-sub para nunca duplicar o prefixo
+    var sub = inp.dataset.sub || inp.value;
     if (cb.checked) {
       inp.value = 'Opção ' + (num++) + ' — ' + sub;
     } else {
       inp.value = '– — ' + sub;
     }
-    autoSizeOpcaoSub(inp);
+    inp.style.width = '1px';
+    inp.style.width = inp.scrollWidth + 'px';
   });
 }
 
@@ -4334,9 +4331,9 @@ function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, multi
   <div class="options">
     ${(() => {
       const subtitulos = [
-        (document.getElementById('opcao-titulo-1') || {}).value || 'Opção 1 — Essencial',
-        (document.getElementById('opcao-titulo-2') || {}).value || 'Opção 2 — Mais Escolhido ⭐',
-        (document.getElementById('opcao-titulo-3') || {}).value || 'Opção 3 — Experiência Completa',
+        (function(){ var el = document.getElementById('opcao-titulo-1'); return el ? (el.dataset.sub || el.value) : 'Essencial'; })(),
+        (function(){ var el = document.getElementById('opcao-titulo-2'); return el ? (el.dataset.sub || el.value) : 'Mais Escolhido ⭐'; })(),
+        (function(){ var el = document.getElementById('opcao-titulo-3'); return el ? (el.dataset.sub || el.value) : 'Experiência Completa'; })(),
       ];
       const ativas = [
         incOp1 ? { sub: subtitulos[0], desc: desc1, v: v1 } : null,
