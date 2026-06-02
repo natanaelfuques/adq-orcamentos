@@ -4343,9 +4343,9 @@ function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, multi
   <div class="options">
     ${(() => {
       const subtitulos = [
-        (function(){ var el = document.getElementById('opcao-titulo-1'); return el ? (el.dataset.sub || el.value) : 'Essencial'; })(),
-        (function(){ var el = document.getElementById('opcao-titulo-2'); return el ? (el.dataset.sub || el.value) : 'Mais Escolhido ⭐'; })(),
-        (function(){ var el = document.getElementById('opcao-titulo-3'); return el ? (el.dataset.sub || el.value) : 'Experiência Completa'; })(),
+        (document.getElementById('opcao-titulo-1') || {}).value || 'Opção 1 — Essencial',
+        (document.getElementById('opcao-titulo-2') || {}).value || 'Opção 2 — Mais Escolhido ⭐',
+        (document.getElementById('opcao-titulo-3') || {}).value || 'Opção 3 — Experiência Completa',
       ];
       const ativas = [
         incOp1 ? { sub: subtitulos[0], desc: desc1, v: v1 } : null,
