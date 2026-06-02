@@ -328,23 +328,7 @@
     margin-bottom: 12px;
   }
 
-  .opcao-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--gold);
-    display: flex;
-    align-items: center;
-    gap: 0;
-    min-width: 0;
-  }
-  .opcao-label-prefix {
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .opcao-label-sub {
+  .opcao-label-full {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 0.85rem;
     font-weight: 700;
@@ -357,13 +341,15 @@
     outline: none;
     padding: 0 2px;
     margin: 0;
-    min-width: 60px;
+    min-width: 80px;
     width: auto;
-    max-width: 260px;
+    max-width: 100%;
     line-height: inherit;
     transition: border-color 0.15s;
+    white-space: nowrap;
+    box-sizing: content-box;
   }
-  .opcao-label-sub:focus {
+  .opcao-label-full:focus {
     border-bottom-color: var(--gold);
     background: rgba(200,169,74,0.06);
     border-radius: 2px 2px 0 0;
@@ -2051,7 +2037,7 @@ header {
       <!-- OPÇÃO 1 -->
       <div class="opcao-box">
         <div class="opcao-header">
-          <span class="opcao-label"><span class="opcao-label-prefix" id="opcao-prefix-1">Opção 1 — </span><input class="opcao-label-sub" id="opcao-sub-1" value="Essencial" title="Clique para editar o subtítulo" oninput="autoSizeOpcaoSub(this)" /></span>
+          <input class="opcao-label-full" id="opcao-titulo-1" value="Opção 1 — Essencial" title="Clique para editar o título" oninput="autoSizeOpcaoSub(this)" />
           <label class="include-toggle" onclick="event.stopPropagation()">
             <input type="checkbox" id="inc_op1" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
@@ -2082,7 +2068,7 @@ Técnica: montagem, desmontagem.</textarea>
       <!-- OPÇÃO 2 -->
       <div class="opcao-box">
         <div class="opcao-header">
-          <span class="opcao-label"><span class="opcao-label-prefix" id="opcao-prefix-2">Opção 2 — </span><input class="opcao-label-sub" id="opcao-sub-2" value="Mais Escolhido ⭐" title="Clique para editar o subtítulo" oninput="autoSizeOpcaoSub(this)" /></span>
+          <input class="opcao-label-full" id="opcao-titulo-2" value="Opção 2 — Mais Escolhido ⭐" title="Clique para editar o título" oninput="autoSizeOpcaoSub(this)" />
           <label class="include-toggle" onclick="event.stopPropagation()">
             <input type="checkbox" id="inc_op2" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
@@ -2114,7 +2100,7 @@ Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
       <!-- OPÇÃO 3 -->
       <div class="opcao-box">
         <div class="opcao-header">
-          <span class="opcao-label"><span class="opcao-label-prefix" id="opcao-prefix-3">Opção 3 — </span><input class="opcao-label-sub" id="opcao-sub-3" value="Experiência Completa" title="Clique para editar o subtítulo" oninput="autoSizeOpcaoSub(this)" /></span>
+          <input class="opcao-label-full" id="opcao-titulo-3" value="Opção 3 — Experiência Completa" title="Clique para editar o título" oninput="autoSizeOpcaoSub(this)" />
           <label class="include-toggle" onclick="event.stopPropagation()">
             <input type="checkbox" id="inc_op3" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
@@ -3590,23 +3576,33 @@ function renumerarPagamentos() {
 }
 
 function autoSizeOpcaoSub(input) {
-  // Redimensiona o input conforme o conteúdo
-  input.style.width = '0';
-  input.style.width = Math.max(60, input.scrollWidth + 4) + 'px';
+  // Mede via canvas para precisão máxima (sem cortar letras)
+  var canvas = autoSizeOpcaoSub._canvas || (autoSizeOpcaoSub._canvas = document.createElement('canvas'));
+  var ctx = canvas.getContext('2d');
+  var style = getComputedStyle(input);
+  ctx.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
+  var measured = ctx.measureText(input.value || input.placeholder || '').width;
+  var lsRaw = parseFloat(style.letterSpacing) || 0;
+  var ls = lsRaw * Math.max(1, input.value.length);
+  input.style.width = Math.max(60, Math.ceil(measured + ls + 10)) + 'px';
 }
 
 function renumerarOpcoes() {
   var num = 1;
   [1,2,3].forEach(function(i) {
-    var cb     = document.getElementById('inc_op' + i);
-    var prefix = document.getElementById('opcao-prefix-' + i);
-    if (prefix && cb) {
-      if (cb.checked) {
-        prefix.textContent = 'Opção ' + (num++) + ' — ';
-      } else {
-        prefix.textContent = '– — ';
-      }
+    var cb  = document.getElementById('inc_op' + i);
+    var inp = document.getElementById('opcao-titulo-' + i);
+    if (!inp || !cb) return;
+    // Extrai a parte do subtítulo (tudo após o primeiro ' — ')
+    var cur = inp.value;
+    var sep = cur.indexOf(' — ');
+    var sub = sep !== -1 ? cur.slice(sep + 3) : cur;
+    if (cb.checked) {
+      inp.value = 'Opção ' + (num++) + ' — ' + sub;
+    } else {
+      inp.value = '– — ' + sub;
     }
+    autoSizeOpcaoSub(inp);
   });
 }
 
@@ -3669,7 +3665,7 @@ function salvarOrcamentoCompleto() {
         _seqOpc++;
         opcoes.push({
           tipo: 'pacote', idx: _seqOpc,
-          titulo: (document.getElementById('opcao-sub-'+ i) || {}).value || ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
+          titulo: (document.getElementById('opcao-titulo-'+ i) || {}).value || ('Opção ' + i + ' — ' + ['Essencial','Mais Escolhido','Experiência Completa'][i-1]),
           desc:  document.getElementById('desc'+i).value.trim(),
           valor: formatBRL(parseBRL(document.getElementById('valor'+i).value))
         });
@@ -3949,7 +3945,7 @@ function baixarDadosOrcamento() {
         opcoes.push({
           tipo: 'pacote',
           idx: _seqOpc,
-          titulo: (document.getElementById('opcao-sub-'+ i) || {}).value || ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
+          titulo: (document.getElementById('opcao-titulo-'+ i) || {}).value || ('Opção ' + i + ' — ' + ['Essencial','Mais Escolhido','Experiência Completa'][i-1]),
           desc: document.getElementById('desc'+i).value.trim(),
           valor: formatBRL(parseBRL(document.getElementById('valor'+i).value))
         });
@@ -4338,9 +4334,9 @@ function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, multi
   <div class="options">
     ${(() => {
       const subtitulos = [
-        (document.getElementById('opcao-sub-1') || {}).value || 'Essencial',
-        (document.getElementById('opcao-sub-2') || {}).value || 'Mais Escolhido ⭐',
-        (document.getElementById('opcao-sub-3') || {}).value || 'Experiência Completa',
+        (document.getElementById('opcao-titulo-1') || {}).value || 'Opção 1 — Essencial',
+        (document.getElementById('opcao-titulo-2') || {}).value || 'Opção 2 — Mais Escolhido ⭐',
+        (document.getElementById('opcao-titulo-3') || {}).value || 'Opção 3 — Experiência Completa',
       ];
       const ativas = [
         incOp1 ? { sub: subtitulos[0], desc: desc1, v: v1 } : null,
@@ -4400,7 +4396,7 @@ function autoResize(el) {
 document.addEventListener('DOMContentLoaded', function() {
   // ── Inicializa tamanho dos inputs de subtítulo das opções ──
   [1,2,3].forEach(function(i) {
-    var inp = document.getElementById('opcao-sub-' + i);
+    var inp = document.getElementById('opcao-titulo-' + i);
     if (inp) autoSizeOpcaoSub(inp);
   });
 
@@ -6531,7 +6527,7 @@ function coletarDadosOrcamento() {
         _seqOpc++;
         opcoes.push({
           tipo: 'pacote', idx: _seqOpc,
-          titulo: (document.getElementById('opcao-sub-'+ i) || {}).value || ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
+          titulo: (document.getElementById('opcao-titulo-'+ i) || {}).value || ('Opção ' + i + ' — ' + ['Essencial','Mais Escolhido','Experiência Completa'][i-1]),
           desc:  document.getElementById('desc'+i) ? document.getElementById('desc'+i).value.trim() : '',
           valor: formatBRL(parseBRL(document.getElementById('valor'+i) ? document.getElementById('valor'+i).value : '0'))
         });
