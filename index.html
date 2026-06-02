@@ -335,6 +335,38 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: 0;
+  }
+  .opcao-label-prefix {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .opcao-label-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(200,169,74,0.4);
+    outline: none;
+    padding: 0 2px;
+    margin: 0;
+    min-width: 60px;
+    width: auto;
+    max-width: 260px;
+    line-height: inherit;
+    transition: border-color 0.15s;
+  }
+  .opcao-label-sub:focus {
+    border-bottom-color: var(--gold);
+    background: rgba(200,169,74,0.06);
+    border-radius: 2px 2px 0 0;
   }
 
 
@@ -2019,7 +2051,7 @@ header {
       <!-- OPÇÃO 1 -->
       <div class="opcao-box">
         <div class="opcao-header">
-          <span class="opcao-label">Opção 1 — Essencial</span>
+          <span class="opcao-label"><span class="opcao-label-prefix" id="opcao-prefix-1">Opção 1 — </span><input class="opcao-label-sub" id="opcao-sub-1" value="Essencial" title="Clique para editar o subtítulo" oninput="autoSizeOpcaoSub(this)" /></span>
           <label class="include-toggle" onclick="event.stopPropagation()">
             <input type="checkbox" id="inc_op1" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
@@ -2050,7 +2082,7 @@ Técnica: montagem, desmontagem.</textarea>
       <!-- OPÇÃO 2 -->
       <div class="opcao-box">
         <div class="opcao-header">
-          <span class="opcao-label">Opção 2 — Mais Escolhido ⭐</span>
+          <span class="opcao-label"><span class="opcao-label-prefix" id="opcao-prefix-2">Opção 2 — </span><input class="opcao-label-sub" id="opcao-sub-2" value="Mais Escolhido ⭐" title="Clique para editar o subtítulo" oninput="autoSizeOpcaoSub(this)" /></span>
           <label class="include-toggle" onclick="event.stopPropagation()">
             <input type="checkbox" id="inc_op2" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
@@ -2082,7 +2114,7 @@ Técnica: montagem, desmontagem, suporte durante o evento.</textarea>
       <!-- OPÇÃO 3 -->
       <div class="opcao-box">
         <div class="opcao-header">
-          <span class="opcao-label">Opção 3 — Experiência Completa</span>
+          <span class="opcao-label"><span class="opcao-label-prefix" id="opcao-prefix-3">Opção 3 — </span><input class="opcao-label-sub" id="opcao-sub-3" value="Experiência Completa" title="Clique para editar o subtítulo" oninput="autoSizeOpcaoSub(this)" /></span>
           <label class="include-toggle" onclick="event.stopPropagation()">
             <input type="checkbox" id="inc_op3" checked onchange="renumerarOpcoes()" />
             <span>Incluir</span>
@@ -3557,17 +3589,22 @@ function renumerarPagamentos() {
   });
 }
 
+function autoSizeOpcaoSub(input) {
+  // Redimensiona o input conforme o conteúdo
+  input.style.width = '0';
+  input.style.width = Math.max(60, input.scrollWidth + 4) + 'px';
+}
+
 function renumerarOpcoes() {
-  var subtitulos = ['Essencial','Mais Escolhido ⭐','Experiência Completa'];
   var num = 1;
   [1,2,3].forEach(function(i) {
-    var cb    = document.getElementById('inc_op' + i);
-    var label = cb && cb.closest('.opcao-box') && cb.closest('.opcao-box').querySelector('.opcao-label');
-    if (label && cb) {
+    var cb     = document.getElementById('inc_op' + i);
+    var prefix = document.getElementById('opcao-prefix-' + i);
+    if (prefix && cb) {
       if (cb.checked) {
-        label.textContent = 'Opção ' + (num++) + ' — ' + subtitulos[i-1];
+        prefix.textContent = 'Opção ' + (num++) + ' — ';
       } else {
-        label.textContent = '– — ' + subtitulos[i-1];
+        prefix.textContent = '– — ';
       }
     }
   });
@@ -3632,7 +3669,7 @@ function salvarOrcamentoCompleto() {
         _seqOpc++;
         opcoes.push({
           tipo: 'pacote', idx: _seqOpc,
-          titulo: ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
+          titulo: (document.getElementById('opcao-sub-'+ i) || {}).value || ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
           desc:  document.getElementById('desc'+i).value.trim(),
           valor: formatBRL(parseBRL(document.getElementById('valor'+i).value))
         });
@@ -3912,7 +3949,7 @@ function baixarDadosOrcamento() {
         opcoes.push({
           tipo: 'pacote',
           idx: _seqOpc,
-          titulo: ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
+          titulo: (document.getElementById('opcao-sub-'+ i) || {}).value || ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
           desc: document.getElementById('desc'+i).value.trim(),
           valor: formatBRL(parseBRL(document.getElementById('valor'+i).value))
         });
@@ -4300,7 +4337,11 @@ function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, multi
   ${incOpcoes ? `
   <div class="options">
     ${(() => {
-      const subtitulos = ['Essencial','Mais Escolhido ⭐','Experiência Completa'];
+      const subtitulos = [
+        (document.getElementById('opcao-sub-1') || {}).value || 'Essencial',
+        (document.getElementById('opcao-sub-2') || {}).value || 'Mais Escolhido ⭐',
+        (document.getElementById('opcao-sub-3') || {}).value || 'Experiência Completa',
+      ];
       const ativas = [
         incOp1 ? { sub: subtitulos[0], desc: desc1, v: v1 } : null,
         incOp2 ? { sub: subtitulos[1], desc: desc2, v: v2 } : null,
@@ -4357,6 +4398,12 @@ function autoResize(el) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // ── Inicializa tamanho dos inputs de subtítulo das opções ──
+  [1,2,3].forEach(function(i) {
+    var inp = document.getElementById('opcao-sub-' + i);
+    if (inp) autoSizeOpcaoSub(inp);
+  });
+
   // ── Correção de scroll: restaura overflow do body quando todos os modais são removidos ──
   var _modalIds = ['adq-autentique-modal', 'modal-ia', 'adq-link-ass-modal', 'adq-preset-modal', 'adq-opcoes-modal', 'nota-edit-modal', 'modal-ia-destino', 'modal-configuracoes'];
   var _observer = new MutationObserver(function() {
@@ -6484,7 +6531,7 @@ function coletarDadosOrcamento() {
         _seqOpc++;
         opcoes.push({
           tipo: 'pacote', idx: _seqOpc,
-          titulo: ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
+          titulo: (document.getElementById('opcao-sub-'+ i) || {}).value || ['Essencial','Mais Escolhido','Experiência Completa'][i-1],
           desc:  document.getElementById('desc'+i) ? document.getElementById('desc'+i).value.trim() : '',
           valor: formatBRL(parseBRL(document.getElementById('valor'+i) ? document.getElementById('valor'+i).value : '0'))
         });
