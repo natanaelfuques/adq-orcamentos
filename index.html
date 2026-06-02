@@ -3580,9 +3580,23 @@ function autoSizeOpcaoSub(input) {
   var val = input.value;
   var sep = val.indexOf(' — ');
   input.dataset.sub = sep !== -1 ? val.slice(sep + 3) : val;
-  // Ajusta largura
-  input.style.width = '1px';
-  input.style.width = input.scrollWidth + 'px';
+  // Mede via span fantasma para garantir que nada seja cortado
+  var ghost = autoSizeOpcaoSub._ghost;
+  if (!ghost) {
+    ghost = document.createElement('span');
+    ghost.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;pointer-events:none;top:-9999px;left:-9999px';
+    document.body.appendChild(ghost);
+    autoSizeOpcaoSub._ghost = ghost;
+  }
+  var cs = getComputedStyle(input);
+  ghost.style.font         = cs.font;
+  ghost.style.fontFamily   = cs.fontFamily;
+  ghost.style.fontSize     = cs.fontSize;
+  ghost.style.fontWeight   = cs.fontWeight;
+  ghost.style.letterSpacing = cs.letterSpacing;
+  ghost.style.textTransform = cs.textTransform;
+  ghost.textContent = input.value || ' ';
+  input.style.width = Math.max(60, ghost.offsetWidth + 12) + 'px';
 }
 
 function renumerarOpcoes() {
@@ -4038,9 +4052,7 @@ function renderOpcoesList(dados) {
     const descPreview = isDetalhado
       ? op.itens.map(it => it.titulo + ': ' + it.desc).join('\n')
       : op.desc;
-    const tituloExibido = isDetalhado
-      ? op.titulo
-      : 'Opção ' + (op.idx || (idx+1)) + ' — ' + op.titulo;
+    const tituloExibido = op.titulo;
     div.innerHTML = `
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
         <input type="radio" name="orc_opcao_sel" value="${idx}" style="width:auto;accent-color:var(--gold);margin-top:3px">
@@ -4341,7 +4353,7 @@ function buildDocHTML({ nome, evento, local, pessoas, dataFmt, dataEvento, multi
         incOp3 ? { sub: subtitulos[2], desc: desc3, v: v3 } : null,
       ].filter(Boolean);
       return ativas.map((op, idx) => `<div class="option-block">
-      <div class="option-head"><span>Opção ${idx+1} — ${op.sub}</span></div>
+      <div class="option-head"><span>${op.sub}</span></div>
       <div class="option-body"><ul>${linhas(op.desc)}</ul></div>
       <div class="option-price">Investimento: <strong>R$ ${op.v}</strong></div>
     </div>`).join('');
