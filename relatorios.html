@@ -2507,6 +2507,10 @@ function getBadgeStatus(c) {
   return getStatusContrato(c);
 }
 
+function normBusca(s) {
+  return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
 function getPgtoLabel(c) {
   const t = c.pgto_tipo || '';
   if (t === 'vista') return 'À vista';
@@ -3829,11 +3833,11 @@ function renderPagamentos() {
     .filter(function(e) { return valorEv(e) > 0 && !e.removido_manualmente; });
 
   // Filtro de busca + status
-  const busca = (document.getElementById('pgto-busca') ? document.getElementById('pgto-busca').value : '').toLowerCase();
+  const busca = normBusca(document.getElementById('pgto-busca') ? document.getElementById('pgto-busca').value : '');
   const lista = todosBase.filter(function(ev) {
     if (busca) {
-      const nome = (nomeCli(ev) + ' ' + tipoEv(ev)).toLowerCase();
-      const evRef = (ev.id || '').substring(0, 8).toLowerCase();
+      const nome = normBusca(nomeCli(ev) + ' ' + tipoEv(ev));
+      const evRef = normBusca((ev.id || '').substring(0, 8));
       if (!nome.includes(busca) && !evRef.includes(busca)) return false;
     }
     const st = getStatusPgto(ev);
@@ -4875,7 +4879,7 @@ function getValorOrc(orc) {
 function renderContratos() {
   const cons = contratosFiltrados();
   const orcs = orcamentosFiltrados();
-  const busca = (document.getElementById('oc-busca') ? document.getElementById('oc-busca').value : '').toLowerCase().trim();
+  const busca = normBusca(document.getElementById('oc-busca') ? document.getElementById('oc-busca').value : '');
 
   // ── KPIs adaptativos conforme sub-aba ──
   const confirmadosCon = cons.filter(c => ['confirmado','concluido'].includes(getStatusContrato(c)));
@@ -5032,7 +5036,7 @@ function renderContratos() {
   // Filtrar por busca
   if (busca) {
     itens = itens.filter(function(item) {
-      const cli = (nomeCli(item) + ' ' + tipoEv(item)).toLowerCase();
+      const cli = normBusca(nomeCli(item) + ' ' + tipoEv(item));
       return cli.includes(busca);
     });
   }
