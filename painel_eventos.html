@@ -796,12 +796,19 @@ header {
   /* checklist marcado: sem risco, só caixinha verde */
 }
 
+.card-summary-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .card-master-check {
-  width: 18px;
-  height: 18px;
-  min-width: 18px;
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
   border: 1.5px solid var(--border2);
-  border-radius: 4px;
+  border-radius: 3px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -817,8 +824,8 @@ header {
 
 .card-master-check.checked::after {
   content: '';
-  width: 9px;
-  height: 5px;
+  width: 8px;
+  height: 4px;
   border-left: 2px solid #111;
   border-bottom: 2px solid #111;
   transform: rotate(-45deg) translateY(-1px);
@@ -2284,8 +2291,10 @@ function buildCard(ev, past, col) {
           ) +
         '</div>' +
       '</div>' +
-      '<div class="card-master-check' + (masterChecked ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" title="Marcar tudo como concluído"></div>' +
-      '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
+      '<div class="card-summary-right">' +
+        '<div class="card-master-check' + (masterChecked ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" title="Marcar tudo como concluído"></div>' +
+        '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
+      '</div>' +
     '</div>' +
     '<div class="card-body">' +
       '<div class="card-body-inner">' +
