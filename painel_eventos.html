@@ -796,6 +796,35 @@ header {
   /* checklist marcado: sem risco, só caixinha verde */
 }
 
+.card-master-check {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border: 1.5px solid var(--border2);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.card-master-check.checked {
+  background: var(--concluido);
+  border-color: var(--concluido);
+}
+
+.card-master-check.checked::after {
+  content: '';
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid #111;
+  border-bottom: 2px solid #111;
+  transform: rotate(-45deg) translateY(-1px);
+  display: block;
+}
+
 .card-item.item-removido .item-text { text-decoration: line-through; opacity: 0.5; color: var(--muted); }
 
 /* ── KIT GRUPOS no painel ── */
@@ -1733,7 +1762,7 @@ function renderBoard() {
     });
     body.querySelectorAll('.card-summary').forEach(function(summary) {
       summary.addEventListener('click', function(e) {
-        if (e.target.closest('.item-check') || e.target.closest('.ev-kit-grupo')) return;
+        if (e.target.closest('.item-check') || e.target.closest('.ev-kit-grupo') || e.target.closest('.card-master-check')) return;
         var card = summary.closest('.evento-card');
         if (!card) return;
         var wasExpanded = card.classList.contains('expanded');
@@ -1763,6 +1792,13 @@ function renderBoard() {
         e.stopPropagation();
         var idx = chk.dataset.idx;
         toggleItem(chk.dataset.evid, isNaN(idx) ? idx : parseInt(idx));
+      });
+    });
+
+    body.querySelectorAll('.card-master-check').forEach(function(chk) {
+      chk.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleMasterCheck(chk.dataset.evid);
       });
     });
 
@@ -2217,6 +2253,8 @@ function buildCard(ev, past, col) {
       '</div>';
   }
 
+  var masterChecked = _painelMasterChecked(ev.id);
+
   // Barrinha de responsáveis no topo
   var respBar = _buildRespBarHTML(ev.responsaveis || []);
 
@@ -2246,6 +2284,7 @@ function buildCard(ev, past, col) {
           ) +
         '</div>' +
       '</div>' +
+      '<div class="card-master-check' + (masterChecked ? ' checked' : '') + '" data-evid="' + esc(ev.id) + '" title="Marcar tudo como concluído"></div>' +
       '<svg class="card-expand-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>' +
     '</div>' +
     '<div class="card-body">' +
@@ -2490,6 +2529,88 @@ function toggleItem(evId, idx) {
       .catch(function(e) { console.warn('Erro ao sincronizar checklist na nota:', e); });
   }
   registrarLog('checklist_preencheu', '', ev.ev_nome || evId);
+}
+
+function _isObsTexto(s) {
+  s = (s || '').toLowerCase();
+  return s.indexOf('obs:') === 0 || s.indexOf('obs.') === 0;
+}
+
+function _painelChecklistRefs(evId) {
+  var ev = _todosEventos.find(function(e) { return e.id === evId; });
+  if (!ev) return null;
+  var srv = [];
+  (ev.servicos || []).forEach(function(s, i) {
+    if (!s) return;
+    var removido = (ev.itens_removidos || {})[i];
+    if (!_isObsTexto(s) && !removido) srv.push(i);
+  });
+  var extra = [];
+  (ev.itens_extras || []).forEach(function(s, i) {
+    var removido = ev.itens_extras_removidos && ev.itens_extras_removidos[i];
+    if (!_isObsTexto(s) && !removido) extra.push(i);
+  });
+  var painel = [];
+  (ev.itens_painel || []).forEach(function(s, i) {
+    var removido = ev.itens_painel_removidos && ev.itens_painel_removidos[i];
+    if (!_isObsTexto(s) && !removido) painel.push(i);
+  });
+  var grupos = _kitGruposPainel[evId] || [];
+  var kit = [];
+  grupos.forEach(function(g, gi) {
+    (g.itens || []).forEach(function(it, ii) {
+      if (!it.riscado) kit.push({ gi: gi, ii: ii });
+    });
+  });
+  return { ev: ev, srv: srv, extra: extra, painel: painel, kit: kit, grupos: grupos };
+}
+
+function _painelMasterChecked(evId) {
+  var r = _painelChecklistRefs(evId);
+  if (!r) return false;
+  var total = r.srv.length + r.extra.length + r.painel.length + r.kit.length;
+  if (total === 0) return !!r.ev.master_check;
+  var itensOk = r.ev.itens_ok || {};
+  var allSrv = r.srv.every(function(i) { return !!itensOk[i]; });
+  var allExtra = r.extra.every(function(i) { return !!itensOk['extra_' + i]; });
+  var allPainel = r.painel.every(function(i) { return !!itensOk['painel_' + i]; });
+  var allKit = r.kit.every(function(k) { return !!r.grupos[k.gi].itens[k.ii].checked; });
+  return allSrv && allExtra && allPainel && allKit;
+}
+
+function toggleMasterCheck(evId) {
+  var r = _painelChecklistRefs(evId);
+  if (!r) return;
+  var ev = r.ev;
+  var total = r.srv.length + r.extra.length + r.painel.length + r.kit.length;
+
+  if (total === 0) {
+    // Sem itens marcáveis: usa flag manual própria do card ("missão cumprida")
+    ev.master_check = !ev.master_check;
+    db.collection('eventos_campo').doc(evId).update({ master_check: ev.master_check });
+    renderBoard();
+    return;
+  }
+
+  var newState = !_painelMasterChecked(evId);
+  var itensOk = Object.assign({}, ev.itens_ok || {});
+  r.srv.forEach(function(i) { itensOk[i] = newState; });
+  r.extra.forEach(function(i) { itensOk['extra_' + i] = newState; });
+  r.painel.forEach(function(i) { itensOk['painel_' + i] = newState; });
+  ev.itens_ok = itensOk;
+  db.collection('eventos_campo').doc(evId).update({ itens_ok: itensOk });
+  if (ev.nota_id) {
+    db.collection('notas').doc(ev.nota_id).update({ itens_ok: itensOk })
+      .catch(function(e) { console.warn('Erro ao sincronizar checklist na nota:', e); });
+  }
+
+  if (r.kit.length) {
+    r.kit.forEach(function(k) { r.grupos[k.gi].itens[k.ii].checked = newState; });
+    _salvarKitGruposPainel(evId);
+  }
+
+  registrarLog('checklist_preencheu', '', ev.ev_nome || evId);
+  renderBoard();
 }
 
 function removerItemOriginal(evId, idx) {
