@@ -7344,7 +7344,7 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button class="btn-salvo" data-action="abrir-contrato" data-id="' + id + '">Carregar</button>';
     var noPainel = !!etapa; // etapa existe no etapaMap → card já está no painel
     card += '<button class="btn-salvo' + (noPainel ? ' no-painel' : '') + '" data-action="enviar-painel" data-id="' + id + '" data-no-painel="' + (noPainel ? '1' : '0') + '" title="' + (noPainel ? 'Remover do painel' : 'Enviar para o painel') + '">Painel</button>';
-    card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar</button>';
+    card += '<button class="btn-salvo" data-action="json-con" data-id="' + id + '">Baixar JSON</button>';
     card += '<button class="btn-salvo danger" data-action="excluir-contrato" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<div class="salvo-status-row">';
