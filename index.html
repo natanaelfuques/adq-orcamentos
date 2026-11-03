@@ -6391,6 +6391,7 @@ function handleSalvosClick(e) {
     }
   }
   else if (action === 'json-orc') baixarOrcamentoJSON(id);
+  else if (action === 'pdf-orc') baixarPDFSalvo(id);
   else if (action === 'json-con') baixarContratoJSON(id);
   else if (action === 'toggle-aprovado-contrato') {
     if (!db) return;
@@ -6648,7 +6649,7 @@ function renderSalvos(docs) {
     card += '<button class="btn-salvo primary" data-action="link" data-id="' + id + '" title="Copiar link para enviar ao cliente">Link</button>';
     card += '<button class="btn-salvo" data-action="abrir" data-id="' + id + '">Carregar</button>';
     card += '<button class="btn-salvo" data-action="gerar-contrato" data-id="' + id + '">Gerar Contrato</button>';
-    card += '<button class="btn-salvo" data-action="json-orc" data-id="' + id + '">Baixar</button>';
+    card += '<button class="btn-salvo" data-action="pdf-orc" data-id="' + id + '">Baixar</button>';
     card += '<button class="btn-salvo danger" data-action="excluir" data-id="' + id + '" data-nome="' + nomeEsc + '">Excluir</button>';
     card += '</div>';
     card += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">';
@@ -6694,6 +6695,68 @@ function abrirSalvo(id) {
       switchMain('orcamento');
       setTimeout(_atualizarBtnMapsOrc, 50);
     }
+  });
+}
+
+function baixarPDFSalvo(id) {
+  if (!db) return;
+  db.collection('orcamentos').doc(id).get().then(function(doc) {
+    if (!doc.exists) { alert('Orçamento não encontrado.'); return; }
+    var d = doc.data();
+    if (d._tipo !== 'orcamento_completo' && d._tipo !== 'orcamento') return;
+
+    var hoje = new Date().toLocaleDateString('pt-BR');
+    var dataEvt = d.data_evento || '';
+    var dataFim = d.dataFim || d.data_fim || '';
+    var detItens = [];
+    var detTotal = 0;
+    (d.detItens || []).forEach(function(it) {
+      if (it && it.inc) {
+        detItens.push({ titulo: (it.titulo || '').trim(), desc: (it.desc || '').trim(), valor: formatBRL(parseBRL(it.val || '0')) });
+        detTotal += parseBRL(it.val || '0');
+      }
+    });
+    var pg = (d.pagamentos || []).filter(function(p) { return p && p.inc; })
+      .map(function(p) { return { titulo: (p.titulo || '').trim(), desc: (p.desc || '').trim() }; });
+
+    var html = buildDocHTML({
+      nome: (d.nome_cliente || '').trim() || 'Cliente',
+      evento: (d.tipo_evento || '').trim() || 'Evento',
+      local: (d.local_evento || '').trim() || 'Brusque/SC',
+      pessoas: (d.qtd_pessoas || '').toString().trim(),
+      dataFmt: hoje,
+      dataEvento: dataEvt ? formatarData(dataEvt) : hoje,
+      multidiaOrc: !!dataFim,
+      dataFimOrc: dataFim ? formatarData(dataFim) : '',
+      incCliente: !!d.inc_cliente, incOpcoes: !!d.inc_opcoes, incPagamento: !!d.inc_pagamento,
+      incOp1: !!d.inc_op1, incOp2: !!d.inc_op2, incOp3: !!d.inc_op3,
+      incDetalhado: !!d.inc_detalhado, detItens: detItens, detValor: formatBRL(detTotal),
+      desc1: (d.desc1 || '').trim(), desc2: (d.desc2 || '').trim(), desc3: (d.desc3 || '').trim(),
+      v1: formatBRL(parseBRL(d.valor1 || '0')), v2: formatBRL(parseBRL(d.valor2 || '0')), v3: formatBRL(parseBRL(d.valor3 || '0')),
+      pg: pg
+    });
+
+    // iframe invisível só para imprimir (não mexe na tela de orçamento)
+    var old = document.getElementById('pdf-frame-salvo');
+    if (old) old.remove();
+    var fr = document.createElement('iframe');
+    fr.id = 'pdf-frame-salvo';
+    fr.style.cssText = 'position:fixed;right:0;bottom:0;width:210mm;height:297mm;border:0;opacity:0;pointer-events:none;z-index:-1';
+    fr.addEventListener('load', function() {
+      setTimeout(function() {
+        try { fr.contentWindow.focus(); fr.contentWindow.print(); }
+        catch (e) {
+          var blob = new Blob([html], { type: 'text/html' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url; a.target = '_blank'; a.click();
+          setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
+        }
+        setTimeout(function() { fr.remove(); }, 60000);
+      }, 500);
+    }, { once: true });
+    fr.srcdoc = html;
+    document.body.appendChild(fr);
   });
 }
 
