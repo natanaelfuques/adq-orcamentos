@@ -1197,10 +1197,6 @@
   .salvo-status.concluido  { border-color: #25D366; background: #25D366; color: #111; cursor: default; font-weight: 900; }
   .salvo-status.cancelado  { border-color: #e05c5c; color: #e05c5c; background: rgba(224,92,92,0.08); }
   .salvo-status-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-  .salvo-montagem-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
-  .salvo-montagem-input { background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--muted); font-family: 'Barlow', sans-serif; font-size: 0.75rem; padding: 2px 4px; width: 110px; outline: none; }
-  .salvo-montagem-input:focus { border-bottom-color: var(--gold); color: var(--text); }
-  .salvo-montagem-input::placeholder { color: var(--muted); opacity: 0.6; }
   .btn-calendar { border-color: var(--border); color: var(--muted); }
   .btn-calendar:hover { background: var(--border); color: var(--text); }
   .btn-calendar-ok { border-color: var(--border); color: #4A90C8; }
@@ -6434,8 +6430,6 @@ function handleSalvosClick(e) {
     btn.setAttribute('data-aprovado', novoAprovado);
     btn.className = 'salvo-status' + (novaClasse ? ' ' + novaClasse : '');
     btn.style.cssText = novoStatus === 'cancelado' ? 'cursor:pointer' : 'cursor:pointer;background:transparent';
-    var monRow = btn.closest('.salvo-card') && btn.closest('.salvo-card').querySelector('.salvo-montagem-row');
-    if (monRow) monRow.style.display = (novoStatus === 'confirmado' || novoStatus === 'andamento') ? '' : 'none';
   }
   else if (action === 'toggle-aprovado') {
     if (!db) return;
@@ -6456,18 +6450,6 @@ function iniciarListenerSalvos() {
   var listaC = document.getElementById('contratos-lista');
   if (listaC) {
     listaC.addEventListener('click', handleSalvosClick);
-    listaC.addEventListener('blur', function(e) {
-      var inp = e.target.closest('.salvo-montagem-input');
-      if (!inp) return;
-      var id = inp.getAttribute('data-id');
-      var field = inp.getAttribute('data-field');
-      var val = inp.value.trim();
-      if (!id || !field || !db) return;
-      var upd = {}; upd[field] = val;
-      db.collection('contratos').doc(id).update(upd);
-      var evUpd = {}; evUpd['ev_' + field] = val;
-      db.collection('eventos_campo').doc(id).update(evUpd).catch(function(){});
-    }, true);
   }
   var listaN = document.getElementById('notas-lista');
   if (listaN) listaN.addEventListener('click', handleNotasClick);
@@ -7131,11 +7113,6 @@ function iniciarListenerContratos() {
             statusBtn.className = 'salvo-status' + _scClass;
             statusBtn.style.cssText = 'cursor:pointer;background:transparent';
           }
-          var cardEl = statusBtn.closest && statusBtn.closest('.salvo-card');
-          if (cardEl) {
-            var monRow = cardEl.querySelector('.salvo-montagem-row');
-            if (monRow) monRow.style.display = (_statusCon === 'confirmado' && _etapaAtual !== 'concluido') ? '' : 'none';
-          }
         }
 
         // Se cancelado manualmente: limpar mapa de etapas
@@ -7190,12 +7167,8 @@ function iniciarListenerContratos() {
         if (noPanel) { painelBtnRT.classList.add('no-painel'); painelBtnRT.setAttribute('data-no-painel','1'); painelBtnRT.title='Remover do painel'; }
         else { painelBtnRT.classList.remove('no-painel'); painelBtnRT.setAttribute('data-no-painel','0'); painelBtnRT.title='Enviar para o painel'; }
       }
-      // Montagem/desmontagem
       var cardEl = btn.closest('.salvo-card');
       if (cardEl) {
-        var monRow = cardEl.querySelector('.salvo-montagem-row');
-        var _sc = btn.getAttribute('data-status') || '';
-        if (monRow) monRow.style.display = ((_sc === 'confirmado' || _sc === 'andamento') && etapa !== 'concluido') ? '' : 'none';
         // Atualizar cor e clique da referência do contrato
         var refBtn = cardEl.querySelector('[data-ref-contrato]');
         if (refBtn) {
@@ -7374,10 +7347,6 @@ function _renderContratosComEtapa(lista, docs, etapaMap) {
     card += '<button data-ref-contrato="' + ref + '" onclick="window.open(\'relatorios.html?ref=' + ref + '\',\'_blank\')" style="font-family:\'Barlow Condensed\',sans-serif;font-size:0.68rem;font-weight:700;color:#555;letter-spacing:0.1em;background:transparent;border:none;cursor:pointer;padding:0;transition:color 0.15s;display:inline-flex;align-items:center" onmouseover="this.style.color=\'#25D366\'" onmouseout="this.style.color=\'#555\'"># ' + ref + _svgExternal + '</button>';
     card += '</span>';
     card += '</div>';
-    card += '<div class="salvo-montagem-row" style="' + ((_statusCon === 'confirmado' || _statusCon === 'andamento') && etapa !== 'concluido' ? '' : 'display:none') + '">';
-    card += '<input class="salvo-montagem-input" type="text" placeholder="Montagem" data-field="montagem" data-id="' + id + '" value="' + escHtml(doc.montagem || '') + '">';
-    card += '<input class="salvo-montagem-input" type="text" placeholder="Desmontagem" data-field="desmontagem" data-id="' + id + '" value="' + escHtml(doc.desmontagem || '') + '">';
-    card += '</div>';
     card += '</div>';
     return card;
   }).join('');
@@ -7480,14 +7449,9 @@ function toggleAprovadoContrato(id, atual) {
   db.collection('contratos').doc(id).update({ aprovado: novoAprovado })
     .catch(function(e) { console.error('[AdQ] Erro ao atualizar status:', e); });
   if (statusEl) {
-    var cardEl = statusEl.closest('.salvo-card');
     statusEl.textContent = novoLabel;
     statusEl.setAttribute('data-aprovado', novoAprovado);
     statusEl.className = 'salvo-status ' + novoClass;
-    if (cardEl) {
-      var monRow = cardEl.querySelector('.salvo-montagem-row');
-      if (monRow) monRow.style.display = 'none';
-    }
   }
 }
 
